@@ -214,9 +214,10 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Plans on today, or on a closed tomorrow, are striped after the eaten share
   in the kcal ruler and the macro bars. The chip "Nach Plan" in the head,
   on by default, counts them: the head then reads "Übrig nach Plan" with
-  "<kcal> ohne Plan" under the number, and each macro shows the grams left
-  after the plans. The choice is saved on the device. Plans of past days
-  never count.
+  "<kcal> ohne Plan" under the number, and its details read "<kcal> mit
+  Plan" instead of "<kcal> gegessen". Each macro shows the grams left after
+  the plans, and its eaten grams count the plans too. The choice is saved on
+  the device. Plans of past days never count.
 - Plans of the last week that were never eaten or removed stay on their
   day. Today shows a line above the meals that names those days ("Offene
   Pläne vom <day>"); a tap opens the last of them, and the close button

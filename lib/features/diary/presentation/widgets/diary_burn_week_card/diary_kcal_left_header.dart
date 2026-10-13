@@ -170,6 +170,7 @@ class _EatenOfTarget extends StatelessWidget {
             data.countsOpenPlans ?? false
                 ? l10n.diaryBalanceEatenWithPlanAmount(data.eatenValue)
                 : l10n.diaryBalanceEatenAmount(data.eatenValue),
+            key: DiaryBalanceCardKeys.kcalHeadEaten,
             style: style?.copyWith(
               color: colors.ink,
               fontWeight: FontWeight.w700,
