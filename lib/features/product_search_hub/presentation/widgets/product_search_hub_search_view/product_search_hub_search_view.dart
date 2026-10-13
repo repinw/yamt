@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/provider/network_connectivity.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -177,6 +178,16 @@ class _ProductSearchHubSearchViewState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Offline the search finds little or nothing, so a search that found
+    // nothing runs once more as soon as the device is online again.
+    ref.listen(deviceOfflineProvider, (previous, next) {
+      final foundNothing =
+          _searchCoordinator.results.isEmpty || _searchCoordinator.hasFailed;
+      if (previous?.value == true && next.value == false && foundNothing) {
+        _searchCoordinator.retrySearch();
+      }
+    });
+    final isOffline = ref.watch(deviceOfflineProvider).value ?? false;
 
     return ProductSearchHubSearchPageContent(
       title: widget.args.title(l10n),
@@ -188,6 +199,7 @@ class _ProductSearchHubSearchViewState
       hasSearchQuery: _searchCoordinator.hasSearchQuery,
       searchResults: _searchCoordinator.results,
       hasSearchFailed: _searchCoordinator.hasFailed,
+      isOffline: isOffline,
       onBackPressed: widget.onBackPressed,
       onSearchChanged: _searchCoordinator.handleSearchChanged,
       onClear: _clearSearch,

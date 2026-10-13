@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'No matching products found.'**
   String get productSearchHubSearchEmptyState;
 
+  /// Shown instead of the empty search result while the device is offline.
+  ///
+  /// In en, this message translates to:
+  /// **'No search without a connection. The search runs again once you are online.'**
+  String get productSearchHubSearchOfflineState;
+
   /// No description provided for @eatPageAmountUnknown.
   ///
   /// In en, this message translates to:

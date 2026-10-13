@@ -500,6 +500,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   Several foods at once come from the receipt scan. The diary search works
   the same way: no "+ Mehr", one food per pick.
 - Barcode scan lookup with multiple-candidate picker and not-found handling.
+- Offline an empty search result, also after a barcode scan into the search,
+  says "Ohne Verbindung keine Suche" instead of "Keine passenden Produkte
+  gefunden". Once the device is online again, the search runs once more by
+  itself.
 - Voice search for manual product text where supported.
 - AI food creation from photos and/or a description (one of both is
   enough), with quick phrases such as "large portion". The server prompt

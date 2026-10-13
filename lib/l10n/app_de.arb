@@ -82,6 +82,7 @@
   "productSearchHubSearchLoadFailed": "Produktsuche fehlgeschlagen.",
   "productSearchHubSearchRetryAction": "Erneut versuchen",
   "productSearchHubSearchEmptyState": "Keine passenden Produkte gefunden.",
+  "productSearchHubSearchOfflineState": "Ohne Verbindung keine Suche. Sobald du online bist, wird erneut gesucht.",
   "eatPageAmountUnknown": "–",
   "productSearchHubMissingNutritionHint": "Pflichtwerte fehlen noch. Jedes EU-Nährwertetikett nennt sie.",
   "productEditorPhotosHint": "Zwei Fotos füllen das Produkt aus. Du prüfst nur noch.",

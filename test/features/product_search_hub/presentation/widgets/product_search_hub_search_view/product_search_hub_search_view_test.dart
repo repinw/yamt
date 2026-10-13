@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/network_connectivity.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
@@ -20,6 +21,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_results/product_search_hub_search_results.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../helpers/fake_connectivity.dart';
 import '../../../../../helpers/inventory_item_whole_list_writes.dart';
 
 Widget _buildHarness({
@@ -27,9 +29,12 @@ Widget _buildHarness({
   ProductSearchHubRouteArgs args = const ProductSearchHubRouteArgs.inventory(),
   ProductSearchHubSearchLookup? lookupProducts,
   List<InventoryItem> recentItems = const <InventoryItem>[],
+  FakeConnectivity? connectivity,
 }) {
   return ProviderScope(
     overrides: [
+      if (connectivity != null)
+        connectivityProvider.overrideWithValue(connectivity),
       voiceSearchServiceProvider.overrideWithValue(_FakeVoiceSearchService()),
       inventoryItemRepositoryProvider.overrideWithValue(
         _FakeInventoryItemRepository(recentItems),
@@ -325,6 +330,7 @@ void main() {
             results: const <OffProductSearchResult>[],
             isSearching: false,
             hasFailed: false,
+            isOffline: false,
             onRetry: () {},
             onCreateOwnPressed: () {
               didCreate = true;
@@ -339,6 +345,131 @@ void main() {
     );
 
     expect(didCreate, isTrue);
+  });
+
+  testWidgets('online, an empty search says that no product matches', (
+    tester,
+  ) async {
+    final connectivity = FakeConnectivity();
+    addTearDown(connectivity.dispose);
+    await tester.pumpWidget(_buildHarness(connectivity: connectivity));
+    await tester.pumpAndSettle();
+    await _pumpFocusedSearchReady(tester);
+
+    await _searchFor(tester, 'Milk');
+
+    expect(find.byKey(_emptyStateKey), findsOneWidget);
+    expect(find.text('No matching products found.'), findsOneWidget);
+    expect(
+      find.byKey(ProductSearchHubSearchResults.offlineStateKey),
+      findsNothing,
+    );
+  });
+
+  testWidgets('offline, an empty search names the missing connection and '
+      'searches again once online', (tester) async {
+    final connectivity = FakeConnectivity(offline: true);
+    addTearDown(connectivity.dispose);
+    var online = false;
+    final queries = <String>[];
+    await tester.pumpWidget(
+      _buildHarness(
+        connectivity: connectivity,
+        lookupProducts:
+            ({required query, required limit, store, brand, weight}) async {
+              queries.add(query);
+              return ProductSearchHubSearchLookupResult.success(
+                online ? const [_milk] : const <OffProductSearchResult>[],
+              );
+            },
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _pumpFocusedSearchReady(tester);
+
+    await _searchFor(tester, '4008400404127');
+
+    expect(
+      find.byKey(ProductSearchHubSearchResults.offlineStateKey),
+      findsOneWidget,
+    );
+    expect(find.byKey(_emptyStateKey), findsNothing);
+    expect(
+      find.byKey(const Key('product_search_hub_search_create_product_button')),
+      findsOneWidget,
+    );
+
+    online = true;
+    connectivity.goOnline();
+    await tester.pump(connectivitySettleDelay);
+    await tester.pumpAndSettle();
+
+    expect(queries, ['4008400404127', '4008400404127']);
+    expect(
+      find.byKey(const Key('product_search_hub_search_result_search-milk')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(ProductSearchHubSearchResults.offlineStateKey),
+      findsNothing,
+    );
+  });
+
+  testWidgets('offline, a failed search names the missing connection', (
+    tester,
+  ) async {
+    final connectivity = FakeConnectivity(offline: true);
+    addTearDown(connectivity.dispose);
+    await tester.pumpWidget(
+      _buildHarness(
+        connectivity: connectivity,
+        lookupProducts: ({
+          required query,
+          required limit,
+          store,
+          brand,
+          weight,
+        }) async => const ProductSearchHubSearchLookupResult.failed(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _pumpFocusedSearchReady(tester);
+
+    await _searchFor(tester, 'Milk');
+
+    expect(
+      find.byKey(ProductSearchHubSearchResults.offlineStateKey),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('back online, a search with results does not run again', (
+    tester,
+  ) async {
+    final connectivity = FakeConnectivity();
+    addTearDown(connectivity.dispose);
+    final queries = <String>[];
+    await tester.pumpWidget(
+      _buildHarness(
+        connectivity: connectivity,
+        lookupProducts:
+            ({required query, required limit, store, brand, weight}) async {
+              queries.add(query);
+              return ProductSearchHubSearchLookupResult.success(const [_milk]);
+            },
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _pumpFocusedSearchReady(tester);
+    await _searchFor(tester, 'Milk');
+
+    connectivity.goOffline();
+    await tester.pump(connectivitySettleDelay);
+    connectivity.goOnline();
+    await tester.pump(connectivitySettleDelay);
+    await tester.pumpAndSettle();
+
+    expect(queries, ['Milk']);
   });
 
   testWidgets('search shows recent products while query is empty', (
@@ -368,6 +499,24 @@ void main() {
 
     expect(find.text('Recently selected'), findsNothing);
   });
+}
+
+const Key _emptyStateKey = ProductSearchHubSearchResults.emptyStateKey;
+
+const _milk = OffProductSearchResult(
+  code: 'search-milk',
+  name: 'Whole milk',
+  brand: 'Dairy Co',
+  score: 1,
+);
+
+Future<void> _searchFor(WidgetTester tester, String query) async {
+  await tester.enterText(
+    find.byKey(const Key('product_search_hub_search_field')),
+    query,
+  );
+  await tester.pump(const Duration(milliseconds: 300));
+  await tester.pumpAndSettle();
 }
 
 Future<void> _pumpFocusedSearchReady(WidgetTester tester) async {
