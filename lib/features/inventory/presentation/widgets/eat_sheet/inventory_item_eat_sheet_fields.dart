@@ -8,9 +8,6 @@ class InventoryItemEatSheetFields {
   /// Amount in the item's unit.
   final inventoryAmount = EatSheetTextField();
 
-  /// Number of pieces or portions.
-  final pieceCount = EatSheetTextField();
-
   /// Weight of one piece.
   final pieceWeight = EatSheetTextField();
 
@@ -27,19 +24,13 @@ class InventoryItemEatSheetFields {
     } else {
       inventoryAmount.sync(state.inventoryAmountText);
     }
-    pieceCount.sync(state.portionCountText);
     pieceWeight.sync(state.portionAmountText);
     inedibleAmount.sync(state.inedibleAmountText);
   }
 
   /// Releases all fields.
   void dispose() {
-    for (final field in [
-      inventoryAmount,
-      pieceCount,
-      pieceWeight,
-      inedibleAmount,
-    ]) {
+    for (final field in [inventoryAmount, pieceWeight, inedibleAmount]) {
       field.dispose();
     }
   }

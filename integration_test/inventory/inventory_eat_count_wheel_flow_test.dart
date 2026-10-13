@@ -45,8 +45,33 @@ final InventoryItem _cheese = InventoryItem.create(
   ),
 );
 
+/// Eggs counted in pieces, of which parts can be eaten; the product names
+/// one egg of 60 g.
+final InventoryItem _eggs = InventoryItem.create(
+  id: 'item-eggs',
+  name: 'Eggs',
+  entryDate: DateTime.utc(2026, 10, 2),
+  storeName: 'Store',
+  quantity: 1,
+  initialAmount: 6 * inventoryPieceAmountScale,
+  currentAmount: 6 * inventoryPieceAmountScale,
+  amountScale: inventoryPieceAmountScale,
+  amountUnit: InventoryAmountUnit.piece,
+  servingSize: '1 egg (60 g)',
+  servingQuantity: 60,
+  servingQuantityUnit: 'g',
+  nutrition: const GlobalFoodNutrition(
+    qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+    per100Kcal: 140,
+    per100Protein: 12,
+    per100Carbs: 1,
+    per100Fat: 10,
+  ),
+);
+
 Widget _buildHarness({
   required ValueChanged<InventoryItemEatRequest?> onResult,
+  InventoryItem? item,
 }) {
   // Signed out: the serving reads stay empty, so the product slice leads.
   final container = ProviderContainer(
@@ -72,7 +97,7 @@ Widget _buildHarness({
               onPressed: () async => onResult(
                 await showInventoryItemEatSheet(
                   context: context,
-                  item: _cheese,
+                  item: item ?? _cheese,
                 ),
               ),
               child: const Text('open'),
@@ -138,6 +163,44 @@ void main() {
     expect(result?.portionBaseAmount, 25);
     expect(result?.portionCount, 2);
     expect(result?.portionLabel, 'slice');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the wheel counts pieces in halves up to the stock', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await tester.pumpWidget(
+      _buildHarness(onResult: (value) => result = value, item: _eggs),
+    );
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+    // "1 × 60 g": the product's egg is the weight of one piece.
+    expect(_weightText(tester), '60');
+
+    // More eggs than the stock holds become all six.
+    final wheel = find.byKey(EatCountWheel.wheelKey);
+    await tester.ensureVisible(wheel);
+    await tester.tap(wheel);
+    await _pumpVisibleStep(tester);
+    await tester.enterText(find.byKey(EatCountWheel.fieldKey), '10');
+    await tester.tap(find.byKey(EatCountWheel.doneKey));
+    await _pumpVisibleStep(tester);
+
+    // Half an egg back from all six.
+    await tester.drag(wheel, const Offset(0, AppFoodLabel.countWheelItem));
+    await _pumpVisibleStep(tester);
+
+    await tester.ensureVisible(find.byKey(_confirmKey));
+    await tester.tap(find.byKey(_confirmKey));
+    await _pumpVisibleStep(tester);
+
+    expect(result?.inventoryAmount, 5500);
+    expect(result?.portionCount, 5.5);
+    expect(result?.portionBaseAmount, 60);
+    expect(result?.calorieAmount, 330);
     expect(tester.takeException(), isNull);
   });
 }

@@ -8,14 +8,17 @@ import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Wheel of the eat page with the number of portions in half steps. A tap
-/// opens a field for any count, such as 1,3.
+/// Wheel of the eat page with the number of portions or pieces in half
+/// steps, or in whole steps for whole pieces. A tap opens a field for any
+/// count, such as 1,3.
 class EatCountWheel extends StatelessWidget {
   /// Creates the wheel at [count], with at most [maxCount] on the wheel.
   const new({
     required this.count,
     required this.maxCount,
     required this.onChanged,
+    this.label,
+    this.wholeOnly = false,
     super.key,
   });
 
@@ -37,17 +40,28 @@ class EatCountWheel extends StatelessWidget {
   /// Called with a new count.
   final ValueChanged<double> onChanged;
 
+  /// What is counted, for the screen reader and the typing field; the
+  /// number of portions when null.
+  final String? label;
+
+  /// Whether the wheel counts whole pieces only, as for a stock that keeps
+  /// no part of a piece. A typed count is rounded to a whole one.
+  final bool wholeOnly;
+
+  double get _step => wholeOnly ? 1 : 0.5;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
-    final halves = math.max(
-      (count * 2).ceil(),
-      math.min((maxCount * 2).floor(), AppFoodLabel.countWheelMaxHalves),
+    final step = _step;
+    final steps = math.max(
+      (count / step).ceil(),
+      math.min((maxCount / step).floor(), AppFoodLabel.countWheelMaxSteps),
     );
-    final selected = math.max(0, (count * 2).round() - 1);
+    final selected = math.max(0, (count / step).round() - 1);
     return Semantics(
-      label: l10n.eatPageCountLabel,
+      label: label ?? l10n.eatPageCountLabel,
       value: formatEatCount(l10n, count),
       child: GestureDetector(
         onTap: () => _type(context),
@@ -56,13 +70,13 @@ class EatCountWheel extends StatelessWidget {
           height: AppFoodLabel.countWheelHeight,
           child: AppScrollWheel(
             key: wheelKey,
-            itemCount: math.max(1, halves),
+            itemCount: math.max(1, steps),
             selectedIndex: selected,
             labelBuilder: (index) => formatEatCount(
               l10n,
-              index == selected ? count : (index + 1) / 2,
+              index == selected ? count : (index + 1) * step,
             ),
-            onSelected: (index) => onChanged((index + 1) / 2),
+            onSelected: (index) => onChanged((index + 1) * step),
             itemExtent: AppFoodLabel.countWheelItem,
             textStyle: Theme.of(context).textTheme.headlineMedium
                 ?.copyWith(fontWeight: FontWeight.w800, color: colors.ink),
@@ -75,19 +89,29 @@ class EatCountWheel extends StatelessWidget {
   Future<void> _type(BuildContext context) async {
     final typed = await showDialog<double>(
       context: context,
-      builder: (_) => _CountDialog(count: count),
+      builder: (_) =>
+          _CountDialog(count: count, label: label, wholeOnly: wholeOnly),
     );
-    if (typed != null && typed > 0) {
+    final picked = wholeOnly ? typed?.roundToDouble() : typed;
+    if (picked != null && picked > 0) {
       // More than the stock holds becomes all of it.
-      onChanged(math.min(typed, maxCount));
+      onChanged(math.min(picked, maxCount));
     }
   }
 }
 
 class _CountDialog extends StatefulWidget {
-  const new({required this.count});
+  const new({
+    required this.count,
+    required this.label,
+    required this.wholeOnly,
+  });
 
   final double count;
+
+  final String? label;
+
+  final bool wholeOnly;
 
   @override
   State<_CountDialog> createState() => _CountDialogState();
@@ -113,12 +137,14 @@ class _CountDialogState extends State<_CountDialog> {
     final l10n = AppLocalizations.of(context)!;
     final material = MaterialLocalizations.of(context);
     return AlertDialog(
-      title: Text(l10n.eatPageCountLabel),
+      title: Text(widget.label ?? l10n.eatPageCountLabel),
       content: TextField(
         key: EatCountWheel.fieldKey,
         controller: _text,
         autofocus: true,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        keyboardType: TextInputType.numberWithOptions(
+          decimal: !widget.wholeOnly,
+        ),
         onSubmitted: (_) => _done(),
       ),
       actions: [

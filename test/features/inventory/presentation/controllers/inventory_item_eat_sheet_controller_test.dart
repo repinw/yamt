@@ -446,6 +446,66 @@ void main() {
     expect(state.nutrition?.amount, 160);
   });
 
+  test('the wheel counts pieces up to the stock', () {
+    final (:container, :provider) = _setUp(_pieceItem());
+
+    container.read(provider.notifier)
+      ..setPortionAmountText('80')
+      ..setCount(2);
+
+    final state = container.read(provider);
+    expect(eatenCount(state), 2);
+    expect(wheelMaxCount(state), 3);
+    expect(state.portionCountText, '2');
+    expect(state.inventoryAmountText, '2');
+    expect(state.nutrition?.amount, 160);
+  });
+
+  test('the wheel counts half pieces of a stock that keeps parts', () {
+    final (:container, :provider) = _setUp(
+      InventoryItem.create(
+        id: 'egg',
+        name: 'Egg',
+        entryDate: DateTime(2026, 5),
+        storeName: 'Store',
+        quantity: 2,
+        initialQuantity: 2,
+        initialAmount: 2000,
+        currentAmount: 1500,
+        amountScale: inventoryPieceAmountScale,
+        amountUnit: InventoryAmountUnit.piece,
+        nutrition: _nutrition,
+      ),
+    );
+    final controller = container.read(provider.notifier)
+      ..setPortionAmountText('60')
+      ..setCount(0.5);
+
+    final state = container.read(provider);
+    expect(eatenCount(state), 0.5);
+    expect(wheelMaxCount(state), 1.5);
+    expect(state.nutrition?.amount, 30);
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.inventoryAmount, 500);
+    expect(request.portionCount, 0.5);
+  });
+
+  test('a typed piece weight clears the error of the missing one', () {
+    final (:container, :provider) = _setUp(_pieceItem());
+    final controller = container.read(provider.notifier);
+
+    expect(
+      controller.submit(InventoryItemEatSheetIntent.logOnly),
+      isA<InventoryItemEatRejected>(),
+    );
+    expect(container.read(provider).errors, isNotEmpty);
+
+    controller.setPortionAmountText('80');
+
+    expect(container.read(provider).errors, isEmpty);
+  });
+
   test('the piece weight unit switches between grams and milliliters', () {
     final (:container, :provider) = _setUp(_pieceItem());
     final controller = container.read(provider.notifier)..switchPortionUnit();

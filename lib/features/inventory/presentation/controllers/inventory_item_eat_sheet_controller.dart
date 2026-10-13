@@ -23,6 +23,13 @@ part 'inventory_item_eat_sheet_controller.g.dart';
 
 const _servingResolver = ServingSuggestionResolver();
 
+/// Errors a new piece weight clears: a missing weight also left the stock
+/// amount without a value. Both show under the weight field.
+const Set<InventoryItemEatSheetError> _pieceWeightErrors = {
+  InventoryItemEatSheetError.invalidPortionAmount,
+  InventoryItemEatSheetError.invalidInventoryAmount,
+};
+
 /// Holds the input of the eat sheet for one inventory item.
 @riverpod
 class InventoryItemEatSheetController
@@ -79,7 +86,8 @@ class InventoryItemEatSheetController
   /// Sets the amount field text.
   void setAmountText(String text) => _update(withAmountText(state, text));
 
-  /// Sets the number of portions, such as 1.5 from the count wheel.
+  /// Sets the number of portions or pieces, such as 1.5 from the count
+  /// wheel.
   void setCount(double count) => _update(withCount(state, count));
 
   /// Sets the weight of one portion; the count stays.
@@ -122,9 +130,7 @@ class InventoryItemEatSheetController
           portionUnit: state.calculator.normalizePortionUnit(size.unit),
           portionLabel: () => size.label,
           didEditPortion: true,
-          errors: _without(const {
-            InventoryItemEatSheetError.invalidPortionAmount,
-          }),
+          errors: _without(_pieceWeightErrors),
         ),
       ),
     );
@@ -138,9 +144,7 @@ class InventoryItemEatSheetController
           portionAmountText: text,
           portionLabel: () => null,
           didEditPortion: true,
-          errors: _without(const {
-            InventoryItemEatSheetError.invalidPortionAmount,
-          }),
+          errors: _without(_pieceWeightErrors),
         ),
       ),
     );

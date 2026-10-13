@@ -163,6 +163,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   named portion's own drops the name. The page starts with what was eaten
   last time, else the smallest named portion, else one package or what is
   left of it.
+- A food counted in pieces reads the same way, "count × weight of one
+  piece": the wheel counts whole pieces (a typed count too), or half pieces
+  when the Vorrat keeps parts of a piece, and ends at the pieces in stock
+  (a typed count over the stock takes all of it). The weight field has the
+  piece size ("M") or "Stück" under it and switches between g and ml; the
+  sum is on the right. The ruler moves the pieces; the piece size chips and
+  "+ als Stückgröße merken" sit under it.
 - One row of chips under the ruler scrolls sideways: "Zuletzt", the
   product's serving ("Portion" when it has no name), named portions, other
   learned amounts, ¼ and ½ of the package, and "Alles".

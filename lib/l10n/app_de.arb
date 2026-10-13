@@ -501,14 +501,6 @@
   },
   "eatPagePortionNameHint": "z. B. Scheibe",
   "eatPageSavePortion": "Speichern",
-  "eatPagePieceWeight": "1 {label} =",
-  "@eatPagePieceWeight": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "eatPageInStock": "{amount} im Vorrat",
   "@eatPageInStock": {
     "placeholders": {
@@ -555,6 +547,10 @@
   "eatPageCountLabel": "Anzahl Portionen",
   "@eatPageCountLabel": {
     "description": "Name of the portion count wheel on the eat page and title of the field that types a count."
+  },
+  "eatPagePieceCountLabel": "Anzahl Stück",
+  "@eatPagePieceCountLabel": {
+    "description": "Name of the count wheel on the eat page of a food counted in pieces, and title of the field that types a count."
   },
   "eatPageTimes": "×",
   "@eatPageTimes": {

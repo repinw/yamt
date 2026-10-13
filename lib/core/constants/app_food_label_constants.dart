@@ -65,6 +65,10 @@ abstract final class AppFoodLabel {
   /// Width of the amount field.
   static const double amountField = 128;
 
+  /// Widest the note beside the amount field gets before it wraps, so the
+  /// field keeps the rest of the row.
+  static const double amountHint = 112;
+
   /// Width of a small number field inside a line of text.
   static const double inlineAmountField = 72;
 
@@ -134,6 +138,7 @@ abstract final class AppFoodLabel {
   /// Height of one count on the wheel.
   static const double countWheelItem = 50;
 
-  /// Most counts the wheel offers; a larger count is typed.
-  static const int countWheelMaxHalves = 40;
+  /// Most steps the wheel offers, half portions or whole pieces; a larger
+  /// count is typed.
+  static const int countWheelMaxSteps = 40;
 }

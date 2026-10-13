@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 
@@ -99,7 +100,7 @@ class EatAmountRuler extends StatelessWidget {
         Row(
           children: [
             ?lead,
-            Flexible(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -152,8 +153,13 @@ class EatAmountRuler extends StatelessWidget {
                         TextButton(
                           key: unitKey,
                           onPressed: onUnit,
+                          // A short unit such as "g" keeps the field
+                          // wide; the tap target stays 48.
                           style: TextButton.styleFrom(
                             foregroundColor: colors.ink,
+                            minimumSize: const Size.square(
+                              AppSizes.minTapTarget,
+                            ),
                           ),
                           child: Text(
                             unitLabel,
@@ -175,9 +181,12 @@ class EatAmountRuler extends StatelessWidget {
                 ],
               ),
             ),
-            const Spacer(),
+            // The note takes only its width, so the field keeps the rest.
             if (hintText != null)
-              Flexible(
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppFoodLabel.amountHint,
+                ),
                 child: Text(
                   hintText,
                   textAlign: TextAlign.end,

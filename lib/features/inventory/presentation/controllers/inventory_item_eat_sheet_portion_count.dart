@@ -2,6 +2,7 @@ import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
+import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
 
 /// Whether the page counts portions of a weight: grams or milliliters
 /// outside portion mode, shown as count × weight of one portion.
@@ -17,12 +18,17 @@ String portionWeightText(InventoryItemEatSheetState state) {
       : formatEatenAmount(state, counted.value);
 }
 
-/// [state] with [count] of the current portion: the counted one, or else
-/// the entered amount as one portion without a name.
+/// [state] with [count] of the current portion: the pieces in portion
+/// mode, else the counted portion, or else the entered amount as one
+/// portion without a name.
 InventoryItemEatSheetState withCount(
   InventoryItemEatSheetState state,
   double count,
 ) {
+  if (state.usesPortionMode) {
+    // Counted to one decimal, as the stock takes it.
+    return withAmountText(state, formatInventoryNutritionValue(count));
+  }
   final portion =
       state.countedPortion ??
       InventoryItemEatMarker(value: state.enteredAmount);
@@ -36,9 +42,13 @@ InventoryItemEatSheetState withCount(
   ).copyWith(countedPortion: () => portion, portionCountText: '$count');
 }
 
-/// The count of the counted portion: as last set on the wheel while it
-/// still gives the amount, else worked out from the amount; 1 without one.
+/// The count on the wheel: the pieces in portion mode, else the count of
+/// the counted portion, as last set on the wheel while it still gives the
+/// amount, else worked out from the amount; 1 without one.
 double eatenCount(InventoryItemEatSheetState state) {
+  if (state.usesPortionMode) {
+    return state.amountValue;
+  }
   final counted = state.countedPortion;
   final set = parsePositiveDecimalInput(state.portionCountText);
   if (counted != null &&
@@ -91,10 +101,16 @@ double portionWeight(InventoryItemEatSheetState state) {
   return state.countedPortion?.value ?? state.enteredAmount;
 }
 
-/// Most portions the stock holds, for the count wheel; 1 without a weight.
+/// Most portions the stock holds, for the count wheel: the pieces in
+/// portion mode, else the portions of the counted weight; 1 without a
+/// weight.
 double wheelMaxCount(InventoryItemEatSheetState state) {
+  final calculator = state.calculator;
+  if (state.usesPortionMode) {
+    return calculator.maxAmount / calculator.inventoryAmountScale;
+  }
   final weight = portionWeight(state);
-  return weight <= 0 ? 1 : state.calculator.maxAmount / weight;
+  return weight <= 0 ? 1 : calculator.maxAmount / weight;
 }
 
 /// [state] with the entered amount named [label] as a portion, or the

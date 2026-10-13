@@ -10,23 +10,20 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_count_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_count_wheel.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inedible_line.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inline_amount_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_remember_portion.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_body.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Amount part of the item eat page: the ruler, the piece size, remembered
-/// portions, and the inedible share.
+/// Amount part of the item eat page: the count wheel and the ruler, the
+/// piece sizes, remembered portions, and the inedible share.
 class InventoryItemEatAmountSection extends StatelessWidget {
   /// Creates the section for [state].
   const new({
     required this.state,
     required this.controller,
     required this.amountField,
-    required this.pieceWeight,
     required this.inedibleAmount,
     required this.onToggleInedible,
     super.key,
@@ -56,11 +53,9 @@ class InventoryItemEatAmountSection extends StatelessWidget {
   /// The eat page controller.
   final InventoryItemEatSheetController controller;
 
-  /// Field of the amount, in pieces or in the item unit.
+  /// Field of the amount in the item unit, or of one piece's weight in
+  /// portion mode.
   final EatSheetTextField amountField;
-
-  /// Field of one piece's weight.
-  final EatSheetTextField pieceWeight;
 
   /// Field of the inedible share.
   final EatSheetTextField inedibleAmount;
@@ -75,13 +70,20 @@ class InventoryItemEatAmountSection extends StatelessWidget {
     final units = calculator.availablePortionUnits;
     final selectedSize = state.selectedPieceSize;
     final countsWeight = countsWeightPortions(state);
+    // Pieces read "count × weight of one piece", like a weight portion.
+    final pieces = state.usesPortionMode;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         EatAmountRuler(
           controller: amountField.controller,
           focusNode: amountField.focusNode,
-          unitLabel: state.amountUnit(l10n),
+          unitLabel: pieces
+              ? consumedUnitSymbol(l10n, state.portionUnit)
+              : state.amountUnit(l10n),
+          onUnitPressed: pieces && units.length > 1
+              ? controller.switchPortionUnit
+              : null,
           value: state.amountValue,
           max: state.amountMax,
           step: state.amountStep,
@@ -95,7 +97,7 @@ class InventoryItemEatAmountSection extends StatelessWidget {
               ),
           ],
           allowFractionalInput:
-              state.usesPortionMode ||
+              pieces ||
               calculator.allowsFractionalInventoryAmount ||
               calculator.takesDecimalWeight,
           // Without a counted portion, the hint tells which named portion
@@ -105,30 +107,23 @@ class InventoryItemEatAmountSection extends StatelessWidget {
               : state.enteredAmount > 0
               ? l10n.eatPageTotal(state.enteredAmountLabel(l10n))
               : null,
-          errorText: state.amountError(l10n),
-          onTextChanged: countsWeight
+          errorText: pieces
+              ? state.portionAmountError(l10n) ?? state.amountError(l10n)
+              : state.amountError(l10n),
+          onTextChanged: pieces
+              ? controller.setPortionAmountText
+              : countsWeight
               ? controller.setPortionWeightText
               : controller.setAmountText,
           onSliderChanged: controller.pickAmount,
-          leading: countsWeight
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: AppSpacing.md,
-                  children: [
-                    EatCountWheel(
-                      count: eatenCount(state),
-                      maxCount: wheelMaxCount(state),
-                      onChanged: controller.setCount,
-                    ),
-                    Text(
-                      l10n.eatPageTimes,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(color: FoodLabelColors.of(context).ink),
-                    ),
-                  ],
-                )
+          leading: countsWeight || pieces
+              ? _CountTimes(state: state, controller: controller)
               : null,
-          caption: countsWeight ? state.countedPortion?.label : null,
+          caption: pieces
+              ? state.portionLabel ?? state.defaultPortionLabel(l10n)
+              : countsWeight
+              ? state.countedPortion?.label
+              : null,
         ),
         // Grams and milliliters count on the wheel instead.
         if ((state.countedPortion, state.portionCount)
@@ -160,20 +155,7 @@ class InventoryItemEatAmountSection extends StatelessWidget {
             increaseKey: packageIncreaseKey,
             valueKey: packageCountKey,
           ),
-        if (state.usesPortionMode) ...[
-          EatInlineAmountField(
-            fieldKey: InventoryItemEatSheetBody.pieceWeightKey,
-            label: l10n.eatPagePieceWeight(state.defaultPortionLabel(l10n)),
-            unitLabel: consumedUnitSymbol(l10n, state.portionUnit),
-            controller: pieceWeight.controller,
-            focusNode: pieceWeight.focusNode,
-            errorText: state.portionAmountError(l10n),
-            onChanged: controller.setPortionAmountText,
-            unitKey: InventoryItemEatSheetBody.pieceWeightUnitKey,
-            onUnitPressed: units.length < 2
-                ? null
-                : controller.switchPortionUnit,
-          ),
+        if (pieces) ...[
           Wrap(
             spacing: AppSpacing.sm,
             children: [
@@ -212,6 +194,40 @@ class InventoryItemEatAmountSection extends StatelessWidget {
             onChanged: controller.setInedibleAmountText,
             onToggleExpanded: onToggleInedible,
           ),
+      ],
+    );
+  }
+}
+
+/// The count wheel with "×" before the weight of one portion or piece.
+class _CountTimes extends StatelessWidget {
+  const new({required this.state, required this.controller});
+
+  final InventoryItemEatSheetState state;
+
+  final InventoryItemEatSheetController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final pieces = state.usesPortionMode;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: AppSpacing.md,
+      children: [
+        EatCountWheel(
+          count: eatenCount(state),
+          maxCount: wheelMaxCount(state),
+          onChanged: controller.setCount,
+          label: pieces ? l10n.eatPagePieceCountLabel : null,
+          wholeOnly:
+              pieces && !state.calculator.allowsFractionalInventoryAmount,
+        ),
+        Text(
+          l10n.eatPageTimes,
+          style: Theme.of(context).textTheme.headlineMedium
+              ?.copyWith(color: FoodLabelColors.of(context).ink),
+        ),
       ],
     );
   }

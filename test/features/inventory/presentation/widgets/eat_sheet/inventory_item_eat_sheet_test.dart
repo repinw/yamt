@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -298,7 +299,6 @@ Widget _buildTestApp({
 }
 
 const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
-const _pieceWeightKey = Key('inventory_item_portion_amount_field');
 
 Future<void> _tapConfirmButton(WidgetTester tester) async {
   await tester.ensureVisible(find.byKey(_confirmKey));
@@ -316,6 +316,25 @@ String? _amountText(WidgetTester tester) {
       .widget<TextField>(find.byKey(EatAmountRuler.fieldKey))
       .controller
       ?.text;
+}
+
+/// Turns the count wheel by [steps] places, up for a positive number.
+Future<void> _turnWheel(WidgetTester tester, int steps) async {
+  final wheel = find.byKey(EatCountWheel.wheelKey);
+  await tester.ensureVisible(wheel);
+  await tester.drag(wheel, Offset(0, -steps * AppFoodLabel.countWheelItem));
+  await tester.pumpAndSettle();
+}
+
+/// Types [count] into the field that a tap on the count wheel opens.
+Future<void> _typeCount(WidgetTester tester, String count) async {
+  final wheel = find.byKey(EatCountWheel.wheelKey);
+  await tester.ensureVisible(wheel);
+  await tester.tap(wheel);
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(EatCountWheel.fieldKey), count);
+  await tester.tap(find.byKey(EatCountWheel.doneKey));
+  await tester.pumpAndSettle();
 }
 
 Future<void> _tapText(WidgetTester tester, String text) async {
@@ -775,7 +794,9 @@ void main() {
     InventoryItemEatRequest? result;
     await _pumpSheet(tester, _pieceItem(), onResult: (value) => result = value);
 
-    expect(find.text('1 Piece ='), findsOneWidget);
+    // "1 × [ ] g", with "Piece" under the empty weight.
+    expect(find.text('Piece'), findsOneWidget);
+    expect(_amountText(tester), '');
     expect(find.byKey(EatRememberPortion.linkKey), findsNothing);
     await _tapConfirmButton(tester);
 
@@ -785,9 +806,10 @@ void main() {
       findsOneWidget,
     );
 
-    await _enterAmount(tester, '2');
-    await tester.enterText(find.byKey(_pieceWeightKey), '80');
-    await tester.pump();
+    await _enterAmount(tester, '80');
+    expect(find.text('Please enter a number greater than zero.'), findsNothing);
+    expect(find.text('Please enter valid numbers.'), findsNothing);
+    await _turnWheel(tester, 1);
     expect(find.text('= 160 g'), findsOneWidget);
     await _tapConfirmButton(tester);
 
@@ -827,14 +849,12 @@ void main() {
     );
 
     await _tapText(tester, 'M 58 g');
-    expect(
-      tester.widget<TextField>(find.byKey(_pieceWeightKey)).controller?.text,
-      '58',
-    );
+    expect(_amountText(tester), '58');
+    expect(find.text('M'), findsOneWidget);
     expect(find.byKey(EatRememberPortion.linkKey), findsNothing);
 
-    await tester.enterText(find.byKey(_pieceWeightKey), '68');
-    await tester.pump();
+    await _enterAmount(tester, '68');
+    expect(find.text('Piece'), findsOneWidget);
     await _tapKey(tester, EatRememberPortion.linkKey);
     expect(find.text('Name for 68 g'), findsOneWidget);
     await tester.enterText(find.byKey(EatRememberPortion.nameFieldKey), 'L');
@@ -843,7 +863,7 @@ void main() {
     expect(find.text('L 68 g'), findsOneWidget);
     expect(find.byKey(EatRememberPortion.linkKey), findsNothing);
 
-    await _enterAmount(tester, '2');
+    await _turnWheel(tester, 1);
     await _tapConfirmButton(tester);
 
     expect(repository.calls, isEmpty);
@@ -857,10 +877,8 @@ void main() {
     InventoryItemEatRequest? result;
     await _pumpSheet(tester, _pieceItem(), onResult: (value) => result = value);
 
-    await tester.enterText(find.byKey(_pieceWeightKey), '200');
-    final unitButton = find.byKey(
-      const Key('inventory_item_portion_unit_button'),
-    );
+    await _enterAmount(tester, '200');
+    final unitButton = find.byKey(EatAmountRuler.unitKey);
     await tester.ensureVisible(unitButton);
     await tester.pumpAndSettle();
     await tester.tap(unitButton);
@@ -883,6 +901,57 @@ void main() {
     expect(find.textContaining('100'), findsWidgets);
   });
 
+  testWidgets('the wheel counts whole pieces up to the stock', (tester) async {
+    InventoryItemEatRequest? result;
+    await _pumpSheet(tester, _pieceItem(), onResult: (value) => result = value);
+
+    // A banana of 100 g has 89 kcal; the wheel multiplies it.
+    await _enterAmount(tester, '100');
+    expect(find.text('89 kcal'), findsOneWidget);
+    await _turnWheel(tester, 1);
+    expect(find.text('= 200 g'), findsOneWidget);
+    expect(find.text('178 kcal'), findsOneWidget);
+
+    // The wheel ends at the three bananas in stock.
+    await _turnWheel(tester, 5);
+    expect(find.text('= 300 g'), findsOneWidget);
+    expect(find.text('267 kcal'), findsOneWidget);
+
+    // A typed count is whole, and more than the stock becomes all of it.
+    await tester.tap(find.byKey(EatCountWheel.wheelKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Number of pieces'), findsOneWidget);
+    await tester.enterText(find.byKey(EatCountWheel.fieldKey), '1,6');
+    await tester.tap(find.byKey(EatCountWheel.doneKey));
+    await tester.pumpAndSettle();
+    expect(find.text('= 200 g'), findsOneWidget);
+    await _typeCount(tester, '10');
+    expect(find.text('= 300 g'), findsOneWidget);
+
+    await _tapConfirmButton(tester);
+    expect(result?.inventoryAmount, 3);
+    expect(result?.portionCount, 3);
+    expect(result?.portionBaseAmount, 100);
+    expect(result?.calorieAmount, 300);
+  });
+
+  testWidgets('the piece row keeps its weight field on a small phone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360 * 3, 800 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await _pumpSheet(tester, _pieceItemWithServingSuggestion());
+
+    // Wheel, "×", the weight with its g/ml button, and "= 75 g".
+    expect(find.text('= 75 g'), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(EatAmountRuler.fieldKey)).width,
+      greaterThanOrEqualTo(AppSizes.minTapTarget),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('fractional pieces keep the scaled stock amount', (tester) async {
     InventoryItemEatRequest? result;
     await _pumpSheet(
@@ -891,10 +960,10 @@ void main() {
       onResult: (value) => result = value,
     );
 
-    expect(_amountText(tester), '1');
-    await _enterAmount(tester, '1,5');
-    await tester.enterText(find.byKey(_pieceWeightKey), '150');
-    await tester.pump();
+    // Half pieces stay: the wheel counts this stock in halves.
+    await _turnWheel(tester, 1);
+    await _enterAmount(tester, '150');
+    expect(find.text('= 225 g'), findsOneWidget);
     await _tapConfirmButton(tester);
 
     expect(result?.inventoryAmount, 1500);
@@ -907,11 +976,8 @@ void main() {
   testWidgets('the product serving fills in the piece weight', (tester) async {
     await _pumpSheet(tester, _pieceItemWithServingSuggestion());
 
-    expect(_amountText(tester), '1');
-    expect(
-      tester.widget<TextField>(find.byKey(_pieceWeightKey)).controller?.text,
-      '75',
-    );
+    expect(_amountText(tester), '75');
+    expect(find.text('= 75 g'), findsOneWidget);
   });
 
   testWidgets('a learned piece weight wins over the product serving', (
@@ -930,10 +996,7 @@ void main() {
       servingSuggestionRepository: repository,
     );
 
-    expect(
-      tester.widget<TextField>(find.byKey(_pieceWeightKey)).controller?.text,
-      '35',
-    );
+    expect(_amountText(tester), '35');
   });
 
   testWidgets('a learned amount is prefilled and marked on the ruler', (
