@@ -102,6 +102,10 @@ class _Photos implements ProductPhotoRepository {
     uploads.add(barcode);
     return ProductPhotoUpload(frontAddress: null, done: Future<void>.value());
   }
+
+  @override
+  Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) =>
+      throw UnimplementedError();
 }
 
 typedef _Harness = ({

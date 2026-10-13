@@ -54,6 +54,7 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
       front: photo,
       isReadingFront: true,
       hasReadFront: false,
+      frontShowsNoPackage: false,
     );
     try {
       await _applyScannedBarcode(repository, photo);
@@ -63,6 +64,7 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
       state = state.copyWith(hasReadFront: true, frontDetails: details);
       return ManualProductPhotoOutcome.read;
     } on ProductFrontNotProductException {
+      if (ref.mounted) state = state.copyWith(frontShowsNoPackage: true);
       return ManualProductPhotoOutcome.notProduct;
     } on ProductFrontUnreadableException {
       return ManualProductPhotoOutcome.retakePhoto;
@@ -137,23 +139,41 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
   /// Starts storing the photos as shared product images. Returns null
   /// without a photo.
   ///
-  /// The save does not wait for [ProductPhotoUpload.done]. Throws when the
-  /// upload cannot start.
+  /// A front photo that shows no package is stored as the user's private
+  /// food photo instead (#658); the nutrition table photo is shared as
+  /// usual, and the product itself still goes into the catalog. The save
+  /// does not wait for [ProductPhotoUpload.done]. Throws when the upload
+  /// cannot start.
   Future<ProductPhotoUpload?> savePhotos({
     required String barcode,
     required String name,
   }) async {
     if (!state.hasPhoto) return null;
+    final front = state.front;
     state = state.copyWith(isSaving: true);
     try {
-      return await ref
-          .read(productPhotoRepositoryProvider)
-          .saveProductPhotos(
-            front: state.front,
-            nutritionTable: state.nutritionTable,
-            barcode: barcode,
-            name: name,
-          );
+      final repository = ref.read(productPhotoRepositoryProvider);
+      if (state.frontShowsNoPackage && front != null) {
+        final private = await repository.savePrivateFrontPhoto(front);
+        final table = state.nutritionTable;
+        if (table == null) return private;
+        final shared = await repository.saveProductPhotos(
+          front: null,
+          nutritionTable: table,
+          barcode: barcode,
+          name: name,
+        );
+        return ProductPhotoUpload(
+          frontAddress: private.frontAddress,
+          done: Future.wait([private.done, shared.done]).then((_) {}),
+        );
+      }
+      return await repository.saveProductPhotos(
+        front: front,
+        nutritionTable: state.nutritionTable,
+        barcode: barcode,
+        name: name,
+      );
     } finally {
       if (ref.mounted) state = state.copyWith(isSaving: false);
     }

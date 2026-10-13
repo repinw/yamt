@@ -21,6 +21,8 @@ import 'package:yamt/features/product_nutrition/domain/'
 import 'package:yamt/features/product_search_hub/data/'
     'product_photo_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -49,15 +51,21 @@ final Uint8List _pixel = Uint8List.fromList(const [
 
 const _frontUrl = 'gs://bucket/product_images/user-1/photo-1/front.jpg';
 
+const _privateUrl = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
+
 const _noNetwork = SocketException('Failed host lookup');
 
 class _FakePhotoRepository implements ProductPhotoRepository {
-  new({this.offline = false});
+  new({this.offline = false, this.noPackage = false});
 
   /// Without a network the AI cannot read the front and the upload gives up.
   final bool offline;
+
+  /// The AI finds no package on the front photo.
+  final bool noPackage;
   var _photoCount = 0;
   final saved = <String>[];
+  final savedPrivate = <String>[];
 
   @override
   Future<ProductPhoto?> loadCameraPhoto() async {
@@ -77,6 +85,7 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   Future<ProductFrontDetails> loadFrontDetails(ProductPhoto photo) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
     if (offline) throw _noNetwork;
+    if (noPackage) throw const ProductFrontNotProductException();
     return const ProductFrontDetails(
       name: 'Haferflocken zart',
       brand: 'REWE Bio',
@@ -102,6 +111,15 @@ class _FakePhotoRepository implements ProductPhotoRepository {
             )
           // The upload never ends; the editor saves without waiting for it.
           : Completer<void>().future,
+    );
+  }
+
+  @override
+  Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) async {
+    savedPrivate.add(front.path);
+    return ProductPhotoUpload(
+      frontAddress: _privateUrl,
+      done: Completer<void>().future,
     );
   }
 }
@@ -290,27 +308,7 @@ void main() {
     expect(find.byType(AppSnackBarView), findsNothing);
     expect(_text(tester, ManualProductFormField.name), isEmpty);
 
-    // The user types what the AI would have read.
-    for (final (field, text) in [
-      (ManualProductFormField.name, 'Haferflocken zart'),
-      (ManualProductFormField.weightAmount, '500'),
-      (ManualProductFormField.barcode, '4006381333931'),
-      (ManualProductFormField.kcal, '372'),
-      (ManualProductFormField.fat, '7'),
-      (ManualProductFormField.saturatedFat, '1.3'),
-      (ManualProductFormField.carbs, '58.7'),
-      (ManualProductFormField.sugar, '0.7'),
-      (ManualProductFormField.protein, '13.5'),
-      (ManualProductFormField.salt, '0.01'),
-    ]) {
-      await tester.ensureVisible(find.byKey(field.key));
-      await tester.enterText(find.byKey(field.key), text);
-    }
-    await tester.ensureVisible(
-      find.byKey(ManualProductEditorHeader.weightUnitKey),
-    );
-    await tester.tap(find.byKey(ManualProductEditorHeader.weightUnitKey));
-    await tester.pumpAndSettle();
+    await _typeProduct(tester);
 
     await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
     await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
@@ -328,4 +326,56 @@ void main() {
       'The photos could not be stored. The product is saved without them.',
     );
   });
+
+  testWidgets('a front photo without a package stays private and the product '
+      'saves (#658)', (tester) async {
+    final photos = _FakePhotoRepository(noPackage: true);
+    Object? result;
+    await tester.pumpWidget(
+      _buildHarness(photos: photos, onResult: (value) => result = value),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open_editor')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppSnackBarView), findsNothing);
+
+    await _typeProduct(tester);
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(photos.savedPrivate, ['photo-1']);
+    expect(photos.saved, isEmpty);
+    final item = (result! as InventoryReceiptManualProductResult).item;
+    expect(item.name, 'Haferflocken zart');
+    expect(item.imageUrl, _privateUrl);
+  });
+}
+
+/// Types the product by hand, as the user does when the AI read nothing.
+Future<void> _typeProduct(WidgetTester tester) async {
+  for (final (field, text) in [
+    (ManualProductFormField.name, 'Haferflocken zart'),
+    (ManualProductFormField.weightAmount, '500'),
+    (ManualProductFormField.barcode, '4006381333931'),
+    (ManualProductFormField.kcal, '372'),
+    (ManualProductFormField.fat, '7'),
+    (ManualProductFormField.saturatedFat, '1.3'),
+    (ManualProductFormField.carbs, '58.7'),
+    (ManualProductFormField.sugar, '0.7'),
+    (ManualProductFormField.protein, '13.5'),
+    (ManualProductFormField.salt, '0.01'),
+  ]) {
+    await tester.ensureVisible(find.byKey(field.key));
+    await tester.enterText(find.byKey(field.key), text);
+  }
+  await tester.ensureVisible(
+    find.byKey(ManualProductEditorHeader.weightUnitKey),
+  );
+  await tester.tap(find.byKey(ManualProductEditorHeader.weightUnitKey));
+  await tester.pumpAndSettle();
 }

@@ -584,6 +584,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   (`gs://…`) of the front photo, which shows from the local image cache
   until it is uploaded. A failed upload keeps that address and says so.
   The shared catalog does not get this photo yet (#414).
+- When the AI finds no package on the front photo, the photo stays the
+  item's picture but is stored as the user's private food photo
+  (`users/{uid}/food_photos/`, visible to the household), and no photo goes
+  to `product_images` (#658). The nutrition table photo is shared as usual,
+  and the product itself still goes into the shared catalog. A new front
+  photo with a package is shared again; closing the camera keeps the
+  private one.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.
 - "Create" opens an empty product form. Name, unit, and the seven EU label

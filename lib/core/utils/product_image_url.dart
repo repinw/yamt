@@ -35,9 +35,13 @@ const privateFoodPhotoFolder = 'food_photos';
 /// Whether [url] points to one of the user's private food photos.
 ///
 /// A Firebase Storage download address carries its path encoded, so the
-/// folder shows up as `%2Ffood_photos%2F`.
+/// folder shows up as `%2Ffood_photos%2F`; a `gs://` address carries it
+/// plain.
 bool isPrivateFoodPhotoUrl(String? url) {
-  return url != null && url.contains('%2F$privateFoodPhotoFolder%2F');
+  return url != null &&
+      (url.contains('%2F$privateFoodPhotoFolder%2F') ||
+          (isStorageImageAddress(url) &&
+              url.contains('/$privateFoodPhotoFolder/')));
 }
 
 /// [url] normalized for the shared catalog, or null for a private food

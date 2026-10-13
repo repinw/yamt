@@ -80,7 +80,7 @@ final class ManualProductPhotoControllerProvider
 }
 
 String _$manualProductPhotoControllerHash() =>
-    r'1703bd046095ec0201b1cc94b56009c596dfb294';
+    r'43e5144873483bc5806533732d2df2a2c650423a';
 
 /// Takes the package photos of the product editor, reads them into the
 /// product, and stores them when the product is saved.

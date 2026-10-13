@@ -41,6 +41,7 @@ class ManualProductPhotoState {
     this.isSaving = false,
     this.frontDetails,
     this.nutritionValueCount = 0,
+    this.frontShowsNoPackage = false,
   });
 
   /// Photo of the package front.
@@ -70,6 +71,11 @@ class ManualProductPhotoState {
   /// Number of nutrition values read from the nutrition table photo.
   final int nutritionValueCount;
 
+  /// Whether the AI found no package on the front photo. Such a photo is
+  /// stored as the user's private food photo, never as a shared product
+  /// image (#658).
+  final bool frontShowsNoPackage;
+
   /// Whether a photo is being read or stored.
   bool get isBusy => isReadingFront || isReadingNutritionTable || isSaving;
 
@@ -87,6 +93,7 @@ class ManualProductPhotoState {
     bool? isSaving,
     ProductFrontDetails? frontDetails,
     int? nutritionValueCount,
+    bool? frontShowsNoPackage,
   }) {
     return ManualProductPhotoState(
       front: front ?? this.front,
@@ -100,6 +107,7 @@ class ManualProductPhotoState {
       isSaving: isSaving ?? this.isSaving,
       frontDetails: frontDetails ?? this.frontDetails,
       nutritionValueCount: nutritionValueCount ?? this.nutritionValueCount,
+      frontShowsNoPackage: frontShowsNoPackage ?? this.frontShowsNoPackage,
     );
   }
 }

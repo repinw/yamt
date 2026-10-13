@@ -237,6 +237,29 @@ void main() {
     await expectLater(upload.done, completes);
   });
 
+  test('a private front photo goes to the own food photos, not the shared '
+      'product images (#658)', () async {
+    final storage = _FakeStorage();
+    final cache = _FakeImageCache();
+
+    final upload = await _repository(
+      storage: storage,
+      imageCache: cache,
+    ).savePrivateFrontPhoto(_photo);
+
+    expect(
+      upload.frontAddress,
+      matches(RegExp(r'^gs://bucket/users/user-1/food_photos/[^/]+\.jpg$')),
+    );
+    expect(cache.files[upload.frontAddress], _photo.bytes);
+    await upload.done;
+    expect(storage.uploads, [upload.frontAddress!.split('/').last]);
+  });
+
+  test('storing a private photo needs a signed-in user', () {
+    expect(() => _repository().savePrivateFrontPhoto(_photo), throwsStateError);
+  });
+
   test('a failed front upload fails the upload', () async {
     final upload =
         await _repository(storage: _FakeStorage(failingFile: 'front.jpg'))
