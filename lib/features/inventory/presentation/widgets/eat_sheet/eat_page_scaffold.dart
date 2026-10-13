@@ -24,6 +24,7 @@ class EatPageScaffold extends StatelessWidget {
     this.onStore,
     this.onDiary,
     this.onDelete,
+    this.deleteTooltip,
     this.isPlan = false,
     super.key,
   });
@@ -91,6 +92,9 @@ class EatPageScaffold extends StatelessWidget {
   /// Called by the delete button, left of all others. Without it, the
   /// button is hidden.
   final VoidCallback? onDelete;
+
+  /// Tooltip of the delete button. Defaults to "Eintrag entfernen".
+  final String? deleteTooltip;
 
   /// Key of the delete button.
   static const deleteButtonKey = Key('eat_page_delete_button');
@@ -185,7 +189,8 @@ class EatPageScaffold extends StatelessWidget {
                     if (onDelete case final delete?)
                       IconButton.filledTonal(
                         key: deleteButtonKey,
-                        tooltip: l10n.caloriesRemoveEntryAction,
+                        tooltip:
+                            deleteTooltip ?? l10n.caloriesRemoveEntryAction,
                         onPressed: delete,
                         icon: const Icon(Icons.delete_outline_rounded),
                       ),

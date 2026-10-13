@@ -8,6 +8,7 @@ import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_hub_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_hub_action.dart';
@@ -23,6 +24,10 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_missing_values_hint.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_action_picker_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/helpers/auth_user_data_key_session.dart';
@@ -72,11 +77,38 @@ final InventoryItem _chicken = InventoryItem.create(
   ),
 );
 
-Widget _buildHarness({
-  required List<InventoryItemHubAction> actions,
+/// Opens a hub from the harness button.
+typedef _HubOpener = Future<void> Function(BuildContext context, WidgetRef ref);
+
+/// Opens the hub page of [item] alone; its actions only land in [actions],
+/// and the page's result goes to [onResult].
+_HubOpener _openRecording(
+  List<InventoryItemHubAction> actions, {
   InventoryItem? item,
   ValueChanged<InventoryItemHubResult?>? onResult,
 }) {
+  return (context, _) async {
+    final result = await Navigator.of(context).push<InventoryItemHubResult>(
+      MaterialPageRoute<InventoryItemHubResult>(
+        fullscreenDialog: true,
+        builder: (_) => InventoryItemHubPage(
+          item: item ?? _eggs,
+          onAction: (_, action) async {
+            actions.add(action);
+            return false;
+          },
+        ),
+      ),
+    );
+    onResult?.call(result);
+  };
+}
+
+/// Opens the hub through its flow, which runs the real action dialogs.
+Future<void> _openFlow(BuildContext context, WidgetRef ref) =>
+    InventoryItemHubFlow.open(context: context, ref: ref, item: _eggs);
+
+Widget _buildHarness({required _HubOpener open}) {
   // Signed out: the hub's shopping list and serving reads stay empty.
   final container = ProviderContainer(
     overrides: [
@@ -93,27 +125,12 @@ Widget _buildHarness({
       locale: const Locale('en'),
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: Builder(
-        builder: (context) => Scaffold(
+      home: Consumer(
+        builder: (context, ref, _) => Scaffold(
           body: Center(
             child: FilledButton(
               key: _openKey,
-              onPressed: () async {
-                final result = await Navigator.of(context)
-                    .push<InventoryItemHubResult>(
-                      MaterialPageRoute<InventoryItemHubResult>(
-                        fullscreenDialog: true,
-                        builder: (_) => InventoryItemHubPage(
-                          item: item ?? _eggs,
-                          onAction: (_, action) async {
-                            actions.add(action);
-                            return false;
-                          },
-                        ),
-                      ),
-                    );
-                onResult?.call(result);
-              },
+              onPressed: () => open(context, ref),
               child: const Text('open'),
             ),
           ),
@@ -136,7 +153,7 @@ void main() {
   testWidgets('a stock item without grams per piece names it and opens the '
       'editor from the line', (tester) async {
     final actions = <InventoryItemHubAction>[];
-    await tester.pumpWidget(_buildHarness(actions: actions));
+    await tester.pumpWidget(_buildHarness(open: _openRecording(actions)));
     await _pumpVisibleStep(tester);
 
     await tester.tap(find.byKey(_openKey));
@@ -158,9 +175,11 @@ void main() {
     InventoryItemHubResult? result;
     await tester.pumpWidget(
       _buildHarness(
-        actions: <InventoryItemHubAction>[],
-        item: _chicken,
-        onResult: (value) => result = value,
+        open: _openRecording(
+          <InventoryItemHubAction>[],
+          item: _chicken,
+          onResult: (value) => result = value,
+        ),
       ),
     );
     await _pumpVisibleStep(tester);
@@ -206,6 +225,54 @@ void main() {
     final eat = result! as InventoryItemHubEat;
     expect(eat.request.inventoryAmount, 120);
     expect(eat.request.calorieAmount, 100);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the trash button runs the remove action; the item card no '
+      'longer lists it', (tester) async {
+    final actions = <InventoryItemHubAction>[];
+    await tester.pumpWidget(_buildHarness(open: _openRecording(actions)));
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+
+    final trash = find.byKey(EatPageScaffold.deleteButtonKey);
+    expect(trash, findsOneWidget);
+    expect(tester.widget<IconButton>(trash).tooltip, 'Remove');
+    expect(find.byType(EatItemActionsCard), findsOneWidget);
+    expect(find.byKey(const Key('eat_item_action_remove')), findsNothing);
+    expect(find.byKey(const Key('eat_item_action_edit')), findsOneWidget);
+
+    await tester.tap(trash);
+    await _pumpVisibleStep(tester);
+
+    expect(actions, [InventoryItemHubAction.remove]);
+    expect(find.byType(InventoryItemHubPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the trash button opens the remove sheet over the hub, and '
+      'closing it returns to the hub', (tester) async {
+    await tester.pumpWidget(_buildHarness(open: _openFlow));
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(EatPageScaffold.deleteButtonKey));
+    await _pumpVisibleStep(tester);
+    final sheet = find.byType(InventoryActionPickerSheet);
+    expect(sheet, findsOneWidget);
+    expect(find.byType(InventoryItemHubPage), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(of: sheet, matching: find.byType(IconButton)),
+    );
+    await _pumpVisibleStep(tester);
+
+    expect(sheet, findsNothing);
+    expect(find.byType(InventoryItemHubPage), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

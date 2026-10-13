@@ -44,6 +44,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_detail_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_entry_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_sort_sheet.dart';
@@ -538,13 +539,17 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
 
 Future<void> _tapInventoryRowAction(WidgetTester tester, String action) async {
   final key = switch (action) {
-    'Remove' => 'eat_item_action_remove',
     'Edit' => 'eat_item_action_edit',
     'Swap candidate' => 'eat_item_action_replace',
     'Shopping list' => 'eat_item_action_shopping_list',
     _ => throw ArgumentError.value(action),
   };
   await _tapVisible(tester, find.byKey(Key(key)));
+}
+
+/// Taps the hub's trash button, which removes the item ("Aussortieren").
+Future<void> _tapRemoveButton(WidgetTester tester) async {
+  await _tapVisible(tester, find.byKey(EatPageScaffold.deleteButtonKey));
 }
 
 Future<void> _openItemHub(WidgetTester tester) async {
@@ -734,12 +739,71 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapInventoryRowAction(tester, 'Remove');
+    await _tapRemoveButton(tester);
     expect(find.text('Remove item'), findsOneWidget);
 
     await _tapVisible(tester, find.text('Thrown away'));
     expect(find.text('Why are you throwing this away?'), findsOneWidget);
     expect(find.byType(EatItemActionsCard), findsOneWidget);
+  });
+
+  testWidgets('item hub removes its item from a trash button, not from the '
+      'item card', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a', quantity: 3)],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository);
+    await tester.pumpAndSettle();
+    await _openItemHub(tester);
+
+    final trash = find.byKey(EatPageScaffold.deleteButtonKey);
+    expect(trash, findsOneWidget);
+    expect(tester.widget<IconButton>(trash).tooltip, 'Remove');
+    expect(
+      tester.getSemantics(trash),
+      isSemantics(tooltip: 'Remove', isButton: true),
+    );
+    // The card keeps its other lines but no longer lists "Aussortieren".
+    expect(find.byKey(const Key('eat_item_action_remove')), findsNothing);
+    expect(find.byKey(const Key('eat_item_action_edit')), findsOneWidget);
+    expect(find.byKey(const Key('eat_item_action_replace')), findsOneWidget);
+    expect(
+      find.byKey(const Key('eat_item_action_shopping_list')),
+      findsOneWidget,
+    );
+
+    await _tapRemoveButton(tester);
+    expect(find.text('Remove item'), findsOneWidget);
+    expect(find.text('Thrown away'), findsOneWidget);
+  });
+
+  testWidgets('a used-up item hub deletes its item from the trash button', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a', name: 'Milk', quantity: 0, initialQuantity: 1),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository);
+    await tester.pumpAndSettle();
+    await _toggleFullyConsumedFilter(tester);
+    await _openItemHub(tester);
+
+    expect(find.byKey(_usedUpShoppingListButton), findsOneWidget);
+    expect(find.byKey(const Key('eat_item_action_remove')), findsNothing);
+    await _tapRemoveButton(tester);
+    // Nothing is left to throw away or eat, so only deleting remains.
+    expect(find.text('Thrown away'), findsNothing);
+    await _tapVisible(tester, find.text('Delete completely'));
+
+    expect(find.byKey(_usedUpShoppingListButton), findsNothing);
+    expect(find.text('Item deleted.'), findsOneWidget);
+    expect(find.text('Milk'), findsNothing);
   });
 
   testWidgets('renders list items when repository returns data', (
@@ -1001,7 +1065,7 @@ void main() {
     await _toggleFullyConsumedFilter(tester);
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapInventoryRowAction(tester, 'Remove');
+    await _tapRemoveButton(tester);
     await _tapVisible(tester, find.text('Delete completely'));
 
     expect(find.text('Item deleted.'), findsOneWidget);
@@ -1030,7 +1094,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapInventoryRowAction(tester, 'Remove');
+    await _tapRemoveButton(tester);
     await _tapVisible(tester, find.text('Delete completely'));
 
     expect(find.text('Item deleted.'), findsOneWidget);
@@ -1969,7 +2033,7 @@ void main() {
 
     await _tapVisible(tester, find.text('Milk'));
 
-    await _tapInventoryRowAction(tester, 'Remove');
+    await _tapRemoveButton(tester);
     await _tapVisible(tester, find.text('Thrown away'));
     await _tapVisible(tester, find.text('Expired'));
 
@@ -2012,7 +2076,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapInventoryRowAction(tester, 'Remove');
+    await _tapRemoveButton(tester);
     await _tapVisible(tester, find.text('Thrown away'));
     await _tapVisible(tester, find.text('Expired'));
 
@@ -2046,7 +2110,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapInventoryRowAction(tester, 'Remove');
+    await _tapRemoveButton(tester);
     await _tapVisible(tester, find.text('Thrown away'));
     await _tapVisible(tester, find.text('Expired'));
 
@@ -2084,7 +2148,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapInventoryRowAction(tester, 'Remove');
+    await _tapRemoveButton(tester);
     await _tapVisible(tester, find.text('Consumed elsewhere'));
 
     final amountField = find.byKey(
@@ -2122,7 +2186,7 @@ void main() {
       await _toggleFullyConsumedFilter(tester);
 
       await _tapVisible(tester, find.text('Milk'));
-      await _tapInventoryRowAction(tester, 'Remove');
+      await _tapRemoveButton(tester);
       await _tapVisible(tester, find.text('Consumed elsewhere'));
 
       await repository.replaceItems(<InventoryItem>[

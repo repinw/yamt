@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/hero_tags.dart';
 import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
@@ -15,14 +14,12 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_item_
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
-import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_body.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_hub_actions_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_used_up_hub_body.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -36,8 +33,9 @@ typedef InventoryItemHubActionRunner = Future<bool> Function(
 /// Item hub: the eat page of a stock item plus the item's own actions.
 ///
 /// Pops with an [InventoryItemHubResult]: the entered amount, or a meal of
-/// several foods. Actions run while the hub stays open. An item without stock
-/// shows only its actions, and the main button puts it on the shopping list.
+/// several foods. Actions run while the hub stays open; the trash button
+/// removes the item. An item without stock shows only its actions, and the
+/// main button puts it on the shopping list.
 class InventoryItemHubPage extends ConsumerStatefulWidget {
   /// Creates the hub for [item].
   const new({
@@ -62,12 +60,10 @@ class InventoryItemHubPage extends ConsumerStatefulWidget {
 }
 
 class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
-  // The card sits below the page's own snackbar messenger, so its context
-  // shows action hints on the hub.
+  // Below the page's snackbar messenger, so action hints show on the hub.
   final GlobalKey _cardKey = GlobalKey();
   var _isRunning = false;
-  // The hub's item can leave the meal while other foods are picked. It is
-  // back as soon as the meal is empty again.
+  // The hub item can leave a meal; it is back once the meal is empty.
   var _hubRemoved = false;
 
   InventoryItemEatSheetControllerProvider get _sheet =>
@@ -113,17 +109,18 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       onPicked: _run,
       actions: [
         for (final action in InventoryItemHubAction.values)
-          if (picks.isEmpty || action != InventoryItemHubAction.edit) action,
+          if (action != InventoryItemHubAction.remove &&
+              (picks.isEmpty || action != InventoryItemHubAction.edit))
+            action,
       ],
       offersEatActions: canEat && picks.isEmpty,
     );
     if (!canEat) {
-      return _UsedUpHubBody(
+      return InventoryItemUsedUpHubBody(
         item: widget.item,
         isOnShoppingList: isOnShoppingList,
         actions: actions,
-        onAddToShoppingList: () =>
-            _run(InventoryItemHubAction.addToShoppingList),
+        onRun: _run,
       );
     }
     ref.listen(combine, (_, next) {
@@ -163,6 +160,10 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       showsInedibleLink: false,
       onCompleteValues: picks.isEmpty
           ? () => _run(InventoryItemHubAction.edit)
+          : null,
+      // A started meal keeps the bottom row for its own buttons.
+      onRemove: picks.isEmpty
+          ? () => _run(InventoryItemHubAction.remove)
           : null,
       footer: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -255,42 +256,5 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     } finally {
       _isRunning = false;
     }
-  }
-}
-
-class _UsedUpHubBody extends StatelessWidget {
-  const new({
-    required this.item,
-    required this.isOnShoppingList,
-    required this.actions,
-    required this.onAddToShoppingList,
-  });
-
-  final InventoryItem item;
-  final bool isOnShoppingList;
-  final Widget actions;
-  final VoidCallback onAddToShoppingList;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return EatPageScaffold(
-      whenControl: const SizedBox.shrink(),
-      kcal: null,
-      confirmButtonKey: const Key('inventory_item_hub_shopping_list_button'),
-      confirmLabel: l10n.inventoryItemAddToListAction,
-      onConfirm: isOnShoppingList ? null : onAddToShoppingList,
-      cancelButtonKey: const Key('inventory_item_hub_close_button'),
-      children: [
-        EatPageHeader(
-          title: item.name,
-          brand: item.brand,
-          imageUrl: item.imageUrl,
-          heroTag: HeroTags.stockItemImage(item.id),
-          fallbackLetter: inventoryPictureLetter(item.name),
-        ),
-        actions,
-      ],
-    );
   }
 }

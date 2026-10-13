@@ -4,10 +4,11 @@ import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_a
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_action_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// "Item" card of the item hub: shopping list, edit, replace and remove,
-/// drawn like a second food label. [actions] picks the lines to show. Above
-/// them come the rarer eat actions of the hub's eat page, when it passes
-/// them: the inedible part and combining with other foods.
+/// "Item" card of the item hub: shopping list, edit and replace, drawn like a
+/// second food label. [actions] picks the lines to show. Above them come the
+/// rarer eat actions of the hub's eat page, when it passes them: the
+/// inedible part and combining with other foods. Removing the item is the
+/// page's trash button, so the card has no line for it.
 class EatItemActionsCard extends StatelessWidget {
   /// Creates the card.
   const new({
@@ -45,7 +46,6 @@ class EatItemActionsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
-    final error = Theme.of(context).colorScheme.error;
 
     final lines = <EatCardAction>[
       if (onInedible case final onInedible?)
@@ -91,14 +91,6 @@ class EatItemActionsCard extends StatelessWidget {
           label: l10n.eatPageReplaceProduct,
           color: colors.ink,
           onPressed: () => onPicked(InventoryItemHubAction.replace),
-        ),
-      if (actions.contains(InventoryItemHubAction.remove))
-        (
-          key: const Key('eat_item_action_remove'),
-          icon: Icons.delete_outline_rounded,
-          label: l10n.inventoryItemRemoveAction,
-          color: error,
-          onPressed: () => onPicked(InventoryItemHubAction.remove),
         ),
     ];
 
