@@ -6,7 +6,6 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 /// Fills an open row of a meal with a chosen amount of one Vorrat item.
 class PreparedMealPendingItemFill {
@@ -58,41 +57,22 @@ class PreparedMealPendingItemFill {
       return false;
     }
 
-    if (!await inventoryRepository.saveChanges(
-      previous: currentItems,
-      next: built.nextItems,
-    )) {
-      return false;
-    }
-
-    final components = <PreparedMealComponent>[
-      ...meal.components,
-      ...built.preparedMeal.components,
-    ];
-    final totals = components.nutritionTotals;
     final nextMeals = List<PreparedMeal>.from(currentMeals);
-    nextMeals[mealIndex] = meal.copyWith(
-      components: components,
-      pendingRecipeIngredients: [...meal.pendingRecipeIngredients]
-        ..removeAt(pendingIndex),
-      totalKcal: totals.totalKcal,
-      totalProtein: totals.totalProtein,
-      totalCarbs: totals.totalCarbs,
-      totalFat: totals.totalFat,
-      updatedAt: _writer.buildNow(),
-    );
-    if (await _writer.saveMeals(
+    nextMeals[mealIndex] = meal
+        .withComponents([
+          ...meal.components,
+          ...built.preparedMeal.components,
+        ], _writer.buildNow())
+        .copyWith(
+          pendingRecipeIngredients: [...meal.pendingRecipeIngredients]
+            ..removeAt(pendingIndex),
+        );
+    return await _writer.saveMealsWithStock(
+      inventoryRepository: inventoryRepository,
+      previousItems: currentItems,
+      nextItems: built.nextItems,
       previousMeals: currentMeals,
       nextMeals: nextMeals,
-    )) {
-      return true;
-    }
-
-    await _writer.restoreInventory(
-      inventoryRepository: inventoryRepository,
-      writtenItems: built.nextItems,
-      previousItems: currentItems,
     );
-    return false;
   }
 }

@@ -6,7 +6,6 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 /// Fills or leaves out the open rows of a Vorrat meal.
@@ -58,14 +57,6 @@ class PreparedMealOpenRows {
       return false;
     }
 
-    final inventorySaved = await inventoryRepository.saveChanges(
-      previous: currentItems,
-      next: fillResult.nextItems,
-    );
-    if (!inventorySaved) {
-      return false;
-    }
-
     final nextPendingIngredients = List<String>.from(
       currentMeal.pendingRecipeIngredients,
     )..removeAt(pendingIndex);
@@ -76,36 +67,20 @@ class PreparedMealOpenRows {
       );
     }
 
-    final nextComponents = <PreparedMealComponent>[
-      ...currentMeal.components,
-      ...fillResult.components,
-    ];
-    final nutritionTotals = nextComponents.nutritionTotals;
     final nextMeals = List<PreparedMeal>.from(currentMeals);
-    nextMeals[mealIndex] = currentMeal.copyWith(
-      components: nextComponents,
-      pendingRecipeIngredients: nextPendingIngredients,
-      totalKcal: nutritionTotals.totalKcal,
-      totalProtein: nutritionTotals.totalProtein,
-      totalCarbs: nutritionTotals.totalCarbs,
-      totalFat: nutritionTotals.totalFat,
-      updatedAt: _writer.buildNow(),
-    );
-
-    final mealsSaved = await _writer.saveMeals(
+    nextMeals[mealIndex] = currentMeal
+        .withComponents([
+          ...currentMeal.components,
+          ...fillResult.components,
+        ], _writer.buildNow())
+        .copyWith(pendingRecipeIngredients: nextPendingIngredients);
+    return await _writer.saveMealsWithStock(
+      inventoryRepository: inventoryRepository,
+      previousItems: currentItems,
+      nextItems: fillResult.nextItems,
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );
-    if (mealsSaved) {
-      return true;
-    }
-
-    await _writer.restoreInventory(
-      inventoryRepository: inventoryRepository,
-      writtenItems: fillResult.nextItems,
-      previousItems: currentItems,
-    );
-    return false;
   }
 
   /// Marks one pending ingredient as intentionally ignored.

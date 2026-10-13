@@ -201,3 +201,24 @@ extension PreparedMealComponentNutritionTotals
     );
   }
 }
+
+/// Gives a meal new components together with the totals they add up to.
+extension PreparedMealComponentsChange on PreparedMeal {
+  /// This meal with [components] and their nutrition totals, changed at
+  /// [updatedAt]. The totals are summed from the components, never patched,
+  /// so taking a food out again gives the same totals as before it came in.
+  PreparedMeal withComponents(
+    List<PreparedMealComponent> components,
+    DateTime updatedAt,
+  ) {
+    final totals = components.nutritionTotals;
+    return copyWith(
+      components: components,
+      totalKcal: totals.totalKcal,
+      totalProtein: totals.totalProtein,
+      totalCarbs: totals.totalCarbs,
+      totalFat: totals.totalFat,
+      updatedAt: updatedAt,
+    );
+  }
+}
