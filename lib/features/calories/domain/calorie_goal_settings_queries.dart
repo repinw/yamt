@@ -148,8 +148,8 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
     return null;
   }
 
-  /// Unadjusted base goal kcal for day.
-  double baseGoalKcalForDay(DateTime day) {
+  /// The latest entry with a goal, check-ins included, in effect on [day].
+  CalorieGoalHistoryEntry? baseGoalEntryForDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);
     CalorieGoalHistoryEntry? latest;
     for (final entry in sortedGoalHistory) {
@@ -160,8 +160,16 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
         latest = entry;
       }
     }
+    return latest;
+  }
+
+  /// Base goal kcal for day: the stored goal plus the day's goal offset.
+  double baseGoalKcalForDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    final latest = baseGoalEntryForDay(normalizedDay);
     if (latest?.dailyKcalGoal != null) {
-      return latest!.dailyKcalGoal!;
+      return latest!.dailyKcalGoal! +
+          (goalOffsetsByDay[diaryDayKey(normalizedDay)] ?? 0);
     }
     return nextGoalStartAfterDay(normalizedDay) == null
         ? defaultDailyCalorieGoalKcal

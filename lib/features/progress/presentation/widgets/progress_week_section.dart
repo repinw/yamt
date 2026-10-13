@@ -31,6 +31,8 @@ class ProgressWeekSection extends ConsumerWidget {
     return ref
         .watch(progressIntakeProvider(ProgressScope.goal))
         .when(
+          // A new budget keeps the last numbers until it is ready.
+          skipLoadingOnReload: true,
           data: (intake) =>
               _WeekContent(key: sectionKey, intake: intake, today: today),
           loading: () => const ProgressSectionLoading(),

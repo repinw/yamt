@@ -10,6 +10,7 @@ import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_entry_cache.dart';
 import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
+import 'package:yamt/features/calories/data/calorie_entry_query_watch.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/unavailable_calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -56,36 +57,34 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     if (userId == null) {
       return Stream<List<CalorieEntry>>.value(const <CalorieEntry>[]);
     }
-
     final bounds = diaryDayBounds(day);
-    final query = _collection(userId)
-        .where('logged_at', isGreaterThanOrEqualTo: bounds.startInclusive)
-        .where('logged_at', isLessThan: bounds.endExclusive)
-        .orderBy('logged_at');
+    return watchCalorieEntryQuery(
+      _collection(userId)
+          .where('logged_at', isGreaterThanOrEqualTo: bounds.startInclusive)
+          .where('logged_at', isLessThan: bounds.endExclusive)
+          .orderBy('logged_at'),
+      userId: userId,
+      cipher: _cipher,
+      cache: _cache,
+      emptyOnError: true,
+    );
+  }
 
-    return Stream<List<CalorieEntry>>.multi((controller) {
-      final subscription = query
-          .snapshots()
-          .asyncMap(
-            (snapshot) => decodeCalorieEntrySnapshot(snapshot, cipher: _cipher),
-          )
-          .listen(
-            (entries) {
-              controller.add(_cache.rememberAll(entries));
-            },
-            onError: (Object error, StackTrace stackTrace) {
-              log(
-                'Failed to watch calories for user $userId',
-                name: _repositoryLogName,
-                error: error,
-                stackTrace: stackTrace,
-              );
-              controller.add(const <CalorieEntry>[]);
-            },
-            onDone: controller.close,
-          );
-      controller.onCancel = subscription.cancel;
-    });
+  @override
+  Stream<List<CalorieEntry>> watchEntriesFrom(DateTime startInclusive) {
+    final userId = _currentUserId();
+    if (userId == null) {
+      return Stream<List<CalorieEntry>>.value(const <CalorieEntry>[]);
+    }
+    return watchCalorieEntryQuery(
+      _collection(userId)
+          .where('logged_at', isGreaterThanOrEqualTo: startInclusive)
+          .orderBy('logged_at'),
+      userId: userId,
+      cipher: _cipher,
+      cache: _cache,
+      emptyOnError: false,
+    );
   }
 
   @override

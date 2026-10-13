@@ -22,6 +22,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
     : _entries = initialEntries ?? <CalorieEntry>[];
 
   final List<CalorieEntry> _entries;
+  final _changes = StreamController<void>.broadcast();
   final Map<String, StreamController<List<CalorieEntry>>> _controllersByDay =
       <String, StreamController<List<CalorieEntry>>>{};
 
@@ -75,6 +76,22 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
         initialEmissionTimer?.cancel();
         unawaited(streamSubscription.cancel());
       };
+    });
+  }
+
+  @override
+  Stream<List<CalorieEntry>> watchEntriesFrom(DateTime startInclusive) {
+    final start = _normalize(startInclusive);
+    List<CalorieEntry> current() => [
+      for (final entry in _entries)
+        if (!entry.loggedAt.isBefore(start)) entry,
+    ]..sort((left, right) => left.loggedAt.compareTo(right.loggedAt));
+    return Stream<List<CalorieEntry>>.multi((controller) {
+      controller.add(current());
+      final subscription = _changes.stream.listen(
+        (_) => controller.add(current()),
+      );
+      controller.onCancel = subscription.cancel;
     });
   }
 
@@ -174,6 +191,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
     for (final controller in _controllersByDay.values) {
       await controller.close();
     }
+    await _changes.close();
   }
 
   List<CalorieEntry> _entriesForDay(DateTime day) {
@@ -190,6 +208,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   void _emitDay(DateTime day) {
+    if (!_changes.isClosed) _changes.add(null);
     final key = _dayKey(day);
     final controller = _controllersByDay[key];
     if (controller == null || controller.isClosed) {

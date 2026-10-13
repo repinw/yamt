@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
@@ -127,7 +128,10 @@ double _sum(Iterable<double> values) {
 @riverpod
 CalorieRunTrainingService calorieRunTrainingService(Ref ref) {
   return CalorieRunTrainingService(
-    settings: ref.watch(calorieGoalControllerProvider).value,
+    // The budget settings once ready, so the preview matches the diary.
+    settings:
+        ref.watch(calorieBudgetSettingsProvider).value ??
+        ref.watch(calorieGoalControllerProvider).value,
     goalController: ref.watch(calorieGoalControllerProvider.notifier),
   );
 }

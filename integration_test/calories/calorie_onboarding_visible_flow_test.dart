@@ -102,6 +102,11 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
+  Stream<List<CalorieEntry>> watchEntriesFrom(DateTime startInclusive) {
+    return const Stream<List<CalorieEntry>>.empty();
+  }
+
+  @override
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day) async {
     return _entriesForDay(day);
   }

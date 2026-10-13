@@ -12,6 +12,11 @@ class UnavailableCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
+  Stream<List<CalorieEntry>> watchEntriesFrom(DateTime startInclusive) {
+    return Stream<List<CalorieEntry>>.value(const <CalorieEntry>[]);
+  }
+
+  @override
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day) async {
     return const <CalorieEntry>[];
   }

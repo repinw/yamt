@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
@@ -85,7 +85,7 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
   final keepAliveLink = ref.keepAlive();
   try {
     ref.watch(calorieOverviewRevisionProvider);
-    final settings = await ref.watch(calorieGoalControllerProvider.future);
+    final settings = await ref.watch(calorieBudgetSettingsProvider.future);
     final goalsByDay = <String, ResolvedCalorieGoalData>{};
 
     for (final day in request.days) {
@@ -119,7 +119,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
   try {
     ref.watch(calorieOverviewRevisionProvider);
     final normalizedDay = normalizeDiaryDay(day);
-    final settings = await ref.watch(calorieGoalControllerProvider.future);
+    final settings = await ref.watch(calorieBudgetSettingsProvider.future);
     final storedGoalKcal = settings.baseGoalKcalForDay(normalizedDay);
     final goalKcal = settings.goalKcalForDay(normalizedDay);
 

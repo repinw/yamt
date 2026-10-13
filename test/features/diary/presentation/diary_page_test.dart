@@ -1312,6 +1312,7 @@ CalorieWeeklyCheckInData _weeklyCheckInCheckInData({
     days: days,
     calculation: const CalorieWeeklyCheckInCalculation(
       previousTdeeKcal: 2000,
+      previousGoalKcal: 2000,
       trendWeightChangePerDay: -0.05,
       averageIntakeKcal: 2100,
       measuredTdeeKcal: 2450,

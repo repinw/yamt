@@ -60,4 +60,4 @@ final class DailyNutritionTargetResolverProvider
 }
 
 String _$dailyNutritionTargetResolverHash() =>
-    r'309e63b9f20abea414d73d7d227d61388e439918';
+    r'5f4240550a017a99f5e75e95642e5e06e62439e4';

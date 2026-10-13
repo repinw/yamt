@@ -144,10 +144,37 @@ days and weights since then.
 
 ```text
 new goal = TDEE -/+ pace (kg/week) * 7700 / 7   (lose / gain; maintain: TDEE)
-new goal moves at most 200 kcal from the base goal at the window end
+new goal moves at most 200 kcal from the corrected goal of the window end
 ```
 
 A declined check-in keeps the goal from before the check-in.
+
+#### Goals Follow the Daily TDEE
+
+Every counting day moves its stored goal by how far the daily TDEE changed
+since that goal was set (`goalTdeeOffsets`). Budget readers get the moved
+goals from `calorieBudgetSettingsProvider`; writes keep using the stored
+settings, and the offsets are never saved.
+
+```text
+day goal  = stored goal + TDEE known when the day starts - reference TDEE
+TDEE known when the day starts = the estimate of the day before
+                                 (of yesterday for today and later days)
+reference = check-in goal: the TDEE of its check-in
+            other goal with a profile: the TDEE of the day before it took
+            effect, else the calculator TDEE
+            goal without either: no offset
+```
+
+- Every day from the first goal through the end of the running week has an
+  offset; days keep it after their week ends. The carryover still starts
+  fresh with each run. Offsets are computed on read, so an edit of an old
+  entry or a late weight can still move the goals of later days.
+- A falling TDEE never pushes a goal under the 1200 kcal minimum budget.
+- Until the offsets are computed, the stored goals stand, so a budget never
+  waits; an unchanged offset rebuilds nothing.
+- The history comes from `watchEntriesFrom`, which starts from the local
+  cache; Health weights load once per diary day.
 
 #### Pause Days & Missing Days
 

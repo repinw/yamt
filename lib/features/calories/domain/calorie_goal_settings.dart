@@ -42,6 +42,7 @@ class CalorieGoalSettings {
     this.trainingDayKcalOffset = 0.0,
     this.trainingDayOverrides = const <String, bool>{},
     this.pauseDayKeys = const <String>[],
+    this.goalOffsetsByDay = const <String, double>{},
   });
 
   /// Creates a [CalorieGoalSettings] for from json.
@@ -61,7 +62,8 @@ class CalorieGoalSettings {
       trainingWeekdays = const <int>[],
       trainingDayKcalOffset = 0.0,
       trainingDayOverrides = const <String, bool>{},
-      pauseDayKeys = const <String>[];
+      pauseDayKeys = const <String>[],
+      goalOffsetsByDay = const <String, double>{};
 
   /// Creates a [CalorieGoalSettings] for single.
   factory single({
@@ -154,6 +156,12 @@ class CalorieGoalSettings {
   /// Days marked as pause/exception days (Urlaub, Krankheit, Wettkampf).
   final List<String> pauseDayKeys;
 
+  /// kcal added to the base goal of a day, by diary day key: how far the
+  /// daily TDEE moved since the check-in of the running week. Computed on
+  /// read and never saved.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final Map<String, double> goalOffsetsByDay;
+
   /// Whether goal.
   bool get hasGoal => dailyKcalGoal != null;
 
@@ -238,6 +246,7 @@ class CalorieGoalSettings {
     double? trainingDayKcalOffset,
     Map<String, bool>? trainingDayOverrides,
     List<String>? pauseDayKeys,
+    Map<String, double>? goalOffsetsByDay,
   }) {
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal ?? this.dailyKcalGoal,
@@ -252,6 +261,14 @@ class CalorieGoalSettings {
           trainingDayKcalOffset ?? this.trainingDayKcalOffset,
       trainingDayOverrides: trainingDayOverrides ?? this.trainingDayOverrides,
       pauseDayKeys: pauseDayKeys ?? this.pauseDayKeys,
+      goalOffsetsByDay: goalOffsetsByDay ?? this.goalOffsetsByDay,
+    );
+  }
+
+  /// A copy whose base goals move by [offsetsByDay], by diary day key.
+  CalorieGoalSettings withGoalOffsets(Map<String, double> offsetsByDay) {
+    return copyWith(
+      goalOffsetsByDay: Map<String, double>.unmodifiable(offsetsByDay),
     );
   }
 }

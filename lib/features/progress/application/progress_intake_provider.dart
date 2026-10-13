@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -28,7 +28,7 @@ Future<ProgressIntake> progressIntake(Ref ref, ProgressScope scope) async {
   final today = normalizeDiaryDay(ref.watch(clockProvider)());
   final repository = ref.watch(calorieLogRepositoryProvider);
   final targetResolver = ref.watch(dailyNutritionTargetResolverProvider);
-  final settings = await ref.watch(calorieGoalControllerProvider.future);
+  final settings = await ref.watch(calorieBudgetSettingsProvider.future);
   if (!ref.mounted) {
     throw StateError('Progress intake provider disposed.');
   }
