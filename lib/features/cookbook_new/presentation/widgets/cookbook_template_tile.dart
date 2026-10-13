@@ -4,8 +4,9 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/cookbook_new/domain/cookbook_overview.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cookbook_entry_ink_well.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_stock_line.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -17,13 +18,25 @@ const int _maxLetterTiles = 3;
 /// the energy of one portion, and the stock line.
 class CookbookTemplateTile extends StatelessWidget {
   /// Creates the tile for [entry].
-  const new({required this.entry, required this.onOpen, super.key});
+  const new({
+    required this.entry,
+    required this.onOpen,
+    required this.onRemove,
+    super.key,
+  });
+
+  /// Key of the tile of the Vorlage [id].
+  static ValueKey<String> tileKey(String id) =>
+      ValueKey<String>('cookbook-template-$id');
 
   /// The Vorlage with its stock flags.
   final CookbookEntry entry;
 
   /// Opens the Vorlage.
   final VoidCallback onOpen;
+
+  /// Removes the Vorlage.
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +48,9 @@ class CookbookTemplateTile extends StatelessWidget {
 
     return SizedBox(
       width: AppGraphit.stripTileWidth,
-      child: AppInkWell(
-        onTap: onOpen,
+      child: CookbookEntryInkWell(
+        onOpen: onOpen,
+        onRemove: onRemove,
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: colors.card,

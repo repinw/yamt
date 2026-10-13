@@ -826,7 +826,14 @@ and feature description docs. This is product-facing; architecture rules stay in
     back too. Listening goes on across sentences until the next tap.
   - "Fertig gekocht" puts the meal in the pot like "Kochen" and goes on to
     "Gekocht". Leaving the Kochhelfer before that cooks nothing.
-- Editing and deleting templates from the Kochbuch is not available yet.
+- A long press on a Vorlage or recipe opens a small menu with
+  "Entfernen"; screen readers offer "Entfernen" as an action of the card.
+  The recipe page has an "Entfernen" button on its photo, which closes the
+  page. The Kochbuch then says "„Name“ entfernt", and "Rückgängig" saves it
+  back as it was: the same id, photo, ingredients, steps, and saved Vorrat
+  choices. Vorrat meals cooked from it stay as they are, and so does its
+  photo, which such a meal may share.
+- Editing templates from the Kochbuch is not available yet.
 
 ## Meal Templates
 

@@ -6,20 +6,29 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/'
-    'cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/'
+    'cookbook_remove_flow.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cookbook_entry_ink_well.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_open_meal_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cookbook_recipe_card.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_template_strip.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cookbook_template_tile.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/helpers/fake_prepared_meal_template_repository.dart';
 import '../../test/support/prepared_meal_test_data.dart';
 
 GoRoute _placeholder(String path, String label) {
@@ -33,7 +42,7 @@ GoRoute _placeholder(String path, String label) {
 }
 
 Widget _app({
-  required List<PreparedMeal> templates,
+  required FakePreparedMealTemplateRepository templates,
   required List<PreparedMeal> meals,
 }) {
   final router = GoRouter(
@@ -72,7 +81,7 @@ Widget _app({
   final container = ProviderContainer(
     overrides: [
       clockProvider.overrideWithValue(() => DateTime(2026, 10, 2, 20)),
-      cookbookTemplatesProvider.overrideWith((ref) => Stream.value(templates)),
+      preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
       inventoryQuickEatMealsProvider.overrideWith((ref) => Stream.value(meals)),
       inventoryQuickEatItemsProvider.overrideWith(
         (ref) => Stream.value([
@@ -120,7 +129,12 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _app(templates: [recipe, template], meals: [openMeal]),
+      _app(
+        templates: FakePreparedMealTemplateRepository(
+          templates: [recipe, template],
+        ),
+        meals: [openMeal],
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -145,8 +159,58 @@ void main() {
     expect(find.text('Recipe page'), findsOneWidget);
   });
 
+  testWidgets('removes a recipe and a Vorlage by long press and brings the '
+      'recipe back', (tester) async {
+    final templates = FakePreparedMealTemplateRepository(
+      templates: [recipe, template],
+    );
+    await tester.pumpWidget(_app(templates: templates, meals: [openMeal]));
+    await tester.pumpAndSettle();
+    final recipeCard = find.byKey(CookbookRecipeCard.cardKey('pasta'));
+    final templateTile = find.byKey(CookbookTemplateTile.tileKey('bowl'));
+    final snackBar = find.byKey(CookbookRemoveFlow.snackBarKey);
+
+    // Center the card, so the dock does not cover it.
+    await Scrollable.ensureVisible(tester.element(recipeCard), alignment: 0.3);
+    await tester.pumpAndSettle();
+    await tester.longPress(recipeCard);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookbookEntryInkWell.removeKey));
+    await tester.pumpAndSettle();
+
+    expect(recipeCard, findsNothing);
+    expect(templates.templates, [template]);
+    expect(snackBar, findsOneWidget);
+    // The meal under "Offen" stays.
+    expect(find.byType(CookbookOpenMealCard), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(of: snackBar, matching: find.byType(TextButton)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(recipeCard, findsOneWidget);
+    expect(templates.templates, unorderedEquals([recipe, template]));
+
+    await Scrollable.ensureVisible(
+      tester.element(templateTile),
+      alignment: 0.3,
+    );
+    await tester.pumpAndSettle();
+    await tester.longPress(templateTile);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookbookEntryInkWell.removeKey));
+    await tester.pumpAndSettle();
+
+    expect(templateTile, findsNothing);
+    expect(templates.templates, [recipe]);
+    expect(snackBar, findsOneWidget);
+  });
+
   testWidgets('sends a new template to the Vorrat', (tester) async {
-    await tester.pumpWidget(_app(templates: const [], meals: [openMeal]));
+    await tester.pumpWidget(
+      _app(templates: FakePreparedMealTemplateRepository(), meals: [openMeal]),
+    );
     await tester.pumpAndSettle();
 
     expect(
@@ -165,7 +229,9 @@ void main() {
       id: 'pot',
       name: 'Lentil soup',
     ).copyWith(inPot: true);
-    await tester.pumpWidget(_app(templates: const [], meals: [potMeal]));
+    await tester.pumpWidget(
+      _app(templates: FakePreparedMealTemplateRepository(), meals: [potMeal]),
+    );
     await tester.pumpAndSettle();
 
     // Without open rows the meal is in the pot until it is marked cooked.

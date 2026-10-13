@@ -9,6 +9,8 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/cookbook_new/presentation/'
+    'cookbook_remove_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
@@ -18,6 +20,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooking_guide_just_added.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_text_sheet.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'recipe_hero.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'recipe_ingredient_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -41,6 +45,7 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/helpers/fake_prepared_meal_template_repository.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 const _startKey = ValueKey<String>('open-recipe');
@@ -200,12 +205,50 @@ void main() {
     expect(find.byType(CookingGuidePage, skipOffstage: false), findsNothing);
   });
 
+  testWidgets('removes the recipe from its page and brings it back', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    final templates = FakePreparedMealTemplateRepository(templates: [_recipe]);
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        templates: templates,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(RecipeHero.removeKey));
+    await tester.pumpAndSettle();
+
+    // The page closes; the snack bar shows where the recipe was opened.
+    expect(find.byType(RecipePage), findsNothing);
+    expect(find.byKey(_startKey), findsOneWidget);
+    expect(templates.templates, isEmpty);
+    final snackBar = find.byKey(CookbookRemoveFlow.snackBarKey);
+    expect(snackBar, findsOneWidget);
+
+    await tester.tap(
+      find.descendant(of: snackBar, matching: find.byType(TextButton)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(templates.templates, [_recipe]);
+    expect(meals.saved, isEmpty);
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(RecipePage.cookKey), findsOneWidget);
+  });
+
   testWidgets('a recipe that is gone says so', (tester) async {
     await tester.pumpWidget(
       _app(
         meals: _FakeMealRepository(),
         inventory: _FakeInventoryRepository(const []),
-        recipes: const [],
+        templates: FakePreparedMealTemplateRepository(),
       ),
     );
     await tester.pumpAndSettle();
@@ -248,7 +291,7 @@ final _recipe = PreparedMeal(
 Widget _app({
   required _FakeMealRepository meals,
   required _FakeInventoryRepository inventory,
-  List<PreparedMeal>? recipes,
+  FakePreparedMealTemplateRepository? templates,
   List<bool>? screenOn,
   VoiceSearchService? voice,
 }) {
@@ -290,7 +333,7 @@ Widget _app({
     overrides: [
       preparedMealRepositoryProvider.overrideWithValue(meals),
       preparedMealTemplateRepositoryProvider.overrideWithValue(
-        _FakeTemplateRepository(recipes ?? [_recipe]),
+        templates ?? FakePreparedMealTemplateRepository(templates: [_recipe]),
       ),
       inventoryItemRepositoryProvider.overrideWithValue(inventory),
       inventoryActivityEventRepositoryProvider.overrideWithValue(
@@ -358,23 +401,6 @@ class _FakeMealRepository implements PreparedMealRepository {
 
   @override
   Future<List<PreparedMeal>> readAllForChange() => readAll();
-}
-
-class _FakeTemplateRepository implements PreparedMealTemplateRepository {
-  new(this.saved);
-
-  final List<PreparedMeal> saved;
-
-  @override
-  Stream<List<PreparedMeal>> watchAll() async* {
-    yield List.of(saved);
-  }
-
-  @override
-  Future<List<PreparedMeal>> readAll() async => List.of(saved);
-
-  @override
-  Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeUtensilRepository implements KitchenUtensilRepository {

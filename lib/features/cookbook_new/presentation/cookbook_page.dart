@@ -8,6 +8,8 @@ import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cookbook_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/'
+    'cookbook_remove_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_sections.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -53,6 +55,8 @@ class CookbookPage extends ConsumerWidget {
           ),
           onOpenRecipe: (recipe) =>
               unawaited(context.push(AppRoutes.homeRecipePath(recipe.id))),
+          onRemove: (template) =>
+              unawaited(CookbookRemoveFlow.remove(context, template: template)),
         ),
       ),
       loading: () => const SliverFillRemaining(

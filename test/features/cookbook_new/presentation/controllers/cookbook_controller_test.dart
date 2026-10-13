@@ -1,13 +1,21 @@
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/cookbook_new/domain/cookbook_overview.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cookbook_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
+import '../../../../helpers/fake_prepared_meal_repository.dart';
+import '../../../../helpers/fake_prepared_meal_template_repository.dart';
 import '../../../../support/prepared_meal_test_data.dart';
 
 InventoryItem _item(String name) {
@@ -39,16 +47,66 @@ ProviderContainer _container({
   return container;
 }
 
-Future<CookbookOverview> _overview(ProviderContainer container) async {
+/// A container whose Kochbuch reads [templates] and the Vorrat meals in
+/// [meals] through their repositories.
+ProviderContainer _repositoryContainer({
+  required PreparedMealTemplateRepository templates,
+  required FakePreparedMealRepository meals,
+}) {
+  final container = ProviderContainer(
+    overrides: [
+      preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
+      preparedMealRepositoryProvider.overrideWithValue(meals),
+      inventoryQuickEatItemsProvider.overrideWith(
+        (ref) => Stream.value(const <InventoryItem>[]),
+      ),
+    ],
+  );
+  addTearDown(container.dispose);
+  return container;
+}
+
+Future<CookbookOverview> _overview(
+  ProviderContainer container, {
+  bool Function(CookbookOverview overview)? until,
+}) async {
   final provider = cookbookControllerProvider('en');
   final subscription = container.listen(provider, (_, _) {});
   addTearDown(subscription.close);
-  while (!container.read(provider).hasValue &&
-      !container.read(provider).hasError) {
+  bool settled() {
+    final state = container.read(provider);
+    if (state.hasError) {
+      return true;
+    }
+    final overview = state.value;
+    return overview != null && (until?.call(overview) ?? true);
+  }
+
+  while (!settled()) {
     await Future<void>.delayed(Duration.zero);
   }
   return container.read(provider).requireValue;
 }
+
+/// A recipe with everything a template can store.
+PreparedMeal _fullRecipe() =>
+    preparedMealTestData(id: 'pasta', imageAssetId: 'pasta-photo').copyWith(
+      name: 'One-pan pasta',
+      imageUrl: 'https://example.com/pasta.jpg',
+      recipeUrl: 'https://example.com/pasta',
+      recipeIngredients: const ['200 g Pasta', '150 g Tomato sauce', 'Salt'],
+      recipeInstructions: const ['Boil.', 'Stir.'],
+      ignoredRecipeIngredients: const ['Salt'],
+      recipeIngredientAssignments: const {
+        '200 g Pasta': ['pasta-item'],
+      },
+      recipeIngredientAmountConversions: const {
+        '150 g Tomato sauce': RecipeIngredientAmountConversion(
+          amountPerPiece: 400,
+          unit: InventoryAmountUnit.gram,
+        ),
+      },
+    );
 
 void main() {
   test('marks recipe ingredients that the Vorrat holds', () async {
@@ -79,5 +137,72 @@ void main() {
 
     expect(overview.openMeals.single.id, 'free');
     expect(overview.recipes, isEmpty);
+  });
+
+  test('remove deletes the stored recipe and restore brings it back with '
+      'the same id and content', () async {
+    final templates = FirestorePreparedMealTemplateRepository(
+      household: (
+        householdId: 'household-1',
+        store: FirestorePreparedMealTemplateStore(
+          firestore: FakeFirebaseFirestore(),
+          cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+        ),
+      ),
+      sessionShutdownSignal: SessionShutdownSignal(),
+    );
+    final recipe = _fullRecipe();
+    expect(await templates.save(recipe), isTrue);
+    // A meal cooked from the recipe shares its photo.
+    final cooked = preparedMealTestData(
+      id: 'cooked',
+      name: 'One-pan pasta',
+      imageAssetId: 'pasta-photo',
+    ).copyWith(inPot: true);
+    final meals = FakePreparedMealRepository(meals: [cooked]);
+    final container = _repositoryContainer(templates: templates, meals: meals);
+    expect((await _overview(container)).recipes.single.meal, recipe);
+    final controller = container.read(
+      cookbookControllerProvider('en').notifier,
+    );
+
+    expect(await controller.remove(recipe), isTrue);
+    final removed = await _overview(
+      container,
+      until: (overview) => overview.recipes.isEmpty,
+    );
+
+    expect(await templates.readAll(), isEmpty);
+    // The Vorrat meal cooked from the recipe stays as it was.
+    expect(removed.openMeals, [cooked]);
+    expect(meals.meals, [cooked]);
+    expect(meals.writeCount, 0);
+
+    expect(await controller.restore(recipe), isTrue);
+    final restored = await _overview(
+      container,
+      until: (overview) => overview.recipes.isNotEmpty,
+    );
+
+    expect(await templates.readAll(), [recipe]);
+    expect(restored.recipes.single.meal, recipe);
+  });
+
+  test('a failed remove or restore returns false', () async {
+    final templates = FakePreparedMealTemplateRepository(
+      templates: [_fullRecipe()],
+    )..failWrites = true;
+    final container = _repositoryContainer(
+      templates: templates,
+      meals: FakePreparedMealRepository(),
+    );
+    await _overview(container);
+    final controller = container.read(
+      cookbookControllerProvider('en').notifier,
+    );
+
+    expect(await controller.remove(_fullRecipe()), isFalse);
+    expect(await controller.restore(_fullRecipe()), isFalse);
+    expect(templates.templates, [_fullRecipe()]);
   });
 }
