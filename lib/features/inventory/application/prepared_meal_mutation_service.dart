@@ -83,6 +83,7 @@ class PreparedMealMutationService {
   final InventoryActivityActor? _actor;
   final TemplateIngredientParser _ingredientParser;
   final PreparedMealWriter _writer;
+  late final _weighing = PreparedMealWeighing(writer: _writer);
 
   /// Writes meals that start open, waiting for their "Gekocht" step.
   final PreparedMealWriter _potWriter;
@@ -255,17 +256,12 @@ class PreparedMealMutationService {
         .unbundlePreparedMeal(mealId: mealId, inventoryRepository: inventory),
   );
 
-  /// Stores that the pot of the cooked meal [mealId] holds [netWeight] grams
-  /// of food now, for everyone in the household who eats from it next.
-  /// Returns the meal with the weighing. Throws when the meal is gone, was
-  /// not weighed in its pot, or the write fails.
+  /// Stores a weighing of the pot of [mealId]: [PreparedMealWeighing.weighPot].
   Future<PreparedMeal> weighPot({
     required String mealId,
     required int netWeight,
   }) => _queue.enqueue(
-    () =>
-        PreparedMealWeighing(writer: _writer)
-            .weighPot(mealId: mealId, netWeight: netWeight),
+    () => _weighing.weighPot(mealId: mealId, netWeight: netWeight),
   );
 
   Future<PreparedMealCreationResult> _create(
