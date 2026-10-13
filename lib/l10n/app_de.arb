@@ -454,6 +454,7 @@
   "eatPageItemTitle": "Artikel",
   "eatPageMealTitle": "Mahlzeit",
   "eatPageIngredientMissing": "Fehlt – keinem Vorrat zugeordnet",
+  "eatPageIngredientIgnored": "Ignoriert – zählt nicht mit",
   "eatPageReplaceProduct": "Produkt ersetzen",
   "eatPageOnShoppingList": "Steht auf der Einkaufsliste",
   "eatPageCombineLink": "+ mit anderem Lebensmittel kombinieren",
@@ -741,6 +742,11 @@
   "preparedMealPendingIngredientSelectionEmpty": "Keine Inventarartikel vorhanden.",
   "preparedMealPendingIngredientFillFailed": "Zutat konnte nicht zur Mahlzeit hinzugefügt werden.",
   "preparedMealPendingIngredientIgnoreFailed": "Zutat konnte nicht ignoriert werden.",
+  "preparedMealPendingIngredientUnignoreAction": "Nicht mehr ignorieren",
+  "preparedMealPendingIngredientUnignoreFailed": "Zutat konnte nicht wieder geöffnet werden.",
+  "preparedMealUnassignAction": "Zuordnung entfernen",
+  "preparedMealUnassignFailed": "Zuordnung konnte nicht entfernt werden.",
+  "preparedMealEditDeleteRowAction": "Zeile löschen",
   "preparedMealPortionsRemaining": "{remaining}/{total} Portionen",
   "@preparedMealPortionsRemaining": {
     "placeholders": {

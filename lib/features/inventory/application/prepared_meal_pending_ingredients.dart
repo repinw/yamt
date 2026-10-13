@@ -6,6 +6,8 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_row_share.dart';
+import 'package:yamt/features/inventory/application/'
     'template_ingredient_unit_mapper.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -75,6 +77,12 @@ buildPreparedMealPendingIngredientFillResult({
         const GlobalFoodNutrition(
           qualityStatus: GlobalFoodNutritionQualityStatus.missing,
         );
+    final nextRemainingAmount = remainingRequirementAfterConsumption(
+      item: currentItem,
+      requiredUnit: requiredUnit,
+      remainingAmount: remainingAmount,
+      consumedAmount: consumableAmount,
+    );
     nextItems[itemIndex] = nextItem;
     components.add(
       buildPreparedMealComponent(
@@ -85,14 +93,18 @@ buildPreparedMealPendingIngredientFillResult({
           requiredUnit: requiredUnit,
         ),
         nutrition: resolvedNutrition,
+      ).copyWith(
+        pendingRecipeIngredient: filledRowShare(
+          row: ingredient,
+          covered: remainingAmount - nextRemainingAmount,
+          needed: requirement.amount,
+          unit: requirement.unit,
+          name: requirement.name,
+          parser: ingredientParser,
+        ),
       ),
     );
-    remainingAmount = remainingRequirementAfterConsumption(
-      item: currentItem,
-      requiredUnit: requiredUnit,
-      remainingAmount: remainingAmount,
-      consumedAmount: consumableAmount,
-    );
+    remainingAmount = nextRemainingAmount;
     consumedAnyAmount = true;
   }
 
@@ -144,43 +156,58 @@ InventoryItem? findPendingIngredientStockMatch({
 }
 
 /// The open rows of [currentMeal] that the newly added amounts of
-/// [components] do not fill yet.
-List<String> reconciledPendingRecipeIngredients({
+/// [components] do not fill yet, and [components] with each food that
+/// fills exactly one of those rows linked to it, so the row opens again
+/// when the food leaves the meal.
+({List<String> rows, List<PreparedMealComponent> components})
+reconciledPendingRecipeIngredients({
   required PreparedMeal currentMeal,
   required List<PreparedMealComponent> components,
 }) {
   final pendingIngredients = currentMeal.pendingRecipeIngredients;
-  if (pendingIngredients.isEmpty) {
-    return pendingIngredients;
-  }
-
-  final coverages = _newComponentCoverages(
-    previousComponents: currentMeal.components,
-    components: components,
-  );
+  final coverages = pendingIngredients.isEmpty
+      ? const <_PendingIngredientCoverage>[]
+      : _newComponentCoverages(
+          previousComponents: currentMeal.components,
+          components: components,
+        );
   if (coverages.isEmpty) {
-    return pendingIngredients;
+    return (rows: pendingIngredients, components: components);
   }
 
   final nextPendingIngredients = <String>[];
   for (final ingredient in pendingIngredients) {
     final requirement = _parsePendingRequirement(ingredient);
-    if (requirement == null) {
-      nextPendingIngredients.add(ingredient);
-      continue;
-    }
-
-    final coverage = _matchingCoverage(
-      coverages: coverages,
-      requirement: requirement,
-    );
+    final coverage = requirement == null
+        ? null
+        : _matchingCoverage(coverages: coverages, requirement: requirement);
     if (coverage == null) {
       nextPendingIngredients.add(ingredient);
       continue;
     }
-    coverage.remainingAmount -= requirement.amount;
+    coverage.remainingAmount -= requirement!.amount;
+    coverage.filledRows.add(ingredient);
   }
-  return nextPendingIngredients;
+  // shortcut: a food that fills two rows stays unlinked and opens its own
+  // amount and name; link a list of rows if that turns up.
+  final rowByItemId = {
+    for (final coverage in coverages)
+      if (coverage.filledRows.length == 1)
+        coverage.component.inventoryItemId: coverage.filledRows.single,
+  };
+  return (
+    rows: nextPendingIngredients,
+    components: [
+      for (final component in components)
+        if (component.pendingRecipeIngredient == null &&
+            rowByItemId[component.inventoryItemId] != null)
+          component.copyWith(
+            pendingRecipeIngredient: rowByItemId[component.inventoryItemId],
+          )
+        else
+          component,
+    ],
+  );
 }
 
 List<_PendingIngredientCoverage> _newComponentCoverages({
@@ -255,4 +282,5 @@ class _PendingIngredientCoverage {
 
   final PreparedMealComponent component;
   int remainingAmount;
+  final filledRows = <String>[];
 }

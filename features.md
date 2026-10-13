@@ -424,9 +424,17 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Tapping a prepared meal opens its detail page: the meal eat page plus a
   "Zutaten" box (every ingredient with picture and its amount in the whole
   meal; missing recipe ingredients in orange with "Zutat ergänzen" and "Zutat
-  ignorieren") and a "Mahlzeit" card with edit, save as recipe, unbundle and
-  throw away. A meal with missing ingredients can be logged once they are
-  filled or ignored.
+  ignorieren"; ignored ones greyed and struck through, "Ignoriert – zählt
+  nicht mit", with "Zutat ergänzen" and "Nicht mehr ignorieren") and a
+  "Mahlzeit" card with edit, save as recipe, unbundle and throw away. A meal
+  with missing ingredients can be logged once they are filled or ignored;
+  ignored rows stay on the meal and count for nothing.
+- Each ingredient has an x ("Zuordnung entfernen") while no portion is gone:
+  it takes the food out of the meal again, the reverse of filling its row.
+  Its row is open again (the recipe row it filled, its share of the row
+  when several foods filled it, else its own amount and name), the totals
+  are summed from the other ingredients, and its amount goes back to the
+  Vorrat item, also for a food assigned while cooking or found by search.
 - "Zutat ergänzen" opens the "Zeile füllen" sheet: when the row has an
   amount, the best Vorrat match comes first with how much is left and
   "Übernehmen", which uses the row's amount. Below it: "Vorrat" (pick other
@@ -437,9 +445,15 @@ and feature description docs. This is product-facing; architecture rules stay in
   If the row cannot be filled, the added food is removed again.
 - Editing a meal opens the meal editor, drawn like the eat page: picture
   (tap for camera, gallery or remove) and name, one row per ingredient with
-  a ruler for its amount and a remove button, "+ Lebensmittel hinzufügen"
-  (stock foods only, 100 g or ml each), the portions and the nutrition label
-  of the edited meal. Once portions are eaten, only name and picture change.
+  a ruler for its amount and a remove button, the open and ignored rows,
+  "+ Lebensmittel hinzufügen" (stock foods only, 100 g or ml each), the
+  portions and the nutrition label of the edited meal. Removing an
+  ingredient only takes its food out, like its x on the detail page: the
+  ingredient comes back as an open row. The x of an open or ignored row
+  deletes the row from the meal; a meal keeps at least one ingredient or
+  open row. "Rückgängig" after saving puts the meal back with its
+  ingredients, rows and stock. Once portions are eaten, only name and
+  picture change.
 - Global food item matching and serving suggestions for future adds.
 
 ## Receipt Scanner And Review

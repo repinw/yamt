@@ -41,6 +41,7 @@ class InventoryPreparedMealEditCoordinator {
           imageAssetId: imageAssetId,
           totalPortions: result.totalPortions,
           items: result.items,
+          deletedRows: result.deletedRows,
         );
     if (!saved || !context.mounted) {
       return saved;
@@ -51,24 +52,13 @@ class InventoryPreparedMealEditCoordinator {
     (messenger.mounted ? messenger : ScaffoldMessenger.of(context))
         .showAppSnackBar(
           AppLocalizations.of(context)!.preparedMealUpdatedMessage,
+          // The undo puts the meal back as it was, with its foods, rows and
+          // stock.
           onUndo: previous == null
               ? null
               : () => container
                     .read(preparedMealsControllerProvider.notifier)
-                    .updatePreparedMealDetails(
-                      mealId: previous.id,
-                      name: previous.name,
-                      imageChanged: result.imageChanged,
-                      imageAssetId: previous.imageAssetId,
-                      totalPortions: previous.totalPortions,
-                      items: [
-                        for (final component in previous.components)
-                          PreparedMealItemInput(
-                            itemId: component.inventoryItemId,
-                            usedAmount: component.usedAmount,
-                          ),
-                      ],
-                    ),
+                    .restorePreparedMeal(previous),
         );
     return true;
   }

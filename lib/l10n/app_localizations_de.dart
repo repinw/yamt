@@ -872,6 +872,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageIngredientMissing => 'Fehlt – keinem Vorrat zugeordnet';
 
   @override
+  String get eatPageIngredientIgnored => 'Ignoriert – zählt nicht mit';
+
+  @override
   String get eatPageReplaceProduct => 'Produkt ersetzen';
 
   @override
@@ -1384,6 +1387,24 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get preparedMealPendingIngredientIgnoreFailed =>
       'Zutat konnte nicht ignoriert werden.';
+
+  @override
+  String get preparedMealPendingIngredientUnignoreAction =>
+      'Nicht mehr ignorieren';
+
+  @override
+  String get preparedMealPendingIngredientUnignoreFailed =>
+      'Zutat konnte nicht wieder geöffnet werden.';
+
+  @override
+  String get preparedMealUnassignAction => 'Zuordnung entfernen';
+
+  @override
+  String get preparedMealUnassignFailed =>
+      'Zuordnung konnte nicht entfernt werden.';
+
+  @override
+  String get preparedMealEditDeleteRowAction => 'Zeile löschen';
 
   @override
   String preparedMealPortionsRemaining(String remaining, int total) {

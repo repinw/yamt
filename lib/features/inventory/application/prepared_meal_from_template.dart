@@ -6,6 +6,8 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_row_share.dart';
+import 'package:yamt/features/inventory/application/'
     'recipe_ingredient_assignment_support.dart';
 import 'package:yamt/features/inventory/application/'
     'template_ingredient_unit_mapper.dart';
@@ -139,6 +141,12 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
         continue;
       }
 
+      final nextRemainingAmount = remainingRequirementAfterConsumption(
+        item: currentItem,
+        requiredUnit: effectiveRequirement.unit,
+        remainingAmount: remainingAmount,
+        consumedAmount: consumableAmount,
+      );
       nextItems[itemIndex] = nextItem;
       components.add(
         buildPreparedMealComponent(
@@ -149,15 +157,22 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
             requiredUnit: effectiveRequirement.unit,
           ),
           nutrition: resolvedNutrition,
+        ).copyWith(
+          pendingRecipeIngredient: filledRowShare(
+            row: ingredientParser.pendingIngredientLabel(
+              originalIngredient: ingredient,
+              requirement: requirement,
+            ),
+            covered: remainingAmount - nextRemainingAmount,
+            needed: effectiveRequirement.amount,
+            unit: effectiveRequirement.unit.toTemplateIngredientUnit(),
+            name: effectiveRequirement.name,
+            parser: ingredientParser,
+          ),
         ),
       );
       componentSourceKeys.add(sourceKeysByIngredient[ingredient] ?? '');
-      remainingAmount = remainingRequirementAfterConsumption(
-        item: currentItem,
-        requiredUnit: effectiveRequirement.unit,
-        remainingAmount: remainingAmount,
-        consumedAmount: consumableAmount,
-      );
+      remainingAmount = nextRemainingAmount;
       consumedAnyAmount = true;
     }
 

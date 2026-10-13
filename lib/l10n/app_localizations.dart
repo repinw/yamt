@@ -1510,6 +1510,12 @@ abstract class AppLocalizations {
   /// **'Missing – not taken from stock'**
   String get eatPageIngredientMissing;
 
+  /// No description provided for @eatPageIngredientIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored – not counted'**
+  String get eatPageIngredientIgnored;
+
   /// No description provided for @eatPageReplaceProduct.
   ///
   /// In en, this message translates to:
@@ -2343,6 +2349,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ingredient could not be ignored.'**
   String get preparedMealPendingIngredientIgnoreFailed;
+
+  /// No description provided for @preparedMealPendingIngredientUnignoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop ignoring'**
+  String get preparedMealPendingIngredientUnignoreAction;
+
+  /// No description provided for @preparedMealPendingIngredientUnignoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient could not be opened again.'**
+  String get preparedMealPendingIngredientUnignoreFailed;
+
+  /// No description provided for @preparedMealUnassignAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove assignment'**
+  String get preparedMealUnassignAction;
+
+  /// No description provided for @preparedMealUnassignFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment could not be removed.'**
+  String get preparedMealUnassignFailed;
+
+  /// No description provided for @preparedMealEditDeleteRowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete row'**
+  String get preparedMealEditDeleteRowAction;
 
   /// No description provided for @preparedMealPortionsRemaining.
   ///

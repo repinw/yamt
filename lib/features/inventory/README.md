@@ -117,7 +117,8 @@ already documented as a reusable presentation surface.
   logs a stock item together with other stock items as one combined calorie
   entry, written in one batch with every stock change.
 - `presentation/prepared_meal_detail_flow.dart`: `PreparedMealDetailFlow.open`
-  opens the detail page of a Vorrat meal with its open rows and meal actions.
+  opens the detail page of a Vorrat meal with its open and ignored rows, the
+  x that takes a food out again, and the meal actions.
 - `presentation/prepared_meal_gone_flow.dart`:
   `PreparedMealGoneFlow.closeWhenGone` closes a meal page with "Mahlzeit nicht
   mehr im Vorrat" when its meal leaves the Vorrat; every meal page, including
@@ -157,6 +158,13 @@ already documented as a reusable presentation surface.
   accept and the commit store ask it instead of combining the meal's flags.
   `withPortionsTaken` is the one portion change: eating, throwing away and
   taking portions back all go through it.
+- `domain/prepared_meal_rows.dart` moves a meal's rows: open rows keep the
+  meal from being eaten, ignored rows stay on it and count for nothing.
+  A food remembers the row it fills (`PreparedMealComponent.openRow`, its
+  share of the row when several foods fill it); taking it out of the meal,
+  on the detail page or in the editor, opens that row again and gives its
+  stock back. Meal totals are always summed from the foods, never patched,
+  so taking a food out restores the totals from before it came in.
 
 ## Providers
 

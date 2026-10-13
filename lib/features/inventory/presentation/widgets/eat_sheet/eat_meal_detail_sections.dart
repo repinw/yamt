@@ -8,6 +8,7 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -33,7 +34,9 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The parts of a meal's detail page under the eat controls: the "Zutaten"
-/// box and the "Mahlzeit" card with edit, recipe, unbundle and throw away.
+/// box, where rows are filled, ignored or opened again and foods taken out
+/// again, and the "Mahlzeit" card with edit, recipe, unbundle and throw
+/// away.
 ///
 /// It follows the live meal. When the meal is gone, for example after
 /// unbundling, it closes the page.
@@ -70,11 +73,30 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.xxl,
       children: [
-        if (meal.components.isNotEmpty || meal.hasPendingRecipeIngredients)
+        if (meal.components.isNotEmpty ||
+            meal.hasPendingRecipeIngredients ||
+            meal.ignoredPendingRecipeIngredients.isNotEmpty)
           EatMealIngredientsBox(
             meal: meal,
             onFill: enabled ? (name) => _fill(meal, name) : null,
             onIgnore: enabled ? (name) => _ignore(meal, name) : null,
+            onUnignore: enabled
+                ? (name) => _run(
+                    () =>
+                        widget.actions.unignorePendingIngredient(meal.id, name),
+                    failureMessage:
+                        l10n.preparedMealPendingIngredientUnignoreFailed,
+                  )
+                : null,
+            // Taking a food out changes the ingredients, which stay fixed
+            // once a portion is gone.
+            onUnassign:
+                enabled && meal.allows(PreparedMealAction.editIngredients)
+                ? (component) => _run(
+                    () => widget.actions.unassign(meal.id, component),
+                    failureMessage: l10n.preparedMealUnassignFailed,
+                  )
+                : null,
           ),
         EatActionCard(
           title: l10n.eatPageMealTitle,
@@ -159,6 +181,8 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
     final choice = await PreparedMealPendingFillSheet.show(
       context,
       ingredient: ingredient,
+      // An ignored row can be filled, but it is ignored already.
+      canIgnore: meal.pendingRecipeIngredients.contains(ingredient),
       match: ref
           .read(preparedMealsControllerProvider.notifier)
           .pendingIngredientStockMatch(

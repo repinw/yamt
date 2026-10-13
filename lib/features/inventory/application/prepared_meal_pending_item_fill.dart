@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rows.dart';
 
 /// Fills an open row of a meal with a chosen amount of one Vorrat item.
 class PreparedMealPendingItemFill {
@@ -14,8 +15,9 @@ class PreparedMealPendingItemFill {
 
   final PreparedMealWriter _writer;
 
-  /// Uses [usedAmount] of the item [itemId] for the open row [ingredient] of
-  /// the meal [mealId] and closes the row. Returns whether it worked.
+  /// Uses [usedAmount] of the item [itemId] for the open or ignored row
+  /// [ingredient] of the meal [mealId] and closes the row. Returns whether it
+  /// worked.
   ///
   /// Unlike filling from the row's own amount, this works for rows without
   /// an amount ("Salz") and for foods found by search, whose amount the cook
@@ -33,10 +35,8 @@ class PreparedMealPendingItemFill {
       return false;
     }
     final meal = currentMeals[mealIndex];
-    final pendingIndex = meal.pendingRecipeIngredients.indexWhere(
-      (entry) => entry.trim() == ingredient.trim(),
-    );
-    if (pendingIndex < 0) {
+    final withoutRow = meal.withoutRow(ingredient);
+    if (withoutRow == null) {
       return false;
     }
 
@@ -58,15 +58,11 @@ class PreparedMealPendingItemFill {
     }
 
     final nextMeals = List<PreparedMeal>.from(currentMeals);
-    nextMeals[mealIndex] = meal
-        .withComponents([
-          ...meal.components,
-          ...built.preparedMeal.components,
-        ], _writer.buildNow())
-        .copyWith(
-          pendingRecipeIngredients: [...meal.pendingRecipeIngredients]
-            ..removeAt(pendingIndex),
-        );
+    nextMeals[mealIndex] = withoutRow.withComponents([
+      ...meal.components,
+      for (final component in built.preparedMeal.components)
+        component.copyWith(pendingRecipeIngredient: ingredient.trim()),
+    ], _writer.buildNow());
     return await _writer.saveMealsWithStock(
       inventoryRepository: inventoryRepository,
       previousItems: currentItems,

@@ -1,28 +1,22 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_discard.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_editing.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_mutation_models.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_creation.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_discard.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_editing.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_open_rows.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_pending_item_fill.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_pending_item_fill.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_weighing.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_writer.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_activity_event_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_discard_event_repository.dart';
+import 'package:yamt/features/inventory/data/inventory_activity_event_repository.dart';
+import 'package:yamt/features/inventory/data/inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 part 'prepared_meal_mutation_service.g.dart';
@@ -140,7 +134,8 @@ class PreparedMealMutationService {
         ),
   );
 
-  /// Changes a meal's name, image, portions or ingredients.
+  /// Changes a meal's name, image, portions or ingredients. A food that
+  /// [items] leaves out opens its row again; [deletedRows] leave the meal.
   Future<bool> updatePreparedMealDetails({
     required String mealId,
     required String name,
@@ -148,6 +143,7 @@ class PreparedMealMutationService {
     String? imageAssetId,
     int? totalPortions,
     List<PreparedMealItemInput>? items,
+    List<String> deletedRows = const <String>[],
   }) => _change(
     (inventory) =>
         PreparedMealEditing(writer: _writer).updatePreparedMealDetails(
@@ -157,8 +153,16 @@ class PreparedMealMutationService {
           imageAssetId: imageAssetId,
           totalPortions: totalPortions,
           items: items,
+          deletedRows: deletedRows,
           inventoryRepository: inventory,
         ),
+  );
+
+  /// Puts the meal back as [previous] was before an edit.
+  Future<bool> restorePreparedMeal(PreparedMeal previous) => _change(
+    (inventory) => PreparedMealEditing(
+      writer: _writer,
+    ).restorePreparedMeal(previous: previous, inventoryRepository: inventory),
   );
 
   /// Fills the open row [ingredient] with the Vorrat items [inventoryItemIds].
@@ -202,6 +206,32 @@ class PreparedMealMutationService {
         .ignorePreparedMealPendingIngredient(
           mealId: mealId,
           ingredient: ingredient,
+        ),
+  );
+
+  /// Opens the ignored row [ingredient] again.
+  Future<bool> unignorePreparedMealPendingIngredient({
+    required String mealId,
+    required String ingredient,
+  }) => _run(
+    () => PreparedMealOpenRows(writer: _writer)
+        .unignorePreparedMealPendingIngredient(
+          mealId: mealId,
+          ingredient: ingredient,
+        ),
+  );
+
+  /// Takes [component] out of the meal [mealId]: its row opens again and its
+  /// stock goes back to the Vorrat.
+  Future<bool> unassignPreparedMealComponent({
+    required String mealId,
+    required PreparedMealComponent component,
+  }) => _change(
+    (inventory) => PreparedMealOpenRows(writer: _writer)
+        .unassignPreparedMealComponent(
+          mealId: mealId,
+          component: component,
+          inventoryRepository: inventory,
         ),
   );
 

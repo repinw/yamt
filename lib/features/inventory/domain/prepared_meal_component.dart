@@ -23,6 +23,7 @@ class PreparedMealComponent {
     required this.totalFat,
     required this.sourceItemSnapshot,
     this.addedForMeal,
+    this.pendingRecipeIngredient,
   });
 
   /// Creates a [PreparedMealComponent] for from json.
@@ -84,6 +85,23 @@ class PreparedMealComponent {
   /// Whether the Vorrat item was added only for this meal.
   bool get isAddedForMeal => addedForMeal ?? false;
 
+  /// The open row of the meal that this food fills, such as "200 g Reis".
+  /// Absent on foods that fill no row.
+  @JsonKey(includeIfNull: false)
+  final String? pendingRecipeIngredient;
+
+  /// The open row this food leaves when it is taken out of the meal again:
+  /// the row it fills, else its own amount and name, such as "200 g Reis".
+  String get openRow {
+    if (pendingRecipeIngredient case final row?) {
+      return row;
+    }
+    final amount = preparedMealComponentDisplayAmount(this)
+        .toStringAsFixed(2)
+        .replaceFirst(RegExp(r'\.?0+$'), '');
+    return '$amount ${usedUnit.code} $name';
+  }
+
   /// The internal storage scale of [usedAmount], taken from the source
   /// item. Piece-tracked items store fractional pieces multiplied by
   /// [inventoryPieceAmountScale].
@@ -106,6 +124,7 @@ class PreparedMealComponent {
     double? totalFat,
     InventoryItem? sourceItemSnapshot,
     bool? addedForMeal,
+    String? pendingRecipeIngredient,
   }) {
     return PreparedMealComponent(
       inventoryItemId: inventoryItemId ?? this.inventoryItemId,
@@ -120,6 +139,8 @@ class PreparedMealComponent {
       totalFat: totalFat ?? this.totalFat,
       sourceItemSnapshot: sourceItemSnapshot ?? this.sourceItemSnapshot,
       addedForMeal: addedForMeal ?? this.addedForMeal,
+      pendingRecipeIngredient:
+          pendingRecipeIngredient ?? this.pendingRecipeIngredient,
     );
   }
 
@@ -158,7 +179,8 @@ class PreparedMealComponent {
             other.totalCarbs == totalCarbs &&
             other.totalFat == totalFat &&
             other.sourceItemSnapshot == sourceItemSnapshot &&
-            other.addedForMeal == addedForMeal;
+            other.addedForMeal == addedForMeal &&
+            other.pendingRecipeIngredient == pendingRecipeIngredient;
   }
 
   @override
@@ -176,6 +198,7 @@ class PreparedMealComponent {
       totalFat,
       sourceItemSnapshot,
       addedForMeal,
+      pendingRecipeIngredient,
     );
   }
 }

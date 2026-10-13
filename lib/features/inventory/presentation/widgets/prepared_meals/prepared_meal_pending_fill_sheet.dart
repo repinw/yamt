@@ -47,12 +47,17 @@ final class PreparedMealPendingFillIgnore
   const new();
 }
 
-/// Bottom sheet that offers the ways to fill the open row [ingredient]: the
-/// best Vorrat match first, then the Vorrat, search, barcode, AI, and
-/// ignoring the row.
+/// Bottom sheet that offers the ways to fill the open or ignored row
+/// [ingredient]: the best Vorrat match first, then the Vorrat, search,
+/// barcode, AI, and ignoring an open row.
 class PreparedMealPendingFillSheet extends StatelessWidget {
   /// Creates the sheet.
-  const new({required this.ingredient, required this.match, super.key});
+  const new({
+    required this.ingredient,
+    required this.match,
+    this.canIgnore = true,
+    super.key,
+  });
 
   /// Key of the "Übernehmen" button.
   static const takeKey = ValueKey<String>('pending-fill-take');
@@ -73,19 +78,26 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
   /// The best Vorrat match that can take the row's amount, or `null`.
   final InventoryItem? match;
 
+  /// Whether the sheet offers "Zeile ignorieren"; not for an ignored row.
+  final bool canIgnore;
+
   /// Shows the sheet and returns the choice, or `null` when it is closed.
   static Future<PreparedMealPendingFillChoice?> show(
     BuildContext context, {
     required String ingredient,
     required InventoryItem? match,
+    bool canIgnore = true,
   }) {
     return showModalBottomSheet<PreparedMealPendingFillChoice>(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
       showDragHandle: true,
-      builder: (_) =>
-          PreparedMealPendingFillSheet(ingredient: ingredient, match: match),
+      builder: (_) => PreparedMealPendingFillSheet(
+        ingredient: ingredient,
+        match: match,
+        canIgnore: canIgnore,
+      ),
     );
   }
 
@@ -175,15 +187,16 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
                 ),
               ],
             ),
-            Center(
-              child: TextButton(
-                key: ignoreKey,
-                onPressed: () =>
-                    Navigator.of(context)
-                        .pop(const PreparedMealPendingFillIgnore()),
-                child: Text(l10n.preparedMealFillIgnore),
+            if (canIgnore)
+              Center(
+                child: TextButton(
+                  key: ignoreKey,
+                  onPressed: () =>
+                      Navigator.of(context)
+                          .pop(const PreparedMealPendingFillIgnore()),
+                  child: Text(l10n.preparedMealFillIgnore),
+                ),
               ),
-            ),
           ],
         ),
       ),

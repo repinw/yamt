@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -26,6 +27,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_text_link.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/prepared_meal_edit_header.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/prepared_meal_edit_open_rows.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prepared_meal_image_picker_field.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -44,9 +46,11 @@ Future<PreparedMealEditResult?> showPreparedMealEditPage(
 }
 
 /// Meal editor, drawn like the eat page: picture and name, the ingredients
-/// with a ruler each, more foods from the stock, the portions and the
-/// nutrition table of the edited meal.
+/// with a ruler each, the rows no food fills, more foods from the stock, the
+/// portions and the nutrition table of the edited meal.
 ///
+/// Removing an ingredient only takes its food out: its row shows as open
+/// and stays on the meal. An open or ignored row's x deletes the row.
 /// Once portions are eaten, only the name and the picture can change.
 class PreparedMealEditPage extends ConsumerStatefulWidget {
   /// Creates the editor.
@@ -57,6 +61,10 @@ class PreparedMealEditPage extends ConsumerStatefulWidget {
 
   /// Key of the link that adds foods from the stock.
   static const addKey = Key('prepared_meal_edit_add');
+
+  /// Key of the x that takes the food of the Vorrat item [itemId] out.
+  static ValueKey<String> removeKey(String itemId) =>
+      ValueKey<String>('prepared_meal_edit_remove_$itemId');
 
   /// The meal.
   final PreparedMeal meal;
@@ -71,6 +79,7 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
   late final _name = TextEditingController(text: widget.meal.name);
   late int _portions = widget.meal.totalPortions;
   late List<PreparedMealEditRow> _rows;
+  List<String> _deletedRows = const <String>[];
   String? _openId;
   var _imageChanged = false;
   Uint8List? _imageBytes;
@@ -111,9 +120,18 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
     final nutrition = EatMealNutrition.combine([
       for (final row in _rows) row.food,
     ]);
-    final canSave =
-        _name.text.trim().isNotEmpty &&
-        (_rows.isNotEmpty || _meal.components.isEmpty);
+    // The rows the meal keeps: removed foods open theirs again.
+    final rowsMeal = _meal.withEditedRows(
+      keptItemIds: {for (final row in _rows) row.itemId},
+      deletedRows: _deletedRows,
+    );
+    final keepsIngredients =
+        _rows.isNotEmpty ||
+        rowsMeal.hasPendingRecipeIngredients ||
+        (_meal.components.isEmpty &&
+            !_meal.hasPendingRecipeIngredients &&
+            _deletedRows.isEmpty);
+    final canSave = _name.text.trim().isNotEmpty && keepsIngredients;
 
     return EatPageScaffold(
       whenControl: const SizedBox.shrink(),
@@ -121,9 +139,9 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
       confirmButtonKey: PreparedMealEditPage.saveKey,
       confirmLabel: l10n.productEditorSaveAction,
       onConfirm: canSave ? _save : null,
-      confirmHint: _rows.isEmpty && _meal.components.isNotEmpty
-          ? l10n.preparedMealEmptyIngredientsMessage
-          : null,
+      confirmHint: keepsIngredients
+          ? null
+          : l10n.preparedMealEmptyIngredientsMessage,
       cancelButtonKey: const Key('prepared_meal_edit_close'),
       children: [
         PreparedMealEditHeader(
@@ -153,6 +171,11 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (final row in _rows) _rowOf(row, l10n),
+              PreparedMealEditOpenRows(
+                openRows: rowsMeal.pendingRecipeIngredients,
+                ignoredRows: rowsMeal.ignoredPendingRecipeIngredients,
+                onDelete: _isLocked ? null : _deleteRow,
+              ),
               if (!_isLocked)
                 EatTextLink(
                   buttonKey: PreparedMealEditPage.addKey,
@@ -188,6 +211,7 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
       isOpen: _openId == row.itemId,
       onTap: () =>
           setState(() => _openId = _openId == row.itemId ? null : row.itemId),
+      removeKey: PreparedMealEditPage.removeKey(row.itemId),
       onRemove: _isLocked
           ? null
           : () => setState(
@@ -206,6 +230,10 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
             )
           : null,
     );
+  }
+
+  void _deleteRow(String row) {
+    setState(() => _deletedRows = [..._deletedRows, row]);
   }
 
   void _setAmount(String itemId, int amount) {
@@ -259,6 +287,7 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
         imageBytes: _imageBytes,
         totalPortions: _portions,
         items: [for (final row in _rows) row.input],
+        deletedRows: _deletedRows,
       ),
     );
   }

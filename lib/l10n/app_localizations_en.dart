@@ -863,6 +863,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageIngredientMissing => 'Missing – not taken from stock';
 
   @override
+  String get eatPageIngredientIgnored => 'Ignored – not counted';
+
+  @override
   String get eatPageReplaceProduct => 'Replace product';
 
   @override
@@ -1367,6 +1370,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get preparedMealPendingIngredientIgnoreFailed =>
       'Ingredient could not be ignored.';
+
+  @override
+  String get preparedMealPendingIngredientUnignoreAction => 'Stop ignoring';
+
+  @override
+  String get preparedMealPendingIngredientUnignoreFailed =>
+      'Ingredient could not be opened again.';
+
+  @override
+  String get preparedMealUnassignAction => 'Remove assignment';
+
+  @override
+  String get preparedMealUnassignFailed => 'Assignment could not be removed.';
+
+  @override
+  String get preparedMealEditDeleteRowAction => 'Delete row';
 
   @override
   String preparedMealPortionsRemaining(String remaining, int total) {
