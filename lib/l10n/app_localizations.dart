@@ -4432,17 +4432,11 @@ abstract class AppLocalizations {
   /// **'Pause'**
   String get diaryDayTypePauseShort;
 
-  /// No description provided for @diaryDayTypeSheetTitle.
+  /// No description provided for @diaryDayTypeActionsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Choose day type'**
-  String get diaryDayTypeSheetTitle;
-
-  /// No description provided for @diaryDayTypeSheetBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Adjust your calorie target to your activity plan.'**
-  String get diaryDayTypeSheetBody;
+  /// **'Day type'**
+  String get diaryDayTypeActionsTitle;
 
   /// No description provided for @diaryDayTypeTrainingOffsetSubtitle.
   ///

@@ -1346,8 +1346,7 @@
   "diaryDayTypeTrainingShort": "Training",
   "diaryDayTypeRestShort": "Rest",
   "diaryDayTypePauseShort": "Pause",
-  "diaryDayTypeSheetTitle": "Choose day type",
-  "diaryDayTypeSheetBody": "Adjust your calorie target to your activity plan.",
+  "diaryDayTypeActionsTitle": "Day type",
   "diaryDayTypeTrainingOffsetSubtitle": "+{kcal} kcal compared to a rest day",
   "@diaryDayTypeTrainingOffsetSubtitle": {
     "placeholders": {

@@ -2611,11 +2611,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryDayTypePauseShort => 'Pause';
 
   @override
-  String get diaryDayTypeSheetTitle => 'Tages-Status wählen';
-
-  @override
-  String get diaryDayTypeSheetBody =>
-      'Steuere deinen Kalorienbedarf dynamisch nach deinem Aktivitätsplan.';
+  String get diaryDayTypeActionsTitle => 'Tages-Status';
 
   @override
   String diaryDayTypeTrainingOffsetSubtitle(int kcal) {
