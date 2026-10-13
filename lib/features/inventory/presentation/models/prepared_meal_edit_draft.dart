@@ -9,8 +9,10 @@ import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
-/// What the meal editor saves: the name, a changed picture, the portions
-/// and the amount of each ingredient.
+/// What the meal editor saves: the name, a changed picture, the portions,
+/// the amount of each ingredient, and the rows the cook deleted. An
+/// ingredient left out of [items] only loses its food: its row is open
+/// again.
 @immutable
 class PreparedMealEditResult {
   /// Creates the result.
@@ -20,6 +22,7 @@ class PreparedMealEditResult {
     required this.imageBytes,
     required this.totalPortions,
     required this.items,
+    this.deletedRows = const <String>[],
   });
 
   /// The meal name.
@@ -37,6 +40,9 @@ class PreparedMealEditResult {
 
   /// Ingredients with the amount the meal uses.
   final List<PreparedMealItemInput> items;
+
+  /// Open or ignored rows that leave the meal.
+  final List<String> deletedRows;
 }
 
 /// One ingredient on the meal editor.

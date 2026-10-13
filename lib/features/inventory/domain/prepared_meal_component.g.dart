@@ -23,6 +23,7 @@ PreparedMealComponent _$PreparedMealComponentFromJson(
     json['source_item_snapshot'] as Map<String, dynamic>,
   ),
   addedForMeal: json['added_for_meal'] as bool?,
+  pendingRecipeIngredient: json['pending_recipe_ingredient'] as String?,
 );
 
 Map<String, dynamic> _$PreparedMealComponentToJson(
@@ -40,4 +41,5 @@ Map<String, dynamic> _$PreparedMealComponentToJson(
   'total_fat': instance.totalFat,
   'source_item_snapshot': instance.sourceItemSnapshot.toJson(),
   'added_for_meal': ?instance.addedForMeal,
+  'pending_recipe_ingredient': ?instance.pendingRecipeIngredient,
 };

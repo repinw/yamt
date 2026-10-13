@@ -516,6 +516,7 @@
   "eatPageItemTitle": "Item",
   "eatPageMealTitle": "Meal",
   "eatPageIngredientMissing": "Missing – not taken from stock",
+  "eatPageIngredientIgnored": "Ignored – not counted",
   "eatPageReplaceProduct": "Replace product",
   "eatPageOnShoppingList": "On the shopping list",
   "eatPageCombineLink": "+ Combine with another food",
@@ -820,6 +821,11 @@
   "preparedMealPendingIngredientSelectionEmpty": "No inventory items available.",
   "preparedMealPendingIngredientFillFailed": "Ingredient could not be added to the meal.",
   "preparedMealPendingIngredientIgnoreFailed": "Ingredient could not be ignored.",
+  "preparedMealPendingIngredientUnignoreAction": "Stop ignoring",
+  "preparedMealPendingIngredientUnignoreFailed": "Ingredient could not be opened again.",
+  "preparedMealUnassignAction": "Remove assignment",
+  "preparedMealUnassignFailed": "Assignment could not be removed.",
+  "preparedMealEditDeleteRowAction": "Delete row",
   "preparedMealPortionsRemaining": "{remaining}/{total} portions",
   "@preparedMealPortionsRemaining": {
     "placeholders": {

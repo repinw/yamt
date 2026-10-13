@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'prepared_meal_edit_draft.dart';
 
@@ -26,10 +27,16 @@ typedef PreparedMealIngredientItemFillCallback = Future<bool> Function(
   int usedAmount,
 );
 
-/// Ignores a missing recipe ingredient.
+/// Ignores a missing recipe ingredient, or opens an ignored one again.
 typedef PreparedMealIngredientIgnoreCallback = Future<bool> Function(
   String mealId,
   String ingredient,
+);
+
+/// Takes a food out of a meal again, so its row is open.
+typedef PreparedMealUnassignCallback = Future<bool> Function(
+  String mealId,
+  PreparedMealComponent component,
 );
 
 /// Changes one meal by id, such as unbundling it.
@@ -59,6 +66,8 @@ class PreparedMealActions {
     required this.fillPendingIngredient,
     required this.fillPendingIngredientWithItem,
     required this.ignorePendingIngredient,
+    required this.unignorePendingIngredient,
+    required this.unassign,
     required this.unbundle,
     required this.edit,
     required this.saveTemplate,
@@ -75,6 +84,13 @@ class PreparedMealActions {
 
   /// Ignores a missing ingredient.
   final PreparedMealIngredientIgnoreCallback ignorePendingIngredient;
+
+  /// Opens an ignored ingredient again.
+  final PreparedMealIngredientIgnoreCallback unignorePendingIngredient;
+
+  /// Takes a food out of the meal again; its row opens and its stock goes
+  /// back to the Vorrat.
+  final PreparedMealUnassignCallback unassign;
 
   /// Puts the ingredients back into the Vorrat.
   final PreparedMealIdCallback unbundle;

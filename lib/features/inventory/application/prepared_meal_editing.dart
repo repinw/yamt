@@ -18,7 +18,9 @@ class PreparedMealEditing {
 
   final PreparedMealWriter _writer;
 
-  /// Updates a prepared meal's editable details.
+  /// Updates a prepared meal's editable details. A food that [items] leaves
+  /// out opens its row again; the open or ignored [deletedRows] leave the
+  /// meal.
   Future<bool> updatePreparedMealDetails({
     required String mealId,
     required String name,
@@ -26,6 +28,7 @@ class PreparedMealEditing {
     required String? imageAssetId,
     int? totalPortions,
     List<PreparedMealItemInput>? items,
+    List<String> deletedRows = const <String>[],
     InventoryItemRepository? inventoryRepository,
   }) async {
     final trimmedName = name.trim();
@@ -43,6 +46,7 @@ class PreparedMealEditing {
     if (totalPortions != null || items != null) {
       if (totalPortions == currentMeal.totalPortions &&
           items != null &&
+          deletedRows.isEmpty &&
           _hasSameComponentInputs(currentMeal.components, items)) {
         return await _updatePreparedMealMetadata(
           currentMeals: currentMeals,
@@ -60,6 +64,7 @@ class PreparedMealEditing {
         imageAssetId: imageAssetId,
         totalPortions: totalPortions,
         items: items,
+        deletedRows: deletedRows,
         inventoryRepository: inventoryRepository,
       );
     }
@@ -111,6 +116,7 @@ class PreparedMealEditing {
     required String? imageAssetId,
     required int? totalPortions,
     required List<PreparedMealItemInput>? items,
+    required List<String> deletedRows,
     required InventoryItemRepository? inventoryRepository,
   }) async {
     if (totalPortions == null || items == null || inventoryRepository == null) {
@@ -118,14 +124,15 @@ class PreparedMealEditing {
     }
 
     final currentMeal = currentMeals[mealIndex];
-    if (_isPreparedMealContentUnchanged(
-      meal: currentMeal,
-      name: name,
-      imageChanged: imageChanged,
-      imageAssetId: imageAssetId,
-      totalPortions: totalPortions,
-      items: items,
-    )) {
+    if (deletedRows.isEmpty &&
+        _isPreparedMealContentUnchanged(
+          meal: currentMeal,
+          name: name,
+          imageChanged: imageChanged,
+          imageAssetId: imageAssetId,
+          totalPortions: totalPortions,
+          items: items,
+        )) {
       return true;
     }
 
@@ -138,6 +145,7 @@ class PreparedMealEditing {
       imageAssetId: imageAssetId,
       totalPortions: totalPortions,
       items: items,
+      deletedRows: deletedRows,
     );
     if (buildResult == null) {
       return false;
@@ -160,6 +168,7 @@ class PreparedMealEditing {
     required String? imageAssetId,
     required int totalPortions,
     required List<PreparedMealItemInput> items,
+    required List<String> deletedRows,
   }) {
     try {
       return buildPreparedMealEditResult(
@@ -171,6 +180,7 @@ class PreparedMealEditing {
         imageAssetId: imageAssetId,
         totalPortions: totalPortions,
         inputs: items,
+        deletedRows: deletedRows,
       );
     } on PreparedMealBuildException {
       return null;
@@ -211,6 +221,38 @@ class PreparedMealEditing {
       }
     }
     return true;
+  }
+
+  /// Puts the meal back as [previous] was before an edit, for the undo of
+  /// the edit: its foods, rows and totals, with the stock they took then.
+  Future<bool> restorePreparedMeal({
+    required PreparedMeal previous,
+    required InventoryItemRepository inventoryRepository,
+  }) async {
+    final currentMeals = await _writer.loadMeals();
+    final mealIndex = currentMeals.indexWhere((meal) => meal.id == previous.id);
+    if (mealIndex < 0) {
+      return false;
+    }
+    final currentItems = await inventoryRepository.readAllForChange();
+    final PreparedMealBuildResult built;
+    try {
+      built = buildPreparedMealRestoreResult(
+        currentMeal: currentMeals[mealIndex],
+        previous: previous,
+        currentItems: currentItems,
+        now: _writer.buildNow(),
+      );
+    } on PreparedMealBuildException {
+      return false;
+    }
+    return await _writer.saveMealsWithStock(
+      inventoryRepository: inventoryRepository,
+      previousItems: currentItems,
+      nextItems: built.nextItems,
+      previousMeals: currentMeals,
+      nextMeals: [...currentMeals]..[mealIndex] = built.preparedMeal,
+    );
   }
 
   /// Restores all remaining ingredients from a prepared meal back to inventory.

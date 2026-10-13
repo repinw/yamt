@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 export 'package:yamt/features/inventory/application/'
@@ -77,7 +78,8 @@ class PreparedMealsController extends _$PreparedMealsController {
     ),
   );
 
-  /// Changes a meal's name, image, portions or ingredients.
+  /// Changes a meal's name, image, portions or ingredients. A food that
+  /// [items] leaves out opens its row again; [deletedRows] leave the meal.
   Future<bool> updatePreparedMealDetails({
     required String mealId,
     required String name,
@@ -85,6 +87,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     String? imageAssetId,
     int? totalPortions,
     List<PreparedMealItemInput>? items,
+    List<String> deletedRows = const <String>[],
   }) => _keptAlive(
     (service) => service.updatePreparedMealDetails(
       mealId: mealId,
@@ -93,7 +96,14 @@ class PreparedMealsController extends _$PreparedMealsController {
       imageAssetId: imageAssetId,
       totalPortions: totalPortions,
       items: items,
+      deletedRows: deletedRows,
     ),
+    failed: false,
+  );
+
+  /// Puts the meal back as [previous] was before an edit.
+  Future<bool> restorePreparedMeal(PreparedMeal previous) => _keptAlive(
+    (service) => service.restorePreparedMeal(previous),
     failed: false,
   );
 
@@ -150,6 +160,31 @@ class PreparedMealsController extends _$PreparedMealsController {
     (service) => service.ignorePreparedMealPendingIngredient(
       mealId: mealId,
       ingredient: ingredient,
+    ),
+    failed: false,
+  );
+
+  /// Opens the ignored row [ingredient] again.
+  Future<bool> unignorePreparedMealPendingIngredient({
+    required String mealId,
+    required String ingredient,
+  }) => _keptAlive(
+    (service) => service.unignorePreparedMealPendingIngredient(
+      mealId: mealId,
+      ingredient: ingredient,
+    ),
+    failed: false,
+  );
+
+  /// Takes [component] out of the meal [mealId]: its row opens again and its
+  /// stock goes back to the Vorrat.
+  Future<bool> unassignPreparedMealComponent({
+    required String mealId,
+    required PreparedMealComponent component,
+  }) => _keptAlive(
+    (service) => service.unassignPreparedMealComponent(
+      mealId: mealId,
+      component: component,
     ),
     failed: false,
   );

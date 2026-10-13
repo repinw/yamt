@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
@@ -8,8 +9,14 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rows.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 /// Builds edited prepared meal and reconciled inventory state.
+///
+/// A food that [inputs] leaves out only loses its place in the meal: its
+/// row is open again, and its stock goes back to the Vorrat. The open or
+/// ignored [deletedRows] leave the meal.
 PreparedMealBuildResult buildPreparedMealEditResult({
   required PreparedMeal currentMeal,
   required List<InventoryItem> currentItems,
@@ -19,13 +26,18 @@ PreparedMealBuildResult buildPreparedMealEditResult({
   required String? imageAssetId,
   required int totalPortions,
   required List<PreparedMealItemInput> inputs,
+  List<String> deletedRows = const <String>[],
 }) {
   final trimmedName = name.trim();
   final consumedPortions = _consumedPortions(currentMeal);
+  final rowsMeal = currentMeal.withEditedRows(
+    keptItemIds: {for (final input in inputs) input.itemId},
+    deletedRows: deletedRows,
+  );
   if (trimmedName.isEmpty ||
       totalPortions < 1 ||
       totalPortions < consumedPortions ||
-      inputs.isEmpty) {
+      (inputs.isEmpty && rowsMeal.pendingRecipeIngredients.isEmpty)) {
     throw const PreparedMealBuildException(
       PreparedMealCreationFailureReason.invalidInput,
     );
@@ -45,6 +57,10 @@ PreparedMealBuildResult buildPreparedMealEditResult({
     remainingPortions: nextRemainingPortions,
   );
   final nutritionTotals = components.nutritionTotals;
+  final reconciled = reconciledPendingRecipeIngredients(
+    currentMeal: rowsMeal,
+    components: components,
+  );
 
   return PreparedMealBuildResult(
     nextItems: nextItems,
@@ -63,14 +79,72 @@ PreparedMealBuildResult buildPreparedMealEditResult({
       totalProtein: nutritionTotals.totalProtein,
       totalCarbs: nutritionTotals.totalCarbs,
       totalFat: nutritionTotals.totalFat,
-      pendingRecipeIngredients: reconciledPendingRecipeIngredients(
-        currentMeal: currentMeal,
-        components: components,
-      ),
+      pendingRecipeIngredients: reconciled.rows,
+      ignoredPendingRecipeIngredients: rowsMeal.ignoredPendingRecipeIngredients,
       updatedAt: now,
-      components: components,
+      components: reconciled.components,
     ),
   );
+}
+
+/// The meal back as [previous] was before an edit, with the stock its foods
+/// took then: the foods of [currentMeal] go back to the Vorrat and those of
+/// [previous] are taken again. Portions eaten since stay eaten, the pot
+/// stays as it is now, and the foods stay once a portion is gone.
+PreparedMealBuildResult buildPreparedMealRestoreResult({
+  required PreparedMeal currentMeal,
+  required PreparedMeal previous,
+  required List<InventoryItem> currentItems,
+  required DateTime now,
+}) {
+  final remainingPortions =
+      previous.totalPortions - _consumedPortions(currentMeal);
+  if (remainingPortions <= 0) {
+    throw const PreparedMealBuildException(
+      PreparedMealCreationFailureReason.invalidInput,
+    );
+  }
+  final restored = previous.copyWith(
+    remainingPortions: remainingPortions,
+    // The edit does not change the pot; a change since then stays.
+    inPot: currentMeal.inPot,
+    potTareWeight: currentMeal.potTareWeight,
+    updatedAt: now,
+  );
+  final sameFoods = const ListEquality<PreparedMealComponent>().equals(
+    previous.components,
+    currentMeal.components,
+  );
+  if (previous.totalPortions == currentMeal.totalPortions && sameFoods) {
+    // Only the name, the picture or the rows changed; the stock stays.
+    return PreparedMealBuildResult(
+      nextItems: currentItems,
+      preparedMeal: restored,
+    );
+  }
+  if (!sameFoods && !currentMeal.allows(PreparedMealAction.editIngredients)) {
+    throw const PreparedMealBuildException(
+      PreparedMealCreationFailureReason.invalidInput,
+    );
+  }
+
+  final nextItems = restoreItemsFromPreparedMeal(
+    currentItems: currentItems,
+    meal: currentMeal,
+  );
+  for (final component in previous.components) {
+    _reserveInventoryAmount(
+      nextItems: nextItems,
+      item: _findInventoryItem(nextItems, component.inventoryItemId),
+      itemId: component.inventoryItemId,
+      amount: remainingPreparedMealShareAmount(
+        usedAmount: component.usedAmount,
+        totalPortions: previous.totalPortions,
+        remainingPortions: remainingPortions,
+      ),
+    );
+  }
+  return PreparedMealBuildResult(nextItems: nextItems, preparedMeal: restored);
 }
 
 List<PreparedMealComponent> _buildEditedComponents({

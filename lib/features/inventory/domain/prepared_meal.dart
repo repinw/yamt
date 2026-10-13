@@ -86,6 +86,7 @@ class PreparedMeal {
     this.recipeIngredientAmountConversions =
         const <String, RecipeIngredientAmountConversion>{},
     this.pendingRecipeIngredients = const <String>[],
+    this.ignoredPendingRecipeIngredients = const <String>[],
     this.finalNetWeight,
     this.inPot,
     this.potTareWeight,
@@ -140,6 +141,18 @@ class PreparedMeal {
   /// The pending recipe ingredients.
   @JsonKey(defaultValue: <String>[])
   final List<String> pendingRecipeIngredients;
+
+  /// The open rows the cook ignored on this meal. They stay on the meal
+  /// struck through, count for nothing, do not keep the meal from being
+  /// eaten, and can still be filled or opened again. Absent when no row is
+  /// ignored. Unlike [ignoredRecipeIngredients], which the recipe leaves out
+  /// before cooking, these rows belong to this meal only.
+  @JsonKey(
+    defaultValue: <String>[],
+    includeIfNull: false,
+    toJson: _writeRowsOrNothing,
+  )
+  final List<String> ignoredPendingRecipeIngredients;
 
   /// The cooked net weight in g/ml after tare.
   @JsonKey(fromJson: readPreparedMealOptionalInt)
@@ -239,6 +252,7 @@ class PreparedMeal {
     Map<String, RecipeIngredientAmountConversion>?
     recipeIngredientAmountConversions,
     List<String>? pendingRecipeIngredients,
+    List<String>? ignoredPendingRecipeIngredients,
     Object? finalNetWeight = _keepValue,
     Object? inPot = _keepValue,
     Object? potTareWeight = _keepValue,
@@ -275,6 +289,9 @@ class PreparedMeal {
           this.recipeIngredientAmountConversions,
       pendingRecipeIngredients:
           pendingRecipeIngredients ?? this.pendingRecipeIngredients,
+      ignoredPendingRecipeIngredients:
+          ignoredPendingRecipeIngredients ??
+          this.ignoredPendingRecipeIngredients,
       finalNetWeight: finalNetWeight == _keepValue
           ? this.finalNetWeight
           : finalNetWeight as int?,
@@ -396,6 +413,10 @@ class PreparedMeal {
               other.pendingRecipeIngredients,
               pendingRecipeIngredients,
             ) &&
+            const ListEquality<String>().equals(
+              other.ignoredPendingRecipeIngredients,
+              ignoredPendingRecipeIngredients,
+            ) &&
             other.finalNetWeight == finalNetWeight &&
             other.inPot == inPot &&
             other.potTareWeight == potTareWeight &&
@@ -430,6 +451,7 @@ class PreparedMeal {
       const DeepCollectionEquality().hash(recipeIngredientAssignments),
       const DeepCollectionEquality().hash(recipeIngredientAmountConversions),
       const ListEquality<String>().hash(pendingRecipeIngredients),
+      const ListEquality<String>().hash(ignoredPendingRecipeIngredients),
       finalNetWeight,
       inPot,
       potTareWeight,
@@ -462,5 +484,9 @@ DateTime _readDateTimeOrNow(Object? value) {
   }
   return DateTime.now();
 }
+
+/// The stored [rows], or nothing when there are none.
+List<String>? _writeRowsOrNothing(List<String> rows) =>
+    rows.isEmpty ? null : rows;
 
 const Object _keepValue = Object();

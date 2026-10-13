@@ -118,6 +118,8 @@ PreparedMealActions _detailActions() {
     fillPendingIngredient: (_, _, _) async => true,
     fillPendingIngredientWithItem: (_, _, _, _) async => true,
     ignorePendingIngredient: (_, _) async => true,
+    unignorePendingIngredient: (_, _) async => true,
+    unassign: (_, _) async => true,
     unbundle: (_) async => true,
     edit: (_, _, _) async => true,
     saveTemplate: (_, _) async => true,

@@ -9,8 +9,8 @@ import 'package:yamt/features/inventory/presentation/models/'
     'prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart';
 
-/// Opens the detail page of a Vorrat meal: eat portions, fill or ignore its
-/// open rows, edit it, and the other meal actions.
+/// Opens the detail page of a Vorrat meal: eat portions, fill, ignore or
+/// open its rows, take foods out again, edit it, and the other meal actions.
 abstract final class PreparedMealDetailFlow {
   const new _();
 
@@ -55,6 +55,15 @@ abstract final class PreparedMealDetailFlow {
             mealId: mealId,
             ingredient: ingredient,
           ),
+      unignorePendingIngredient: (mealId, ingredient) =>
+          meals.unignorePreparedMealPendingIngredient(
+            mealId: mealId,
+            ingredient: ingredient,
+          ),
+      unassign: (mealId, component) => meals.unassignPreparedMealComponent(
+        mealId: mealId,
+        component: component,
+      ),
       unbundle: meals.unbundlePreparedMeal,
       edit: (mealId, result, messenger) => coordinator.updatePreparedMeal(
         context: context,
