@@ -20,6 +20,26 @@ InventoryItem _pieceItem() {
   );
 }
 
+/// Two eggs whose stock keeps parts of an egg, with 1.25 left.
+InventoryItem _fractionalPieceItem() {
+  return InventoryItem.create(
+    id: 'fractional-piece-item',
+    name: 'Egg',
+    entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 2,
+    initialQuantity: 2,
+    initialAmount: 2000,
+    currentAmount: 1250,
+    amountScale: inventoryPieceAmountScale,
+    amountUnit: InventoryAmountUnit.piece,
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 155,
+    ),
+  );
+}
+
 InventoryItem _fixedUnitItem() {
   return InventoryItem.create(
     id: 'fixed-unit-item',
@@ -80,6 +100,36 @@ void main() {
       expect(draft.inventoryAmount, 2);
       expect(draft.portionBaseAmount, 80);
       expect(draft.portionTotalAmount, 160);
+    });
+
+    test('maps a piece count to the stock as precisely as it keeps it', () {
+      InventoryItemEatSubmissionDraft draft(
+        InventoryItemEatCalculator calculator,
+        String count,
+      ) => calculator.buildSubmissionDraft(
+        usesPortionMode: true,
+        inventoryAmountText: '',
+        portionCountText: count,
+        portionAmountText: '60',
+        portionUnit: ConsumedUnit.grams,
+        inedibleAmountText: '',
+      );
+      final parts = InventoryItemEatCalculator(
+        item: _fractionalPieceItem(),
+        maxAmount: 1250,
+      );
+      final whole = InventoryItemEatCalculator(
+        item: _pieceItem(),
+        maxAmount: 3,
+      );
+
+      expect(draft(parts, '1,25').hasValidationErrors, isFalse);
+      expect(draft(parts, '1,25').inventoryAmount, 1250);
+      expect(draft(parts, '0,75').inventoryAmount, 750);
+      expect(draft(parts, '1').inventoryAmount, 1000);
+      expect(draft(parts, '1,3').hasInvalidInventoryAmount, isTrue);
+      expect(draft(whole, '2').inventoryAmount, 2);
+      expect(draft(whole, '1,5').hasInvalidInventoryAmount, isTrue);
     });
 
     test('reduces fixed-unit calories by non-edible amount', () {
