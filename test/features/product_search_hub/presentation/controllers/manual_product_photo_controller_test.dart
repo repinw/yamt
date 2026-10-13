@@ -51,6 +51,7 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   Completer<void>? frontGate;
   final saved =
       <({ProductPhoto? front, ProductPhoto? table, String barcode})>[];
+  final savedPrivate = <ProductPhoto>[];
 
   @override
   Future<ProductPhoto?> loadCameraPhoto() async => photos.removeAt(0);
@@ -77,6 +78,15 @@ class _FakePhotoRepository implements ProductPhotoRepository {
     return ProductPhotoUpload(
       frontAddress: front == null ? null : 'gs://bucket/front.jpg',
       // The upload never ends; starting it must not wait for it.
+      done: Completer<void>().future,
+    );
+  }
+
+  @override
+  Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) async {
+    savedPrivate.add(front);
+    return ProductPhotoUpload(
+      frontAddress: 'gs://bucket/users/user-1/food_photos/front.jpg',
       done: Completer<void>().future,
     );
   }
@@ -306,6 +316,91 @@ void main() {
 
     expect(await photos.savePhotos(barcode: '', name: 'Brot'), isNull);
     expect(repository.saved, isEmpty);
+  });
+
+  group('a front photo without a package (#658)', () {
+    /// Fills the rest of the form, as the user does by hand when the front
+    /// photo shows no package.
+    void fillForm(InventoryReceiptManualProductController product) {
+      product
+        ..updateNameText('Brot')
+        ..updateWeightAmount('500')
+        ..updateWeightUnit(InventoryAmountUnit.gram)
+        ..updateBarcode('4006381333931')
+        ..applyNutritionLabelDraft(_draft);
+    }
+
+    test('keeps the product out of the shared catalog', () async {
+      final repository = _FakePhotoRepository()
+        ..photos.add(_photo('front'))
+        ..frontError = const ProductFrontNotProductException();
+      final (:container, :photos, :product) = _setUp(repository);
+
+      expect(
+        await photos.takeFrontPhoto(),
+        ManualProductPhotoOutcome.notProduct,
+      );
+      fillForm(product);
+
+      expect(
+        container
+            .read(inventoryReceiptManualProductControllerProvider(_config))
+            .frontShowsNoPackage,
+        isTrue,
+      );
+      final payload = product.buildSavePayload();
+      expect(payload?.requiresGlobalPersistence, isFalse);
+      expect(payload?.selectedGlobalFoodItemId, isNull);
+    });
+
+    test('a new front photo with a package shares the product again', () async {
+      final repository = _FakePhotoRepository()
+        ..photos.addAll([_photo('junk'), _photo('front')])
+        ..frontError = const ProductFrontNotProductException();
+      final (container: _, :photos, :product) = _setUp(repository);
+      await photos.takeFrontPhoto();
+      fillForm(product);
+      expect(product.buildSavePayload()?.requiresGlobalPersistence, isFalse);
+
+      repository.frontError = null;
+      expect(await photos.takeFrontPhoto(), ManualProductPhotoOutcome.read);
+
+      expect(product.buildSavePayload()?.requiresGlobalPersistence, isTrue);
+    });
+
+    test('a closed camera keeps the photo without a package', () async {
+      final repository = _FakePhotoRepository()
+        ..photos.addAll([_photo('junk'), null])
+        ..frontError = const ProductFrontNotProductException();
+      final (container: _, :photos, :product) = _setUp(repository);
+      await photos.takeFrontPhoto();
+      fillForm(product);
+
+      expect(await photos.takeFrontPhoto(), ManualProductPhotoOutcome.canceled);
+
+      expect(product.buildSavePayload()?.requiresGlobalPersistence, isFalse);
+    });
+
+    test('is stored as a private photo, and no photo is shared', () async {
+      final repository = _FakePhotoRepository()
+        ..photos.addAll([_photo('junk'), _photo('table')])
+        ..frontError = const ProductFrontNotProductException();
+      final (container: _, :photos, product: _) = _setUp(repository);
+      await photos.takeFrontPhoto();
+      await photos.takeNutritionTablePhoto();
+
+      final upload = await photos.savePhotos(
+        barcode: '4006381333931',
+        name: 'Brot',
+      );
+
+      expect(
+        upload?.frontAddress,
+        'gs://bucket/users/user-1/food_photos/front.jpg',
+      );
+      expect(repository.savedPrivate.single.path, 'junk');
+      expect(repository.saved, isEmpty);
+    });
   });
 
   test('the nutrition table photo is taken while the front is read', () async {

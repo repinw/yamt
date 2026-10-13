@@ -32,6 +32,7 @@ class InventoryReceiptManualProductState {
     this.selectedProduct,
     this.ocrDraft,
     this.barcodeOrigin,
+    this.frontShowsNoPackage = false,
     this.error,
   });
 
@@ -98,6 +99,10 @@ class InventoryReceiptManualProductState {
   /// Where the barcode came from when a photo delivered it, or null when
   /// the user typed or scanned it.
   final ManualProductBarcodeOrigin? barcodeOrigin;
+
+  /// Whether the AI found no package on the front photo. Such a product
+  /// stays the user's own and out of the shared catalog (#658).
+  final bool frontShowsNoPackage;
 
   /// The error.
   final InventoryReceiptManualProductError? error;
@@ -209,6 +214,7 @@ class InventoryReceiptManualProductState {
     Object? selectedProduct = _keepValue,
     Object? ocrDraft = _keepValue,
     Object? barcodeOrigin = _keepValue,
+    bool? frontShowsNoPackage,
     Object? error = _keepValue,
   }) {
     return InventoryReceiptManualProductState(
@@ -241,6 +247,7 @@ class InventoryReceiptManualProductState {
       barcodeOrigin: barcodeOrigin == _keepValue
           ? this.barcodeOrigin
           : barcodeOrigin as ManualProductBarcodeOrigin?,
+      frontShowsNoPackage: frontShowsNoPackage ?? this.frontShowsNoPackage,
       error: error == _keepValue
           ? this.error
           : error as InventoryReceiptManualProductError?,

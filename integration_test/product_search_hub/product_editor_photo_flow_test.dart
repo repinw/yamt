@@ -19,10 +19,14 @@ import 'package:yamt/features/product_nutrition/domain/'
 import 'package:yamt/features/product_search_hub/data/'
     'product_photo_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_form_field.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form/manual_product_editor_header.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_photo_section.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -44,10 +48,15 @@ final Uint8List _pixel = Uint8List.fromList(const [
 ]);
 
 const _frontUrl = 'gs://bucket/product_images/user-1/photo-1/front.jpg';
+const _privateFrontUrl = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
 
 class _FakePhotoRepository implements ProductPhotoRepository {
   var _photoCount = 0;
   final saved = <String>[];
+  final savedPrivate = <String>[];
+
+  /// How many of the next front photos show no package.
+  int notPackagePhotos = 0;
 
   @override
   Future<ProductPhoto?> loadCameraPhoto() async {
@@ -66,6 +75,10 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   @override
   Future<ProductFrontDetails> loadFrontDetails(ProductPhoto photo) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (notPackagePhotos > 0) {
+      notPackagePhotos--;
+      throw const ProductFrontNotProductException();
+    }
     return const ProductFrontDetails(
       name: 'Haferflocken zart',
       brand: 'REWE Bio',
@@ -85,6 +98,15 @@ class _FakePhotoRepository implements ProductPhotoRepository {
     return ProductPhotoUpload(
       frontAddress: front == null ? null : _frontUrl,
       // The upload never ends; the editor saves without waiting for it.
+      done: Completer<void>().future,
+    );
+  }
+
+  @override
+  Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) async {
+    savedPrivate.add(front.path);
+    return ProductPhotoUpload(
+      frontAddress: _privateFrontUrl,
       done: Completer<void>().future,
     );
   }
@@ -182,6 +204,23 @@ Widget _buildHarness({
   );
 }
 
+/// Types [text] into [field], as the user does when no photo filled it.
+Future<void> _enter(
+  WidgetTester tester,
+  ManualProductFormField field,
+  String text,
+) async {
+  await tester.ensureVisible(find.byKey(field.key));
+  await tester.enterText(find.byKey(field.key), text);
+  await tester.pumpAndSettle();
+}
+
+/// Waits until the snack bar of a photo is gone, so it covers nothing.
+Future<void> _waitForSnackBar(WidgetTester tester) async {
+  await tester.pump(const Duration(seconds: 5));
+  await tester.pumpAndSettle();
+}
+
 String _text(WidgetTester tester, ManualProductFormField field) {
   return tester
       .widget<EditableText>(
@@ -228,8 +267,88 @@ void main() {
 
     expect(photos.saved, ['4006381333931']);
     expect(result, isA<InventoryReceiptManualProductResult>());
-    final item = (result! as InventoryReceiptManualProductResult).item;
+    final saved = result! as InventoryReceiptManualProductResult;
+    expect(saved.requiresGlobalPersistence, isTrue);
+    final item = saved.item;
     expect(item.name, 'Haferflocken zart');
     expect(item.imageUrl, _frontUrl);
+  });
+
+  testWidgets('a front photo without a package keeps the product and its '
+      'photo private (#658)', (tester) async {
+    final photos = _FakePhotoRepository()..notPackagePhotos = 1;
+    Object? result;
+    await tester.pumpWidget(
+      _buildHarness(photos: photos, onResult: (value) => result = value),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('open_editor')));
+    await tester.pumpAndSettle();
+    // The photo step says what happens with the photos.
+    expect(
+      find.byKey(ManualProductPhotoSection.sharingNoticeKey),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    await tester.pumpAndSettle();
+    expect(_text(tester, ManualProductFormField.name), isEmpty);
+    await _waitForSnackBar(tester);
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.nutritionTableKey));
+    await tester.pumpAndSettle();
+    await _enter(tester, ManualProductFormField.name, 'Brot vom Bäcker');
+    await _enter(tester, ManualProductFormField.weightAmount, '500');
+    await tester.ensureVisible(
+      find.byKey(ManualProductEditorHeader.weightUnitKey),
+    );
+    await tester.tap(find.byKey(ManualProductEditorHeader.weightUnitKey));
+    await tester.pumpAndSettle();
+    await _enter(tester, ManualProductFormField.barcode, '4006381333931');
+
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(photos.saved, isEmpty);
+    expect(photos.savedPrivate, hasLength(1));
+    expect(result, isA<InventoryReceiptManualProductResult>());
+    final saved = result! as InventoryReceiptManualProductResult;
+    expect(saved.requiresGlobalPersistence, isFalse);
+    expect(saved.item.name, 'Brot vom Bäcker');
+    expect(saved.item.imageUrl, _privateFrontUrl);
+  });
+
+  testWidgets('a new front photo with a package shares the product again '
+      '(#658)', (tester) async {
+    final photos = _FakePhotoRepository()..notPackagePhotos = 1;
+    Object? result;
+    await tester.pumpWidget(
+      _buildHarness(photos: photos, onResult: (value) => result = value),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('open_editor')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    await tester.pumpAndSettle();
+    await _waitForSnackBar(tester);
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    await tester.pumpAndSettle();
+    expect(_text(tester, ManualProductFormField.name), 'Haferflocken zart');
+    await tester.tap(find.byKey(ManualProductPhotoSection.nutritionTableKey));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(photos.saved, ['4006381333931']);
+    expect(photos.savedPrivate, isEmpty);
+    final saved = result! as InventoryReceiptManualProductResult;
+    expect(saved.requiresGlobalPersistence, isTrue);
+    expect(saved.item.imageUrl, _frontUrl);
   });
 }

@@ -307,6 +307,20 @@ void main() {
     expect(find.text('Nutrition table'), findsOneWidget);
   });
 
+  testWidgets('the photo step says the AI reads the photos and a barcode '
+      'shares the front (#658)', (tester) async {
+    await tester.pumpWidget(_editor(_Calls()));
+
+    final notice = tester.widget<Text>(
+      find.byKey(ManualProductPhotoSection.sharingNoticeKey),
+    );
+    expect(
+      notice.data,
+      'The AI reads the photos. If the product has a barcode, other users '
+      'see the front as its product image.',
+    );
+  });
+
   testWidgets('says where a barcode from a photo came from', (tester) async {
     final calls = _Calls();
     await tester.pumpWidget(

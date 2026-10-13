@@ -74,6 +74,9 @@ GlobalFoodItem buildInventoryManualAddGlobalFoodItem({
 }
 
 /// Builds inventory item persisted from manual add selection.
+///
+/// Without [canReferenceGlobalItem], [globalProduct] is not in the shared
+/// catalog, so the item gets its pending id instead of the catalog id.
 InventoryItem buildInventoryManualAddSavedItem({
   required String id,
   required GlobalFoodItem globalProduct,
@@ -81,10 +84,13 @@ InventoryItem buildInventoryManualAddSavedItem({
   required String storeName,
   required String? inventoryWeight,
   String? imageUrl,
+  bool canReferenceGlobalItem = true,
 }) {
   return InventoryItem.create(
     id: id,
-    globalFoodItemId: globalProduct.id,
+    globalFoodItemId: canReferenceGlobalItem
+        ? globalProduct.id
+        : buildPendingGlobalFoodItemId(globalProduct.resolvedFoodFingerprint),
     name: globalProduct.name,
     entryDate: now,
     storeName: storeName,

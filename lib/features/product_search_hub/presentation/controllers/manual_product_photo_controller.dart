@@ -25,7 +25,9 @@ const _logName = 'ManualProductPhotoController';
 /// product, and stores them when the product is saved.
 ///
 /// The barcode scanner looks at every photo first. Only when it finds no
-/// barcode does the barcode the AI read on the front count.
+/// barcode does the barcode the AI read on the front count. A front photo
+/// that shows no package keeps the product out of the shared catalog until
+/// a new front photo replaces it (#658).
 @riverpod
 class ManualProductPhotoController extends _$ManualProductPhotoController {
   @override
@@ -55,6 +57,7 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
       isReadingFront: true,
       hasReadFront: false,
     );
+    _product.updateFrontShowsNoPackage(value: false);
     try {
       await _applyScannedBarcode(repository, photo);
       final details = await repository.loadFrontDetails(photo);
@@ -63,6 +66,7 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
       state = state.copyWith(hasReadFront: true, frontDetails: details);
       return ManualProductPhotoOutcome.read;
     } on ProductFrontNotProductException {
+      if (ref.mounted) _product.updateFrontShowsNoPackage(value: true);
       return ManualProductPhotoOutcome.notProduct;
     } on ProductFrontUnreadableException {
       return ManualProductPhotoOutcome.retakePhoto;
@@ -137,23 +141,30 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
   /// Starts storing the photos as shared product images. Returns null
   /// without a photo.
   ///
-  /// The save does not wait for [ProductPhotoUpload.done]. Throws when the
-  /// upload cannot start.
+  /// A front photo that shows no package is stored as a private food photo
+  /// instead, and no photo is shared. The save does not wait for
+  /// [ProductPhotoUpload.done]. Throws when the upload cannot start.
   Future<ProductPhotoUpload?> savePhotos({
     required String barcode,
     required String name,
   }) async {
     if (!state.hasPhoto) return null;
+    final front = state.front;
+    final keepsPrivate = ref
+        .read(inventoryReceiptManualProductControllerProvider(config))
+        .frontShowsNoPackage;
     state = state.copyWith(isSaving: true);
     try {
-      return await ref
-          .read(productPhotoRepositoryProvider)
-          .saveProductPhotos(
-            front: state.front,
-            nutritionTable: state.nutritionTable,
-            barcode: barcode,
-            name: name,
-          );
+      final repository = ref.read(productPhotoRepositoryProvider);
+      if (keepsPrivate && front != null) {
+        return await repository.savePrivateFrontPhoto(front);
+      }
+      return await repository.saveProductPhotos(
+        front: front,
+        nutritionTable: state.nutritionTable,
+        barcode: barcode,
+        name: name,
+      );
     } finally {
       if (ref.mounted) state = state.copyWith(isSaving: false);
     }

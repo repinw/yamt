@@ -12,7 +12,9 @@ part of 'manual_product_photo_controller.dart';
 /// product, and stores them when the product is saved.
 ///
 /// The barcode scanner looks at every photo first. Only when it finds no
-/// barcode does the barcode the AI read on the front count.
+/// barcode does the barcode the AI read on the front count. A front photo
+/// that shows no package keeps the product out of the shared catalog until
+/// a new front photo replaces it (#658).
 
 @ProviderFor(ManualProductPhotoController)
 final manualProductPhotoControllerProvider =
@@ -22,7 +24,9 @@ final manualProductPhotoControllerProvider =
 /// product, and stores them when the product is saved.
 ///
 /// The barcode scanner looks at every photo first. Only when it finds no
-/// barcode does the barcode the AI read on the front count.
+/// barcode does the barcode the AI read on the front count. A front photo
+/// that shows no package keeps the product out of the shared catalog until
+/// a new front photo replaces it (#658).
 final class ManualProductPhotoControllerProvider
     extends
         $NotifierProvider<
@@ -33,7 +37,9 @@ final class ManualProductPhotoControllerProvider
   /// product, and stores them when the product is saved.
   ///
   /// The barcode scanner looks at every photo first. Only when it finds no
-  /// barcode does the barcode the AI read on the front count.
+  /// barcode does the barcode the AI read on the front count. A front photo
+  /// that shows no package keeps the product out of the shared catalog until
+  /// a new front photo replaces it (#658).
   ManualProductPhotoControllerProvider._({
     required ManualProductPhotoControllerFamily super.from,
     required InventoryReceiptManualProductConfig super.argument,
@@ -80,13 +86,15 @@ final class ManualProductPhotoControllerProvider
 }
 
 String _$manualProductPhotoControllerHash() =>
-    r'0bcea381ee9eed4e064bbaaa16c7b024f5f60fb9';
+    r'9956311a7dd59edaeea662e1a65b6a55285585c2';
 
 /// Takes the package photos of the product editor, reads them into the
 /// product, and stores them when the product is saved.
 ///
 /// The barcode scanner looks at every photo first. Only when it finds no
-/// barcode does the barcode the AI read on the front count.
+/// barcode does the barcode the AI read on the front count. A front photo
+/// that shows no package keeps the product out of the shared catalog until
+/// a new front photo replaces it (#658).
 
 final class ManualProductPhotoControllerFamily extends $Family
     with
@@ -110,7 +118,9 @@ final class ManualProductPhotoControllerFamily extends $Family
   /// product, and stores them when the product is saved.
   ///
   /// The barcode scanner looks at every photo first. Only when it finds no
-  /// barcode does the barcode the AI read on the front count.
+  /// barcode does the barcode the AI read on the front count. A front photo
+  /// that shows no package keeps the product out of the shared catalog until
+  /// a new front photo replaces it (#658).
 
   ManualProductPhotoControllerProvider call(
     InventoryReceiptManualProductConfig config,
@@ -124,7 +134,9 @@ final class ManualProductPhotoControllerFamily extends $Family
 /// product, and stores them when the product is saved.
 ///
 /// The barcode scanner looks at every photo first. Only when it finds no
-/// barcode does the barcode the AI read on the front count.
+/// barcode does the barcode the AI read on the front count. A front photo
+/// that shows no package keeps the product out of the shared catalog until
+/// a new front photo replaces it (#658).
 
 abstract class _$ManualProductPhotoController
     extends $Notifier<ManualProductPhotoState> {

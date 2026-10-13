@@ -230,6 +230,12 @@ class InventoryReceiptManualProductController
     );
   }
 
+  /// Sets whether the AI found no package on the front photo. Such a
+  /// product stays out of the shared catalog.
+  void updateFrontShowsNoPackage({required bool value}) {
+    state = state.copyWith(frontShowsNoPackage: value);
+  }
+
   ManualProductResolvedWeightInput get _resolvedManualWeightInput {
     return resolveManualProductWeightInput(
       state.weightAmount,
@@ -240,7 +246,8 @@ class InventoryReceiptManualProductController
   /// Builds the save payload.
   ///
   /// [photoImageUrl] is the stored front photo; it is the product image when
-  /// the product has none.
+  /// the product has none. A product whose front photo shows no package
+  /// stays the user's own: the payload asks for no catalog write (#658).
   InventoryReceiptManualProductSavePayload? buildSavePayload({
     InventoryReceiptManualProductAction action =
         InventoryReceiptManualProductAction.addToInventory,
@@ -353,10 +360,12 @@ class InventoryReceiptManualProductController
       item: updatedItem,
       selectedProduct: effectiveSelectedProduct?.externalProduct,
       selectedGlobalFoodItemId: effectiveSelectedProduct?.globalFoodItemId,
-      requiresGlobalPersistence: _requiresGlobalPersistenceForSelection(
-        selection: effectiveSelectedProduct,
-        editKind: selectedEditKind,
-      ),
+      requiresGlobalPersistence:
+          !state.frontShowsNoPackage &&
+          _requiresGlobalPersistenceForSelection(
+            selection: effectiveSelectedProduct,
+            editKind: selectedEditKind,
+          ),
       globalPackageWeight: globalPackageWeight,
     );
   }

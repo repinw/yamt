@@ -516,6 +516,17 @@ and feature description docs. This is product-facing; architecture rules stay in
   (`gs://…`) of the front photo, which shows from the local image cache
   until it is uploaded. A failed upload keeps that address and says so.
   The shared catalog does not get this photo yet (#414).
+- Under the photo tiles a short line says that the AI reads the photos and
+  that, when the product has a barcode, other users see the front as its
+  product image.
+- When the AI finds no package on the front photo, the message says so and
+  that the product stays private, with "New photo". Kept like that, the
+  product stays the user's own (#658): it goes into the Vorrat or the
+  diary only, not into the shared catalog, and records no barcode for
+  other users' scans. Its front photo is stored as a private food photo
+  (`users/{uid}/food_photos/`), visible to the household, and no photo goes
+  to `product_images`. A new front photo that shows a package shares the
+  product again.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.
 - "Create" opens an empty product form. Name, unit, and the seven EU label

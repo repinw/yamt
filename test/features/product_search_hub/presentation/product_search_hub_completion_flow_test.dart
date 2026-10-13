@@ -15,6 +15,7 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
@@ -356,6 +357,7 @@ void main() {
               item: _manualItemWithNutrition().copyWith(
                 barcode: '4006381333931',
               ),
+              selectedGlobalFoodItemId: _catalogId,
               eatSelection: EatSelection(
                 inventoryAmount: 200,
                 loggedAt: DateTime(2026, 4, 13, 12),
@@ -378,7 +380,7 @@ void main() {
     expect(plan.sourceInventoryAmountToRestore, isNull);
     expect(inventoryController.addedItems, isEmpty);
     expect(inventoryController.stagedConsumptions, isEmpty);
-    // The shared catalog still learns the product.
+    // The shared catalog still learns the barcode of its product.
     expect(barcodeRepository.recordedBarcodes, ['4006381333931']);
     expect(find.text('Planned for the day'), findsOneWidget);
   });
@@ -557,7 +559,10 @@ void main() {
             l10n: l10n,
             args: const ProductSearchHubRouteArgs.inventory(),
             sourceKey: 'manual-source',
-            result: _manualResult(skipMissingBarcodePrompt: false),
+            result: _manualResult(
+              skipMissingBarcodePrompt: false,
+              selectedGlobalFoodItemId: _catalogId,
+            ),
           );
         },
       ),
@@ -655,6 +660,89 @@ void main() {
     expect(completion?.saved, isFalse);
     expect(completion?.shouldCloseHub, isFalse);
     expect(inventoryController.addedItems, isEmpty);
+  });
+
+  testWidgets('a product kept out of the catalog gets its pending id and no '
+      'barcode candidate (#658)', (tester) async {
+    final inventoryController = _RecordingInventoryItemsController();
+    final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository();
+    final catalog = _RecordingGlobalFoodItemRepository();
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        barcodeRepository: barcodeRepository,
+        overrides: [
+          globalFoodItemRepositoryProvider.overrideWithValue(catalog),
+        ],
+        onRun: (context, container, l10n) async {
+          await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.inventory(),
+            sourceKey: '4006381333931',
+            // As the editor saves a product whose front photo shows no
+            // package.
+            result: _manualResult(
+              item: _manualItemWithNutrition().copyWith(
+                barcode: '4006381333931',
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+
+    final item = inventoryController.addedItems.single;
+    expect(item.normalizedBarcode, '4006381333931');
+    expect(isPendingGlobalFoodItemId(item.globalFoodItemId), isTrue);
+    expect(catalog.appendedItems, isEmpty);
+    expect(barcodeRepository.recordedBarcodes, isEmpty);
+  });
+
+  testWidgets('a new product goes into the catalog with its barcode', (
+    tester,
+  ) async {
+    final inventoryController = _RecordingInventoryItemsController();
+    final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository();
+    final catalog = _RecordingGlobalFoodItemRepository();
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        barcodeRepository: barcodeRepository,
+        overrides: [
+          globalFoodItemRepositoryProvider.overrideWithValue(catalog),
+        ],
+        onRun: (context, container, l10n) async {
+          await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.inventory(),
+            sourceKey: '4006381333931',
+            result: InventoryReceiptManualProductResult(
+              item: _manualItemWithNutrition().copyWith(
+                barcode: '4006381333931',
+              ),
+              action: InventoryReceiptManualProductAction.addToInventory,
+              skipMissingBarcodePrompt: true,
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+
+    final item = inventoryController.addedItems.single;
+    expect(item.globalFoodItemId, catalog.appendedItems.single.id);
+    expect(barcodeRepository.recordedBarcodes, ['4006381333931']);
   });
 }
 
@@ -854,6 +942,17 @@ class _RecordingGlobalBarcodeCandidateRepository
   }
 }
 
+class _RecordingGlobalFoodItemRepository extends Fake
+    implements GlobalFoodItemRepository {
+  final appendedItems = <GlobalFoodItem>[];
+
+  @override
+  Future<bool> appendAll(List<GlobalFoodItem> items) async {
+    appendedItems.addAll(items);
+    return true;
+  }
+}
+
 class _NoopGlobalBarcodeCandidateRepository
     implements GlobalBarcodeCandidateRepository {
   const new();
@@ -874,16 +973,24 @@ class _NoopGlobalBarcodeCandidateRepository
   }) async {}
 }
 
+/// Id of a product the shared catalog already has.
+const _catalogId = 'off-4006381333931';
+
+/// A result that writes nothing to the shared catalog. With a
+/// [selectedGlobalFoodItemId] the catalog already has its product; without
+/// one the product stays out of the catalog.
 InventoryReceiptManualProductResult _manualResult({
   InventoryItem? item,
   EatSelection? eatSelection,
   bool skipMissingBarcodePrompt = true,
+  String? selectedGlobalFoodItemId,
 }) {
   return InventoryReceiptManualProductResult(
     item: item ?? _manualItem(),
     action: eatSelection == null
         ? InventoryReceiptManualProductAction.addToInventory
         : InventoryReceiptManualProductAction.eatNow,
+    selectedGlobalFoodItemId: selectedGlobalFoodItemId,
     requiresGlobalPersistence: false,
     skipMissingBarcodePrompt: skipMissingBarcodePrompt,
     eatSelection: eatSelection,

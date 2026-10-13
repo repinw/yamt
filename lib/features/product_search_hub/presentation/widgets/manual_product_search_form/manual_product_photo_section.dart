@@ -40,6 +40,10 @@ class ManualProductPhotoSection extends StatelessWidget {
   /// Key of the nutrition table photo tile.
   static const nutritionTableKey = Key('manual_product_nutrition_table_photo');
 
+  /// Key of the notice that the AI reads the photos and other users may see
+  /// the front.
+  static const sharingNoticeKey = Key('manual_product_photo_sharing_notice');
+
   /// Key of the button that scans a barcode.
   static const scanBarcodeKey = Key(
     'receipt_review_manual_barcode_scan_button',
@@ -128,6 +132,11 @@ class ManualProductPhotoSection extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        Text(
+          l10n.productEditorPhotoSharingNotice,
+          key: sharingNoticeKey,
+          style: textTheme.bodySmall?.copyWith(color: colors.muted),
         ),
         Row(
           spacing: AppSpacing.sm,

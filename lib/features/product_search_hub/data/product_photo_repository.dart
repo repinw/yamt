@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/storage_image_cache.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -185,25 +186,13 @@ class ProductPhotoRepository {
     required String barcode,
     required String name,
   }) async {
-    final storage = _storage;
-    final ownerId = _ownerId;
-    if (storage == null || ownerId == null) {
-      throw StateError('Product photos need a signed-in user.');
-    }
+    final (:storage, :ownerId) = _signedIn();
     final folder = storage.ref('product_images/$ownerId/${_uuid.v4()}');
-    // Awaited, so the future is a plain Future<void> and not the SDK's
-    // UploadTask, whose catchError needs a TaskSnapshot back.
-    Future<void> upload(ProductPhoto photo, String kind) async {
-      await folder
-          .child('$kind.jpg')
-          .putData(
-            photo.bytes,
-            SettableMetadata(
-              contentType: photo.mimeType,
-              customMetadata: {'kind': kind, 'barcode': barcode, 'name': name},
-            ),
-          );
-    }
+    Future<void> upload(ProductPhoto photo, String kind) => _put(
+      folder.child('$kind.jpg'),
+      photo,
+      {'kind': kind, 'barcode': barcode, 'name': name},
+    );
 
     // ponytail: the upload lives in memory; a closed app loses it. A
     // lasting upload queue comes with #349.
@@ -225,18 +214,68 @@ class ProductPhotoRepository {
     }
     String? frontAddress;
     if (front != null) {
-      final frontRef = folder.child('front.jpg');
-      frontAddress = 'gs://${frontRef.bucket}/${frontRef.fullPath}';
-      await _imageCache.putFile(
-        frontAddress,
-        front.bytes,
-        fileExtension: 'jpg',
-      );
+      frontAddress = await _cache(folder.child('front.jpg'), front);
       uploads.add(upload(front, 'front'));
     }
     return ProductPhotoUpload(
       frontAddress: frontAddress,
       done: Future.wait(uploads).then((_) {}),
+    );
+  }
+
+  /// Starts storing [front] as a private food photo of the user and returns
+  /// its Storage address together with the running upload.
+  ///
+  /// It is for a product whose front photo shows no package, which stays out
+  /// of the shared catalog (#658): only the user and their household see the
+  /// photo, and it never becomes a shared product image. Like
+  /// [saveProductPhotos], the address is known before the upload and the
+  /// photo shows from the image cache until then. Throws a [StateError] when
+  /// signed out.
+  Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) async {
+    final (:storage, :ownerId) = _signedIn();
+    final photoRef = storage.ref(
+      'users/$ownerId/$privateFoodPhotoFolder/${_uuid.v4()}.jpg',
+    );
+    return ProductPhotoUpload(
+      frontAddress: await _cache(photoRef, front),
+      done: _put(photoRef, front),
+    );
+  }
+
+  /// Storage and the user's id. Throws a [StateError] when signed out.
+  ({FirebaseStorage storage, String ownerId}) _signedIn() {
+    final storage = _storage;
+    final ownerId = _ownerId;
+    if (storage == null || ownerId == null) {
+      throw StateError('Product photos need a signed-in user.');
+    }
+    return (storage: storage, ownerId: ownerId);
+  }
+
+  /// Puts [photo] into the image cache under the Storage address of
+  /// [photoRef] and returns the address.
+  Future<String> _cache(Reference photoRef, ProductPhoto photo) async {
+    final address = 'gs://${photoRef.bucket}/${photoRef.fullPath}';
+    await _imageCache.putFile(address, photo.bytes, fileExtension: 'jpg');
+    return address;
+  }
+
+  /// Uploads [photo] to [photoRef].
+  ///
+  /// Awaited, so the future is a plain `Future<void>` and not the SDK's
+  /// [UploadTask], whose catchError needs a [TaskSnapshot] back.
+  Future<void> _put(
+    Reference photoRef,
+    ProductPhoto photo, [
+    Map<String, String>? customMetadata,
+  ]) async {
+    await photoRef.putData(
+      photo.bytes,
+      SettableMetadata(
+        contentType: photo.mimeType,
+        customMetadata: customMetadata,
+      ),
     );
   }
 
