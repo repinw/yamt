@@ -5945,6 +5945,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookbookLoadFailed => 'Das Kochbuch konnte nicht geladen werden.';
 
   @override
+  String get cookbookRemoveAction => 'Entfernen';
+
+  @override
+  String cookbookRemovedMessage(String name) {
+    return '$name entfernt';
+  }
+
+  @override
+  String cookbookRemoveFailed(String name) {
+    return '$name konnte nicht entfernt werden.';
+  }
+
+  @override
   String get homeActionCook => 'Kochen';
 
   @override

@@ -9830,6 +9830,24 @@ abstract class AppLocalizations {
   /// **'Could not load the cookbook.'**
   String get cookbookLoadFailed;
 
+  /// Removes a recipe or Vorlage from the cookbook.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cookbookRemoveAction;
+
+  /// No description provided for @cookbookRemovedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed'**
+  String cookbookRemovedMessage(String name);
+
+  /// No description provided for @cookbookRemoveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove {name}.'**
+  String cookbookRemoveFailed(String name);
+
   /// No description provided for @homeActionCook.
   ///
   /// In en, this message translates to:

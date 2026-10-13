@@ -10,6 +10,7 @@ import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/cookbook_remove_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_cook_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_section_title.dart';
@@ -124,7 +125,20 @@ class _RecipeBody extends ConsumerWidget {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              RecipeHero(recipe: recipe),
+              RecipeHero(
+                recipe: recipe,
+                // The saved recipe, without this cooking's changes, so the
+                // undo brings it back as it was.
+                onRemove: isCooking
+                    ? null
+                    : () => unawaited(
+                        CookbookRemoveFlow.remove(
+                          context,
+                          template: view.saved,
+                          closePage: true,
+                        ),
+                      ),
+              ),
               if (activeCount > 0)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(

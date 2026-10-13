@@ -25,6 +25,8 @@ templates list and later the cooking flow.
   the ingredients for one cooking, and saving those choices on the recipe.
 - The overview that sorts saved templates into Vorlagen and recipes and marks
   which foods the Vorrat holds.
+- Removing a Vorlage or recipe from the Kochbuch, from a long press on its
+  card or from the recipe page, and its undo.
 
 ## Does Not Own
 
@@ -44,6 +46,9 @@ templates list and later the cooking flow.
 ## Rules
 
 - A template with recipe ingredients is a recipe; one without is a Vorlage.
+- Removing a template deletes only its document. Its photo stays, because
+  Vorrat meals cooked from it keep the same photo reference, and the undo
+  saves the same template back.
 - A food counts as in stock when the ingredient matcher finds a Vorrat item
   that is not used up. Ignored recipe ingredients are left out.
 - "Offen" shows meals that are still in the pot or have open rows, and

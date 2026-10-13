@@ -3388,6 +3388,22 @@
     }
   },
   "cookbookLoadFailed": "Could not load the cookbook.",
+  "cookbookRemoveAction": "Remove",
+  "@cookbookRemoveAction": {
+    "description": "Removes a recipe or Vorlage from the cookbook."
+  },
+  "cookbookRemovedMessage": "{name} removed",
+  "@cookbookRemovedMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "cookbookRemoveFailed": "Could not remove {name}.",
+  "@cookbookRemoveFailed": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "homeActionCook": "Cook",
   "cookbookFreeCookingAction": "Cook freely",
   "cookbookFreeCookingDescription": "Say or type ingredients while you cook",

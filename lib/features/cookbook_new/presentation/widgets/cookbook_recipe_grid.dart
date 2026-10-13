@@ -9,13 +9,21 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Recipes in two columns; each row is as tall as its taller card.
 class CookbookRecipeGrid extends StatelessWidget {
   /// Creates the grid of [recipes].
-  const new({required this.recipes, required this.onOpen, super.key});
+  const new({
+    required this.recipes,
+    required this.onOpen,
+    required this.onRemove,
+    super.key,
+  });
 
   /// The recipes with their stock flags.
   final List<CookbookEntry> recipes;
 
   /// Opens a recipe.
   final ValueChanged<CookbookEntry> onOpen;
+
+  /// Removes a recipe.
+  final ValueChanged<CookbookEntry> onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +55,11 @@ class CookbookRecipeGrid extends StatelessWidget {
   }
 
   Widget _card(CookbookEntry entry) {
-    return CookbookRecipeCard(entry: entry, onOpen: () => onOpen(entry));
+    return CookbookRecipeCard(
+      key: CookbookRecipeCard.cardKey(entry.meal.id),
+      entry: entry,
+      onOpen: () => onOpen(entry),
+      onRemove: () => onRemove(entry),
+    );
   }
 }

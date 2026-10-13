@@ -18,6 +18,7 @@ class CookbookTemplateStrip extends StatelessWidget {
     required this.horizontalPadding,
     required this.onCreate,
     required this.onOpen,
+    required this.onRemove,
     super.key,
   });
 
@@ -36,6 +37,9 @@ class CookbookTemplateStrip extends StatelessWidget {
   /// Opens a Vorlage.
   final ValueChanged<CookbookEntry> onOpen;
 
+  /// Removes a Vorlage.
+  final ValueChanged<CookbookEntry> onRemove;
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -48,7 +52,12 @@ class CookbookTemplateStrip extends StatelessWidget {
           children: [
             _CreateTile(key: createKey, onTap: onCreate),
             for (final entry in templates)
-              CookbookTemplateTile(entry: entry, onOpen: () => onOpen(entry)),
+              CookbookTemplateTile(
+                key: CookbookTemplateTile.tileKey(entry.meal.id),
+                entry: entry,
+                onOpen: () => onOpen(entry),
+                onRemove: () => onRemove(entry),
+              ),
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cookbook_new/domain/cookbook_overview.dart';
 import 'package:yamt/features/inventory/application/ingredient_inventory_matcher.dart';
@@ -51,5 +53,37 @@ class CookbookController extends _$CookbookController {
       ..invalidate(cookbookTemplatesProvider)
       ..invalidate(inventoryQuickEatMealsProvider)
       ..invalidate(inventoryQuickEatItemsProvider);
+  }
+
+  /// Removes the saved Vorlage or recipe [template] from the Kochbuch. Its
+  /// images stay, and meals cooked from it stay in the Vorrat. Returns
+  /// whether it worked.
+  Future<bool> remove(PreparedMeal template) =>
+      _write('remove', (templates) => templates.delete(template.id));
+
+  /// Saves [template] back as [remove] found it: the same id and content,
+  /// with its image references. Returns whether it worked.
+  Future<bool> restore(PreparedMeal template) =>
+      _write('restore', (templates) => templates.save(template));
+
+  Future<bool> _write(
+    String action,
+    Future<bool> Function(PreparedMealTemplateRepository templates) write,
+  ) async {
+    // The undo may run after the Kochbuch closed.
+    final link = ref.keepAlive();
+    try {
+      return await write(ref.read(preparedMealTemplateRepositoryProvider));
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to $action the template.',
+        name: 'CookbookController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    } finally {
+      link.close();
+    }
   }
 }
