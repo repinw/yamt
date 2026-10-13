@@ -15,6 +15,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_label_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_selection.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_fields.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
 const _addMoreKey = Key('inventory_item_amount_dialog_add_more_button');
@@ -47,6 +48,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.showAmount = true,
     this.showsInedibleLink = true,
     this.onCompleteValues,
+    this.onRemove,
     super.key,
   });
 
@@ -127,6 +129,9 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   /// Only a stock item checks its package size; eating needs no package.
   final VoidCallback? onCompleteValues;
 
+  /// Shows the trash button ("Aussortieren"), which runs this.
+  final VoidCallback? onRemove;
+
   @override
   ConsumerState<InventoryItemEatSheetBody> createState() =>
       _InventoryItemEatSheetBodyState();
@@ -174,7 +179,6 @@ class _InventoryItemEatSheetBodyState
     });
     final state = ref.watch(_provider);
     final item = widget.item;
-    final nutrition = state.nutrition;
     final addMoreText = widget.addMoreActionText;
     final amountField = state.usesPortionMode
         ? _fields.pieceWeight
@@ -191,12 +195,14 @@ class _InventoryItemEatSheetBodyState
         allowsPlanDays: _canPlan,
       ),
       isPlan: state.isPlan || plansOnly,
-      kcal: widget.mealKcal ?? nutrition?.eaten.kcal,
+      kcal: widget.mealKcal ?? state.nutrition?.eaten.kcal,
       confirmLabel: widget.confirmLabel,
       confirmButtonKey: _confirmKey,
       onConfirm: () => _submit(widget.confirmIntent, asPlan: plansOnly),
       onPlan: _canPlan && !widget.plansOnly ? _plan : null,
       onStore: widget.onStore,
+      onDelete: widget.onRemove,
+      deleteTooltip: AppLocalizations.of(context)!.inventoryItemRemoveAction,
       onDiary: widget.onEatInstead == null
           ? null
           : () => _submit(widget.confirmIntent, to: widget.onEatInstead),

@@ -132,8 +132,9 @@ already documented as a reusable presentation surface.
   entry.
 - `PreparedMealCover` and the receipt review sheets listed above.
 - `presentation/widgets/eat_sheet/`: `InventoryItemEatSheetBody` (the eat
-  page for one item, with header overrides, a custom second action, and a
-  selection callback), `EatPageScaffold`, `EatPageHeader`, `EatLabelTable`,
+  page for one item, with header overrides, a custom second action, an
+  optional trash button ("Aussortieren"), and a selection callback),
+  `EatPageScaffold`, `EatPageHeader`, `EatLabelTable`,
   `EatAmountRuler` with `EatRulerMark`, `EatSheetTextField`, `EatWhenMenu`
   with `showEatPlanDayPicker` (the plan day picker of the Planen icons),
   `EatActionCard`, `EatChip`, `EatComponentsList`, `EatCountRow`,

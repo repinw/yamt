@@ -230,6 +230,33 @@ void main() {
     expect(find.byTooltip('To stock'), findsOneWidget);
   });
 
+  testWidgets('page scaffold names its trash button after the page', (
+    tester,
+  ) async {
+    var deleted = 0;
+    Widget page({String? deleteTooltip}) => _TestApp(
+      child: EatPageScaffold(
+        whenControl: const SizedBox(),
+        kcal: null,
+        confirmButtonKey: const Key('confirm'),
+        onConfirm: () {},
+        cancelButtonKey: const Key('close'),
+        onDelete: () => deleted += 1,
+        deleteTooltip: deleteTooltip,
+        children: const [Text('Body')],
+      ),
+    );
+
+    await tester.pumpWidget(page());
+    expect(find.byTooltip('Remove entry'), findsOneWidget);
+
+    await tester.pumpWidget(page(deleteTooltip: 'Remove'));
+    expect(find.byTooltip('Remove entry'), findsNothing);
+    expect(find.byTooltip('Remove'), findsOneWidget);
+    await tester.tap(find.byKey(EatPageScaffold.deleteButtonKey));
+    expect(deleted, 1);
+  });
+
   testWidgets('page scaffold shows the calories and closes', (tester) async {
     var confirmTapCount = 0;
     var secondaryTapCount = 0;

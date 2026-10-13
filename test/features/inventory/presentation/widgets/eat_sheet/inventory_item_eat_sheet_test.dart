@@ -1148,4 +1148,37 @@ void main() {
     await _tapConfirmButton(tester);
     expect(results.last.request.isPlan, isFalse);
   });
+
+  testWidgets('the trash button shows only with onRemove and runs it', (
+    tester,
+  ) async {
+    var removed = 0;
+    Future<void> pump({VoidCallback? onRemove}) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          key: UniqueKey(),
+          overrides: [clockProvider.overrideWithValue(() => _now)],
+          child: MaterialApp(
+            locale: const Locale('de'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: InventoryItemEatSheetBody(
+              item: _amountItem(),
+              confirmIntent: InventoryItemEatSheetIntent.logOnly,
+              onRemove: onRemove,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await pump();
+    expect(find.byKey(EatPageScaffold.deleteButtonKey), findsNothing);
+
+    await pump(onRemove: () => removed += 1);
+    expect(find.byTooltip('Aussortieren'), findsOneWidget);
+    await tester.tap(find.byKey(EatPageScaffold.deleteButtonKey));
+    expect(removed, 1);
+  });
 }
