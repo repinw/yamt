@@ -50,4 +50,4 @@ final class ProgressGoalProvider
   }
 }
 
-String _$progressGoalHash() => r'069d61d549ca92b06ea3ecb1f302a57314ed8262';
+String _$progressGoalHash() => r'27ddc0f0187cdc951e33997949e2746ecab15279';

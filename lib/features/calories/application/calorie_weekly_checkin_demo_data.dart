@@ -88,6 +88,7 @@ CalorieWeeklyCheckInData calorieWeeklyCheckInDemoData({
                 -(_demoStartWeightKg - _demoTrendWeightKg) / _demoGoalDays,
             averageIntakeKcal: _demoIntakeKcal,
             previousTdeeKcal: _demoPreviousTdeeKcal,
+            previousGoalKcal: _demoPreviousGoalKcal,
             measuredTdeeKcal: _demoMeasuredTdeeKcal,
             calculatedTdeeKcal: _demoLearnedTdeeKcal,
             newGoalKcal: _demoNewGoalKcal,

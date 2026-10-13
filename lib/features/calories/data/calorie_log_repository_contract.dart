@@ -5,6 +5,11 @@ abstract interface class CalorieLogRepositoryContract {
   /// Watch entries for day.
   Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day);
 
+  /// Watches every entry from [startInclusive] on. The first list comes from
+  /// the local cache when it has one, later lists follow each change. A
+  /// failed read is delivered as an error, never as an empty list.
+  Stream<List<CalorieEntry>> watchEntriesFrom(DateTime startInclusive);
+
   /// Read entries for day.
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day);
 

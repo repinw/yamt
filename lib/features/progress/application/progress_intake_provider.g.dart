@@ -80,7 +80,7 @@ final class ProgressIntakeProvider
   }
 }
 
-String _$progressIntakeHash() => r'4bdae2199cdc81fc2f1a15472d1a054ce89d9095';
+String _$progressIntakeHash() => r'6123603d4f53cf43649c36ff5422fb816ebcab1d';
 
 /// Intake of the current 7-day run and, by day type, of the period of
 /// [scope].

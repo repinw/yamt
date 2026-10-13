@@ -59,4 +59,4 @@ final class CalorieRunTrainingServiceProvider
 }
 
 String _$calorieRunTrainingServiceHash() =>
-    r'fa191aa06d99107e173c98a35ffb0d972c317e59';
+    r'814d022bdcbf9dbd646ad6e46ab8fc448467dd28';

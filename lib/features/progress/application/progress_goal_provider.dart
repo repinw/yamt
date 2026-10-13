@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/health/application/recent_weight_trend_provider.dart';
@@ -14,7 +14,7 @@ Future<ProgressGoal> progressGoal(Ref ref) async {
   final now = ref.watch(clockProvider)();
   final resolver = ref.watch(dailyNutritionTargetResolverProvider);
   final trendFuture = ref.watch(recentWeightTrendProvider().future);
-  final settings = await ref.watch(calorieGoalControllerProvider.future);
+  final settings = await ref.watch(calorieBudgetSettingsProvider.future);
   final trend = await trendFuture;
   final goalKcal = settings.hasGoal ? settings.baseGoalKcalForDay(now) : null;
   return ProgressGoal(

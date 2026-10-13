@@ -15,7 +15,6 @@ import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_window_resolver.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -93,7 +92,7 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
       )] = calorieDebugLearnedWeekTdeeData(
         window: window,
         dates: datesByWindow[window]!,
-        previousGoalKcal: settings.baseGoalKcalForDay(window.windowEndDate),
+        previousGoalKcal: calculation.previousGoalKcal,
         previousLearnedTdeeKcal: calculation.previousTdeeKcal,
         calculation: calculation,
         windowDays: result.windowDays,
@@ -185,7 +184,7 @@ _DebugWeeklyRowResult _weeklyCheckInRow({
     rows: calorieDebugReadyWeeklyCheckInRows(
       window: window,
       dates: dates,
-      previousGoalKcal: settings.baseGoalKcalForDay(window.windowEndDate),
+      previousGoalKcal: calculation.previousGoalKcal,
       previousLearnedTdeeKcal: calculation.previousTdeeKcal,
       calculation: calculation,
       windowDays: windowIntake.days,

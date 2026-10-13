@@ -88,7 +88,7 @@ void main() {
         DateTime(2026, 9, 21),
       });
       expect(plan.sessionKcal, 300);
-      expect(plan.previousGoalKcal, 2000);
+      expect(plan.previousGoalKcal, data.calculation!.previousGoalKcal);
       expect(plan.measurement!.goalKcal, data.calculation!.newGoalKcal);
     },
   );

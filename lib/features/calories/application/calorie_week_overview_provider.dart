@@ -1,5 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/application/calorie_visible_window_controller.dart';
@@ -38,7 +38,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
     );
     final repository = ref.watch(calorieLogRepositoryProvider);
-    final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
+    final settingsFuture = ref.watch(calorieBudgetSettingsProvider.future);
     final resolvedGoalsFuture = ref.watch(
       resolvedCalorieGoalsForDaysProvider(
         ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
@@ -127,7 +127,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
     ref.watch(calorieOverviewRevisionProvider);
     final normalizedDay = normalizeDiaryDay(day);
     final repository = ref.watch(calorieLogRepositoryProvider);
-    final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
+    final settingsFuture = ref.watch(calorieBudgetSettingsProvider.future);
     final resolvedGoalFuture = ref.watch(
       resolvedCalorieGoalForDayProvider(normalizedDay).future,
     );

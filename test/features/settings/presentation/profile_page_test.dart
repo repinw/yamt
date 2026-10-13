@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -146,7 +147,11 @@ void main() {
           windowEndDate: DateTime(2026, 9, 7),
           trendWeightChangePerDay: 0,
           lowConfidence: false,
-          calculatedTdeeKcal: 2400,
+          // The daily TDEE starts at the calculator TDEE without entries;
+          // the same check-in TDEE leaves the goal without an offset.
+          calculatedTdeeKcal: CalorieGoalCalculator.calculate(
+            const CalorieCalculatorProfile.defaults(),
+          ).tdeeKcal,
           inputHash: 'hash',
         ),
       ),

@@ -27,6 +27,7 @@ class CalorieWeeklyCheckInCalculation {
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
     required this.previousTdeeKcal,
+    required this.previousGoalKcal,
     required this.measuredTdeeKcal,
     required this.calculatedTdeeKcal,
     required this.newGoalKcal,
@@ -48,6 +49,9 @@ class CalorieWeeklyCheckInCalculation {
 
   /// The daily TDEE on the day before the window.
   final double previousTdeeKcal;
+
+  /// The goal before the check-in that the new goal moves from.
+  final double previousGoalKcal;
 
   /// The new daily goal kcal after target mode and movement cap.
   final double newGoalKcal;
@@ -86,6 +90,7 @@ abstract final class CalorieWeeklyCheckInCalculator {
       trendWeightChangePerDay: atWindowEnd.trendKgPerDay,
       averageIntakeKcal: averageIntakeKcal,
       previousTdeeKcal: previousTdeeKcal,
+      previousGoalKcal: previousGoalKcal,
       measuredTdeeKcal:
           averageIntakeKcal - atWindowEnd.trendKgPerDay * _kcalPerKilogram,
       calculatedTdeeKcal: tdeeKcal,

@@ -1047,9 +1047,11 @@ void main() {
     );
     expect(checkInData.isReady, isTrue);
     // Flat weight and 3000 kcal a day: the ramp-up reaches 3000 on day 13,
-    // the window end. The goal moves at most 200 kcal from 2580.
+    // the window end. The 200 kcal limit counts from the corrected goal of
+    // the last day, 2580 plus the TDEE rise since the check-in, so the goal
+    // reaches 3000 instead of stopping at 2780.
     expect(checkInData.calculation?.calculatedTdeeKcal, closeTo(3000, 0.01));
-    expect(checkInData.calculation?.newGoalKcal, closeTo(2780, 0.01));
+    expect(checkInData.calculation?.newGoalKcal, closeTo(3000, 0.01));
   });
 
   test('previous snapshot does not limit next check-in source data', () async {

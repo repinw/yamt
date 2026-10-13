@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_tdee_offsets.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/daily_tdee_estimator.dart';
@@ -44,7 +45,7 @@ WeeklyCheckInDailyTdee weeklyCheckInDailyTdee({
 
 /// The check-in of [window] from [dailyTdee].
 ///
-/// The goal before the check-in is the base goal in effect at the window
+/// The goal before the check-in is the corrected base goal of the window
 /// end; [windowDays] give the average intake of the window. The daily TDEE
 /// must cover the window end.
 CalorieWeeklyCheckInCalculation calculateWeeklyCheckInFromDailyTdee({
@@ -71,7 +72,18 @@ CalorieWeeklyCheckInCalculation calculateWeeklyCheckInFromDailyTdee({
     averageIntakeKcal: CalorieDomainMath.average([
       for (final day in windowDays) ?day.resolvedIntakeKcal,
     ]),
-    previousGoalKcal: settings.baseGoalKcalForDay(window.windowEndDate),
+    // The ±200 kcal clamp counts from the goal the user had on the last
+    // day, with its daily TDEE correction.
+    previousGoalKcal: settings
+        .withGoalOffsets(
+          goalTdeeOffsets(
+            settings: settings,
+            startDate: window.windowEndDate,
+            today: window.windowEndDate,
+            tdeeByDay: dailyTdee.estimates,
+          ),
+        )
+        .baseGoalKcalForDay(window.windowEndDate),
     goalMode: profile?.goalMode ?? CalorieGoalMode.maintain,
     goalSpeedKgPerWeek: profile?.goalSpeedKgPerWeek ?? 0,
   );

@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/macro_goal_settings_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -60,7 +61,7 @@ class DailyNutritionTargetResolverService
       carbsGrams: macros.carbs,
       proteinGrams: macros.protein,
       fatGrams: macros.fat,
-      baseGoalKcal: settings?.dailyKcalGoal ?? goalKcal,
+      baseGoalKcal: settings?.baseGoalKcalForDay(day) ?? goalKcal,
       isTrainingDay: isTraining,
       isPauseDay: isPause,
     );
@@ -79,7 +80,10 @@ class DailyNutritionTargetResolverService
 @riverpod
 DailyNutritionTargetResolver dailyNutritionTargetResolver(Ref ref) {
   final macroSettings = ref.watch(macroGoalSettingsControllerProvider);
-  final goalSettings = ref.watch(calorieGoalControllerProvider).value;
+  // The budget settings once ready, so macros share the running week's goal.
+  final goalSettings =
+      ref.watch(calorieBudgetSettingsProvider).value ??
+      ref.watch(calorieGoalControllerProvider).value;
   return DailyNutritionTargetResolverService(
     macroSettings: macroSettings,
     goalSettings: goalSettings,

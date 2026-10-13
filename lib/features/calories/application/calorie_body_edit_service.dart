@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/application/macro_goal_settings_controller.dart';
@@ -96,7 +97,13 @@ class CalorieBodyEditService {
 @riverpod
 CalorieBodyEditService calorieBodyEditService(Ref ref) {
   return CalorieBodyEditService(
-    settings: ref.watch(calorieGoalControllerProvider).value,
+    // The budget settings once ready, so "now" matches the diary.
+    // shortcut: "after" keeps today's offset although a corrected
+    // calculator goal also moves the TDEE it rests on; recompute the offsets
+    // for the edited settings if the preview must be exact.
+    settings:
+        ref.watch(calorieBudgetSettingsProvider).value ??
+        ref.watch(calorieGoalControllerProvider).value,
     macroSettings: ref.watch(macroGoalSettingsControllerProvider),
     goalController: ref.watch(calorieGoalControllerProvider.notifier),
   );

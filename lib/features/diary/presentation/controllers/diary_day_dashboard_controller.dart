@@ -5,7 +5,7 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/application/day_budget.dart';
@@ -75,7 +75,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
 
     // Day type and goal edits change the budget without touching calorie logs,
     // so the overview revision above never fires for them.
-    ref.listen<AsyncValue<CalorieGoalSettings>>(calorieGoalControllerProvider, (
+    ref.listen<AsyncValue<CalorieGoalSettings>>(calorieBudgetSettingsProvider, (
       previous,
       next,
     ) {

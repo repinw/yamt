@@ -59,4 +59,4 @@ final class CalorieBodyEditServiceProvider
 }
 
 String _$calorieBodyEditServiceHash() =>
-    r'7be74908e5c448572ce72f0c79837e9386a96eee';
+    r'31aa71c21131d049585a93e897ccc47ad932046b';

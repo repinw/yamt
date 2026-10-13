@@ -34,6 +34,8 @@ class ProgressDayTypeSection extends ConsumerWidget {
     return ref
         .watch(progressIntakeProvider(scope))
         .when(
+          // A new budget keeps the last numbers until it is ready.
+          skipLoadingOnReload: true,
           data: (intake) => _DayTypeContent(
             key: sectionKey,
             kicker: switch (scope) {

@@ -167,6 +167,7 @@ CalorieWeeklyCheckInData _checkInData({
     calculation: blockedReason == null && pendingWeeklyCheckIn != null
         ? const CalorieWeeklyCheckInCalculation(
             previousTdeeKcal: 2000,
+            previousGoalKcal: 2000,
             trendWeightChangePerDay: -0.05,
             averageIntakeKcal: 2150,
             measuredTdeeKcal: 2500,

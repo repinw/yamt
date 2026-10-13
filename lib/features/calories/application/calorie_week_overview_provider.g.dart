@@ -120,7 +120,7 @@ final class CalorieWeekOverviewForWindowProvider
 }
 
 String _$calorieWeekOverviewForWindowHash() =>
-    r'fb067c62d68a9881623cd46aee5c2639aec48f8b';
+    r'322e448c4dfcfe2244df5ab5e9672208a02ed88f';
 
 /// Calorie week overview for window.
 
@@ -212,7 +212,7 @@ final class CalorieWeekDayOverviewForDateProvider
 }
 
 String _$calorieWeekDayOverviewForDateHash() =>
-    r'1c09230adadf8a836d3b8477e45b122f20e21921';
+    r'56a10f7cbc7b74d80332bf38e56afa46a51defeb';
 
 /// Calorie week day overview for date.
 

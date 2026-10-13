@@ -294,6 +294,12 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Learned TDEE recalculation from tracked data: a daily estimate from the
   first goal on; the weekly check-in takes its value at the end of the week,
   and the TDEE of past runs shows the daily estimate too.
+- The daily calorie goal follows the daily TDEE: each day's goal moves by
+  how far the estimate changed since the goal was set, using the estimate
+  of the day before so a day's own food never raises its own goal. Days keep
+  their goal after the week ends; the carryover still starts fresh each
+  week. The check-in moves the goal at most 200 kcal from the corrected goal
+  of the week's last day.
 - Weekly check-in with weight trend, learned TDEE, target refresh, and blocking
   reasons for missing intake or weight data. It is a tall sheet in three
   steps: a look back since the goal start (trend, eaten, training days, weight

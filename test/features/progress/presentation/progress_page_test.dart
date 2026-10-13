@@ -10,6 +10,7 @@ import 'package:yamt/features/progress/presentation/widgets/progress_day_row.dar
 import 'package:yamt/features/progress/presentation/widgets/progress_day_type_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_goal_card.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_scope_switch.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_section_state.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_tdee_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_week_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_weight_section.dart';
@@ -18,7 +19,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../../helpers/progress_source_overrides.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 
-Future<void> _pumpProgressPage(WidgetTester tester) async {
+Future<FakeCalorieLogRepository> _pumpProgressPage(WidgetTester tester) async {
   tester.view.physicalSize = const Size(1080, 6000);
   addTearDown(tester.view.reset);
   final settings = FakeCalorieSettingsRepository(
@@ -55,6 +56,7 @@ Future<void> _pumpProgressPage(WidgetTester tester) async {
     ),
   );
   await tester.pumpAndSettle();
+  return calorieLog;
 }
 
 const _archive = 'goal archive';
@@ -97,6 +99,34 @@ void main() {
     expect(find.byKey(ProgressWeightSection.sectionKey), findsOneWidget);
     expect(find.byKey(ProgressTdeeSection.sectionKey), findsOneWidget);
     expect(find.text('ALLE ZIELE · SCHNITT'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps the week visible while a new budget loads', (
+    tester,
+  ) async {
+    final calorieLog = await _pumpProgressPage(tester);
+    final entry = progressEntries().first;
+    // A slow read keeps the intake loading for a few frames.
+    calorieLog.onReadEntriesInRange = (start, end) async {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      return [
+        for (final entry in calorieLog.entries)
+          if (!entry.loggedAt.isBefore(start) && entry.loggedAt.isBefore(end))
+            entry,
+      ];
+    };
+
+    // A new entry moves the daily TDEE, so the budget of the week reloads.
+    await calorieLog.saveEntry(
+      entry.copyWith(id: 'extra', loggedAt: entry.loggedAt),
+    );
+    for (var frame = 0; frame < 20; frame++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(find.byType(ProgressSectionLoading), findsNothing);
+      expect(find.byKey(ProgressWeekSection.sectionKey), findsOneWidget);
+    }
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 }
