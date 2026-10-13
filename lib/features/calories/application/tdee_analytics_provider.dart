@@ -7,8 +7,6 @@ import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
@@ -96,10 +94,8 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
 
     // The daily TDEE runs from the first goal on, so every range shows the
     // same values for a day.
-    final learningAnchor = settings.learningAnchorEntryForDay(window.end);
-    final estimateStart = learningAnchor == null
-        ? window.start
-        : CalorieWeeklyWindowResolver.firstWindowStartDate(learningAnchor);
+    final estimateStart =
+        DailyTdeeSeries.startDay(settings, window.end) ?? window.start;
     final loadStart = estimateStart.isBefore(window.start)
         ? estimateStart
         : window.start;

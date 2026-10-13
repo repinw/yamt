@@ -61,6 +61,12 @@ Future<CalorieGoalProgress?> calorieGoalProgress(
     ],
     tdeePoints: calorieGoalTdeePoints(
       settings: settings,
+      dailyTdeeKcalByDay: {
+        // Held days and days without an estimate keep the saved TDEE.
+        for (final point in analytics.points)
+          if (!point.isHolding)
+            diaryDayKey(point.day): ?point.learnedBaseTdeeKcal,
+      },
       startDate: startDate,
       endDate: end,
     ),

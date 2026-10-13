@@ -50,13 +50,15 @@ class CalorieGoalProgress {
   }
 }
 
-/// Learned TDEE of every weekly check-in whose run ended between [startDate]
-/// and [endDate], one per run, first to last.
+/// The daily TDEE at the end of every weekly check-in run that ended
+/// between [startDate] and [endDate], one per run, first to last.
 ///
-/// Rejected check-ins count too: they measured the TDEE even though the user
-/// kept the previous goal.
+/// [dailyTdeeKcalByDay] holds the daily TDEE by diary day key; a run end
+/// without one keeps the TDEE its check-in saved. Rejected check-ins count
+/// too: they measured the TDEE even though the user kept the previous goal.
 List<CalorieGoalProgressTdee> calorieGoalTdeePoints({
   required CalorieGoalSettings settings,
+  required Map<String, double> dailyTdeeKcalByDay,
   required DateTime startDate,
   required DateTime endDate,
 }) {
@@ -72,7 +74,8 @@ List<CalorieGoalProgressTdee> calorieGoalTdeePoints({
     if (runEnd.isBefore(start) || runEnd.isAfter(end)) {
       continue;
     }
-    byRunEnd[runEnd] = snapshot.calculatedTdeeKcal;
+    byRunEnd[runEnd] =
+        dailyTdeeKcalByDay[diaryDayKey(runEnd)] ?? snapshot.calculatedTdeeKcal;
   }
   final runEnds = byRunEnd.keys.toList()..sort();
   return [

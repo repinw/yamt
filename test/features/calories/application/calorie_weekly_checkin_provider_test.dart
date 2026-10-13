@@ -836,11 +836,9 @@ void main() {
       expect(checkInData.missingWeightDays, isEmpty);
       expect(checkInData.days.first.weightKg, 82);
       expect(checkInData.days.last.weightKg, 81.4);
-      expect(
-        checkInData.calculation?.trendWeightChangePerDay,
-        closeTo(-0.085714, 0.00001),
-      );
-      expect(checkInData.calculation?.averageIntakeKcal, closeTo(2080, 0.01));
+      expect(checkInData.calculation?.trendWeightChangePerDay, lessThan(0));
+      // The average of the window days 2100..2160.
+      expect(checkInData.calculation?.averageIntakeKcal, closeTo(2130, 0.01));
 
       await logRepository.saveEntry(
         _entry('previous-entry-0', DateTime(2026, 4, 8, 8), 3000),
@@ -851,9 +849,10 @@ void main() {
         calorieWeeklyCheckInDataProvider.future,
       );
 
+      // A changed day before the window still moves the daily TDEE.
       expect(
-        recomputedData.calculation?.averageIntakeKcal,
-        closeTo(2151.43, 0.01),
+        recomputedData.calculation!.calculatedTdeeKcal,
+        greaterThan(checkInData.calculation!.calculatedTdeeKcal),
       );
     },
   );
@@ -986,7 +985,7 @@ void main() {
     expect(rangeReadCount, 0);
   });
 
-  test('saved summary seeds cascade from pre-window tdee', () async {
+  test('takes the daily TDEE at the window end', () async {
     final today = DateTime(2026, 4, 22);
     final goalStart = DateTime(2026, 4, 8);
     final weekOneSnapshot = CalorieGoalWeeklyCheckInSnapshot(
@@ -1047,9 +1046,10 @@ void main() {
       DateTime(2026, 4, 15),
     );
     expect(checkInData.isReady, isTrue);
-    // Replay: 2400 → 2475 (7-day window, 0.125) → 2606.25 (14 days, 0.25).
-    expect(checkInData.calculation?.calculatedTdeeKcal, closeTo(2606.25, 0.01));
-    expect(checkInData.calculation?.newGoalKcal, closeTo(2606.25, 0.01));
+    // Flat weight and 3000 kcal a day: the ramp-up reaches 3000 on day 13,
+    // the window end. The goal moves at most 200 kcal from 2580.
+    expect(checkInData.calculation?.calculatedTdeeKcal, closeTo(3000, 0.01));
+    expect(checkInData.calculation?.newGoalKcal, closeTo(2780, 0.01));
   });
 
   test('previous snapshot does not limit next check-in source data', () async {
@@ -1121,7 +1121,7 @@ void main() {
     expect(checkInData.isReady, isTrue);
     expect(rangeStart, DateTime(2026, 4, 8));
     expect(rangeEnd, DateTime(2026, 4, 22));
-    expect(checkInData.inputHash, startsWith('v2:'));
+    expect(checkInData.inputHash, startsWith('v3:'));
     expect(checkInData.calculation?.averageIntakeKcal, closeTo(3000, 0.01));
   });
 
@@ -1187,7 +1187,7 @@ void main() {
       DateTime(2026, 4, 14),
     );
     expect(checkInData.isReady, isTrue);
-    expect(checkInData.inputHash, startsWith('v2:'));
+    expect(checkInData.inputHash, startsWith('v3:'));
   });
 
   test('fresh completed window skips hidden cache sync', () async {

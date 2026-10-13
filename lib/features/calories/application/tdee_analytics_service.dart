@@ -69,12 +69,8 @@ abstract final class TdeeAnalyticsService {
           : entries.fold<double>(0, (sum, e) => sum + e.totalKcal);
       final target = settings.goalKcalForDay(day);
 
-      final fallbackBaseTdee = DailyTdeeSeries.seedTdeeKcal(
-        settings: settings,
-        day: day,
-        fallbackGoalKcal: target,
-      );
-      final baseTdee = estimate?.tdeeKcal ?? fallbackBaseTdee;
+      final baseTdee =
+          estimate?.tdeeKcal ?? DailyTdeeSeries.startTdeeKcal(settings, day);
       final measuredTdee = estimate?.measuredTdeeKcal;
 
       points.add(

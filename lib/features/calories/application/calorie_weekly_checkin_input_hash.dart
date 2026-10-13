@@ -16,22 +16,23 @@ import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_
 
 /// Stable non-cryptographic hash for weekly check-in calculation inputs.
 ///
-/// Uses a small inline FNV-1a implementation to keep the persisted `v2:` hash
+/// Uses a small inline FNV-1a implementation to keep the persisted `v3:` hash
 /// scheme deterministic without adding a runtime dependency for cache keys.
 String weeklyCheckInInputHash({
   required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
   required CalorieWeeklyCheckInWindowDates dates,
-  required CalorieWeeklyLearningSeed previousLearningSeed,
+  required double previousGoalKcal,
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
   required CalorieGoalSettings settings,
   required CalorieWeeklyCheckInWeightData weightData,
+  required double calculatedTdeeKcal,
 }) {
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
     settings: settings,
     day: weeklyCheckIn.windowEndDate,
   );
   final buffer = StringBuffer()
-    ..write('weekly-checkin-v2')
+    ..write('weekly-checkin-v3')
     ..write('|window=')
     ..write(
       calorieWeeklyCheckInWindowKey(
@@ -46,9 +47,11 @@ String weeklyCheckInInputHash({
     ..write('|math=')
     ..write(settings.calorieMathVersion)
     ..write('|prevGoal=')
-    ..write(_hashDouble(previousLearningSeed.previousGoalKcal))
-    ..write('|prevTdee=')
-    ..write(_hashDouble(previousLearningSeed.previousLearnedTdeeKcal))
+    ..write(_hashDouble(previousGoalKcal))
+    // The daily TDEE also depends on the seed profile and weights outside
+    // the learning days, so the result stands in for them.
+    ..write('|tdee=')
+    ..write(_hashDouble(calculatedTdeeKcal))
     ..write('|mode=')
     ..write(calculatorProfile?.goalMode.name ?? CalorieGoalMode.maintain.name)
     ..write('|speed=')
@@ -82,7 +85,7 @@ String weeklyCheckInInputHash({
       ..write(_hashDouble(point.weightKg));
   }
 
-  return 'v2:${_fnv1a32(buffer.toString())}';
+  return 'v3:${_fnv1a32(buffer.toString())}';
 }
 
 String _hashDouble(double value) {

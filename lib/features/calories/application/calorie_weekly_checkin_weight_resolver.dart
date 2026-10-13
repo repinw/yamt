@@ -91,41 +91,75 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
   );
 }
 
-/// Returns blocked data when check-in lacks required boundary weights.
+/// Days up to the window end whose weigh-ins count for blocking and low
+/// confidence; the daily TDEE itself reads every day since the first goal.
+const weeklyCheckInWeightLookbackDays = 28;
+
+/// First day whose weigh-ins count for the check-in of [dates].
+DateTime weeklyCheckInWeightLookbackStart(
+  CalorieWeeklyCheckInWindowDates dates,
+) {
+  final lookbackStart = addDiaryDays(
+    dates.pendingWeeklyCheckIn.windowEndDate,
+    1 - weeklyCheckInWeightLookbackDays,
+  );
+  return lookbackStart.isAfter(dates.learningStartDate)
+      ? lookbackStart
+      : dates.learningStartDate;
+}
+
+/// The weight points of [weightData] from the lookback start on.
+List<CalorieWeeklyCheckInWeightPoint> recentWeeklyCheckInWeightPoints({
+  required CalorieWeeklyCheckInWindowDates dates,
+  required CalorieWeeklyCheckInWeightData weightData,
+}) {
+  final firstIndex = dates.dayIndexFor(weeklyCheckInWeightLookbackStart(dates));
+  return [
+    for (final point in weightData.weightPoints)
+      if (point.dayIndex >= firstIndex) point,
+  ];
+}
+
+/// Blocks the check-in when the lookback has fewer than two weight points
+/// and lacks a weight at its start or at the window end.
 CalorieWeeklyCheckInDayData? validateWeeklyCheckInWeightData({
   required CalorieWeeklyCheckInWindowDates dates,
   required CalorieWeeklyCheckInWeightData weightData,
   required List<CalorieWeeklyCheckInWindowDay> windowDays,
   required List<DateTime> missingIntakeDays,
 }) {
-  final missingWeightDays = <DateTime>[];
-  final hasLearningStartWeight =
-      weightData.weightByDay[diaryDayKey(dates.learningStartDate)] != null;
+  final lookbackStart = weeklyCheckInWeightLookbackStart(dates);
+  final hasEnoughPoints =
+      recentWeeklyCheckInWeightPoints(
+        dates: dates,
+        weightData: weightData,
+      ).length >=
+      2;
+  final hasLookbackStartWeight =
+      weightData.weightByDay[diaryDayKey(lookbackStart)] != null;
   final hasWindowEndWeight =
       weightData.weightByDay[diaryDayKey(
         dates.pendingWeeklyCheckIn.windowEndDate,
       )] !=
       null;
-  if (weightData.weightPoints.length < 2 && !hasLearningStartWeight) {
-    missingWeightDays.add(dates.learningStartDate);
+  if (!hasEnoughPoints && !hasLookbackStartWeight) {
     return CalorieWeeklyCheckInDayData(
       days: windowDays,
       calculation: null,
       blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
       missingIntakeDays: missingIntakeDays,
-      missingWeightDays: missingWeightDays,
+      missingWeightDays: [lookbackStart],
       lowConfidence: false,
       inputHash: null,
     );
   }
-  if (weightData.weightPoints.length < 2 && !hasWindowEndWeight) {
-    missingWeightDays.add(dates.pendingWeeklyCheckIn.windowEndDate);
+  if (!hasEnoughPoints && !hasWindowEndWeight) {
     return CalorieWeeklyCheckInDayData(
       days: windowDays,
       calculation: null,
       blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
       missingIntakeDays: missingIntakeDays,
-      missingWeightDays: missingWeightDays,
+      missingWeightDays: [dates.pendingWeeklyCheckIn.windowEndDate],
       lowConfidence: false,
       inputHash: null,
     );
