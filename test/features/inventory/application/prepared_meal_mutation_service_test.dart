@@ -1101,6 +1101,89 @@ void main() {
       expect(harness.meals.writeCount, 0);
     });
 
+    group('changeWeight', () {
+      // 4 portions, 1400 g at "Gekocht", 3 left.
+      PreparedMeal soup() => _meal(
+        id: 'soup',
+        name: 'Linsensuppe',
+        totalPortions: 4,
+        remainingPortions: 3,
+        totalKcal: 1600,
+        components: const <PreparedMealComponent>[],
+      ).copyWith(finalNetWeight: 1400);
+
+      test('stores the food left and the weight of the whole meal', () async {
+        final harness = _WorkflowHarness(meals: [soup()]);
+
+        final weighed = await harness.mutations().changeWeight(
+          meal: soup(),
+          netWeight: 900,
+        );
+
+        final stored = harness.meals.meals.single;
+        expect(weighed, stored);
+        expect(stored.finalNetWeight, 1200);
+        expect(stored.remainingNetWeight, 900);
+        expect(stored.potWeighing?.remainingPortions, 3);
+        expect(stored.potWeighing?.weighedAt, DateTime(2026, 4, 19));
+        // Portions and nutrients stay; only grams per portion change.
+        expect(stored.remainingPortions, 3);
+        expect(stored.totalKcal, 1600);
+        expect(PreparedMeal.fromJson(stored.toJson()), stored);
+      });
+
+      test('ties the weight to the portions the cook weighed', () async {
+        // Someone ate a portion while the weight dialog was open.
+        final harness = _WorkflowHarness(
+          meals: [soup().copyWith(remainingPortions: 2)],
+        );
+
+        await harness.mutations().changeWeight(meal: soup(), netWeight: 900);
+
+        final stored = harness.meals.meals.single;
+        expect(stored.finalNetWeight, 1200);
+        expect(stored.potWeighing?.remainingPortions, 3);
+        expect(stored.remainingPortions, 2);
+        expect(stored.remainingNetWeight, 600);
+      });
+
+      test('refuses a meal in the pot, in pieces, eaten up or gone', () async {
+        final refused = [
+          soup().copyWith(inPot: true),
+          soup().copyWith(servedInPieces: true),
+          soup().copyWith(remainingPortions: 0),
+        ];
+        for (final meal in refused) {
+          final harness = _WorkflowHarness(meals: [meal]);
+
+          await expectLater(
+            harness.mutations().changeWeight(meal: soup(), netWeight: 900),
+            throwsStateError,
+          );
+          expect(harness.meals.writeCount, 0);
+        }
+        await expectLater(
+          _WorkflowHarness().mutations().changeWeight(
+            meal: soup(),
+            netWeight: 900,
+          ),
+          throwsStateError,
+        );
+      });
+
+      test('throws when the write fails', () async {
+        final harness = _WorkflowHarness(
+          meals: [soup()],
+          saveMealsResults: const [false],
+        );
+
+        await expectLater(
+          harness.mutations().changeWeight(meal: soup(), netWeight: 900),
+          throwsStateError,
+        );
+      });
+    });
+
     test('unbundlePreparedMeal returns false when meal is missing', () async {
       final harness = _WorkflowHarness();
       final inventoryRepository = _FakeInventoryItemRepository();

@@ -184,6 +184,7 @@ PreparedMealActions _actions({
     unignorePendingIngredient: unignore ?? (_, _) async => true,
     unassign: unassign ?? (_, _) async => true,
     unbundle: (_) async => true,
+    changeWeight: (_, _) async => true,
     edit: (_, _, _) async => true,
     saveTemplate: (_, _) async => true,
   );

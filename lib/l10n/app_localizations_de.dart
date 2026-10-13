@@ -1420,6 +1420,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealUnbundleAction => 'Auflösen';
 
   @override
+  String get preparedMealWeightAction => 'Gewicht ändern';
+
+  @override
+  String get preparedMealWeightWholeHint =>
+      'Wieg das ganze Gericht, am besten abgekühlt. Gramm pro Portion und je 100 g rechnen sich daraus neu.';
+
+  @override
+  String preparedMealWeightLeftHint(String portions, int total) {
+    return 'Wieg, was noch da ist: $portions von $total Portionen. Gramm pro Portion und je 100 g rechnen sich daraus neu. Einträge im Tagebuch bleiben, wie sie sind.';
+  }
+
+  @override
+  String get preparedMealWeightFoodLabel => 'Gewicht des Essens';
+
+  @override
+  String preparedMealWeightCurrent(int grams) {
+    return 'Bisher $grams g';
+  }
+
+  @override
+  String get preparedMealWeightInvalid =>
+      'Bitte ein Gewicht in Gramm eingeben.';
+
+  @override
+  String get preparedMealWeightFailed =>
+      'Das Gewicht konnte nicht gespeichert werden.';
+
+  @override
   String get preparedMealThrowAwayTitle => 'Portionen wegwerfen';
 
   @override

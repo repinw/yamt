@@ -843,6 +843,32 @@
     }
   },
   "preparedMealUnbundleAction": "Return to inventory",
+  "preparedMealWeightAction": "Change weight",
+  "preparedMealWeightWholeHint": "Weigh the whole dish, ideally once it has cooled. Grams per portion and per 100 g are worked out again from it.",
+  "preparedMealWeightLeftHint": "Weigh what is left: {portions} of {total} portions. Grams per portion and per 100 g are worked out again from it. Diary entries stay as they are.",
+  "@preparedMealWeightLeftHint": {
+    "description": "Hint of the weight dialog of a cooked meal with portions already eaten",
+    "placeholders": {
+      "portions": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealWeightFoodLabel": "Weight of the food",
+  "preparedMealWeightCurrent": "So far {grams} g",
+  "@preparedMealWeightCurrent": {
+    "description": "Helper under the weight field: the weight of the food left that the app knows now",
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "preparedMealWeightInvalid": "Enter a weight in grams.",
+  "preparedMealWeightFailed": "The weight could not be saved.",
   "preparedMealThrowAwayTitle": "Throw away portions",
   "preparedMealPortionsToUseLabel": "Portions to use",
   "preparedMealConfirmAction": "Confirm",

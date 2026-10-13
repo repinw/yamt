@@ -1401,6 +1401,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealUnbundleAction => 'Return to inventory';
 
   @override
+  String get preparedMealWeightAction => 'Change weight';
+
+  @override
+  String get preparedMealWeightWholeHint =>
+      'Weigh the whole dish, ideally once it has cooled. Grams per portion and per 100 g are worked out again from it.';
+
+  @override
+  String preparedMealWeightLeftHint(String portions, int total) {
+    return 'Weigh what is left: $portions of $total portions. Grams per portion and per 100 g are worked out again from it. Diary entries stay as they are.';
+  }
+
+  @override
+  String get preparedMealWeightFoodLabel => 'Weight of the food';
+
+  @override
+  String preparedMealWeightCurrent(int grams) {
+    return 'So far $grams g';
+  }
+
+  @override
+  String get preparedMealWeightInvalid => 'Enter a weight in grams.';
+
+  @override
+  String get preparedMealWeightFailed => 'The weight could not be saved.';
+
+  @override
   String get preparedMealThrowAwayTitle => 'Throw away portions';
 
   @override

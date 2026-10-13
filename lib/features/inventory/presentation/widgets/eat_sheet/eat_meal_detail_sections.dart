@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -20,7 +19,7 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_pending_food_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
-    'eat_action_card.dart';
+    'eat_meal_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_meal_ingredients_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -31,11 +30,13 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_ingredient_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_portion_dialog.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_weight_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The parts of a meal's detail page under the eat controls: the "Zutaten"
 /// box, where rows are filled, ignored or opened again and foods taken out
-/// again, and the "Mahlzeit" card with edit, recipe, unbundle and throw
+/// again, and the "Mahlzeit" card with edit, recipe, weight, unbundle and throw
 /// away.
 ///
 /// It follows the live meal. When the meal is gone, for example after
@@ -61,7 +62,6 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = FoodLabelColors.of(context);
     // The page closes when the meal is gone; until then it shows the meal as
     // the Vorrat holds it now.
     final meal =
@@ -98,49 +98,22 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
                   )
                 : null,
           ),
-        EatActionCard(
-          title: l10n.eatPageMealTitle,
-          actions: [
-            (
-              key: const Key('eat_meal_action_edit'),
-              icon: Icons.edit_outlined,
-              label: l10n.inventoryReceiptReviewEditAction,
-              color: colors.ink,
-              onPressed: enabled ? () => _edit(meal) : null,
-            ),
-            (
-              key: const Key('eat_meal_action_save_template'),
-              icon: Icons.bookmark_add_outlined,
-              label: l10n.preparedMealSaveTemplateAction,
-              color: colors.ink,
-              onPressed: enabled
-                  ? () => _run(
-                      () => widget.actions.saveTemplate(
-                        meal,
-                        ScaffoldMessenger.of(context),
-                      ),
-                    )
-                  : null,
-            ),
-            (
-              key: const Key('eat_meal_action_unbundle'),
-              icon: Icons.call_split_rounded,
-              label: l10n.preparedMealUnbundleAction,
-              color: colors.ink,
-              onPressed: enabled
-                  ? () => _run(() => widget.actions.unbundle(meal.id))
-                  : null,
-            ),
-            (
-              key: const Key('eat_meal_action_throw_away'),
-              icon: Icons.delete_outline_rounded,
-              label: l10n.inventoryItemThrowAwayAction,
-              color: colors.low,
-              onPressed: enabled && !meal.isDepleted
-                  ? () => _throwAway(meal)
-                  : null,
-            ),
-          ],
+        EatMealActionsCard(
+          meal: meal,
+          onEdit: enabled ? () => _edit(meal) : null,
+          onSaveTemplate: enabled
+              ? () => _run(
+                  () => widget.actions.saveTemplate(
+                    meal,
+                    ScaffoldMessenger.of(context),
+                  ),
+                )
+              : null,
+          onChangeWeight: enabled ? () => _changeWeight(meal) : null,
+          onUnbundle: enabled
+              ? () => _run(() => widget.actions.unbundle(meal.id))
+              : null,
+          onThrowAway: enabled ? () => _throwAway(meal) : null,
         ),
       ],
     );
@@ -153,6 +126,23 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
     }
     final messenger = ScaffoldMessenger.of(context);
     await _run(() => widget.actions.edit(meal.id, result, messenger));
+  }
+
+  Future<void> _changeWeight(PreparedMeal meal) async {
+    final failed = AppLocalizations.of(context)!.preparedMealWeightFailed;
+    final grams = await showPreparedMealWeightDialog(
+      context: context,
+      meal: meal,
+    );
+    if (!mounted || grams == null) {
+      return;
+    }
+    await _run(
+      // The dialog asked for the portions of [meal]; the weight belongs to
+      // them, also when someone eats while it is open.
+      () => widget.actions.changeWeight(meal, grams),
+      failureMessage: failed,
+    );
   }
 
   Future<void> _throwAway(PreparedMeal meal) async {

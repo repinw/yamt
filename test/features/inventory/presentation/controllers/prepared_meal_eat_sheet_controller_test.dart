@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -127,6 +128,26 @@ void main() {
       // More than is left is an error, not the rest.
       controller.pickAmount(2000);
       expect(container.read(provider).takesRest, isFalse);
+    });
+
+    test('a new weight from "Gewicht ändern" counts grams and kcal per '
+        '100 g anew', () async {
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      final (:container, :provider) = await _setUpFollowing(soup(), [soup()]);
+      final before = container.read(provider);
+      // 1050 g left for 3 portions with 300 kcal.
+      expect(before.portionsHeader(l10n), '1 portion · 350 g');
+      expect(before.kcalPer100Grams, 29);
+
+      // Weighed cold the next morning: 900 g left.
+      await _emit([soup().withWeightLeft(900, soup().remainingPortions, _now)]);
+
+      final after = container.read(provider);
+      expect(after.portionsHeader(l10n), '1 portion · 300 g');
+      expect(after.kcalPer100Grams, 33);
+      // A portion keeps its share of the meal's nutrients.
+      expect(after.nutrition?.eaten.kcal, before.nutrition?.eaten.kcal);
+      expect(after.calculator.needsPotWeighing(_now), isFalse);
     });
 
     test('a pot no heavier than empty blocks the request', () {

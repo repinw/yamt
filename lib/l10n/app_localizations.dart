@@ -2404,6 +2404,48 @@ abstract class AppLocalizations {
   /// **'Return to inventory'**
   String get preparedMealUnbundleAction;
 
+  /// No description provided for @preparedMealWeightAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change weight'**
+  String get preparedMealWeightAction;
+
+  /// No description provided for @preparedMealWeightWholeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh the whole dish, ideally once it has cooled. Grams per portion and per 100 g are worked out again from it.'**
+  String get preparedMealWeightWholeHint;
+
+  /// Hint of the weight dialog of a cooked meal with portions already eaten
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh what is left: {portions} of {total} portions. Grams per portion and per 100 g are worked out again from it. Diary entries stay as they are.'**
+  String preparedMealWeightLeftHint(String portions, int total);
+
+  /// No description provided for @preparedMealWeightFoodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight of the food'**
+  String get preparedMealWeightFoodLabel;
+
+  /// Helper under the weight field: the weight of the food left that the app knows now
+  ///
+  /// In en, this message translates to:
+  /// **'So far {grams} g'**
+  String preparedMealWeightCurrent(int grams);
+
+  /// No description provided for @preparedMealWeightInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a weight in grams.'**
+  String get preparedMealWeightInvalid;
+
+  /// No description provided for @preparedMealWeightFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The weight could not be saved.'**
+  String get preparedMealWeightFailed;
+
   /// No description provided for @preparedMealThrowAwayTitle.
   ///
   /// In en, this message translates to:

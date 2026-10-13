@@ -209,6 +209,16 @@ class PreparedMealsController extends _$PreparedMealsController {
     failed: false,
   );
 
+  /// Stores that [netWeight] grams of the cooked [meal] are left, with the
+  /// portions [meal] has. Returns whether it worked.
+  Future<bool> changePreparedMealWeight({
+    required PreparedMeal meal,
+    required int netWeight,
+  }) => _keptAlive((service) async {
+    await service.changeWeight(meal: meal, netWeight: netWeight);
+    return true;
+  }, failed: false);
+
   /// Runs [mutation] on the meal service and keeps this controller and the
   /// service alive until it completes. A thrown error is logged and ends as
   /// [failed].

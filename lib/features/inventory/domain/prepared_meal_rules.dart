@@ -14,6 +14,9 @@ enum PreparedMealAction {
 
   /// Change the meal's ingredients in the editor.
   editIngredients,
+
+  /// Weigh the food again and give the meal a new weight.
+  changeWeight,
 }
 
 /// The one place that decides what a Vorrat meal allows now. Sheets, the
@@ -25,12 +28,20 @@ extension PreparedMealRules on PreparedMeal {
   /// A meal with open rows has unknown nutrition, so it can be neither
   /// eaten nor planned. A meal in the pot can be planned as a share of the
   /// pot, but eaten only after "Gekocht" gives it portions. Ingredients stay
-  /// editable until the first portion is gone.
+  /// editable until the first portion is gone. A weight is set at
+  /// "Gekocht" and can change afterwards while food is left; pieces split
+  /// the nutrients by count, so they have no weight.
   bool allows(PreparedMealAction action) => switch (action) {
     PreparedMealAction.eat =>
       !isInPot && !hasPendingRecipeIngredients && !isDepleted,
     PreparedMealAction.plan => !hasPendingRecipeIngredients && !isDepleted,
     PreparedMealAction.editIngredients => remainingPortions >= totalPortions,
+    PreparedMealAction.changeWeight =>
+      finalNetWeight != null &&
+          !isInPot &&
+          !isServedInPieces &&
+          !isDepleted &&
+          totalPortions >= 1,
   };
 
   /// Whether [action] is allowed now for [portions] of the meal.
@@ -58,6 +69,25 @@ extension PreparedMealRules on PreparedMeal {
       weighedAt: at,
       remainingPortions: remainingPortions,
     ),
+    updatedAt: at,
+  );
+
+  /// The meal with [grams] of food left at [at] for [portions] portions,
+  /// weighed again, for example cold the next morning.
+  ///
+  /// [portions] are the portions left when the cook weighed, which can be
+  /// more than are left now when someone ate in the meantime. The weighing
+  /// ties the grams to them, so grams per portion and per 100 g count from
+  /// it. The meal's weight becomes what the whole meal weighs: [grams]
+  /// scaled from [portions] to all portions. The nutrients of the meal and
+  /// of each portion stay, and so do diary entries made from it.
+  PreparedMeal withWeightLeft(int grams, num portions, DateTime at) => copyWith(
+    potWeighing: PreparedMealPotWeighing(
+      netWeight: grams,
+      weighedAt: at,
+      remainingPortions: portions,
+    ),
+    finalNetWeight: (grams * totalPortions / portions).round(),
     updatedAt: at,
   );
 }

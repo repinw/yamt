@@ -264,6 +264,14 @@ class PreparedMealMutationService {
     () => _weighing.weighPot(mealId: mealId, netWeight: netWeight),
   );
 
+  /// Gives the [meal] a new weight: [PreparedMealWeighing.changeWeight].
+  Future<PreparedMeal> changeWeight({
+    required PreparedMeal meal,
+    required int netWeight,
+  }) => _queue.enqueue(
+    () => _weighing.changeWeight(meal: meal, netWeight: netWeight),
+  );
+
   Future<PreparedMealCreationResult> _create(
     Future<PreparedMealCreationResult> Function(InventoryItemRepository)
     operation,
