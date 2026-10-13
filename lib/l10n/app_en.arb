@@ -523,7 +523,7 @@
   "eatPageIngredientIgnored": "Ignored – not counted",
   "eatPageReplaceProduct": "Replace product",
   "eatPageOnShoppingList": "On the shopping list",
-  "eatPageCombineLink": "+ Combine with another food",
+  "eatPageCombineLink": "Combine with another food",
   "eatPageCombineAdd": "+ Add food",
   "eatPageCombinePickConfirm": "Add",
   "eatPageCombineNoMoreStock": "Every fitting food from your stock is already in the meal. Use the search to add another one.",

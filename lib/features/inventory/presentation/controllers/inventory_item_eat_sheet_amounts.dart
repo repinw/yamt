@@ -224,3 +224,8 @@ String formatEatenAmount(InventoryItemEatSheetState state, double amount) {
   }
   return _format(state, amount.round());
 }
+
+/// Whether the inedible part is open or holds an entry. A page that offers
+/// it from a menu shows it only then.
+bool hasInedibleInput(InventoryItemEatSheetState state) =>
+    state.isInedibleExpanded || state.inedibleAmountText.trim().isNotEmpty;

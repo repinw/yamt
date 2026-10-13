@@ -1107,7 +1107,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.text('Rice'));
     expect(find.text('2 selected'), findsOneWidget);
@@ -1123,6 +1123,63 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('100 g'), findsOneWidget);
+  });
+
+  testWidgets('item hub starts a meal from its item card', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _itemWithNutrition('b', name: 'Oats'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository);
+    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.text('Milk'));
+
+    // The page has no combine link of its own; the item card offers it.
+    expect(find.byKey(EatCombineSection.addKey), findsNothing);
+    expect(find.byKey(EatItemActionsCard.combineKey), findsOneWidget);
+
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
+    expect(find.byType(InventoryCombinePickPage), findsOneWidget);
+    await _tapVisible(tester, find.text('Oats'));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+
+    // The meal shows its rows on the page, with its own link for more.
+    expect(find.text('Milk + Oats'), findsOneWidget);
+    expect(find.byKey(EatCombineSection.removeHubItemKey), findsOneWidget);
+    expect(find.byKey(EatCombineSection.addKey), findsOneWidget);
+    expect(find.byKey(EatItemActionsCard.combineKey), findsNothing);
+    expect(find.byKey(EatItemActionsCard.inedibleKey), findsNothing);
+
+    // Without other foods the item card offers it again.
+    await _tapVisible(
+      tester,
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('b')),
+        matching: find.byTooltip('Remove from the list'),
+      ),
+    );
+    expect(find.byKey(EatCombineSection.addKey), findsNothing);
+    expect(find.byKey(EatItemActionsCard.combineKey), findsOneWidget);
+    expect(find.byKey(EatItemActionsCard.inedibleKey), findsOneWidget);
+  });
+
+  testWidgets('item hub without nutrition offers no meal', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_amountItemWithoutNutrition('a')],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository);
+    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.text('Milk'));
+
+    expect(find.byKey(EatItemActionsCard.combineKey), findsNothing);
+    expect(find.byKey(EatCombineSection.addKey), findsNothing);
+    expect(find.byKey(const Key('eat_item_action_edit')), findsOneWidget);
   });
 
   testWidgets('item hub logs a searched food together as a new stock item', (
@@ -1175,7 +1232,7 @@ void main() {
       find.byKey(const Key('eat_page_amount_field')),
       '200',
     );
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
     await _tapVisible(tester, find.text('pick bread'));
 
@@ -1271,7 +1328,7 @@ void main() {
       find.byKey(const Key('eat_page_amount_field')),
       '200',
     );
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
     await _tapVisible(tester, find.text('pick bread'));
     await _tapVisible(
@@ -1326,7 +1383,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
     await _tapVisible(tester, find.text('pick salt'));
 
@@ -1357,7 +1414,7 @@ void main() {
       find.byKey(const Key('eat_page_amount_field')),
       '9999',
     );
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
     await _tapAmountDialogConfirm(tester);
@@ -1405,7 +1462,7 @@ void main() {
       find.byKey(const Key('eat_page_amount_field')),
       '200',
     );
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
     expect(find.text('total 300\u00A0g'), findsOneWidget);
@@ -1439,7 +1496,7 @@ void main() {
       find.byKey(const Key('eat_page_amount_field')),
       '200',
     );
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
     expect(find.text('Milk + Oats'), findsOneWidget);
@@ -1501,7 +1558,7 @@ void main() {
       find.byKey(const Key('eat_page_amount_field')),
       '200',
     );
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     expect(find.text('Milk'), findsNothing);
     await _tapVisible(tester, find.text('Oats'));
     expect(find.text('1 selected'), findsOneWidget);

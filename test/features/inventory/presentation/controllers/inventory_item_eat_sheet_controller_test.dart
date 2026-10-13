@@ -564,6 +564,15 @@ void main() {
     expect(container.read(provider).inventoryAmountText, '1.25');
   });
 
+  test('opening the inedible part twice keeps it open', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    container.read(provider.notifier)
+      ..openInedible()
+      ..openInedible();
+
+    expect(container.read(provider).isInedibleExpanded, isTrue);
+  });
+
   test('a typed piece weight clears the error of the missing one', () {
     final (:container, :provider) = _setUp(_pieceItem());
     final controller = container.read(provider.notifier);

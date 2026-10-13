@@ -45,6 +45,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.onSelectionChanged,
     this.header,
     this.showAmount = true,
+    this.showsInedibleLink = true,
     this.onCompleteValues,
     super.key,
   });
@@ -119,6 +120,9 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   /// Whether the page shows its amount ruler.
   final bool showAmount;
 
+  /// Whether the inedible link shows while unused; off where a menu has it.
+  final bool showsInedibleLink;
+
   /// Opens the editor from the line naming missing values (hidden when null).
   /// Only a stock item checks its package size; eating needs no package.
   final VoidCallback? onCompleteValues;
@@ -157,8 +161,11 @@ class _InventoryItemEatSheetBodyState
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(_provider, (_, next) {
+    ref.listen(_provider, (previous, next) {
       _fields.sync(next);
+      if (previous?.isInedibleExpanded != next.isInedibleExpanded) {
+        _focusInedible(isOpen: next.isInedibleExpanded);
+      }
       widget.onSelectionChanged?.call((
         inventoryAmount: next.enteredInventoryAmount,
         loggedAt: next.loggedAt,
@@ -172,7 +179,6 @@ class _InventoryItemEatSheetBodyState
     final amountField = state.usesPortionMode
         ? _fields.pieceWeight
         : _fields.inventoryAmount;
-    final footer = widget.footer;
     final plansOnly = widget.plansOnly && !state.isPastDay;
 
     return EatPageScaffold(
@@ -221,9 +227,9 @@ class _InventoryItemEatSheetBodyState
             controller: _controller,
             amountField: amountField,
             inedibleAmount: _fields.inedibleAmount,
-            onToggleInedible: _toggleInedible,
+            showsInedibleLink: widget.showsInedibleLink,
           ),
-        ?footer,
+        ?widget.footer,
       ],
     );
   }
@@ -239,16 +245,15 @@ class _InventoryItemEatSheetBodyState
     );
   }
 
-  void _toggleInedible() {
-    _controller.toggleInedible();
-    if (!ref.read(_provider).isInedibleExpanded) {
-      _fields.inedibleAmount.focusNode.unfocus();
+  /// Focuses the inedible field when it opens, from its link or a menu.
+  void _focusInedible({required bool isOpen}) {
+    final focusNode = _fields.inedibleAmount.focusNode;
+    if (!isOpen) {
+      focusNode.unfocus();
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _fields.inedibleAmount.focusNode.requestFocus();
-      }
+      if (mounted) focusNode.requestFocus();
     });
   }
 

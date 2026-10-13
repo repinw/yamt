@@ -876,7 +876,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageOnShoppingList => 'On the shopping list';
 
   @override
-  String get eatPageCombineLink => '+ Combine with another food';
+  String get eatPageCombineLink => 'Combine with another food';
 
   @override
   String get eatPageCombineAdd => '+ Add food';

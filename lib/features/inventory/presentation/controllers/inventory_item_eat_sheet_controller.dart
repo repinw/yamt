@@ -179,6 +179,9 @@ class InventoryItemEatSheetController
     _update(state.copyWith(isInedibleExpanded: !state.isInedibleExpanded));
   }
 
+  /// Opens the inedible part; a second tap keeps it open.
+  void openInedible() => _update(state.copyWith(isInedibleExpanded: true));
+
   /// Logs the food on [day] at the current time of day.
   void setLoggedDay(DateTime day) {
     _update(
