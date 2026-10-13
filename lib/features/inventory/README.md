@@ -153,7 +153,11 @@ already documented as a reusable presentation surface.
 - `domain/product_missing_values.dart` is the one completeness check for a
   product: the seven EU label values, and the package size where stock
   matters. A size in pieces counts only with grams per piece (a serving in g
-  or ml). Every missing-values hint uses it, and so will the search list.
+  or ml). Every missing-values hint uses it, also the "Nährwerte
+  unvollständig" note of a meal ingredient, and so will the search list.
+- A Vorrat meal stores only energy and the macros. Its other nutrients come
+  from the label of each ingredient's source item
+  (`PreparedMealComponent.nutritionFacts`), scaled like the stored totals.
 - `domain/prepared_meal_rules.dart` is the one place that decides what a
   Vorrat meal allows now: eat only when it is out of the pot, has no open
   rows and has portions left; plan when it has no open rows and portions

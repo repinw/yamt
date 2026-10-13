@@ -867,6 +867,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageIngredientIgnored => 'Ignored – not counted';
 
   @override
+  String get eatPageIngredientNutritionIncomplete =>
+      'Nutrition values incomplete';
+
+  @override
   String get eatPageReplaceProduct => 'Replace product';
 
   @override

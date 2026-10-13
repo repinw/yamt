@@ -2,7 +2,7 @@ import 'package:meta/meta.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/inventory/domain/eat_amount_step.dart';
-import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
+import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
 
@@ -120,12 +120,12 @@ class PreparedMealEatSheetState {
 
   /// Nutrition of [portionsOrOne], with the values in 100 g of the food left
   /// once its weight is known, also from a weighing on this page.
-  EatNutrition? get nutrition {
+  EatMealNutrition? get nutrition {
     final meal = calculator.meal;
     if (meal.totalPortions < 1) {
       return null;
     }
-    return EatNutrition.ofPreparedMeal(
+    return EatMealNutrition.ofPreparedMeal(
       meal,
       portionsOrOne / meal.totalPortions,
     );

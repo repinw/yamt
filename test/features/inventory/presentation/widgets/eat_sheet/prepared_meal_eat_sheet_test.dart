@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -130,6 +132,29 @@ EatLabelTable _table(WidgetTester tester) {
 /// The per-100 and eaten value of each row of the nutrition table.
 List<(String?, String)> _tableValues(WidgetTester tester) {
   return [for (final row in _table(tester).rows) (row.per100, row.eaten)];
+}
+
+/// The value of the nutrition label row [label], or null without the row.
+String? _labelValue(WidgetTester tester, String label) {
+  final name = find.descendant(
+    of: find.byKey(PreparedMealEatSheetBody.nutritionTableKey),
+    matching: find.text(label),
+  );
+  if (name.evaluate().isEmpty) {
+    return null;
+  }
+  final row = find.ancestor(of: name, matching: find.byType(Row)).first;
+  return tester
+      .widgetList<Text>(find.descendant(of: row, matching: find.byType(Text)))
+      .last
+      .data;
+}
+
+PreparedMealComponent _ingredient(String id, GlobalFoodNutrition label) {
+  return labeledIngredientTestData(
+    labeledFoodTestData(id: id, name: id, grams: 1000, label: label),
+    id == 'rice' ? 200 : 300,
+  );
 }
 
 void main() {
@@ -386,5 +411,44 @@ void main() {
       isNull,
     );
     expect(find.byKey(EatPageScaffold.planButtonKey), findsOneWidget);
+  });
+
+  testWidgets('the nutrition label shows every nutrient that the '
+      'ingredients list, per portion', (tester) async {
+    final rice = _ingredient('rice', riceLabelTestData);
+    await _openEat(
+      tester,
+      labeledMealTestData(ingredients: [rice, rice], totalPortions: 2),
+    );
+
+    expect(_labelValue(tester, 'Energy'), '2,929 kJ\n700 kcal');
+    expect(_labelValue(tester, 'Fat'), '2 g');
+    expect(_labelValue(tester, 'of which saturates'), '1 g');
+    expect(_labelValue(tester, 'Carbs'), '150 g');
+    expect(_labelValue(tester, 'of which sugars'), '2 g');
+    expect(_labelValue(tester, 'Fibre'), '4 g');
+    expect(_labelValue(tester, 'Protein'), '16 g');
+    expect(_labelValue(tester, 'Salt'), '0.5 g');
+    expect(_labelValue(tester, 'of which polyunsaturates'), isNull);
+  });
+
+  testWidgets('a nutrient that one ingredient lacks shows "–"', (tester) async {
+    await _openEat(
+      tester,
+      labeledMealTestData(
+        ingredients: [
+          _ingredient('rice', riceLabelTestData),
+          _ingredient('sauce', sauceLabelTestData),
+        ],
+      ),
+    );
+
+    expect(_labelValue(tester, 'Fat'), '8 g');
+    expect(_labelValue(tester, 'Protein'), '20.5 g');
+    expect(_labelValue(tester, 'of which saturates'), '–');
+    expect(_labelValue(tester, 'of which sugars'), '–');
+    expect(_labelValue(tester, 'Fibre'), '–');
+    expect(_labelValue(tester, 'Salt'), '–');
+    expect(_labelValue(tester, 'of which polyunsaturates'), isNull);
   });
 }
