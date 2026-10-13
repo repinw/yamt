@@ -21,10 +21,10 @@ PreparedMealComponent buildPreparedMealComponent({
   required InventoryAmountUnit usedUnit,
   required GlobalFoodNutrition nutrition,
 }) {
-  final multiplier = _nutritionMultiplier(
+  final multiplier = preparedMealNutritionFactor(
+    item: item,
     amount: usedAmount,
     unit: usedUnit,
-    scale: item.usesAmountProgress ? item.amountScale : 1,
   );
   return PreparedMealComponent(
     inventoryItemId: item.id,
@@ -206,21 +206,6 @@ int remainingPreparedMealShareAmount({
     return 0;
   }
   return ((usedAmount * remainingPortions) / totalPortions).round();
-}
-
-double _nutritionMultiplier({
-  required int amount,
-  required InventoryAmountUnit unit,
-  required int scale,
-}) {
-  if (unit == InventoryAmountUnit.piece) {
-    return inventoryAmountToDisplayValue(
-      amount: amount,
-      unit: unit,
-      scale: scale,
-    );
-  }
-  return amount / 100;
 }
 
 int _restoreAmountForComponent({

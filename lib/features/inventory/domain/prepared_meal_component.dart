@@ -203,6 +203,24 @@ class PreparedMealComponent {
   }
 }
 
+/// The factor that turns the per-100 values of [item] into the nutrients of
+/// [amount] of it in [unit]: a hundredth of grams or milliliters, or the
+/// count of pieces.
+double preparedMealNutritionFactor({
+  required InventoryItem item,
+  required int amount,
+  required InventoryAmountUnit unit,
+}) {
+  if (unit == InventoryAmountUnit.piece) {
+    return inventoryAmountToDisplayValue(
+      amount: amount,
+      unit: unit,
+      scale: item.usesAmountProgress ? item.amountScale : 1,
+    );
+  }
+  return amount / 100;
+}
+
 /// Converts a raw amount of [component] (its [PreparedMealComponent.usedAmount]
 /// or a value derived from it, for example scaled by a portion ratio) into a
 /// value fit to display, undoing the fractional-piece storage scale of its
