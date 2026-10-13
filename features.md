@@ -389,13 +389,20 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Inventory item edit, consumption, discard, and delete flows.
 - Tapping an item row opens the item hub: the food label eat page plus an
   "Item" card with add to shopping list, edit, replace product, and remove.
-  Action dialogs open over the hub, so cancelling one returns to it. A
+  The rarer eat actions sit at the top of that card instead of on the page:
+  "Nicht essbaren Anteil abziehen" (foods in g or ml) opens the inedible
+  field on the page, which stays there while it is open or holds a value,
+  and "Mit anderem Lebensmittel kombinieren" (foods with nutrition values)
+  starts a meal. A used-up item offers neither, and a started meal hides
+  both. Action dialogs open over the hub, so cancelling one returns to it. A
   finished edit, replace or remove closes the hub; adding to the shopping
   list keeps it open. A used-up item shows only the card, and its main
   button adds it to the shopping list. Rows have no action buttons of their
   own.
-- The item hub can log other stock items together with its item: "+ Combine
-  with another food" opens the Vorrat list in selection mode (only items with
+- The item hub can log other stock items together with its item: "Mit
+  anderem Lebensmittel kombinieren" in the Item card opens the Vorrat list
+  in selection mode, and "+ Lebensmittel hinzufügen" under the meal's rows
+  adds more (only items with
   nutrition values and stock, counted in grams or milliliters). Picked items
   join with 100 g or ml; tapping a food's row opens a ruler for its amount.
   The hub then shows all foods' images side by side in its header (the rows

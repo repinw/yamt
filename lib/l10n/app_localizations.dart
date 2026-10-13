@@ -1531,7 +1531,7 @@ abstract class AppLocalizations {
   /// No description provided for @eatPageCombineLink.
   ///
   /// In en, this message translates to:
-  /// **'+ Combine with another food'**
+  /// **'Combine with another food'**
   String get eatPageCombineLink;
 
   /// No description provided for @eatPageCombineAdd.

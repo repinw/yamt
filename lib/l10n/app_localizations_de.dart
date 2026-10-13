@@ -881,7 +881,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageOnShoppingList => 'Steht auf der Einkaufsliste';
 
   @override
-  String get eatPageCombineLink => '+ mit anderem Lebensmittel kombinieren';
+  String get eatPageCombineLink => 'Mit anderem Lebensmittel kombinieren';
 
   @override
   String get eatPageCombineAdd => '+ Lebensmittel hinzufügen';

@@ -25,7 +25,7 @@ class InventoryItemEatAmountSection extends StatelessWidget {
     required this.controller,
     required this.amountField,
     required this.inedibleAmount,
-    required this.onToggleInedible,
+    required this.showsInedibleLink,
     super.key,
   });
 
@@ -60,8 +60,9 @@ class InventoryItemEatAmountSection extends StatelessWidget {
   /// Field of the inedible share.
   final EatSheetTextField inedibleAmount;
 
-  /// Opens or closes the inedible share.
-  final VoidCallback onToggleInedible;
+  /// Whether the link to the inedible share shows while it is closed and
+  /// empty. Without it the share shows only once it is open or filled.
+  final bool showsInedibleLink;
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +183,8 @@ class InventoryItemEatAmountSection extends StatelessWidget {
             ),
             onSave: controller.rememberPortion,
           ),
-        if (calculator.supportsInedibleAmountAdjustment)
+        if (calculator.supportsInedibleAmountAdjustment &&
+            (showsInedibleLink || hasInedibleInput(state)))
           EatInedibleLine(
             controller: inedibleAmount.controller,
             focusNode: inedibleAmount.focusNode,
@@ -191,7 +193,7 @@ class InventoryItemEatAmountSection extends StatelessWidget {
             summaryText: state.inedibleSummary(l10n),
             isExpanded: state.isInedibleExpanded,
             onChanged: controller.setInedibleAmountText,
-            onToggleExpanded: onToggleInedible,
+            onToggleExpanded: controller.toggleInedible,
           ),
       ],
     );

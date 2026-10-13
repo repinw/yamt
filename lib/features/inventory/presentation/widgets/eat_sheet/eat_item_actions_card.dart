@@ -5,18 +5,34 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_actio
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Item" card of the item hub: shopping list, edit, replace and remove,
-/// drawn like a second food label. [actions] picks the lines to show.
+/// drawn like a second food label. [actions] picks the lines to show. Above
+/// them come the rarer eat actions of the hub's eat page, when it passes
+/// them: the inedible part and combining with other foods.
 class EatItemActionsCard extends StatelessWidget {
   /// Creates the card.
   const new({
     required this.isOnShoppingList,
     required this.onPicked,
     this.actions = InventoryItemHubAction.values,
+    this.onInedible,
+    this.onCombine,
     super.key,
   });
 
+  /// Key of the line that opens the inedible part.
+  static const inedibleKey = Key('eat_item_action_inedible');
+
+  /// Key of the line that starts a meal with other foods.
+  static const combineKey = Key('eat_item_action_combine');
+
   /// Actions to show, in the card's own order.
   final List<InventoryItemHubAction> actions;
+
+  /// Opens the inedible part on the page. The line is hidden when null.
+  final VoidCallback? onInedible;
+
+  /// Picks other foods for a meal. The line is hidden when null.
+  final VoidCallback? onCombine;
 
   /// Whether the item is already on the shopping list. The shopping list
   /// line is then disabled.
@@ -32,6 +48,22 @@ class EatItemActionsCard extends StatelessWidget {
     final error = Theme.of(context).colorScheme.error;
 
     final lines = <EatCardAction>[
+      if (onInedible case final onInedible?)
+        (
+          key: inedibleKey,
+          icon: Icons.content_cut_rounded,
+          label: l10n.inventoryItemEatSheetInedibleAmountLabel,
+          color: colors.ink,
+          onPressed: onInedible,
+        ),
+      if (onCombine case final onCombine?)
+        (
+          key: combineKey,
+          icon: Icons.add_rounded,
+          label: l10n.eatPageCombineLink,
+          color: colors.ink,
+          onPressed: onCombine,
+        ),
       if (actions.contains(InventoryItemHubAction.addToShoppingList))
         (
           key: const Key('eat_item_action_shopping_list'),

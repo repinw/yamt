@@ -1,15 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
-import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
+import 'package:yamt/features/inventory/presentation/inventory_combine_pick_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_food_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
@@ -17,12 +14,12 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_text_link.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Hub section to log other foods together with [hubItem].
+/// Hub section of a meal: [hubItem] logged together with other foods.
 ///
-/// Shows a link while nothing is picked, then one row per food with its
-/// amount and calories. Tapping a row opens a ruler for its amount;
-/// the hub item's row drives the hub's own amount. With other foods picked
-/// the hub item can leave the meal like any other food.
+/// Shows one row per food with its amount and calories, and a link to add
+/// more. The hub's item card picks the first foods. Tapping a row opens a
+/// ruler for its amount; the hub item's row drives the hub's own amount.
+/// The hub item can leave the meal like any other food.
 class EatCombineSection extends ConsumerStatefulWidget {
   /// Creates the section.
   const new({
@@ -60,14 +57,6 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final picks = ref.watch(inventoryItemCombineControllerProvider(hubItem.id));
-    final addLink = EatTextLink(
-      buttonKey: EatCombineSection.addKey,
-      label: picks.isEmpty ? l10n.eatPageCombineLink : l10n.eatPageCombineAdd,
-      onPressed: _add,
-    );
-    if (picks.isEmpty) {
-      return addLink;
-    }
     final hubProvider = inventoryItemEatSheetControllerProvider(item: hubItem);
     final hubState = ref.watch(hubProvider);
     final hubKcal = hubState.nutrition?.eaten.kcal;
@@ -125,7 +114,11 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
                           .setAmount(pick.item.id, value.round()),
                     ),
             ),
-          addLink,
+          EatTextLink(
+            buttonKey: EatCombineSection.addKey,
+            label: l10n.eatPageCombineAdd,
+            onPressed: _add,
+          ),
         ],
       ),
     );
@@ -135,45 +128,10 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
     setState(() => _openId = _openId == id ? null : id);
   }
 
-  /// Opens the inventory to pick foods. Stock items join with a default
-  /// amount. A food found by search joins with the amount entered on its
-  /// eat page.
-  Future<void> _add() async {
-    final notifier = ref.read(
-      inventoryItemCombineControllerProvider(hubItem.id).notifier,
-    );
-    final items = ref.read(inventoryItemsControllerProvider).value;
-    final picked = await showInventoryCombinePickPage(
-      context,
-      candidates: notifier.candidatesFrom(
-        items ?? const <InventoryItem>[],
-        includesHub: widget.includesHubItem,
-      ),
-    );
-    if (picked == null || !mounted) {
-      return;
-    }
-    for (final item in picked.stock) {
-      if (!InventoryCombinedEatService.canCombine(item) ||
-          !notifier.addWithDefaultAmount(item)) {
-        _showCannotCombine(context);
-      }
-    }
-    if (picked.searched case (:final result, :final request)) {
-      final item = result.item;
-      if (!InventoryCombinedEatService.canCombine(item) ||
-          !canDirectlySaveInventoryItemEatRequest(item, request)) {
-        _showCannotCombine(context);
-        return;
-      }
-      notifier.add(item, request, searchResult: result);
-    }
-  }
-
-  static void _showCannotCombine(BuildContext context) {
-    ScaffoldMessenger.of(context).showAppSnackBar(
-      AppLocalizations.of(context)!.eatPageCombineNeedsNutrition,
-      tone: AppSnackBarTone.error,
-    );
-  }
+  Future<void> _add() => InventoryCombinePickFlow.pick(
+    context: context,
+    ref: ref,
+    hubItem: hubItem,
+    includesHubItem: widget.includesHubItem,
+  );
 }

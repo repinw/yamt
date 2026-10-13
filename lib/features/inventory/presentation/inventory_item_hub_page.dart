@@ -17,12 +17,12 @@ import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_a
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_body.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_hub_actions_card.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -105,16 +105,19 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     );
     final combine = inventoryItemCombineControllerProvider(widget.item.id);
     final picks = ref.watch(combine);
-    final actions = EatItemActionsCard(
+    final canEat = consumableInventoryAmount(widget.item) != null;
+    final actions = InventoryItemHubActionsCard(
       key: _cardKey,
+      item: widget.item,
       isOnShoppingList: isOnShoppingList,
       onPicked: _run,
       actions: [
         for (final action in InventoryItemHubAction.values)
           if (picks.isEmpty || action != InventoryItemHubAction.edit) action,
       ],
+      offersEatActions: canEat && picks.isEmpty,
     );
-    if (consumableInventoryAmount(widget.item) == null) {
+    if (!canEat) {
       return _UsedUpHubBody(
         item: widget.item,
         isOnShoppingList: isOnShoppingList,
@@ -157,6 +160,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
             ),
       // In a meal the hub item's row carries its ruler.
       showAmount: meal == null || (includesHub && !hasMealRuler),
+      showsInedibleLink: false,
       onCompleteValues: picks.isEmpty
           ? () => _run(InventoryItemHubAction.edit)
           : null,
@@ -164,7 +168,9 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpacing.xxl,
         children: [
-          if (InventoryCombinedEatService.canCombine(widget.item))
+          // The item card starts a meal; then its foods show here.
+          if (picks.isNotEmpty &&
+              InventoryCombinedEatService.canCombine(widget.item))
             EatCombineSection(
               hubItem: widget.item,
               includesHubItem: includesHub,
