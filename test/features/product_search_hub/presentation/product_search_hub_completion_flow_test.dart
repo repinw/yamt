@@ -15,6 +15,7 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
@@ -33,12 +34,17 @@ import 'package:yamt/features/product_search_hub/domain/'
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
+    'manual_product_ai_search_result.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_ai_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_planned_entry_repository.dart';
+import '../support/fake_product_search_sources.dart';
 
 void main() {
   late _MockFirebaseAuth firebaseAuth;
@@ -621,6 +627,70 @@ void main() {
     expect(completion?.shouldCloseHub, isTrue);
     expect(inventoryController.addedItems.single.normalizedBarcode, isNull);
     expect(barcodeRepository.recordedBarcodes, isEmpty);
+  });
+
+  group('shared catalog', () {
+    Future<FakeGlobalFoodItemRepository> save(
+      WidgetTester tester,
+      InventoryReceiptManualProductResult result,
+    ) async {
+      final inventoryController = _RecordingInventoryItemsController();
+      final catalog = FakeGlobalFoodItemRepository();
+      await tester.pumpWidget(
+        _buildCompletionHarness(
+          inventoryController: inventoryController,
+          overrides: [
+            globalFoodItemRepositoryProvider.overrideWithValue(catalog),
+          ],
+          onRun: (context, container, l10n) async {
+            await completeProductSearchHubResult(
+              context: context,
+              container: container,
+              l10n: l10n,
+              args: const ProductSearchHubRouteArgs.inventory(),
+              sourceKey: 'manual-source',
+              result: result,
+            );
+          },
+        ),
+      );
+
+      await tester.tap(find.text('run'));
+      await tester.pumpAndSettle();
+
+      expect(inventoryController.addedItems, hasLength(1));
+      return catalog;
+    }
+
+    testWidgets('learns an own product', (tester) async {
+      final catalog = await save(
+        tester,
+        InventoryReceiptManualProductResult(
+          item: _manualItemWithNutrition(),
+          action: InventoryReceiptManualProductAction.addToInventory,
+          skipMissingBarcodePrompt: true,
+        ),
+      );
+
+      expect(catalog.appendedItems.single.name, 'Muesli');
+    });
+
+    testWidgets('does not learn an AI food, the meal of one user (#655)', (
+      tester,
+    ) async {
+      final catalog = await save(
+        tester,
+        productSearchHubAiResult(
+          ManualProductAiSearchResult(
+            item: _manualItemWithNutrition(),
+            action: InventoryReceiptManualProductAction.addToInventory,
+            globalPackageWeight: '500 g',
+          ),
+        ),
+      );
+
+      expect(catalog.appendedItems, isEmpty);
+    });
   });
 
   testWidgets('missing barcode prompt cancel does not save', (tester) async {

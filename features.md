@@ -535,6 +535,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   Vorrat page after it. In the Vorrat its "Planen" and "Ins Tagebuch" icons
   plan or eat the food instead; in the diary "Planen" plans it, also for
   today. "Analyze again" returns to the input.
+- An AI food is the user's own meal: saving it adds it to the Vorrat or
+  the diary only, not to the shared catalog, so other users do not find
+  it (#655).
 - The product editor looks like the eat page: image, brand and name as
   inputs, package size with a unit switch, and the nutrition label with an
   input per 100 g. All seven values of the EU label (energy, fat, saturates,
