@@ -7,11 +7,17 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_components_list.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_label_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_pot_weighing_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_when_menu.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_portion_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -113,6 +119,17 @@ Future<void> _tap(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.tap(finder);
   await tester.pumpAndSettle();
+}
+
+EatLabelTable _table(WidgetTester tester) {
+  return tester.widget<EatLabelTable>(
+    find.byKey(PreparedMealEatSheetBody.nutritionTableKey),
+  );
+}
+
+/// The per-100 and eaten value of each row of the nutrition table.
+List<(String?, String)> _tableValues(WidgetTester tester) {
+  return [for (final row in _table(tester).rows) (row.per100, row.eaten)];
 }
 
 void main() {
@@ -238,6 +255,77 @@ void main() {
     await _tap(tester, find.byKey(_confirmKey));
 
     expect(find.textContaining('eat:0.005:'), findsOneWidget);
+  });
+
+  testWidgets('a meal not weighed after cooking shows only the portion '
+      'column', (tester) async {
+    await _openEat(tester, _meal());
+
+    expect(_table(tester).per100Header, isNull);
+    expect(_tableValues(tester), [
+      (null, '558 kJ\n133 kcal'),
+      (null, '2.67 g'),
+      (null, '13.33 g'),
+      (null, '6.67 g'),
+    ]);
+    expect(find.text('Per 100 g'), findsNothing);
+  });
+
+  testWidgets('a weighed meal shows every nutrient per 100 g beside the '
+      'portion', (tester) async {
+    // 400 kcal, 8 g fat, 40 g carbs and 20 g protein in 800 g.
+    await _openEat(
+      tester,
+      _meal().copyWith(
+        totalPortions: 4,
+        remainingPortions: 4,
+        finalNetWeight: 800,
+      ),
+    );
+
+    expect(
+      find.descendant(
+        of: find.byKey(PreparedMealEatSheetBody.nutritionTableKey),
+        matching: find.text('Per 100 g'),
+      ),
+      findsOneWidget,
+    );
+    expect(_table(tester).eatenHeader, '1 portion · 200 g');
+    expect(_tableValues(tester), [
+      ('209 kJ\n50 kcal', '418 kJ\n100 kcal'),
+      ('1 g', '2 g'),
+      ('5 g', '10 g'),
+      ('2.5 g', '5 g'),
+    ]);
+
+    // More portions change only the portion column.
+    await _tap(tester, find.text('2'));
+    expect(_tableValues(tester).first, ('209 kJ\n50 kcal', '837 kJ\n200 kcal'));
+  });
+
+  testWidgets('weighing the pot on the page updates the values per 100 g', (
+    tester,
+  ) async {
+    // 400 kcal in 800 g at "Gekocht", in a 1180 g pot.
+    await _openEat(
+      tester,
+      _meal().copyWith(
+        totalPortions: 2,
+        remainingPortions: 2,
+        finalNetWeight: 800,
+        potTareWeight: 1180,
+      ),
+    );
+    expect(_tableValues(tester).first, ('209 kJ\n50 kcal', '837 kJ\n200 kcal'));
+
+    // Water evaporated: 1000 g are in the pot now.
+    final gross = find.byKey(EatPotWeighingSection.grossKey);
+    await tester.ensureVisible(gross);
+    await tester.enterText(gross, '2180');
+    await tester.pumpAndSettle();
+
+    expect(_table(tester).per100Header, 'Per 100 g');
+    expect(_tableValues(tester).first, ('167 kJ\n40 kcal', '837 kJ\n200 kcal'));
   });
 
   testWidgets('starts with the fractional portions left', (tester) async {

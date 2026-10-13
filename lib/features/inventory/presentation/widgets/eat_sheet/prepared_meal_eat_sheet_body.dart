@@ -41,6 +41,9 @@ class PreparedMealEatSheetBody extends ConsumerStatefulWidget {
   /// Key of the note that "Rest" empties the pot.
   static const restHintKey = Key('prepared_meal_rest_hint');
 
+  /// Key of the nutrition table.
+  static const nutritionTableKey = Key('prepared_meal_nutrition_table');
+
   /// Meal to eat.
   final PreparedMeal meal;
 
@@ -108,9 +111,6 @@ class _PreparedMealEatSheetBodyState
         widget.meal.isInPot == meal.isInPot;
     final canEat = !isInPot && meal.allows(PreparedMealAction.eat);
     final nutrition = state.nutrition;
-    final facts = nutrition == null
-        ? const <NutritionFactsRow>[]
-        : nutritionFactsRows(context, eaten: nutrition.eaten);
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
     final imageBytes = imageRef == null
         ? null
@@ -153,18 +153,17 @@ class _PreparedMealEatSheetBodyState
         ),
         if (nutrition != null)
           EatLabelTable(
-            key: const Key('prepared_meal_nutrition_table'),
-            rows: [
-              ...facts.take(1),
-              if (state.kcalPer100Grams case final kcal?)
-                NutritionFactsRow(
-                  label: l10n.eatPageMealPer100Cooked,
-                  per100: null,
-                  eaten: l10n.eatPageKcal(kcal),
-                  isPart: true,
-                ),
-              ...facts.skip(1),
-            ],
+            key: PreparedMealEatSheetBody.nutritionTableKey,
+            rows: nutritionFactsRows(
+              context,
+              eaten: nutrition.eaten,
+              per100: nutrition.per100,
+            ),
+            // Only a weighed meal has per-100 values: cooking changes the
+            // weight of the ingredients.
+            per100Header: nutrition.per100 == null
+                ? null
+                : l10n.caloriesEntryPer100Label(l10n.caloriesUnitGram),
             eatenHeader: state.portionsHeader(l10n),
           ),
         if (meal.potTareWeight case final tare? when canEat)

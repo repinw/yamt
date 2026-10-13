@@ -22,7 +22,11 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_detail_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_label_table.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_meal_actions_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_weight_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -30,7 +34,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 const _openKey = ValueKey<String>('open-meal');
-const _tableKey = Key('prepared_meal_nutrition_table');
+const Key _tableKey = PreparedMealEatSheetBody.nutritionTableKey;
 final _now = DateTime(2026, 10, 13, 7, 30);
 
 /// Chili cooked yesterday: 4 portions, 2000 g in a 1180 g pot, 3 left.
@@ -173,6 +177,10 @@ Widget _app(_MealRepository meals) {
   );
 }
 
+/// The "Je 100 g" cell of the energy row.
+String? _energyPer100(WidgetTester tester) =>
+    tester.widget<EatLabelTable>(find.byKey(_tableKey)).rows.first.per100;
+
 /// The nutrition table's text [text].
 Finder _inTable(String text) =>
     find.descendant(of: find.byKey(_tableKey), matching: find.text(text));
@@ -201,7 +209,7 @@ void main() {
     await tester.pumpAndSettle();
     // 1500 g left for 3 portions with 1380 kcal.
     expect(_inTable('1 Portion · 500 g'), findsOneWidget);
-    expect(_inTable('92 kcal'), findsOneWidget);
+    expect(_energyPer100(tester), '385 kJ\n92 kcal');
 
     final weight = find.byKey(EatMealActionsCard.weightKey);
     await tester.ensureVisible(weight);
@@ -226,7 +234,7 @@ void main() {
     expect(stored.finalNetWeight, 1600);
     expect(stored.remainingPortions, 3);
     expect(stored.totalKcal, 1840);
-    expect(_inTable('115 kcal'), findsOneWidget);
+    expect(_energyPer100(tester), '481 kJ\n115 kcal');
     expect(find.byType(PreparedMealWeightDialog), findsNothing);
     expect(tester.takeException(), isNull);
   });

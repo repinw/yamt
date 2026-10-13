@@ -855,9 +855,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get eatPageMealPer100Cooked => 'je 100 g gekocht';
-
-  @override
   String get eatPagePotUnit => 'Topf';
 
   @override

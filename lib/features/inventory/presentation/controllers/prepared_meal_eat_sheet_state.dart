@@ -118,19 +118,8 @@ class PreparedMealEatSheetState {
   /// Grams of [portionsOrOne], or null when the meal has no known weight.
   int? get portionGrams => calculator.portionsToGrams(portionsOrOne)?.round();
 
-  /// kcal in 100 g of the food left, or null when its weight is not known.
-  int? get kcalPer100Grams {
-    final meal = calculator.meal;
-    final net = calculator.currentNetWeight;
-    if (net == null || net <= 0 || meal.totalPortions < 1) {
-      return null;
-    }
-    final kcalLeft =
-        meal.totalKcal * meal.remainingPortions / meal.totalPortions;
-    return (kcalLeft * 100 / net).round();
-  }
-
-  /// Nutrition of [portionsOrOne].
+  /// Nutrition of [portionsOrOne], with the values in 100 g of the food left
+  /// once its weight is known, also from a weighing on this page.
   EatNutrition? get nutrition {
     final meal = calculator.meal;
     if (meal.totalPortions < 1) {

@@ -118,8 +118,6 @@ void main() {
       final state = container.read(provider);
       expect(state.portionsHeader(l10n), '1 portion · 330 g');
       expect(state.markLabel(l10n, 0, 990), 'Rest');
-      // 300 of the 400 kcal are left in 990 g.
-      expect(state.kcalPer100Grams, 30);
 
       controller.pickAmount(990);
       expect(container.read(provider).takesRest, isTrue);
@@ -137,17 +135,44 @@ void main() {
       final before = container.read(provider);
       // 1050 g left for 3 portions with 300 kcal.
       expect(before.portionsHeader(l10n), '1 portion · 350 g');
-      expect(before.kcalPer100Grams, 29);
+      expect(before.nutrition?.per100?.kcal, closeTo(28.6, 0.1));
 
       // Weighed cold the next morning: 900 g left.
       await _emit([soup().withWeightLeft(900, soup().remainingPortions, _now)]);
 
       final after = container.read(provider);
       expect(after.portionsHeader(l10n), '1 portion · 300 g');
-      expect(after.kcalPer100Grams, 33);
+      expect(after.nutrition?.per100?.kcal, closeTo(33.3, 0.1));
       // A portion keeps its share of the meal's nutrients.
       expect(after.nutrition?.eaten.kcal, before.nutrition?.eaten.kcal);
       expect(after.calculator.needsPotWeighing(_now), isFalse);
+    });
+
+    test('the values per 100 g follow a weighing on the page', () {
+      final (:container, :provider) = _setUp(soup());
+      // 300 of the 400 kcal are left in 1050 g after "Gekocht".
+      expect(
+        container.read(provider).nutrition?.per100?.kcal,
+        closeTo(28.6, 0.1),
+      );
+
+      container.read(provider.notifier).setPotGrossText('2170');
+
+      // 300 of the 400 kcal are left in 990 g.
+      final nutrition = container.read(provider).nutrition;
+      expect(nutrition?.per100?.kcal, closeTo(30.3, 0.1));
+      // One portion stays a quarter of the meal.
+      expect(nutrition?.eaten.kcal, 100);
+    });
+
+    test('a meal not weighed after cooking has no values per 100 g', () {
+      final (:container, :provider) = _setUp(
+        preparedMealTestData(totalPortions: 4, remainingPortions: 3),
+      );
+
+      final nutrition = container.read(provider).nutrition;
+      expect(nutrition?.eaten.kcal, 100);
+      expect(nutrition?.per100, isNull);
     });
 
     test('a pot no heavier than empty blocks the request', () {
