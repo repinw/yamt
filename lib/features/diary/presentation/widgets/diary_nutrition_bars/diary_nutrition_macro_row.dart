@@ -25,6 +25,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     this.showTotal = true,
     this.planned = 0,
     this.countsPlanned = false,
+    this.totalKey,
     super.key,
   });
 
@@ -51,6 +52,9 @@ class DiaryNutritionMacroRow extends StatelessWidget {
 
   /// Whether the grams left and the eaten grams count [planned].
   final bool countsPlanned;
+
+  /// Key of the eaten and target grams.
+  final Key? totalKey;
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +147,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
                     numberFormat.format(counted.round()),
                     numberFormat.format(target.round()),
                   ),
+                  key: totalKey,
                   maxLines: 1,
                   style: mono?.copyWith(color: colors.muted),
                 ),

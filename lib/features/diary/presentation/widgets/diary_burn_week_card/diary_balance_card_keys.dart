@@ -32,6 +32,12 @@ abstract final class DiaryBalanceCardKeys {
     'diary-balance-kcal-head-without-plan',
   );
 
+  /// What was eaten, the open plans included while they count, in the
+  /// details of the daily head.
+  static const kcalHeadEaten = ValueKey<String>(
+    'diary-balance-kcal-head-eaten',
+  );
+
   /// Goal next to the big number of a future day.
   static const kcalHeadTarget = ValueKey<String>(
     'diary-balance-kcal-head-target',

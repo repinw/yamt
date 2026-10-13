@@ -21,6 +21,19 @@ class DiaryNutritionBarsContent extends StatelessWidget {
     super.key,
   });
 
+  /// Key of the eaten and target grams of the protein row.
+  static const proteinTotalKey = ValueKey<String>(
+    'diary-nutrition-bars-protein-total',
+  );
+
+  /// Key of the eaten and target grams of the carbs row.
+  static const carbsTotalKey = ValueKey<String>(
+    'diary-nutrition-bars-carbs-total',
+  );
+
+  /// Key of the eaten and target grams of the fat row.
+  static const fatTotalKey = ValueKey<String>('diary-nutrition-bars-fat-total');
+
   /// Loaded nutrition values and targets.
   final DiaryNutritionBarsData data;
 
@@ -69,6 +82,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               showTotal: showTotals,
               planned: plans?.protein ?? 0,
               countsPlanned: counted,
+              totalKey: proteinTotalKey,
             ),
             const SizedBox(height: diaryMacroRowGap),
             DiaryNutritionMacroRow(
@@ -80,6 +94,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               showTotal: showTotals,
               planned: plans?.carbs ?? 0,
               countsPlanned: counted,
+              totalKey: carbsTotalKey,
             ),
             const SizedBox(height: diaryMacroRowGap),
             DiaryNutritionMacroRow(
@@ -91,6 +106,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               showTotal: showTotals,
               planned: plans?.fat ?? 0,
               countsPlanned: counted,
+              totalKey: fatTotalKey,
             ),
           ],
         ),
