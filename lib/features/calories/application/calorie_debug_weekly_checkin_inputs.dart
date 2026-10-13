@@ -2,8 +2,6 @@ import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
@@ -135,38 +133,6 @@ String calorieDebugBlockedReasonName(CalorieWeeklyCheckInBlockedReason reason) {
     CalorieWeeklyCheckInBlockedReason.unstableWeightData =>
       'unstable_weight_data',
   };
-}
-
-/// The learned TDEE before [day], or the calculated or goal TDEE.
-double calorieDebugPreviousLearnedTdeeKcal({
-  required CalorieGoalSettings settings,
-  required DateTime day,
-  required DateTime fallbackDay,
-}) {
-  final normalizedDay = normalizeDiaryDay(day);
-  CalorieGoalHistoryEntry? learnedEntry;
-  for (final entry in settings.sortedGoalHistory) {
-    if (!entry.effectiveDate.isBefore(normalizedDay)) {
-      break;
-    }
-    if (entry.hasLearnedTdee) {
-      learnedEntry = entry;
-    }
-  }
-  final learnedTdeeKcal =
-      learnedEntry?.weeklyCheckInSnapshot?.calculatedTdeeKcal;
-  if (learnedTdeeKcal != null) {
-    return learnedTdeeKcal;
-  }
-  final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
-    settings: settings,
-    day: fallbackDay,
-  );
-  if (calculatorProfile != null) {
-    final result = CalorieGoalCalculator.calculate(calculatorProfile);
-    return result.tdeeKcal;
-  }
-  return settings.baseGoalKcalForDay(fallbackDay);
 }
 
 /// Groups [entries] by diary day key.

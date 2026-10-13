@@ -71,62 +71,6 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
   );
 }
 
-/// Resolves learning intake, including missing/pause day interpolation.
-CalorieWeeklyLearningIntakeData resolveWeeklyLearningIntakeData({
-  required List<DateTime> days,
-  required Map<String, List<CalorieEntry>> calorieEntriesByDay,
-  required CalorieGoalSettings settings,
-}) {
-  final loggedVals = <double>[];
-  final missingIntakeDays = <DateTime>[];
-
-  for (final day in days) {
-    final dayKey = diaryDayKey(day);
-    final isExplicitPause = settings.isPauseDay(day);
-    final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
-    if (dayEntries.isNotEmpty && !isExplicitPause) {
-      loggedVals.add(sumCalorieEntryKcal(dayEntries));
-    } else {
-      missingIntakeDays.add(day);
-    }
-  }
-
-  if (missingIntakeDays.length >= weeklyCheckInMissingIntakeBlockThreshold) {
-    return CalorieWeeklyLearningIntakeData.blocked(
-      blockedReason: CalorieWeeklyCheckInBlockedReason.tooManyMissingIntakeDays,
-      missingIntakeDays: missingIntakeDays,
-    );
-  }
-
-  if (loggedVals.isEmpty && missingIntakeDays.isNotEmpty) {
-    return CalorieWeeklyLearningIntakeData.blocked(
-      blockedReason: CalorieWeeklyCheckInBlockedReason.missingIntakeDays,
-      missingIntakeDays: missingIntakeDays,
-    );
-  }
-
-  final averageLogged = loggedVals.isEmpty
-      ? 0.0
-      : CalorieDomainMath.average(loggedVals);
-  final intakeKcalByDay = <double>[];
-
-  for (final day in days) {
-    final dayKey = diaryDayKey(day);
-    final isExplicitPause = settings.isPauseDay(day);
-    final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
-    if (dayEntries.isNotEmpty && !isExplicitPause) {
-      intakeKcalByDay.add(sumCalorieEntryKcal(dayEntries));
-    } else {
-      intakeKcalByDay.add(averageLogged);
-    }
-  }
-
-  return CalorieWeeklyLearningIntakeData.ready(
-    intakeKcalByDay: intakeKcalByDay,
-    missingIntakeDays: missingIntakeDays,
-  );
-}
-
 /// Sum entry calories.
 double sumCalorieEntryKcal(List<CalorieEntry> entries) {
   return entries.fold<double>(0, (sum, entry) => sum + entry.totalKcal);

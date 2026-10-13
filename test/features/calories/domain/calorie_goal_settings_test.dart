@@ -366,7 +366,7 @@ void main() {
     );
   });
 
-  test('learning anchor survives a later goal-cycle change', () {
+  test('the cycle anchor follows a later goal change', () {
     final first = const CalorieGoalSettings.empty().applyGoalChange(
       changedAt: DateTime(2026, 6),
       dailyKcalGoal: 2000,
@@ -378,10 +378,6 @@ void main() {
       calculatorProfile: const CalorieCalculatorProfile.defaults(),
     );
 
-    expect(
-      changed.learningAnchorEntryForDay(DateTime(2026, 6, 10))?.effectiveDate,
-      DateTime(2026, 6),
-    );
     expect(
       changed.cycleAnchorEntryForDay(DateTime(2026, 6, 10))?.effectiveDate,
       DateTime(2026, 6, 4),
