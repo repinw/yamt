@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/'
     'burn_week_live_mutation_coordinator.dart';
 import 'package:yamt/features/calories/application/'
@@ -34,7 +35,7 @@ Object? burnWeekLiveSync(Ref ref) {
     ref.onDispose(ticker.cancel);
   }
 
-  final today = normalizeDiaryDay(DateTime.now());
+  final today = normalizeDiaryDay(ref.watch(clockProvider)());
   final weekOverview = ref.watch(calorieWeekOverviewForWindowProvider(today));
   final todayOverview = ref.watch(calorieWeekDayOverviewForDateProvider(today));
   final settings = ref.watch(calorieGoalControllerProvider).asData?.value;
@@ -159,6 +160,7 @@ Object? burnWeekLiveSync(Ref ref) {
   ];
   _queueRunSync(
     ref,
+    currentDay: today,
     weekStartDate: syncWeekStartDate,
     missedTrackingThisWeek: missedTrackingThisWeek,
     missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
@@ -168,12 +170,12 @@ Object? burnWeekLiveSync(Ref ref) {
 
 void _queueRunSync(
   Ref ref, {
+  required DateTime currentDay,
   required DateTime weekStartDate,
   required bool missedTrackingThisWeek,
   List<bool>? missedTrackingForClosedWeeks,
 }) {
   final controller = ref.read(burnWeekRunControllerProvider.notifier);
-  final currentDay = normalizeDiaryDay(DateTime.now());
   final closedWeeksKey = (missedTrackingForClosedWeeks ?? const <bool>[])
       .map((value) => value ? '1' : '0')
       .join();
