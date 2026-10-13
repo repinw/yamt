@@ -519,6 +519,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   says "Ohne Verbindung keine Suche" instead of "Keine passenden Produkte
   gefunden". Once the device is online again, the search runs once more by
   itself.
+- Text search lists the shared catalog first, then Open Food Facts. Catalog
+  foods without a barcode that another user made, such as an AI meal, come
+  last, so a plain product that matches ranks above them; the user's own
+  stay with the catalog results. A food from before the catalog recorded
+  its author counts as another user's (#655).
 - Voice search for manual product text where supported.
 - AI food creation from photos and/or a description (one of both is
   enough), with quick phrases such as "large portion". The server prompt

@@ -59,4 +59,4 @@ final class ProductSearchGatewayProvider
 }
 
 String _$productSearchGatewayHash() =>
-    r'ae3039efa005157c772ad1ea2a340b4b8849869f';
+    r'35f01f968c81b46d527a39b147d39f10c9555d93';

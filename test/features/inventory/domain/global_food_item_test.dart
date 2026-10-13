@@ -50,4 +50,36 @@ void main() {
       expect(tokens.any((token) => RegExp(r'^\d+$').hasMatch(token)), isFalse);
     });
   });
+
+  group('GlobalFoodItem author', () {
+    final json = <String, dynamic>{
+      ...GlobalFoodItem.create(
+        id: 'manual-food-1',
+        name: 'Eier und Rosenbrötchen mit Frischkäse',
+        now: DateTime.utc(2026, 10),
+      ).toJson(),
+      'created_by_uid': 'author',
+    };
+
+    test('is read from the stored item and kept by copyWith', () {
+      final item = GlobalFoodItem.fromJson(json);
+
+      expect(item.createdByUid, 'author');
+      expect(item.copyWith(name: 'Eier').createdByUid, 'author');
+    });
+
+    test('is missing on items from before the catalog recorded it', () {
+      final item = GlobalFoodItem.fromJson(
+        Map<String, dynamic>.from(json)..remove('created_by_uid'),
+      );
+
+      expect(item.createdByUid, isNull);
+    });
+
+    test('is left out of the written item, which the store authors', () {
+      final item = GlobalFoodItem.fromJson(json);
+
+      expect(item.toJson(), isNot(contains('created_by_uid')));
+    });
+  });
 }
