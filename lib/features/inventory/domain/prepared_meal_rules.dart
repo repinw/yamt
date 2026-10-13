@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 
 /// What a cook can do with a Vorrat meal.
 enum PreparedMealAction {
@@ -45,6 +46,18 @@ extension PreparedMealRules on PreparedMeal {
   /// [portions] come back.
   PreparedMeal withPortionsTaken(num portions, DateTime at) => copyWith(
     remainingPortions: math.max(0, remainingPortions - portions),
+    updatedAt: at,
+  );
+
+  /// The meal with [grams] of food left at [at], as the pot weighs it on
+  /// the eat page: grams per portion and per 100 g count from the weighing,
+  /// and the meal's weight from "Gekocht" stays.
+  PreparedMeal withFoodWeighed(int grams, DateTime at) => copyWith(
+    potWeighing: PreparedMealPotWeighing(
+      netWeight: grams,
+      weighedAt: at,
+      remainingPortions: remainingPortions,
+    ),
     updatedAt: at,
   );
 }
