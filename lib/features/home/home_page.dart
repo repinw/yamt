@@ -18,6 +18,7 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_cook_ac
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_actions.dart';
 import 'package:yamt/features/home/domain/home_action_ranking.dart';
 import 'package:yamt/features/home/presentation/controllers/home_action_usage_controller.dart';
+import 'package:yamt/features/home/presentation/models/home_slide_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_slide_menu.dart';
@@ -47,9 +48,9 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   /// Whether the side menu or the action panel is open.
   var _isMenuOpen = false;
 
-  /// Whether the open panel is the action panel on the right; it stays set
-  /// while the panel closes, so the right content slides away.
-  var _showsActions = false;
+  /// What the slide panel shows; it stays set while the panel closes, so the
+  /// right content slides away.
+  HomeSlidePanel _panel = const HomeSideMenuPanel();
 
   /// Whether a sheet, dialog, or page covers the shell.
   var _isCovered = false;
@@ -72,6 +73,17 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   void didPopNext() => setState(() => _isCovered = false);
 
   @override
+  void didUpdateWidget(HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A header tool's actions belong to the tab that opened them.
+    if (_panel is HomeHeaderActionsPanel &&
+        oldWidget.navigationShell.currentIndex !=
+            widget.navigationShell.currentIndex) {
+      _isMenuOpen = false;
+    }
+  }
+
+  @override
   void dispose() {
     _routeObserver?.unsubscribe(this);
     super.dispose();
@@ -84,13 +96,8 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     );
   }
 
-  void _openMenu() => setState(() {
-    _showsActions = false;
-    _isMenuOpen = true;
-  });
-
-  void _openActions() => setState(() {
-    _showsActions = true;
+  void _open(HomeSlidePanel panel) => setState(() {
+    _panel = panel;
     _isMenuOpen = true;
   });
 
@@ -145,6 +152,24 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
             ref.read(homeActionUsageControllerProvider.notifier).record(id),
           );
         }
+      },
+    );
+  }
+
+  /// The action panel of a header tool, at the top right under the tool.
+  ///
+  /// Its own [Consumer] runs [build], so the watched providers rebuild only
+  /// the panel, and only while it is in the tree.
+  Widget _buildHeaderPanel(HomeHeaderActionsBuilder build) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final actions = build(ref);
+        return HomeActionPanel(
+          sections: actions.sections,
+          highlightedKey: actions.highlightedKey,
+          onClose: _closeMenu,
+          fromTop: true,
+        );
       },
     );
   }
@@ -208,10 +233,12 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     return HomeSlideMenu(
       isOpen: _isMenuOpen,
       onClose: _closeMenu,
-      fromEnd: _showsActions,
-      menu: _showsActions
-          ? _buildActionPanel(currentTab)
-          : HomeMenuPanel(onClose: _closeMenu),
+      fromEnd: _panel is! HomeSideMenuPanel,
+      menu: switch (_panel) {
+        HomeSideMenuPanel() => HomeMenuPanel(onClose: _closeMenu),
+        HomeTabActionsPanel() => _buildActionPanel(currentTab),
+        HomeHeaderActionsPanel(:final build) => _buildHeaderPanel(build),
+      },
       child: _buildShell(l10n, currentTab, floatingActionButton),
     );
   }
@@ -224,7 +251,8 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     return Scaffold(
       extendBody: true,
       body: HomeShellMenuScope(
-        openMenu: _openMenu,
+        openMenu: () => _open(const HomeSideMenuPanel()),
+        openActions: (build) => _open(HomeHeaderActionsPanel(build)),
         child: Stack(
           children: [
             ContentVisibility(
@@ -243,7 +271,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
                     action: switch (_actionLabel(l10n, currentTab)) {
                       final label? => HomeNavAction(
                         label: label,
-                        onPressed: _openActions,
+                        onPressed: () => _open(const HomeTabActionsPanel()),
                       ),
                       null => null,
                     },
