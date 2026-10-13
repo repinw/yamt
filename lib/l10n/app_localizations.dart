@@ -1702,12 +1702,6 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get eatPageSavePortion;
 
-  /// No description provided for @eatPagePieceWeight.
-  ///
-  /// In en, this message translates to:
-  /// **'1 {label} ='**
-  String eatPagePieceWeight(String label);
-
   /// No description provided for @eatPageInStock.
   ///
   /// In en, this message translates to:
@@ -1773,6 +1767,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Number of portions'**
   String get eatPageCountLabel;
+
+  /// Name of the count wheel on the eat page of a food counted in pieces, and title of the field that types a count.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of pieces'**
+  String get eatPagePieceCountLabel;
 
   /// Sign between the portion count wheel and the weight of one portion on the eat page.
   ///

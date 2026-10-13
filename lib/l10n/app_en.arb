@@ -586,14 +586,6 @@
   },
   "eatPagePortionNameHint": "e.g. slice",
   "eatPageSavePortion": "Save",
-  "eatPagePieceWeight": "1 {label} =",
-  "@eatPagePieceWeight": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "eatPageInStock": "{amount} in stock",
   "@eatPageInStock": {
     "placeholders": {
@@ -640,6 +632,10 @@
   "eatPageCountLabel": "Number of portions",
   "@eatPageCountLabel": {
     "description": "Name of the portion count wheel on the eat page and title of the field that types a count."
+  },
+  "eatPagePieceCountLabel": "Number of pieces",
+  "@eatPagePieceCountLabel": {
+    "description": "Name of the count wheel on the eat page of a food counted in pieces, and title of the field that types a count."
   },
   "eatPageTimes": "×",
   "@eatPageTimes": {

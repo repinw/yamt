@@ -989,11 +989,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageSavePortion => 'Speichern';
 
   @override
-  String eatPagePieceWeight(String label) {
-    return '1 $label =';
-  }
-
-  @override
   String eatPageInStock(String amount) {
     return '$amount im Vorrat';
   }
@@ -1031,6 +1026,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get eatPageCountLabel => 'Anzahl Portionen';
+
+  @override
+  String get eatPagePieceCountLabel => 'Anzahl Stück';
 
   @override
   String get eatPageTimes => '×';

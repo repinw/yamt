@@ -1629,9 +1629,9 @@ void main() {
     await tester.pumpAndSettle();
 
     await _openItemHub(tester);
-    await tester.enterText(find.byKey(const Key('eat_page_amount_field')), '1');
+    // One piece of 100 g: the count wheel starts at one.
     await tester.enterText(
-      find.byKey(const Key('inventory_item_portion_amount_field')),
+      find.byKey(const Key('eat_page_amount_field')),
       '100',
     );
     await tester.pump();
@@ -1858,9 +1858,18 @@ void main() {
   testWidgets('eat action validates amount above available stock', (
     tester,
   ) async {
+    // Pieces count on a wheel that ends at the stock, so the amount is
+    // typed in grams here.
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
-        _item('a', quantity: 3, initialQuantity: 3),
+        _item(
+          'a',
+          quantity: 1,
+          initialQuantity: 1,
+          initialAmount: 300,
+          currentAmount: 300,
+          amountUnit: InventoryAmountUnit.gram,
+        ),
       ],
     );
     addTearDown(repository.dispose);
@@ -1873,10 +1882,6 @@ void main() {
     final amountField = find.byKey(const Key('eat_page_amount_field'));
     expect(amountField, findsOneWidget);
     await tester.enterText(amountField, '999');
-    await tester.enterText(
-      find.byKey(const Key('inventory_item_portion_amount_field')),
-      '100',
-    );
     await tester.pump();
 
     await _tapAmountDialogConfirm(tester);
@@ -1889,7 +1894,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(_stockLabel('3 pc'), findsOneWidget);
+    expect(_stockLabel('300 g'), findsOneWidget);
   });
 
   testWidgets('remove flow can mark item as thrown away and update stock', (

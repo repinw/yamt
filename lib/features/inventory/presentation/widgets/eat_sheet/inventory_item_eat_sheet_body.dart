@@ -49,12 +49,6 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// Key of the piece weight field.
-  static const pieceWeightKey = Key('inventory_item_portion_amount_field');
-
-  /// Key of the piece weight unit button.
-  static const pieceWeightUnitKey = Key('inventory_item_portion_unit_button');
-
   /// Item to eat.
   final InventoryItem item;
 
@@ -176,7 +170,7 @@ class _InventoryItemEatSheetBodyState
     final nutrition = state.nutrition;
     final addMoreText = widget.addMoreActionText;
     final amountField = state.usesPortionMode
-        ? _fields.pieceCount
+        ? _fields.pieceWeight
         : _fields.inventoryAmount;
     final footer = widget.footer;
     final plansOnly = widget.plansOnly && !state.isPastDay;
@@ -226,7 +220,6 @@ class _InventoryItemEatSheetBodyState
             state: state,
             controller: _controller,
             amountField: amountField,
-            pieceWeight: _fields.pieceWeight,
             inedibleAmount: _fields.inedibleAmount,
             onToggleInedible: _toggleInedible,
           ),
