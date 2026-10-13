@@ -82,6 +82,10 @@
   "productSearchHubSearchLoadFailed": "Product search failed.",
   "productSearchHubSearchRetryAction": "Retry",
   "productSearchHubSearchEmptyState": "No matching products found.",
+  "productSearchHubSearchOfflineState": "No search without a connection. The search runs again once you are online.",
+  "@productSearchHubSearchOfflineState": {
+    "description": "Shown instead of the empty search result while the device is offline."
+  },
   "eatPageAmountUnknown": "–",
   "productSearchHubMissingNutritionHint": "Required values are missing. Every EU nutrition label lists them.",
   "productEditorPhotosHint": "Two photos fill in the product. You only check it.",

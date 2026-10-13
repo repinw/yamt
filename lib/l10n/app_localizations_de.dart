@@ -177,6 +177,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Keine passenden Produkte gefunden.';
 
   @override
+  String get productSearchHubSearchOfflineState =>
+      'Ohne Verbindung keine Suche. Sobald du online bist, wird erneut gesucht.';
+
+  @override
   String get eatPageAmountUnknown => '–';
 
   @override

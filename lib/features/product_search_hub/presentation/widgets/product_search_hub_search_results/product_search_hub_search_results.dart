@@ -17,12 +17,19 @@ class ProductSearchHubSearchResults extends StatelessWidget {
     required this.results,
     required this.isSearching,
     required this.hasFailed,
+    required this.isOffline,
     required this.onRetry,
     required this.onCreateOwnPressed,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.onDrag,
     this.onResultSelected,
     super.key,
   });
+
+  /// Key of the text shown for an empty result.
+  static const emptyStateKey = Key('product_search_hub_search_empty_state');
+
+  /// Key of the text shown instead of an empty result while offline.
+  static const offlineStateKey = Key('product_search_hub_search_offline_state');
 
   /// Search results.
   final List<OffProductSearchResult> results;
@@ -32,6 +39,9 @@ class ProductSearchHubSearchResults extends StatelessWidget {
 
   /// Whether last search request failed.
   final bool hasFailed;
+
+  /// Whether the device is offline, so an empty result says why.
+  final bool isOffline;
 
   /// Retry callback.
   final VoidCallback onRetry;
@@ -49,7 +59,8 @@ class ProductSearchHubSearchResults extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (hasFailed) {
+    // Offline a failed search is the missing connection too.
+    if (hasFailed && !isOffline) {
       return _ProductSearchHubSearchError(
         message: l10n.productSearchHubSearchLoadFailed,
         retryLabel: l10n.productSearchHubSearchRetryAction,
@@ -63,9 +74,14 @@ class ProductSearchHubSearchResults extends StatelessWidget {
       );
     }
 
+    // A failed search has no results either.
     if (results.isEmpty) {
+      // Offline an empty result does not mean that the product is unknown.
       return _ProductSearchHubSearchEmpty(
-        message: l10n.productSearchHubSearchEmptyState,
+        message: isOffline
+            ? l10n.productSearchHubSearchOfflineState
+            : l10n.productSearchHubSearchEmptyState,
+        messageKey: isOffline ? offlineStateKey : emptyStateKey,
         createLabel: l10n.productSearchHubCreateProductAction,
         onCreate: onCreateOwnPressed,
       );
@@ -137,11 +153,13 @@ class _ProductSearchHubSearchError extends StatelessWidget {
 class _ProductSearchHubSearchEmpty extends StatelessWidget {
   const new({
     required this.message,
+    required this.messageKey,
     required this.createLabel,
     required this.onCreate,
   });
 
   final String message;
+  final Key messageKey;
   final String createLabel;
   final VoidCallback onCreate;
 
@@ -153,7 +171,7 @@ class _ProductSearchHubSearchEmpty extends StatelessWidget {
         children: [
           Text(
             message,
-            key: const Key('product_search_hub_search_empty_state'),
+            key: messageKey,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge,
           ),

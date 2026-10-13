@@ -26,6 +26,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
     required this.hasSearchQuery,
     required this.searchResults,
     required this.hasSearchFailed,
+    required this.isOffline,
     required this.onBackPressed,
     required this.onSearchChanged,
     required this.onClear,
@@ -64,6 +65,9 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
 
   /// Whether search failed.
   final bool hasSearchFailed;
+
+  /// Whether the device is offline.
+  final bool isOffline;
 
   /// Back callback.
   final VoidCallback onBackPressed;
@@ -136,6 +140,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
       results: searchResults,
       isSearching: isSearching,
       hasFailed: hasSearchFailed,
+      isOffline: isOffline,
       onCreateOwnPressed: onCreateOwnPressed,
       onRetry: onRetry,
       onResultSelected: onResultSelected,

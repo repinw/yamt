@@ -174,6 +174,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productSearchHubSearchEmptyState => 'No matching products found.';
 
   @override
+  String get productSearchHubSearchOfflineState =>
+      'No search without a connection. The search runs again once you are online.';
+
+  @override
   String get eatPageAmountUnknown => '–';
 
   @override
