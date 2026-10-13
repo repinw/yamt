@@ -247,7 +247,9 @@ class InventoryReceiptManualProductController
   ///
   /// [photoImageUrl] is the stored front photo; it is the product image when
   /// the product has none. A product whose front photo shows no package
-  /// stays the user's own: the payload asks for no catalog write (#658).
+  /// stays the user's own (#658): the payload asks for no catalog write and
+  /// drops a picked catalog or Open Food Facts product, so the product gets
+  /// its pending id like an AI food. The item keeps the picked values.
   InventoryReceiptManualProductSavePayload? buildSavePayload({
     InventoryReceiptManualProductAction action =
         InventoryReceiptManualProductAction.addToInventory,
@@ -346,6 +348,18 @@ class InventoryReceiptManualProductController
           ),
         )
         .withWeightUnitWithoutPackage(state.selectedWeightUnit);
+    // A product kept private drops its pick: every later step reads a
+    // catalog id as a product already in the catalog and shares it with
+    // other users, with the user's values and photo.
+    if (state.frontShowsNoPackage) {
+      return (
+        item: updatedItem,
+        selectedProduct: null,
+        selectedGlobalFoodItemId: null,
+        requiresGlobalPersistence: false,
+        globalPackageWeight: globalPackageWeight,
+      );
+    }
     final selectedEditKind = _selectedProductEditKind(
       selection: state.selectedProduct,
       item: updatedItem,
@@ -360,12 +374,10 @@ class InventoryReceiptManualProductController
       item: updatedItem,
       selectedProduct: effectiveSelectedProduct?.externalProduct,
       selectedGlobalFoodItemId: effectiveSelectedProduct?.globalFoodItemId,
-      requiresGlobalPersistence:
-          !state.frontShowsNoPackage &&
-          _requiresGlobalPersistenceForSelection(
-            selection: effectiveSelectedProduct,
-            editKind: selectedEditKind,
-          ),
+      requiresGlobalPersistence: _requiresGlobalPersistenceForSelection(
+        selection: effectiveSelectedProduct,
+        editKind: selectedEditKind,
+      ),
       globalPackageWeight: globalPackageWeight,
     );
   }

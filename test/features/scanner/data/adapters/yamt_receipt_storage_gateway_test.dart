@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
@@ -8,6 +9,13 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/product_missing_values.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_search_models.dart'
+    show InventoryReceiptManualProductConfig;
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_editor_page/manual_product_search_editor_support.dart';
 import 'package:yamt/features/scanner/data/adapters/'
     'yamt_receipt_manual_product_picker.dart';
 import 'package:yamt/features/scanner/data/adapters/yamt_receipt_storage_gateway.dart';
@@ -393,6 +401,68 @@ void main() {
       expect(saved.imageUrl, privatePhoto);
     });
 
+    test(
+      'saveReceipt keeps a catalog product picked for a line out of the '
+      'receipt aliases when its front photo shows no package (#658)',
+      () async {
+        const receipt = ScannedReceipt(
+          id: 'rec_private_pick',
+          storeName: 'REWE',
+        );
+        final candidate = YamtReceiptManualProductPicker.mapResultToCandidate(
+          _privateCatalogPickResult(),
+        );
+
+        expect(isPendingGlobalFoodItemId(candidate.id), isTrue);
+
+        await gateway.saveReceipt(
+          receipt: receipt,
+          items: [
+            ReceiptLineItem(
+              id: 'line_milk',
+              rawName: 'JA! VOLLM. 1L',
+              totalPrice: 1.19,
+              status: ReceiptItemStatus.confirmed,
+              matchedProduct: candidate,
+            ),
+          ],
+        );
+
+        expect(globalFoodRepo.appendedItems, isEmpty);
+        expect(aliasRepo.appendedAliases, isEmpty);
+        final saved = invRepo.appendedItems.single;
+        expect(saved.name, 'Ja! Vollmilch');
+        expect(isPendingGlobalFoodItemId(saved.globalFoodItemId), isTrue);
+        expect(saved.imageUrl, _privatePhoto);
+      },
+    );
+
+    test('saveReceipt keeps a private photo out of a receipt alias', () async {
+      const receipt = ScannedReceipt(id: 'rec_alias_photo', storeName: 'REWE');
+
+      await gateway.saveReceipt(
+        receipt: receipt,
+        items: [
+          ReceiptLineItem(
+            id: 'line_milk',
+            rawName: 'JA! VOLLM. 1L',
+            totalPrice: 1.19,
+            status: ReceiptItemStatus.confirmed,
+            matchedProduct: testMilchCandidate.copyWith(
+              imageUrl: _privatePhoto,
+              requiresPersistence: false,
+            ),
+          ),
+        ],
+      );
+
+      final alias = aliasRepo.appendedAliases.single;
+      expect(alias.globalFoodItemId, 'g_milch_1');
+      expect(alias.globalFoodItem.imageUrl, isNull);
+      // The user's own item keeps the photo.
+      expect(invRepo.appendedItems.single.imageUrl, _privatePhoto);
+    });
+
     test('saveReceipt stops when catalog persistence fails', () async {
       globalFoodRepo.shouldSucceed = false;
       const receipt = ScannedReceipt(id: 'rec_failed', storeName: 'REWE');
@@ -512,4 +582,45 @@ void main() {
       expect(aliasRepo.appendedAliases, isEmpty);
     });
   });
+}
+
+const _privatePhoto = 'gs://bucket/users/user-1/food_photos/photo-2.jpg';
+
+/// What the editor returns for a receipt line when the user picks the
+/// catalog milk, which has no image, and the AI finds no package on the
+/// front photo: its private address fills the empty product image (#658).
+InventoryReceiptManualProductResult _privateCatalogPickResult() {
+  final container = ProviderContainer();
+  addTearDown(container.dispose);
+  final provider = inventoryReceiptManualProductControllerProvider(
+    InventoryReceiptManualProductConfig(
+      item: InventoryItem.create(
+        id: 'picker_2',
+        name: 'JA! VOLLM. 1L',
+        entryDate: DateTime(2026, 10, 13),
+        storeName: 'REWE',
+        quantity: 1,
+      ),
+    ),
+  );
+  final subscription = container.listen(provider, (_, _) {});
+  addTearDown(subscription.close);
+  final editor = container.read(provider.notifier)
+    ..applyRecentItem(
+      InventoryItem.create(
+        id: 'recent-milk',
+        globalFoodItemId: 'g_milch_1',
+        name: 'Ja! Vollmilch',
+        entryDate: DateTime(2026, 10),
+        storeName: 'REWE',
+        quantity: 1,
+        barcode: '4311501234567',
+        weight: '1 l',
+      ),
+    )
+    ..updateFrontShowsNoPackage(value: true);
+  return buildSaveProductResult(
+    payload: editor.buildSavePayload(photoImageUrl: _privatePhoto)!,
+    action: InventoryReceiptManualProductAction.addToInventory,
+  );
 }

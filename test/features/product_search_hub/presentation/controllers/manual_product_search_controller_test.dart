@@ -1078,4 +1078,84 @@ void main() {
     expect(payload?.item.servingQuantityUnit, 'g');
     expect(payload?.item.servingSize, isNull);
   });
+
+  group('a front photo without a package (#658)', () {
+    const privatePhoto = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
+
+    /// The catalog product the user picks, for example by its barcode. It
+    /// has no image, so the front photo fills it.
+    final catalogOats = InventoryItem.create(
+      id: 'recent-oats',
+      globalFoodItemId: 'global-oats',
+      name: 'Haferflocken',
+      entryDate: DateTime.parse('2026-04-01T10:00:00Z'),
+      storeName: 'Kaufland',
+      quantity: 1,
+      barcode: '4006381333931',
+      weight: '500 g',
+    );
+
+    const offMilk = OffProductSearchResult(
+      code: '4006381333931',
+      name: 'Vollmilch',
+      brand: 'Weide',
+      packageWeight: '1 l',
+      score: 42,
+    );
+
+    /// The editor of a new product after [edit].
+    InventoryReceiptManualProductController editorAfter(
+      void Function(InventoryReceiptManualProductController editor) edit,
+    ) {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = inventoryReceiptManualProductControllerProvider(
+        InventoryReceiptManualProductConfig(item: _item(name: '')),
+      );
+      final subscription = container.listen(provider, (_, _) {});
+      addTearDown(subscription.close);
+      final editor = container.read(provider.notifier);
+      edit(editor);
+      return editor;
+    }
+
+    test('drops a picked catalog product', () {
+      final payload = editorAfter(
+        (editor) => editor
+          ..applyRecentItem(catalogOats)
+          ..updateFrontShowsNoPackage(value: true),
+      ).buildSavePayload(photoImageUrl: privatePhoto);
+
+      expect(payload?.selectedGlobalFoodItemId, isNull);
+      expect(payload?.selectedProduct, isNull);
+      expect(payload?.requiresGlobalPersistence, isFalse);
+      // The user's own item keeps the picked values and the private photo.
+      expect(payload?.item.name, 'Haferflocken');
+      expect(payload?.item.barcode, '4006381333931');
+      expect(payload?.item.imageUrl, privatePhoto);
+    });
+
+    test('drops a picked Open Food Facts product', () {
+      final payload = editorAfter(
+        (editor) => editor
+          ..applyScannedProduct(offMilk)
+          ..updateFrontShowsNoPackage(value: true),
+      ).buildSavePayload(photoImageUrl: privatePhoto);
+
+      expect(payload?.selectedGlobalFoodItemId, isNull);
+      expect(payload?.selectedProduct, isNull);
+      expect(payload?.requiresGlobalPersistence, isFalse);
+      expect(payload?.item.name, 'Vollmilch');
+      expect(payload?.item.imageUrl, privatePhoto);
+    });
+
+    test('a front photo with a package keeps the catalog product', () {
+      final payload = editorAfter(
+        (editor) => editor.applyRecentItem(catalogOats),
+      ).buildSavePayload(photoImageUrl: 'gs://bucket/product_images/front.jpg');
+
+      expect(payload?.selectedGlobalFoodItemId, 'global-oats');
+      expect(payload?.requiresGlobalPersistence, isTrue);
+    });
+  });
 }

@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
@@ -159,7 +160,9 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
       category: product.category,
       storeName: storeName,
       barcode: product.barcode,
-      imageUrl: product.imageUrl,
+      // Other users read this product from the catalog and the aliases: a
+      // private or still uploading photo stays on the user's own item.
+      imageUrl: shareableProductImageUrl(product.imageUrl),
       packageWeight: _firstNonEmpty(item.packageWeight, product.packageSize),
       nutrition: product.nutrition,
       servingSize: product.servingSize,

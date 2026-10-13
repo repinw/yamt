@@ -525,10 +525,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   diary only, not into the shared catalog, and records no barcode for
   other users' scans. Its front photo is stored as a private food photo
   (`users/{uid}/food_photos/`), visible to the household, and no photo goes
-  to `product_images`. The product stays private too when it replaces the
+  to `product_images`. This holds also when the product started from a
+  catalog or Open Food Facts product, for example one picked by its
+  barcode: the user's version stays their own, and the picked product
+  stays as it was. The product stays private too when it replaces the
   product of a Vorrat item ("Replace product") or is picked for a receipt
   line, which then teaches no shared receipt alias. "Replace product" never
-  shares a private photo with the catalog or the barcode candidates. A new
+  shares a private photo with the catalog or the barcode candidates, and a
+  receipt scan never with the catalog or the receipt aliases. A new
   front photo that shows a package shares the product again.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.

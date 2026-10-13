@@ -33,10 +33,17 @@ import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_search_models.dart'
+    show InventoryReceiptManualProductConfig;
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_editor_page/manual_product_search_editor_support.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_planned_entry_repository.dart';
@@ -704,6 +711,44 @@ void main() {
     expect(barcodeRepository.recordedBarcodes, isEmpty);
   });
 
+  testWidgets('a catalog product kept private by its front photo gets its '
+      'pending id and no barcode candidate (#658)', (tester) async {
+    final inventoryController = _RecordingInventoryItemsController();
+    final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository();
+    final catalog = _RecordingGlobalFoodItemRepository();
+    final result = _privateCatalogPickResult();
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        barcodeRepository: barcodeRepository,
+        overrides: [
+          globalFoodItemRepositoryProvider.overrideWithValue(catalog),
+        ],
+        onRun: (context, container, l10n) async {
+          await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.inventory(),
+            sourceKey: '4006381333931',
+            result: result,
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+
+    final item = inventoryController.addedItems.single;
+    expect(item.name, 'Muesli');
+    expect(isPendingGlobalFoodItemId(item.globalFoodItemId), isTrue);
+    expect(item.imageUrl, _privatePhoto);
+    expect(catalog.appendedItems, isEmpty);
+    expect(barcodeRepository.recordedBarcodes, isEmpty);
+  });
+
   testWidgets('a new product goes into the catalog with its barcode', (
     tester,
   ) async {
@@ -1008,6 +1053,47 @@ InventoryItem _manualItem() {
     initialAmount: 500,
     currentAmount: 500,
     amountUnit: InventoryAmountUnit.gram,
+  );
+}
+
+const _privatePhoto = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
+
+/// What the editor saves when the user picks the catalog product of
+/// [_catalogId], which has no image, and the AI finds no package on the
+/// front photo: its private address fills the empty product image (#658).
+InventoryReceiptManualProductResult _privateCatalogPickResult() {
+  final container = ProviderContainer();
+  addTearDown(container.dispose);
+  final provider = inventoryReceiptManualProductControllerProvider(
+    InventoryReceiptManualProductConfig(
+      item: InventoryItem.create(
+        id: 'draft',
+        name: '',
+        entryDate: DateTime.utc(2026, 4, 13),
+        storeName: 'Manual',
+        quantity: 1,
+      ),
+    ),
+  );
+  final subscription = container.listen(provider, (_, _) {});
+  addTearDown(subscription.close);
+  final editor = container.read(provider.notifier)
+    ..applyRecentItem(
+      InventoryItem.create(
+        id: 'recent-muesli',
+        globalFoodItemId: _catalogId,
+        name: 'Muesli',
+        entryDate: DateTime.utc(2026, 4),
+        storeName: 'Manual',
+        quantity: 1,
+        barcode: '4006381333931',
+        weight: '500 g',
+      ),
+    )
+    ..updateFrontShowsNoPackage(value: true);
+  return buildSaveProductResult(
+    payload: editor.buildSavePayload(photoImageUrl: _privatePhoto)!,
+    action: InventoryReceiptManualProductAction.addToInventory,
   );
 }
 

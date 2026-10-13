@@ -14,6 +14,7 @@ import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/off_product_search_result.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -241,9 +242,12 @@ class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
   }
 }
 
+/// The editor of a new product, or of [selectedProduct] that the user
+/// picked in the product search.
 Widget _buildHarness({
   required _FakePhotoRepository photos,
   required ValueChanged<Object?> onResult,
+  OffProductSearchResult? selectedProduct,
 }) {
   final config = InventoryReceiptManualProductConfig(
     item: InventoryItem.create(
@@ -253,6 +257,7 @@ Widget _buildHarness({
       storeName: 'Rewe',
       quantity: 1,
     ),
+    selectedProduct: selectedProduct,
   );
   final router = GoRouter(
     routes: [
@@ -308,6 +313,19 @@ Widget _buildHarness({
     ),
   );
 }
+
+/// A product of the shared catalog without an image, as the product search
+/// finds it.
+final OffProductSearchResult _catalogOats =
+    OffProductSearchResult.fromGlobalFoodItem(
+      GlobalFoodItem.create(
+        id: 'global-oats',
+        name: 'Haferflocken',
+        now: DateTime.parse('2026-09-01T10:00:00Z'),
+        barcode: '4006381333931',
+        packageWeight: '500 g',
+      ),
+    );
 
 /// A Vorrat item without a photo, whose product the user replaces.
 final InventoryItem _bread = InventoryItem.create(
@@ -509,6 +527,45 @@ void main() {
     final saved = result! as InventoryReceiptManualProductResult;
     expect(saved.requiresGlobalPersistence, isFalse);
     expect(saved.item.name, 'Brot vom Bäcker');
+    expect(saved.item.imageUrl, _privateFrontUrl);
+  });
+
+  testWidgets('a picked catalog product stays private when its front photo '
+      'shows no package (#658)', (tester) async {
+    final photos = _FakePhotoRepository()..notPackagePhotos = 1;
+    Object? result;
+    await tester.pumpWidget(
+      _buildHarness(
+        photos: photos,
+        selectedProduct: _catalogOats,
+        onResult: (value) => result = value,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('open_editor')));
+    await tester.pumpAndSettle();
+    expect(_text(tester, ManualProductFormField.name), 'Haferflocken');
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    await tester.pumpAndSettle();
+    await _waitForSnackBar(tester);
+    await tester.tap(find.byKey(ManualProductPhotoSection.nutritionTableKey));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(photos.saved, isEmpty);
+    expect(photos.savedPrivate, hasLength(1));
+    final saved = result! as InventoryReceiptManualProductResult;
+    // Without the catalog product, the Vorrat, the diary and the receipt
+    // give the product its pending id: no other user gets it.
+    expect(saved.selectedGlobalFoodItemId, isNull);
+    expect(saved.selectedProduct, isNull);
+    expect(saved.requiresGlobalPersistence, isFalse);
+    expect(saved.item.name, 'Haferflocken');
     expect(saved.item.imageUrl, _privateFrontUrl);
   });
 
