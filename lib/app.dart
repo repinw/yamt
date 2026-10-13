@@ -14,6 +14,7 @@ import 'package:yamt/core/theme/app_theme_mode_controller.dart';
 import 'package:yamt/core/theme/native_theme_mode.dart';
 import 'package:yamt/core/widgets/keyboard_back_scope.dart';
 import 'package:yamt/core/widgets/keyboard_done_bar.dart';
+import 'package:yamt/core/widgets/offline_banner.dart';
 import 'package:yamt/features/app_update/application/'
     'app_client_version_record.dart';
 import 'package:yamt/features/app_update/presentation/widgets/'
@@ -98,12 +99,14 @@ class _YAMTState extends ConsumerState<YAMT> {
       // before it reaches a page.
       builder: (context, child) => KeyboardBackScope(
         child: KeyboardDoneBar(
-          child: AppUpdateHintListener(
-            child: WhatsNewListener(
-              child: SharedReceiptListener(
-                onReceiptSaved: () =>
-                    ref.invalidate(inventoryItemsControllerProvider),
-                child: child ?? const SizedBox.shrink(),
+          child: OfflineBanner(
+            child: AppUpdateHintListener(
+              child: WhatsNewListener(
+                child: SharedReceiptListener(
+                  onReceiptSaved: () =>
+                      ref.invalidate(inventoryItemsControllerProvider),
+                  child: child ?? const SizedBox.shrink(),
+                ),
               ),
             ),
           ),

@@ -6579,4 +6579,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String whatsNewPoint(String point) {
     return '• $point';
   }
+
+  @override
+  String get connectivityOfflineBanner => 'Offline – keine Verbindung';
+
+  @override
+  String get connectivityBackOnline => 'Wieder online';
 }

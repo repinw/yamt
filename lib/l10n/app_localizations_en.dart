@@ -6473,4 +6473,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String whatsNewPoint(String point) {
     return '• $point';
   }
+
+  @override
+  String get connectivityOfflineBanner => 'Offline – no connection';
+
+  @override
+  String get connectivityBackOnline => 'Back online';
 }

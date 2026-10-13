@@ -44,6 +44,13 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Each device saves its app version, platform, and last start (at most once a
   day) in `users/{uid}/clients/{installId}`, so a release can count the
   devices that still run an old version before it removes a migration.
+- Offline hint: while the device has no network connection (flight mode
+  without Wi-Fi), a thin strip "Offline – keine Verbindung" stands under the
+  status bar on every page; screen readers announce it. When the connection
+  returns, the strip goes and a short snackbar "Wieder online" shows. A start
+  with a connection shows nothing. The app reads the connections of the
+  device (`connectivity_plus`), not whether a server answers: Wi-Fi without
+  internet counts as online.
 - Responsive page layouts for mobile and wider screens.
 - English and German localization.
 

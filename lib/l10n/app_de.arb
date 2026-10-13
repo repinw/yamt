@@ -3127,5 +3127,7 @@
   "whatsNewAdded": "Neu",
   "whatsNewImproved": "Verbessert",
   "whatsNewFixed": "Behoben",
-  "whatsNewPoint": "• {point}"
+  "whatsNewPoint": "• {point}",
+  "connectivityOfflineBanner": "Offline – keine Verbindung",
+  "connectivityBackOnline": "Wieder online"
 }

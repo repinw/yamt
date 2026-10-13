@@ -11,6 +11,7 @@ dependencies:
   cached_network_image: ^4.0.0
   cloud_firestore: ^6.10.0
   collection: ^1.19.1
+  connectivity_plus: ^7.3.1
   cryptography: ^2.9.0
   cryptography_flutter: ^2.3.4
   file_picker: ^13.1.0

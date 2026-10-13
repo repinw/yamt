@@ -10765,6 +10765,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'• {point}'**
   String whatsNewPoint(String point);
+
+  /// Strip under the status bar while the device has no network connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline – no connection'**
+  String get connectivityOfflineBanner;
+
+  /// Snack bar when the connection returns after an offline phase.
+  ///
+  /// In en, this message translates to:
+  /// **'Back online'**
+  String get connectivityBackOnline;
 }
 
 class _AppLocalizationsDelegate
