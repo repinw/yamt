@@ -42,6 +42,8 @@ final Uint8List _pixel = base64Decode(
 
 const _frontUrl = 'gs://bucket/product_images/user-1/photo-1/front.jpg';
 
+const _privateUrl = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
+
 /// Takes a front photo, but the AI fails on it with [frontError].
 class _FakePhotoRepository implements ProductPhotoRepository {
   new({required this.frontError, this.cameraError});
@@ -51,6 +53,7 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   /// Thrown by the camera instead of taking a photo.
   final Exception? cameraError;
   final savedNames = <String>[];
+  final savedPrivate = <String>[];
 
   @override
   Future<ProductPhoto?> loadCameraPhoto() async {
@@ -79,6 +82,15 @@ class _FakePhotoRepository implements ProductPhotoRepository {
     return ProductPhotoUpload(
       frontAddress: front == null ? null : _frontUrl,
       // The upload never ends; the editor saves without waiting for it.
+      done: Completer<void>().future,
+    );
+  }
+
+  @override
+  Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) async {
+    savedPrivate.add(front.path);
+    return ProductPhotoUpload(
+      frontAddress: _privateUrl,
       done: Completer<void>().future,
     );
   }
@@ -181,10 +193,15 @@ Future<void> _typeProduct(WidgetTester tester) async {
 }
 
 void main() {
-  for (final (reason, error) in <(String, Exception)>[
-    ('offline', const SocketException('Failed host lookup')),
-    ('without a readable name', const ProductFrontUnreadableException()),
-    ('without a package', const ProductFrontNotProductException()),
+  for (final (reason, error, photoUrl) in <(String, Exception, String)>[
+    ('offline', const SocketException('Failed host lookup'), _frontUrl),
+    (
+      'without a readable name',
+      const ProductFrontUnreadableException(),
+      _frontUrl,
+    ),
+    // A front without a package stays the user's private photo (#658).
+    ('without a package', const ProductFrontNotProductException(), _privateUrl),
   ]) {
     testWidgets('a front the AI reads $reason says nothing, and the typed '
         'product saves with the photo', (tester) async {
@@ -210,10 +227,10 @@ void main() {
       await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
       await tester.pumpAndSettle();
 
-      expect(photos.savedNames, ['Haferflocken zart']);
       final item = (result! as InventoryReceiptManualProductResult).item;
       expect(item.name, 'Haferflocken zart');
-      expect(item.imageUrl, _frontUrl);
+      expect(item.imageUrl, photoUrl);
+      expect(photos.savedNames.length + photos.savedPrivate.length, 1);
     });
   }
 

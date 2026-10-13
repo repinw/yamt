@@ -35,6 +35,24 @@ void main() {
     expect(normalizeProductImageUrl('image.png'), isNull);
   });
 
+  test('knows a private food photo by its download URL and its address', () {
+    expect(
+      isPrivateFoodPhotoUrl(
+        'https://firebasestorage.googleapis.com/v0/b/bucket/o/'
+        'users%2Fu%2Ffood_photos%2Fx.jpg?alt=media',
+      ),
+      isTrue,
+    );
+    expect(
+      isPrivateFoodPhotoUrl('gs://bucket/users/u/food_photos/x.jpg'),
+      isTrue,
+    );
+    expect(
+      isPrivateFoodPhotoUrl('gs://bucket/product_images/u/1/front.jpg'),
+      isFalse,
+    );
+  });
+
   test('keeps Storage addresses out of the shared catalog', () {
     expect(
       shareableProductImageUrl('gs://bucket/product_images/u/1/front.jpg'),
