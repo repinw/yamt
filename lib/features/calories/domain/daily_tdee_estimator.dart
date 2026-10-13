@@ -10,6 +10,7 @@ class DailyTdeeEstimate {
   const new({
     required this.tdeeKcal,
     required this.measuredTdeeKcal,
+    required this.trendKgPerDay,
     required this.isHolding,
   });
 
@@ -19,6 +20,9 @@ class DailyTdeeEstimate {
   /// The TDEE that the smoothed intake and weight trend of this day imply, or
   /// null on a day without logged intake.
   final double? measuredTdeeKcal;
+
+  /// The smoothed weight trend in kg per day.
+  final double trendKgPerDay;
 
   /// Whether too few logged days kept the estimate where it was.
   final bool isHolding;
@@ -108,6 +112,7 @@ abstract final class DailyTdeeEstimator {
         DailyTdeeEstimate(
           tdeeKcal: tdee,
           measuredTdeeKcal: isLogged ? measured : null,
+          trendKgPerDay: trend,
           isHolding: isHolding,
         ),
       );

@@ -136,6 +136,35 @@ void main() {
     expect(sundayWeight, 80.0);
     expect(mondayWeight, 79.5);
   });
+
+  test('blocks when only weigh-ins older than 28 days exist', () {
+    final goalStart = DateTime(2026, 1, 5);
+    final start = DateTime(2026, 4, 2);
+    final dates = _dates(start, learningStartDate: goalStart);
+
+    final blocked = validateWeeklyCheckInWeightData(
+      dates: dates,
+      weightData: CalorieWeeklyCheckInWeightData(
+        weightByDay: {
+          diaryDayKey(goalStart): 82,
+          diaryDayKey(nextDiaryDay(goalStart)): 81.8,
+        },
+        weightPoints: const [
+          CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 82),
+          CalorieWeeklyCheckInWeightPoint(dayIndex: 1, weightKg: 81.8),
+        ],
+      ),
+      windowDays: const <CalorieWeeklyCheckInWindowDay>[],
+      missingIntakeDays: const <DateTime>[],
+    );
+
+    expect(
+      blocked?.blockedReason,
+      CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
+    );
+    // The missing day is the start of the 28 days, not the first goal day.
+    expect(blocked?.missingWeightDays, [addDiaryDays(start, 6 - 27)]);
+  });
 }
 
 CalorieGoalSettings _settings(DateTime start) {
@@ -149,6 +178,7 @@ CalorieGoalSettings _settings(DateTime start) {
 CalorieWeeklyCheckInWindowDates _dates(
   DateTime start, {
   bool isFirstWindow = false,
+  DateTime? learningStartDate,
 }) {
   final end = addDiaryDays(start, 6);
   return CalorieWeeklyCheckInWindowDates(
@@ -159,7 +189,7 @@ CalorieWeeklyCheckInWindowDates _dates(
     ),
     anchorEntry: null,
     anchorWeightSourceDay: null,
-    learningStartDate: start,
+    learningStartDate: learningStartDate ?? start,
     learningDays: [start],
     windowDays: [start],
     learningPreviousBoundaryDay: previousDiaryDay(start),

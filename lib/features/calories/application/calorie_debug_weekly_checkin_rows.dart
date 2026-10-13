@@ -5,20 +5,19 @@ import 'package:yamt/features/calories/application/calorie_debug_weekly_checkin_
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_daily_tdee.dart';
+import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_intake_resolver.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_weight_resolver.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_window_resolver.dart';
-import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
-    show CalorieGoalMode;
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
@@ -65,13 +64,15 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
     healthSamples: healthWeightSamples,
   );
 
-  var previousGoalKcal = settings.baseGoalKcalForDay(
-    windows.first.windowEndDate,
-  );
-  var previousLearnedTdeeKcal = calorieDebugPreviousLearnedTdeeKcal(
+  // One daily TDEE run serves every window.
+  final dailyTdee = weeklyCheckInDailyTdee(
     settings: settings,
-    day: windows.first.windowStartDate,
-    fallbackDay: windows.first.windowEndDate,
+    learningStartDate: datesByWindow.values
+        .map((dates) => dates.learningStartDate)
+        .reduce((a, b) => a.isBefore(b) ? a : b),
+    endDate: windows.last.windowEndDate,
+    entriesByDay: entriesByDay,
+    weights: weightSeries,
   );
   final rows = <CalorieDebugDumpRow>[];
   final learnedTdeeByWeekStart = <String, CalorieDebugWeekTdeeData>{};
@@ -81,9 +82,8 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
       window: window,
       dates: datesByWindow[window]!,
       entriesByDay: entriesByDay,
-      dailyWeightByDay: weightSeries.rawByDay,
-      previousGoalKcal: previousGoalKcal,
-      previousLearnedTdeeKcal: previousLearnedTdeeKcal,
+      weights: weightSeries,
+      dailyTdee: dailyTdee,
     );
     rows.addAll(result.rows);
     final calculation = result.calculation;
@@ -93,15 +93,13 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
       )] = calorieDebugLearnedWeekTdeeData(
         window: window,
         dates: datesByWindow[window]!,
-        previousGoalKcal: previousGoalKcal,
-        previousLearnedTdeeKcal: previousLearnedTdeeKcal,
+        previousGoalKcal: settings.baseGoalKcalForDay(window.windowEndDate),
+        previousLearnedTdeeKcal: calculation.previousTdeeKcal,
         calculation: calculation,
         windowDays: result.windowDays,
         intakeKcalByDay: result.intakeKcalByDay,
         weightPoints: result.weightPoints,
       );
-      previousGoalKcal = calculation.newGoalKcal;
-      previousLearnedTdeeKcal = calculation.calculatedTdeeKcal;
     }
   }
   return CalorieDebugWeeklyRowsResult(
@@ -117,14 +115,13 @@ _DebugWeeklyRowResult _weeklyCheckInRow({
   required PendingCalorieGoalWeeklyCheckIn window,
   required CalorieWeeklyCheckInWindowDates dates,
   required Map<String, List<CalorieEntry>> entriesByDay,
-  required Map<String, double> dailyWeightByDay,
-  required double previousGoalKcal,
-  required double previousLearnedTdeeKcal,
+  required DailyWeightSeries weights,
+  required WeeklyCheckInDailyTdee dailyTdee,
 }) {
   final weightData = mergeWeeklyCheckInWeights(
     dates: dates,
     anchorEntry: dates.anchorEntry,
-    dailyWeightByDay: dailyWeightByDay,
+    dailyWeightByDay: weights.rawByDay,
   );
   final windowIntake = resolveWeeklyWindowIntakeData(
     days: dates.windowDays,
@@ -152,31 +149,9 @@ _DebugWeeklyRowResult _weeklyCheckInRow({
     );
   }
 
-  final learningIntake = resolveWeeklyLearningIntakeData(
-    days: dates.learningDays,
-    calorieEntriesByDay: entriesByDay,
-    settings: settings,
-  );
-  final blockedLearningReason = learningIntake.blockedReason;
-  if (blockedLearningReason != null) {
-    return _DebugWeeklyRowResult(
-      rows: [
-        calorieDebugBlockedWeeklyCheckInRow(
-          window: window,
-          dates: dates,
-          reason: calorieDebugBlockedReasonName(blockedLearningReason),
-          windowDays: windowIntake.days,
-          missingIntakeDays: learningIntake.missingIntakeDays,
-          missingWeightDays: const <DateTime>[],
-        ),
-      ],
-      calculation: null,
-      windowDays: windowIntake.days,
-      intakeKcalByDay: const <double>[],
-      weightPoints: const <CalorieWeeklyCheckInWeightPoint>[],
-    );
-  }
-
+  final intakeKcalByDay = [
+    for (final day in windowIntake.days) ?day.resolvedIntakeKcal,
+  ];
   final missingWeight = validateCalorieDebugWeeklyWeightData(
     dates: dates,
     weightData: weightData,
@@ -195,37 +170,31 @@ _DebugWeeklyRowResult _weeklyCheckInRow({
       ],
       calculation: null,
       windowDays: windowIntake.days,
-      intakeKcalByDay: learningIntake.intakeKcalByDay,
+      intakeKcalByDay: intakeKcalByDay,
       weightPoints: weightData.weightPoints,
     );
   }
 
-  final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
+  final calculation = calculateWeeklyCheckInFromDailyTdee(
     settings: settings,
-    day: window.windowEndDate,
-  );
-  final calculation = CalorieWeeklyCheckInCalculator.calculate(
-    previousGoalKcal: previousGoalKcal,
-    previousLearnedTdeeKcal: previousLearnedTdeeKcal,
-    goalMode: calculatorProfile?.goalMode ?? CalorieGoalMode.maintain,
-    goalSpeedKgPerWeek: calculatorProfile?.goalSpeedKgPerWeek ?? 0,
-    intakeKcalByDay: learningIntake.intakeKcalByDay,
-    weightPoints: weightData.weightPoints,
+    window: window,
+    dailyTdee: dailyTdee,
+    windowDays: windowIntake.days,
   );
   return _DebugWeeklyRowResult(
     rows: calorieDebugReadyWeeklyCheckInRows(
       window: window,
       dates: dates,
-      previousGoalKcal: previousGoalKcal,
-      previousLearnedTdeeKcal: previousLearnedTdeeKcal,
+      previousGoalKcal: settings.baseGoalKcalForDay(window.windowEndDate),
+      previousLearnedTdeeKcal: calculation.previousTdeeKcal,
       calculation: calculation,
       windowDays: windowIntake.days,
-      intakeKcalByDay: learningIntake.intakeKcalByDay,
+      intakeKcalByDay: intakeKcalByDay,
       weightPoints: weightData.weightPoints,
     ),
     calculation: calculation,
     windowDays: windowIntake.days,
-    intakeKcalByDay: learningIntake.intakeKcalByDay,
+    intakeKcalByDay: intakeKcalByDay,
     weightPoints: weightData.weightPoints,
   );
 }

@@ -1,6 +1,7 @@
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
@@ -233,22 +234,16 @@ List<DateTime> buildCalorieWeeklyInclusiveDays({
   ];
 }
 
-/// Learning lookback start for a pending check-in.
+/// First day that the check-in of [pendingWeeklyCheckIn] learns from: the
+/// start of the first goal, where the daily TDEE starts.
 DateTime calorieWeeklyLearningStartDateForCheckIn({
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
 }) {
-  final anchorEntry =
-      settings.learningAnchorEntryForDay(pendingWeeklyCheckIn.windowEndDate) ??
-      settings.cycleAnchorEntryForDay(pendingWeeklyCheckIn.windowEndDate);
-  final anchorStartDate = anchorEntry == null
-      ? pendingWeeklyCheckIn.windowStartDate
-      : CalorieWeeklyWindowResolver.firstWindowStartDate(anchorEntry);
-  final oldestAllowedStartDate = pendingWeeklyCheckIn.windowEndDate.subtract(
-    const Duration(days: dailyLearnedTdeeMaximumLookbackDays - 1),
+  final windowStart = normalizeDiaryDay(pendingWeeklyCheckIn.windowStartDate);
+  final start = DailyTdeeSeries.startDay(
+    settings,
+    pendingWeeklyCheckIn.windowEndDate,
   );
-  if (anchorStartDate.isBefore(oldestAllowedStartDate)) {
-    return normalizeDiaryDay(oldestAllowedStartDate);
-  }
-  return normalizeDiaryDay(anchorStartDate);
+  return start == null || start.isAfter(windowStart) ? windowStart : start;
 }

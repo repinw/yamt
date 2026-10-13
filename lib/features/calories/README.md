@@ -116,8 +116,8 @@ The diary header includes a toggle (`🏋️ Trainingstag`, `🛋️ Ruhetag`, `
 #### Daily TDEE
 
 `DailyTdeeEstimator` (domain) estimates the TDEE every day from the first goal
-on. The TDEE analytics page and the Fortschritt TDEE chart read it; the
-weekly check-in still uses the weekly runs below.
+on. The TDEE analytics page, the Fortschritt TDEE chart, and the weekly
+check-in read it.
 
 ```text
 weight level  += 0.25 * (weigh-in - predicted level)    (Holt)
@@ -135,28 +135,19 @@ then at most 150 kcal per week; never below max(750, 0.85 * BMR)
 - Today keeps yesterday's value, because today's diary is not complete yet.
 - It is computed on read from entries and weights; nothing is stored.
 
-#### Learning Windows & Interpolation
+#### Weekly Check-in TDEE
 
-Weekly learned TDEE uses an expanding window first, then a rolling 28-day window:
-
-```text
-week 1: days 1-7
-week 2: days 1-14
-week 3: days 1-21
-week 4: days 1-28
-week 5+: latest 28 days only
-```
-
-The measured learning signal is calculated strictly from intake and weight trend:
+The check-in takes the daily TDEE at the last day of its window
+(`calculateWeeklyCheckInFromDailyTdee`). The daily TDEE runs from the start
+of the first goal through the window end, so the check-in reads all diary
+days and weights since then.
 
 ```text
-measuredTdee = averageIntake - weightTrendKgPerDay * 7700
-newDataWeight = 0.5 * learningDays / 28
-newLearnedTdee = oldLearnedTdee * (1 - newDataWeight) + measuredTdee * newDataWeight
+new goal = TDEE -/+ pace (kg/week) * 7700 / 7   (lose / gain; maintain: TDEE)
+new goal moves at most 200 kcal from the base goal at the window end
 ```
 
-A short window at the start of a goal is noisy, so it moves the learned TDEE
-less than a full 28-day window.
+A declined check-in keeps the goal from before the check-in.
 
 #### Pause Days & Missing Days
 
@@ -165,7 +156,7 @@ less than a full 28-day window.
 - In a 7-day check-in window:
   - Missing/pause days (< 3 days) are auto-interpolated from the logged average of tracked days without blocking the check-in.
   - Check-in triggers every 7 days from the anchor start date.
-  - >= 3 missing days blocks learning due to insufficient data.
+  - >= 3 missing days in the window blocks the check-in.
 
 #### Check-in Plan
 
@@ -181,18 +172,10 @@ less than a full 28-day window.
 - The debug preview shows the latest completed window, or made-up data when
   the goal has none, and saves nothing.
 
-Weight handling in the weekly runs uses raw daily weights and a robust slope:
-
-```text
-health samples per day -> median
-manual weight overrides health median
-weight points -> Theil-Sen slope (median of pairwise slopes) -> kg/day trend
-```
-
-The runs never use the smoothed trend weight from Health. A simulation showed
-that pre-smoothed weights delay the learned TDEE by one to two weeks without
-making it calmer. The TDEE analytics page shows the smoothed trend weight as
-its weight line, weight numbers, and goal projection.
+Weights per day: the median of the Health samples, and a manual weight
+overrides it. The daily TDEE smooths these raw weights itself; the smoothed
+trend weight from Health is only the weight line, weight numbers, and goal
+projection of the charts.
 
 #### Macro Weight
 

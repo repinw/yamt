@@ -70,7 +70,7 @@ final class TdeeAnalyticsProvider
   }
 }
 
-String _$tdeeAnalyticsHash() => r'153ec5962af02881581ff7e74c0a101ef5774732';
+String _$tdeeAnalyticsHash() => r'daa594fbf1d6a6154c00245514aab0a76b040373';
 
 /// Provides fully resolved TDEE analytics state for charts and insights.
 

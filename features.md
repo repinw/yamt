@@ -283,7 +283,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   height, and age as a plain list with "Edit in profile" instead of asking
   them again; the link closes the goal sheet and opens the profile page. The
   learned TDEE goal sheet shows the same list.
-- Learned TDEE recalculation from tracked data.
+- Learned TDEE recalculation from tracked data: a daily estimate from the
+  first goal on; the weekly check-in takes its value at the end of the week,
+  and the TDEE of past runs shows the daily estimate too.
 - Weekly check-in with weight trend, learned TDEE, target refresh, and blocking
   reasons for missing intake or weight data. It is a tall sheet in three
   steps: a look back since the goal start (trend, eaten, training days, weight
