@@ -47,21 +47,14 @@ List<InventoryItem> matchInventoryItemsForIngredient({
   required List<InventoryItem> inventoryItems,
   String? localeCode,
 }) {
-  return rankInventoryItemsForIngredient(
-        ingredient: ingredient,
-        inventoryItems: inventoryItems,
-        localeCode: localeCode,
-      )
-      .where(
-        (item) =>
-            ingredientInventoryMatchScore(
-              ingredient: ingredient,
-              item: item,
-              localeCode: localeCode,
-            ) >
-            0,
-      )
-      .toList(growable: false);
+  return [
+    for (final (:item, :score) in _rankScored(
+      ingredient,
+      inventoryItems,
+      localeCode,
+    ))
+      if (score > 0) item,
+  ];
 }
 
 /// Rank inventory items for ingredient.
@@ -70,28 +63,41 @@ List<InventoryItem> rankInventoryItemsForIngredient({
   required List<InventoryItem> inventoryItems,
   String? localeCode,
 }) {
-  final candidates = inventoryItems
-      .where((item) => !item.isFullyConsumed)
-      .toList(growable: false);
-  if (candidates.isEmpty) {
-    return const <InventoryItem>[];
-  }
+  return [
+    for (final (:item, score: _) in _rankScored(
+      ingredient,
+      inventoryItems,
+      localeCode,
+    ))
+      item,
+  ];
+}
 
-  return List<InventoryItem>.from(candidates)..sort((left, right) {
-    final rightScore = ingredientInventoryMatchScore(
-      ingredient: ingredient,
-      item: right,
-      localeCode: localeCode,
-    );
-    final leftScore = ingredientInventoryMatchScore(
-      ingredient: ingredient,
-      item: left,
-      localeCode: localeCode,
-    );
-    if (rightScore != leftScore) {
-      return rightScore.compareTo(leftScore);
+/// The items not used up, best score first, then by name. Each score is
+/// worked out once: the fuzzy match is too slow to repeat per comparison.
+List<({InventoryItem item, int score})> _rankScored(
+  String ingredient,
+  List<InventoryItem> inventoryItems,
+  String? localeCode,
+) {
+  return [
+    for (final item in inventoryItems)
+      if (!item.isFullyConsumed)
+        (
+          item: item,
+          score: ingredientInventoryMatchScore(
+            ingredient: ingredient,
+            item: item,
+            localeCode: localeCode,
+          ),
+        ),
+  ]..sort((left, right) {
+    if (right.score != left.score) {
+      return right.score.compareTo(left.score);
     }
-    return left.name.toLowerCase().compareTo(right.name.toLowerCase());
+    return left.item.name.toLowerCase().compareTo(
+      right.item.name.toLowerCase(),
+    );
   });
 }
 
