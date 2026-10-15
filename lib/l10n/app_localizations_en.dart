@@ -891,10 +891,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eatPageCombineNoMoreStock =>
-      'Every fitting food from your stock is already in the meal. Use the search to add another one.';
-
-  @override
-  String get eatPageCombineSearch => 'Search for a food';
+      'Every fitting food from your stock is already in the meal.';
 
   @override
   String get eatPageCombineNeedsNutrition =>
@@ -1340,6 +1337,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String preparedMealSelectionCount(int count) {
     return '$count selected';
   }
+
+  @override
+  String get inventorySelectionCatalogSearch => 'Search the catalog';
+
+  @override
+  String inventorySelectionCatalogSearchQuery(String query) {
+    return 'Search “$query” in the catalog';
+  }
+
+  @override
+  String get inventorySelectionCatalogFoodRemove => 'Remove from the meal';
 
   @override
   String get preparedMealUpdatedMessage => 'Prepared meal updated.';

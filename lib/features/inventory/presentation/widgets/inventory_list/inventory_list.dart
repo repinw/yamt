@@ -25,6 +25,8 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_groups_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_selection_catalog_sliver.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_sort_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
@@ -78,6 +80,24 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   );
 
   @override
+  void didUpdateWidget(InventoryList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A text typed for the catalog search ends with the selection.
+    // The page rebuilds the list, so the query changes after the frame.
+    if (oldWidget.isSelectionMode &&
+        !widget.isSelectionMode &&
+        _searchController.text.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _searchController.clear();
+        _controller.setQuery('');
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _voiceSearchController.dispose();
     _searchController.dispose();
@@ -116,6 +136,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           voiceSearchController: _voiceSearchController,
           l10n: l10n,
         ),
+        if (widget.isSelectionMode)
+          InventorySelectionCatalogSliver(query: view.query),
         if (content != null &&
             content.hasSource &&
             content.receiptGroups == null)

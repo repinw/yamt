@@ -44,14 +44,20 @@ abstract final class AppRoutes {
   /// [homeFoodPickStartParam] value that opens the AI.
   static const homeFoodPickStartAi = 'ai';
 
+  /// Query parameter of [homeFoodPick] with the text the search starts with.
+  static const homeFoodPickQueryParam = 'q';
+
   /// Builds the food pick path that starts with [start], one of the
-  /// `homeFoodPickStart*` values, or with the search when it is null.
-  static String homeFoodPickPath({String? start}) {
+  /// `homeFoodPickStart*` values, or with the search for [query] when it is
+  /// null.
+  static String homeFoodPickPath({String? start, String? query}) {
+    final parameters = <String, String>{
+      homeFoodPickStartParam: ?start,
+      homeFoodPickQueryParam: ?query,
+    };
     return Uri(
       path: homeFoodPick,
-      queryParameters: start == null
-          ? null
-          : <String, String>{homeFoodPickStartParam: start},
+      queryParameters: parameters.isEmpty ? null : parameters,
     ).toString();
   }
 

@@ -46,7 +46,9 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_home_shell_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_entry_row.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_selection_catalog_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_sort_sheet.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
@@ -1167,15 +1169,20 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await _pumpTestApp(tester, repository);
+    await _pumpTestApp(tester, repository, includeHomeShellChrome: true);
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
     await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
+    // The hub closes, and the Vorrat selects its item.
+    expect(find.text('1 selected'), findsOneWidget);
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.text('Rice'));
-    expect(find.text('2 selected'), findsOneWidget);
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    expect(find.text('3 selected'), findsOneWidget);
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
 
     expect(find.byKey(const Key('eat_page_amount_field')), findsNothing);
     expect(find.text('Milk + Oats + Rice'), findsOneWidget);
@@ -1198,7 +1205,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await _pumpTestApp(tester, repository);
+    await _pumpTestApp(tester, repository, includeHomeShellChrome: true);
     await tester.pumpAndSettle();
     await _tapVisible(tester, find.text('Milk'));
 
@@ -1207,9 +1214,12 @@ void main() {
     expect(find.byKey(EatItemActionsCard.combineKey), findsOneWidget);
 
     await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
-    expect(find.byType(InventoryCombinePickPage), findsOneWidget);
+    expect(find.text('1 selected'), findsOneWidget);
     await _tapVisible(tester, find.text('Oats'));
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
 
     // The meal shows its rows on the page, with its own link for more.
     expect(find.text('Milk + Oats'), findsOneWidget);
@@ -1237,7 +1247,7 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await _pumpTestApp(tester, repository);
+    await _pumpTestApp(tester, repository, includeHomeShellChrome: true);
     await tester.pumpAndSettle();
     await _tapVisible(tester, find.text('Milk'));
 
@@ -1265,6 +1275,7 @@ void main() {
     await _pumpTestApp(
       tester,
       repository,
+      includeHomeShellChrome: true,
       calorieEntryRoute: GoRoute(
         path: AppRoutes.homeFoodPick,
         builder: (context, state) => Scaffold(
@@ -1292,13 +1303,21 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')),
-      '200',
-    );
     await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
+    await _tapVisible(
+      tester,
+      find.byKey(InventorySelectionCatalogSliver.searchKey),
+    );
     await _tapVisible(tester, find.text('pick bread'));
+    expect(
+      find.byKey(InventorySelectionCatalogSliver.foodKey(0)),
+      findsOneWidget,
+    );
+    expect(find.text('2 selected'), findsOneWidget);
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
 
     expect(find.text('Milk + Bread'), findsOneWidget);
 
@@ -1362,6 +1381,7 @@ void main() {
     await _pumpTestApp(
       tester,
       repository,
+      includeHomeShellChrome: true,
       calorieEntryRoute: GoRoute(
         path: AppRoutes.homeFoodPick,
         builder: (context, state) => Scaffold(
@@ -1388,13 +1408,16 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')),
-      '200',
-    );
     await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
+    await _tapVisible(
+      tester,
+      find.byKey(InventorySelectionCatalogSliver.searchKey),
+    );
     await _tapVisible(tester, find.text('pick bread'));
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
     await _tapVisible(
       tester,
       find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
@@ -1425,6 +1448,7 @@ void main() {
     await _pumpTestApp(
       tester,
       repository,
+      includeHomeShellChrome: true,
       calorieEntryRoute: GoRoute(
         path: AppRoutes.homeFoodPick,
         builder: (context, state) => Scaffold(
@@ -1448,43 +1472,22 @@ void main() {
 
     await _tapVisible(tester, find.text('Milk'));
     await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
+    await _tapVisible(
+      tester,
+      find.byKey(InventorySelectionCatalogSliver.searchKey),
+    );
     await _tapVisible(tester, find.text('pick salt'));
 
     expect(
       find.text('This food has no nutrition values to add up.'),
       findsOneWidget,
     );
-    expect(find.byKey(EatMealTable.tableKey), findsNothing);
+    expect(find.text('1 selected'), findsOneWidget);
+    expect(
+      find.byKey(InventorySelectionCatalogSliver.foodKey(0)),
+      findsNothing,
+    );
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('a meal with an invalid hub amount shows the error in its row', (
-    tester,
-  ) async {
-    final repository = _FakeFridgeItemRepository(
-      onReadAll: () async => <InventoryItem>[
-        _itemWithNutrition('a'),
-        _itemWithNutrition('b', name: 'Oats'),
-      ],
-    );
-    addTearDown(repository.dispose);
-
-    await _pumpTestApp(tester, repository);
-    await tester.pumpAndSettle();
-
-    await _tapVisible(tester, find.text('Milk'));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')),
-      '9999',
-    );
-    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
-    await _tapVisible(tester, find.text('Oats'));
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
-    await _tapAmountDialogConfirm(tester);
-
-    expect(find.byType(EatMealTable), findsOneWidget);
-    expect(find.text('Please enter valid numbers.'), findsOneWidget);
   });
 
   testWidgets('item hub keeps combined foods open for their Gekocht step', (
@@ -1506,6 +1509,7 @@ void main() {
     await _pumpTestApp(
       tester,
       repository,
+      includeHomeShellChrome: true,
       overrides: <Override>[
         preparedMealRepositoryProvider.overrideWithValue(mealRepository),
         firebaseAuthProvider.overrideWithValue(auth),
@@ -1522,14 +1526,13 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')),
-      '200',
-    );
     await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.text('Oats'));
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
-    expect(find.text('total 300\u00A0g'), findsOneWidget);
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
+    expect(find.text('total 1,100\u00A0g'), findsOneWidget);
     // Portions are set in the Gekocht step.
     expect(find.byKey(EatMealPortionsRow.increaseKey), findsNothing);
     expect(find.byKey(const Key('eat_item_action_edit')), findsNothing);
@@ -1552,17 +1555,16 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await _pumpTestApp(tester, repository);
+    await _pumpTestApp(tester, repository, includeHomeShellChrome: true);
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')),
-      '200',
-    );
     await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
     await _tapVisible(tester, find.text('Oats'));
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
     expect(find.text('Milk + Oats'), findsOneWidget);
 
     await _tapVisible(tester, find.byKey(EatCombineSection.removeHubItemKey));
@@ -1571,21 +1573,26 @@ void main() {
     expect(find.text('total 100\u00A0g'), findsOneWidget);
     expect(find.byKey(EatCombineSection.removeHubItemKey), findsNothing);
 
-    // The hub's item is offered again; nothing else is left in stock.
+    // The selection starts without the hub's item; it can join again.
     await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
-    expect(find.text('Milk'), findsOneWidget);
+    expect(find.text('1 selected'), findsOneWidget);
     await _tapVisible(tester, find.text('Milk'));
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
-    expect(find.text('Oats + Milk'), findsOneWidget);
-    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
-    expect(find.byKey(InventoryCombinePickPage.emptyKey), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.close));
-    await tester.pumpAndSettle();
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
+    expect(find.text('Milk + Oats'), findsOneWidget);
 
     // Without other foods the hub's item is back.
-    await _tapVisible(tester, find.byIcon(Icons.close_rounded));
+    await _tapVisible(
+      tester,
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('b')),
+        matching: find.byTooltip('Remove from the list'),
+      ),
+    );
     expect(find.byType(EatMealTable), findsNothing);
-    expect(find.text('Milk'), findsOneWidget);
+    expect(find.text('Milk'), findsWidgets);
   });
 
   testWidgets('item hub logs a second stock item together as one entry', (
@@ -1609,6 +1616,7 @@ void main() {
     await _pumpTestApp(
       tester,
       repository,
+      includeHomeShellChrome: true,
       overrides: <Override>[
         calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
         inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
@@ -1618,18 +1626,17 @@ void main() {
     await tester.pumpAndSettle();
 
     await _tapVisible(tester, find.text('Milk'));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')),
-      '200',
-    );
     await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
-    expect(find.text('Milk'), findsNothing);
-    await _tapVisible(tester, find.text('Oats'));
     expect(find.text('1 selected'), findsOneWidget);
-    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    await _tapVisible(tester, find.text('Oats'));
+    expect(find.text('2 selected'), findsOneWidget);
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
 
     expect(find.text('Milk + Oats'), findsOneWidget);
-    expect(find.text('total 300\u00A0g'), findsOneWidget);
+    expect(find.text('total 1,100\u00A0g'), findsOneWidget);
     expect(find.text('Keep in stock'), findsOneWidget);
 
     await _tapVisible(
@@ -1641,9 +1648,169 @@ void main() {
     expect(commitStore.entry?.name, 'Milk + Oats');
     expect(commitStore.entry?.isCombined, isTrue);
     expect(commitStore.pendingConsumptions?.map((p) => (p.itemId, p.amount)), [
-      ('a', 200),
+      ('a', 1000),
       ('b', 100),
     ]);
+  });
+
+  testWidgets('the selection from a hub keeps its item as the main food and '
+      'searches the catalog for the typed text', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _itemWithNutrition('b', name: 'Oats'),
+      ],
+    );
+    addTearDown(repository.dispose);
+    final bread = _itemWithNutrition('draft-bread', name: 'Bread');
+
+    await _pumpTestApp(
+      tester,
+      repository,
+      includeHomeShellChrome: true,
+      calorieEntryRoute: GoRoute(
+        path: AppRoutes.homeFoodPick,
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.pop(
+              _mealFoodPick(
+                InventoryReceiptManualProductResult(
+                  item: bread,
+                  action: InventoryReceiptManualProductAction.eatNow,
+                  requiresGlobalPersistence: false,
+                  skipMissingBarcodePrompt: true,
+                ),
+              ),
+            ),
+            child: Text(
+              'pick '
+              '${state.uri.queryParameters[AppRoutes.homeFoodPickQueryParam]}',
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Oats'));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
+    // Milk comes first in the list, but Oats started the meal.
+    await _tapVisible(tester, find.text('Milk'));
+    await tester.enterText(
+      find.byKey(const Key('inventory_list_search_field')),
+      'bre',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Search \u201cbre\u201d in the catalog'), findsOneWidget);
+
+    await _tapVisible(
+      tester,
+      find.byKey(InventorySelectionCatalogSliver.searchKey),
+    );
+    await _tapVisible(tester, find.text('pick bre'));
+    expect(find.text('3 selected'), findsOneWidget);
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
+
+    expect(find.text('Oats + Milk + Bread'), findsOneWidget);
+
+    // The text typed for the catalog ends with the selection.
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_cancel_button')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('bre'), findsNothing);
+    expect(find.text('Milk'), findsOneWidget);
+  });
+
+  testWidgets('a selected food without nutrition stays out of the meal', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _amountItemWithoutNutrition('s').copyWith(name: 'Salt'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository, includeHomeShellChrome: true);
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
+    await _tapVisible(tester, find.text('Salt'));
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
+
+    expect(
+      find.text('This food has no nutrition values to add up.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(EatItemActionsCard.combineKey), findsOneWidget);
+    expect(find.byType(EatMealTable), findsNothing);
+  });
+
+  testWidgets('a selection without a food to combine keeps its catalog foods', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _amountItemWithoutNutrition('s').copyWith(name: 'Salt'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(
+      tester,
+      repository,
+      includeHomeShellChrome: true,
+      calorieEntryRoute: GoRoute(
+        path: AppRoutes.homeFoodPick,
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.pop(
+              _mealFoodPick(
+                InventoryReceiptManualProductResult(
+                  item: _itemWithNutrition('draft-bread', name: 'Bread'),
+                  action: InventoryReceiptManualProductAction.eatNow,
+                  requiresGlobalPersistence: false,
+                  skipMissingBarcodePrompt: true,
+                ),
+              ),
+            ),
+            child: const Text('pick bread'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('Salt'));
+    await tester.pumpAndSettle();
+    await _tapVisible(
+      tester,
+      find.byKey(InventorySelectionCatalogSliver.searchKey),
+    );
+    await _tapVisible(tester, find.text('pick bread'));
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
+
+    expect(
+      find.text('This food has no nutrition values to add up.'),
+      findsOneWidget,
+    );
+    expect(find.text('2 selected'), findsOneWidget);
+    expect(
+      find.byKey(InventorySelectionCatalogSliver.foodKey(0)),
+      findsOneWidget,
+    );
   });
 
   testWidgets('eat action quick select all direct-saves remaining amount', (
@@ -2216,7 +2383,6 @@ void main() {
 
     expect(find.byKey(PreparedMealEditPage.saveKey), findsOneWidget);
     await _tapVisible(tester, find.byKey(PreparedMealEditPage.addKey));
-    expect(find.byKey(InventoryCombinePickPage.searchKey), findsNothing);
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
     await _tapVisible(tester, find.byKey(EatMealPortionsRow.increaseKey));

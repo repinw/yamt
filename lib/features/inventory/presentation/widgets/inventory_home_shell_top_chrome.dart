@@ -15,6 +15,9 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
   /// Creates inventory top chrome.
   const new({super.key, this.tools = const <Widget>[], this.stockCount});
 
+  /// Key of the button that turns the selection into a meal.
+  static const confirmSelectionKey = Key('inventory_selection_confirm');
+
   /// Tools of the current view, placed after Einkauf.
   final List<Widget> tools;
 
@@ -72,7 +75,7 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
   ) {
     final selectionActionLabel = l10n.preparedMealBindAction;
     const selectionActionIcon = Icons.restaurant_menu_rounded;
-    final canConfirmSelection = selectionState.selectedCount >= 2;
+    final canConfirmSelection = selectionState.canConfirm;
 
     if (useCompactSelectionActions) {
       return [
@@ -86,6 +89,7 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
           icon: const Icon(Icons.close_rounded),
         ),
         IconButton.filledTonal(
+          key: confirmSelectionKey,
           tooltip: selectionActionLabel,
           onPressed: canConfirmSelection
               ? () {
@@ -109,6 +113,7 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
         child: Text(l10n.inventoryReceiptReviewCancelAction),
       ),
       FilledButton.tonalIcon(
+        key: confirmSelectionKey,
         onPressed: canConfirmSelection
             ? () {
                 ref

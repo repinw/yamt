@@ -7,7 +7,6 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -283,9 +282,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the inedible part and combining open from the item card', (
-    tester,
-  ) async {
+  testWidgets('the inedible part opens from the item card', (tester) async {
     InventoryItemHubResult? result;
     await tester.pumpWidget(
       _buildHarness(
@@ -311,16 +308,6 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await _pumpVisibleStep(tester);
 
-    // Combining opens the stock pick; the Vorrat is empty here.
-    await tester.ensureVisible(find.byKey(EatItemActionsCard.combineKey));
-    await _pumpVisibleStep(tester);
-    await tester.tap(find.byKey(EatItemActionsCard.combineKey));
-    await _pumpVisibleStep(tester);
-    expect(find.byKey(InventoryCombinePickPage.emptyKey), findsOneWidget);
-    await tester.binding.handlePopRoute();
-    await _pumpVisibleStep(tester);
-    expect(find.byKey(EatItemActionsCard.combineKey), findsOneWidget);
-
     await tester.ensureVisible(find.byKey(EatItemActionsCard.inedibleKey));
     await _pumpVisibleStep(tester);
     await tester.tap(find.byKey(EatItemActionsCard.inedibleKey));
@@ -339,6 +326,35 @@ void main() {
     final eat = result! as InventoryItemHubEat;
     expect(eat.request.inventoryAmount, 120);
     expect(eat.request.calorieAmount, 100);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('combining closes the hub for the Vorrat selection', (
+    tester,
+  ) async {
+    InventoryItemHubResult? result;
+    await tester.pumpWidget(
+      _buildHarness(
+        open: _openRecording(
+          <InventoryItemHubAction>[],
+          item: _chicken,
+          onResult: (value) => result = value,
+        ),
+      ),
+    );
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+    await tester.ensureVisible(find.byKey(EatItemActionsCard.combineKey));
+    await _pumpVisibleStep(tester);
+    await tester.tap(find.byKey(EatItemActionsCard.combineKey));
+    await _pumpVisibleStep(tester);
+
+    expect(find.byKey(_openKey), findsOneWidget);
+    final combine = result! as InventoryItemHubCombine;
+    expect(combine.includesItem, isTrue);
+    expect(combine.picks, isEmpty);
     expect(tester.takeException(), isNull);
   });
 

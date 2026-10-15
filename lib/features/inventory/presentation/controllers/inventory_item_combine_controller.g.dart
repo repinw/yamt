@@ -77,7 +77,7 @@ final class InventoryItemCombineControllerProvider
 }
 
 String _$inventoryItemCombineControllerHash() =>
-    r'823110fa08773c3ad2cfb251682cab864bbe67cc';
+    r'48e62b924d49d147a9f8797b0035eacace0c361c';
 
 /// Foods picked on the item hub of [hubItemId] to log together with it.
 ///

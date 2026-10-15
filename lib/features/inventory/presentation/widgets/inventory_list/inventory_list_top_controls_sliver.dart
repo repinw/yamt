@@ -33,7 +33,8 @@ class InventoryListTopControlsSliver extends StatelessWidget {
   /// The search controller.
   final TextEditingController searchController;
 
-  /// The enabled.
+  /// Whether Sortieren and the layout switch work. The search field always
+  /// works, also in the selection mode (#654).
   final bool enabled;
 
   /// The on search changed.
@@ -78,7 +79,6 @@ class InventoryListTopControlsSliver extends StatelessWidget {
           fieldKey: const Key('inventory_list_search_field'),
           voiceButtonKey: const Key('inventory_list_voice_search_button'),
           clearButtonKey: const Key('inventory_list_search_clear_button'),
-          enabled: enabled,
           onChanged: onSearchChanged,
           voiceSearchService: voiceSearchService,
           voiceSearchController: voiceSearchController,

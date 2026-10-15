@@ -462,8 +462,7 @@
   "eatPageCombineLink": "Mit anderem Lebensmittel kombinieren",
   "eatPageCombineAdd": "+ Lebensmittel hinzufügen",
   "eatPageCombinePickConfirm": "Übernehmen",
-  "eatPageCombineNoMoreStock": "Alle passenden Lebensmittel aus deinem Vorrat sind schon in der Mahlzeit. Über die Suche kannst du weitere hinzufügen.",
-  "eatPageCombineSearch": "Lebensmittel suchen",
+  "eatPageCombineNoMoreStock": "Alle passenden Lebensmittel aus deinem Vorrat sind schon in der Mahlzeit.",
   "eatPageCombineNeedsNutrition": "Dieses Lebensmittel hat keine Nährwerte zum Zusammenrechnen.",
   "eatPageCombineAddFood": "Hinzufügen",
   "eatPageCombineStore": "In Vorrat",
@@ -725,6 +724,16 @@
       }
     }
   },
+  "inventorySelectionCatalogSearch": "Im Katalog suchen",
+  "inventorySelectionCatalogSearchQuery": "„{query}“ im Katalog suchen",
+  "@inventorySelectionCatalogSearchQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "inventorySelectionCatalogFoodRemove": "Aus der Mahlzeit entfernen",
   "preparedMealUpdatedMessage": "Mahlzeit wurde aktualisiert.",
   "preparedMealActionFailed": "Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.",
   "preparedMealIngredientsCount": "{count, plural, =1{1 Zutat} other{{count} Zutaten}}",

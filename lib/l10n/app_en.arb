@@ -527,8 +527,7 @@
   "eatPageCombineLink": "Combine with another food",
   "eatPageCombineAdd": "+ Add food",
   "eatPageCombinePickConfirm": "Add",
-  "eatPageCombineNoMoreStock": "Every fitting food from your stock is already in the meal. Use the search to add another one.",
-  "eatPageCombineSearch": "Search for a food",
+  "eatPageCombineNoMoreStock": "Every fitting food from your stock is already in the meal.",
   "eatPageCombineNeedsNutrition": "This food has no nutrition values to add up.",
   "eatPageCombineAddFood": "Add",
   "eatPageCombineStore": "Keep in stock",
@@ -811,6 +810,16 @@
       }
     }
   },
+  "inventorySelectionCatalogSearch": "Search the catalog",
+  "inventorySelectionCatalogSearchQuery": "Search “{query}” in the catalog",
+  "@inventorySelectionCatalogSearchQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "inventorySelectionCatalogFoodRemove": "Remove from the meal",
   "preparedMealUpdatedMessage": "Prepared meal updated.",
   "preparedMealActionFailed": "Prepared meal action failed. Please try again.",
   "preparedMealIngredientsCount": "{count, plural, =1{1 ingredient} other{{count} ingredients}}",

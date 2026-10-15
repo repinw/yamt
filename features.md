@@ -445,11 +445,20 @@ and feature description docs. This is product-facing; architecture rules stay in
   list keeps it open. A used-up item shows only the card and the trash
   icon, and its main button adds it to the shopping list. Rows have no
   action buttons of their own.
-- The item hub can log other stock items together with its item: "Mit
-  anderem Lebensmittel kombinieren" in the Item card opens the Vorrat list
-  in selection mode, and "+ Lebensmittel hinzufügen" under the meal's rows
-  adds more (only items with
-  nutrition values and stock, counted in grams or milliliters). Picked items
+- The item hub can log other foods together with its item: "Mit
+  anderem Lebensmittel kombinieren" in the Item card and "+ Lebensmittel
+  hinzufügen" under the meal's rows close the hub, and the Vorrat continues
+  the meal in its selection mode with the hub's item and the foods picked so
+  far already selected. Amounts entered on the hub are not kept. In the
+  selection mode the Vorrat search field still filters the list, and a row
+  below it ("„Reis“ im Katalog suchen") searches the catalog for the typed
+  text; a food found there joins the selection with the amount entered on
+  its eat page, as a row with an x to remove it. "Lebensmittel kombinieren"
+  needs two foods, one of them from the stock, and opens the hub of the
+  item the selection started from. Only stock items with nutrition values
+  and stock, counted in grams or milliliters, join the meal; others stay
+  out with "Dieses Lebensmittel hat keine Nährwerte zum Zusammenrechnen."
+  The search text is cleared when the selection ends. Stock items
   join with 100 g or ml; tapping a food's row opens a "Menge" field and a
   ruler for its amount, which follow each other. Tapping the amount itself
   opens them with the field ready to type, such as 137 g. A picked food
@@ -491,9 +500,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   names the action for screen readers.
 - Add-to-shopping-list and buy-again actions.
 - The picture of a food or meal flies from its row into the page it opens.
-- A long press selects foods; "Lebensmittel kombinieren" opens the item hub of the first
-  selected food with the others already combined, so the meal is logged or
-  kept in the Vorrat there.
+- A long press selects foods; "Lebensmittel kombinieren" opens the item hub of the food
+  the selection started from (else of the first selected food) with the
+  others already combined, so the meal is logged or kept in the Vorrat
+  there.
 - Tapping a prepared meal opens its detail page: the meal eat page plus a
   "Zutaten" box (every ingredient with picture and its amount in the whole
   meal; missing recipe ingredients in orange with "Zutat ergänzen" and "Zutat

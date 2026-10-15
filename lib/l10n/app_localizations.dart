@@ -1561,14 +1561,8 @@ abstract class AppLocalizations {
   /// No description provided for @eatPageCombineNoMoreStock.
   ///
   /// In en, this message translates to:
-  /// **'Every fitting food from your stock is already in the meal. Use the search to add another one.'**
+  /// **'Every fitting food from your stock is already in the meal.'**
   String get eatPageCombineNoMoreStock;
-
-  /// No description provided for @eatPageCombineSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Search for a food'**
-  String get eatPageCombineSearch;
 
   /// No description provided for @eatPageCombineNeedsNutrition.
   ///
@@ -2313,6 +2307,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} selected'**
   String preparedMealSelectionCount(int count);
+
+  /// No description provided for @inventorySelectionCatalogSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the catalog'**
+  String get inventorySelectionCatalogSearch;
+
+  /// No description provided for @inventorySelectionCatalogSearchQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Search “{query}” in the catalog'**
+  String inventorySelectionCatalogSearchQuery(String query);
+
+  /// No description provided for @inventorySelectionCatalogFoodRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from the meal'**
+  String get inventorySelectionCatalogFoodRemove;
 
   /// No description provided for @preparedMealUpdatedMessage.
   ///
