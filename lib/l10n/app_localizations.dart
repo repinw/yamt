@@ -10915,6 +10915,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back online'**
   String get connectivityBackOnline;
+
+  /// No description provided for @progressPhotoCaptureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get progressPhotoCaptureTitle;
+
+  /// No description provided for @progressPhotoPoseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pose'**
+  String get progressPhotoPoseLabel;
+
+  /// No description provided for @progressPhotoPoseFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Front'**
+  String get progressPhotoPoseFront;
+
+  /// No description provided for @progressPhotoPoseSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Side'**
+  String get progressPhotoPoseSide;
+
+  /// No description provided for @progressPhotoPoseBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get progressPhotoPoseBack;
+
+  /// No description provided for @progressPhotoDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get progressPhotoDayLabel;
+
+  /// No description provided for @progressPhotoWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight in kg (optional)'**
+  String get progressPhotoWeightLabel;
+
+  /// No description provided for @progressPhotoWeightHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty: weight of the day'**
+  String get progressPhotoWeightHelper;
+
+  /// No description provided for @progressPhotoWeightInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a weight above 0.'**
+  String get progressPhotoWeightInvalid;
+
+  /// No description provided for @progressPhotoReplaceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This day and pose already have a photo. A new one replaces it.'**
+  String get progressPhotoReplaceHint;
+
+  /// No description provided for @progressPhotoSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the photo.'**
+  String get progressPhotoSaveFailed;
+
+  /// No description provided for @progressPhotoFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'From gallery'**
+  String get progressPhotoFromGallery;
+
+  /// No description provided for @progressPhotoCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get progressPhotoCamera;
+
+  /// No description provided for @progressPhotoPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted. Only you see your photos.'**
+  String get progressPhotoPrivacy;
+
+  /// No description provided for @progressPhotoSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo saved'**
+  String get progressPhotoSaved;
+
+  /// No description provided for @progressActionWeighDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter today\'s weight'**
+  String get progressActionWeighDescription;
+
+  /// No description provided for @progressActionPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get progressActionPhoto;
+
+  /// No description provided for @progressActionPhotoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a progress photo or pick one from the gallery'**
+  String get progressActionPhotoDescription;
 }
 
 class _AppLocalizationsDelegate

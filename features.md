@@ -19,8 +19,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   The tab header and the bottom navigation stay in place while a tab
   scrolls. In the middle of the bar a round button in the accent color opens
   the actions of the current tab, with a haptic pulse; its word changes per
-  tab ("Hinzufügen", "Essen", "Kochen", "Wiegen"). Fortschritt has only one
-  action, the weight, so its button opens the weight entry directly.
+  tab ("Hinzufügen", "Essen", "Kochen", "Wiegen").
   The actions open like the side menu, but mirrored: the page slides to the
   left and shrinks, and the actions stand at the bottom right, where the
   thumb is. The app counts on the device how often each action is tapped;
@@ -380,9 +379,20 @@ and feature description docs. This is product-facing; architecture rules stay in
     TDEE, the change since yesterday and this week, and the next check-in;
   - training days against rest days up to yesterday: days of each,
     and average kcal, protein, carbs, and fat.
-- The round button of the bar ("Wiegen") opens the weight entry for today,
-  filled with the last weigh-in of the weight chart, without the action
-  panel. Saving updates the weight trend and the goal right away.
+- The round button of the bar ("Wiegen") opens the Fortschritt actions:
+  - "Wiegen" opens the weight entry for today, filled with the last weigh-in
+    of the weight chart. Saving updates the weight trend and the goal right
+    away.
+  - "Foto" opens a sheet for a progress photo: a pose (vorne, seitlich,
+    hinten), a day (today or any earlier day, for photos from before the
+    app), an optional weight, and "Kamera" or "Aus Galerie". The photo is
+    saved at once; a day holds one photo per pose, and a new one replaces
+    the old. A typed weight stays on the photo and never becomes a weigh-in;
+    without it the weight of the day applies.
+- Progress photos are end-to-end encrypted with a key of their own, stored
+  under a random name, never shared with the household, and deleted with a
+  fresh start of the data key. Their location, device, and time metadata is
+  removed before the upload.
 
 ## Activity And Weight
 

@@ -24,7 +24,7 @@ import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_slide_menu.dart';
 import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
-import 'package:yamt/features/progress/presentation/progress_weight_entry_flow.dart';
+import 'package:yamt/features/home/presentation/widgets/progress_actions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -128,26 +128,19 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     };
   }
 
-  /// What the action button of [tab] does: the weight entry on Fortschritt,
-  /// its only action, else the action panel.
-  VoidCallback _onActionPressed(HomeTabType tab) {
-    return switch (tab) {
-      HomeTabType.inventory ||
-      HomeTabType.diary ||
-      HomeTabType.cookbook => () => _open(const HomeTabActionsPanel()),
-      HomeTabType.progress => () => unawaited(
-        _weightEntry.run(() => showProgressWeightEntry(context)),
-      ),
-    };
-  }
+  /// What the action button does: it opens the actions of the tab.
+  void _onActionPressed() => _open(const HomeTabActionsPanel());
 
-  /// The actions of [tab] for the action panel; Fortschritt has none.
+  /// The actions of [tab] for the action panel.
   List<HomeActionSection> _actions(HomeTabType tab) {
     return switch (tab) {
       HomeTabType.inventory => inventoryAddActions(context, ref),
       HomeTabType.diary => diaryQuickEatActions(context, ref),
       HomeTabType.cookbook => cookbookCookActions(context, ref),
-      HomeTabType.progress => const <HomeActionSection>[],
+      HomeTabType.progress => progressActions(
+        context,
+        weightEntry: _weightEntry,
+      ),
     };
   }
 
@@ -275,7 +268,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
                     entries: _navEntries(context, l10n),
                     action: HomeNavAction(
                       label: _actionLabel(l10n, currentTab),
-                      onPressed: _onActionPressed(currentTab),
+                      onPressed: _onActionPressed,
                     ),
                   ),
                 ],

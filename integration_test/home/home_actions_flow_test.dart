@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,10 +13,14 @@ import 'package:yamt/core/widgets/home_shell_menu_button.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/'
     'diary_weight_dialog_keys.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/diary/presentation/widgets/progress_photo_capture_sheet.dart';
+import 'package:yamt/features/health/data/progress_photo_repository.dart';
+import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
+import 'package:yamt/features/home/presentation/widgets/progress_actions.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
 import 'package:yamt/features/progress/presentation/widgets/'
     'progress_day_chart.dart';
@@ -28,6 +34,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/scanner/fakes/fake_receipt_ai_repository.dart';
 import '../../test/features/scanner/fakes/fake_receipt_product_resolver.dart';
+import '../../test/helpers/fake_progress_photo_repository.dart';
 import '../../test/helpers/progress_source_overrides.dart';
 
 const _hubPageKey = ValueKey<String>('home-actions-test-hub');
@@ -181,8 +188,9 @@ void main() {
 
     await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ProgressActionKeys.weigh));
+    await tester.pumpAndSettle();
 
-    expect(find.byType(HomeActionPanel), findsNothing);
     await tester.enterText(
       find.byKey(DiaryWeightDialogKeys.weightDialogField),
       '80.4',
@@ -192,6 +200,39 @@ void main() {
 
     expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsNothing);
     expect(_todaysWeighIn(tester), 80.4);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the action panel on Fortschritt adds a progress photo', (
+    tester,
+  ) async {
+    final photos = FakeProgressPhotoRepository(
+      pickedImage: Uint8List.fromList(<int>[1, 2, 3]),
+    );
+    addTearDown(photos.dispose);
+    await tester.pumpWidget(
+      _buildHarness(
+        initialLocation: AppRoutes.homeProgress,
+        sources: [
+          userProfileProvider.overrideWithValue(const AsyncData(null)),
+          progressPhotoRepositoryProvider.overrideWithValue(photos),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ProgressActionKeys.photo));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(ProgressPhotoCaptureSheet.poseKey(ProgressPhotoPose.side)),
+    );
+    await tester.tap(find.byKey(ProgressPhotoCaptureSheet.cameraKey));
+    await tester.pumpAndSettle();
+
+    expect(photos.photos.single.pose, ProgressPhotoPose.side);
+    expect(find.byType(ProgressPhotoCaptureSheet), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

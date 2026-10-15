@@ -4048,5 +4048,23 @@
   "connectivityBackOnline": "Back online",
   "@connectivityBackOnline": {
     "description": "Snack bar when the connection returns after an offline phase."
-  }
+  },
+  "progressPhotoCaptureTitle": "Add photo",
+  "progressPhotoPoseLabel": "Pose",
+  "progressPhotoPoseFront": "Front",
+  "progressPhotoPoseSide": "Side",
+  "progressPhotoPoseBack": "Back",
+  "progressPhotoDayLabel": "Day",
+  "progressPhotoWeightLabel": "Weight in kg (optional)",
+  "progressPhotoWeightHelper": "Leave empty: weight of the day",
+  "progressPhotoWeightInvalid": "Enter a weight above 0.",
+  "progressPhotoReplaceHint": "This day and pose already have a photo. A new one replaces it.",
+  "progressPhotoSaveFailed": "Could not save the photo.",
+  "progressPhotoFromGallery": "From gallery",
+  "progressPhotoCamera": "Camera",
+  "progressPhotoPrivacy": "Encrypted. Only you see your photos.",
+  "progressPhotoSaved": "Photo saved",
+  "progressActionWeighDescription": "Enter today's weight",
+  "progressActionPhoto": "Photo",
+  "progressActionPhotoDescription": "Take a progress photo or pick one from the gallery"
 }

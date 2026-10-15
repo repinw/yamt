@@ -6671,4 +6671,62 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get connectivityBackOnline => 'Wieder online';
+
+  @override
+  String get progressPhotoCaptureTitle => 'Foto hinzufügen';
+
+  @override
+  String get progressPhotoPoseLabel => 'Pose';
+
+  @override
+  String get progressPhotoPoseFront => 'Vorne';
+
+  @override
+  String get progressPhotoPoseSide => 'Seitlich';
+
+  @override
+  String get progressPhotoPoseBack => 'Hinten';
+
+  @override
+  String get progressPhotoDayLabel => 'Tag';
+
+  @override
+  String get progressPhotoWeightLabel => 'Gewicht in kg (optional)';
+
+  @override
+  String get progressPhotoWeightHelper => 'Leer lassen: Gewicht des Tages';
+
+  @override
+  String get progressPhotoWeightInvalid => 'Gib ein Gewicht über 0 ein.';
+
+  @override
+  String get progressPhotoReplaceHint =>
+      'Für diesen Tag und diese Pose gibt es schon ein Foto. Ein neues ersetzt es.';
+
+  @override
+  String get progressPhotoSaveFailed =>
+      'Das Foto konnte nicht gespeichert werden.';
+
+  @override
+  String get progressPhotoFromGallery => 'Aus Galerie';
+
+  @override
+  String get progressPhotoCamera => 'Kamera';
+
+  @override
+  String get progressPhotoPrivacy =>
+      'Verschlüsselt. Nur du siehst deine Fotos.';
+
+  @override
+  String get progressPhotoSaved => 'Foto gespeichert';
+
+  @override
+  String get progressActionWeighDescription => 'Gewicht für heute eintragen';
+
+  @override
+  String get progressActionPhoto => 'Foto';
+
+  @override
+  String get progressActionPhotoDescription =>
+      'Fortschrittsfoto aufnehmen oder aus der Galerie';
 }
