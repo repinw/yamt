@@ -276,6 +276,19 @@ void main() {
     expect(await repository.watchPhotos().first, isEmpty);
   });
 
+  test('refuses a weight out of range', () async {
+    await expectLater(
+      repository.savePhoto(
+        day: DateTime(2026, 10, 15),
+        pose: ProgressPhotoPose.front,
+        imageBytes: jpeg,
+        weightKg: 789,
+      ),
+      throwsArgumentError,
+    );
+    expect(storage.files, isEmpty);
+  });
+
   test('signed out: no photos, writes throw', () async {
     final signedOut = ProgressPhotoRepository(
       firestore: null,

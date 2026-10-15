@@ -11009,8 +11009,8 @@ abstract class AppLocalizations {
   /// No description provided for @progressPhotoWeightInvalid.
   ///
   /// In en, this message translates to:
-  /// **'Enter a weight above 0.'**
-  String get progressPhotoWeightInvalid;
+  /// **'Enter a weight between {min} and {max} kg.'**
+  String progressPhotoWeightInvalid(String min, String max);
 
   /// No description provided for @progressPhotoReplaceHint.
   ///

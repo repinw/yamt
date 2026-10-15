@@ -99,6 +99,9 @@ class ProgressPhotoRepository {
     required Uint8List imageBytes,
     double? weightKg,
   }) async {
+    if (weightKg != null && !isValidProgressPhotoWeightKg(weightKg)) {
+      throw ArgumentError.value(weightKg, 'weightKg', 'is out of range');
+    }
     final (:photos, :storage, :uid) = _require();
     final jpegBytes = await compute(cleanProgressPhoto, imageBytes);
     final photo = ProgressPhoto(

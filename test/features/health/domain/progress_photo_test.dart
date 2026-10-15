@@ -48,4 +48,11 @@ void main() {
     expect(onlyFirst.first?.id, 'first');
     expect((onlyFirst.middle, onlyFirst.today), (null, null));
   });
+
+  test('accepts a photo weight from 30 to 300 kg', () {
+    expect(isValidProgressPhotoWeightKg(29.9), isFalse);
+    expect(isValidProgressPhotoWeightKg(30), isTrue);
+    expect(isValidProgressPhotoWeightKg(300), isTrue);
+    expect(isValidProgressPhotoWeightKg(300.1), isFalse);
+  });
 }

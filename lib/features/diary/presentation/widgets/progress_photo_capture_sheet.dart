@@ -80,7 +80,8 @@ class _ProgressPhotoCaptureSheetState
     final typed = _weight.text.trim();
     final weightKg = typed.isEmpty ? null : parseFlexibleDecimal(typed);
     final weightInvalid =
-        typed.isNotEmpty && (weightKg == null || weightKg <= 0);
+        typed.isNotEmpty &&
+        (weightKg == null || !isValidProgressPhotoWeightKg(weightKg));
     setState(() => _weightInvalid = weightInvalid);
     if (weightInvalid) {
       return;
@@ -103,6 +104,7 @@ class _ProgressPhotoCaptureSheetState
     final saving = capture.isLoading;
     final replaces = ref.watch(progressPhotoExistsProvider(_day, _pose));
     final localeName = Localizations.localeOf(context).toLanguageTag();
+    final weightFormat = NumberFormat.decimalPattern(localeName);
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -152,7 +154,10 @@ class _ProgressPhotoCaptureSheetState
                 labelText: l10n.progressPhotoWeightLabel,
                 helperText: l10n.progressPhotoWeightHelper,
                 errorText: _weightInvalid
-                    ? l10n.progressPhotoWeightInvalid
+                    ? l10n.progressPhotoWeightInvalid(
+                        weightFormat.format(minimumProgressPhotoWeightKg),
+                        weightFormat.format(maximumProgressPhotoWeightKg),
+                      )
                     : null,
               ),
             ),

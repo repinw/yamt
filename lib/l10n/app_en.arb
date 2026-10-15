@@ -4074,7 +4074,17 @@
   "progressPhotoDayLabel": "Day",
   "progressPhotoWeightLabel": "Weight in kg (optional)",
   "progressPhotoWeightHelper": "Leave empty: weight of the day",
-  "progressPhotoWeightInvalid": "Enter a weight above 0.",
+  "progressPhotoWeightInvalid": "Enter a weight between {min} and {max} kg.",
+  "@progressPhotoWeightInvalid": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
   "progressPhotoReplaceHint": "This day and pose already have a photo. A new one replaces it.",
   "progressPhotoSaveFailed": "Could not save the photo.",
   "progressPhotoFromGallery": "From gallery",

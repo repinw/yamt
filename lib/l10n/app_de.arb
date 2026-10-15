@@ -3175,7 +3175,7 @@
   "progressPhotoDayLabel": "Tag",
   "progressPhotoWeightLabel": "Gewicht in kg (optional)",
   "progressPhotoWeightHelper": "Leer lassen: Gewicht des Tages",
-  "progressPhotoWeightInvalid": "Gib ein Gewicht über 0 ein.",
+  "progressPhotoWeightInvalid": "Gib ein Gewicht zwischen {min} und {max} kg ein.",
   "progressPhotoReplaceHint": "Für diesen Tag und diese Pose gibt es schon ein Foto. Ein neues ersetzt es.",
   "progressPhotoSaveFailed": "Das Foto konnte nicht gespeichert werden.",
   "progressPhotoFromGallery": "Aus Galerie",

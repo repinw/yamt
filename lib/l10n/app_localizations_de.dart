@@ -6723,7 +6723,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get progressPhotoWeightHelper => 'Leer lassen: Gewicht des Tages';
 
   @override
-  String get progressPhotoWeightInvalid => 'Gib ein Gewicht über 0 ein.';
+  String progressPhotoWeightInvalid(String min, String max) {
+    return 'Gib ein Gewicht zwischen $min und $max kg ein.';
+  }
 
   @override
   String get progressPhotoReplaceHint =>
