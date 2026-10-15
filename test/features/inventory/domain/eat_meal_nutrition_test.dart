@@ -196,6 +196,46 @@ void main() {
     expect(food?.eaten.kcal, 180);
   });
 
+  test('a food without nutrition values lacks them in the meal', () {
+    final water = InventoryItem.create(
+      id: 'water',
+      name: 'Water',
+      entryDate: DateTime(2026, 9, 27),
+      storeName: 'Store',
+      quantity: 1,
+    );
+
+    final food = eatMealFoodOfRequest(
+      water,
+      InventoryItemEatRequest(
+        inventoryAmount: 1,
+        calorieAmount: 200,
+        calorieUnit: ConsumedUnit.grams,
+        loggedAt: DateTime(2026, 9, 27),
+        mealType: MealType.breakfast,
+      ),
+    );
+    final meal = EatMealNutrition.combine([
+      (
+        eaten: const NutritionFacts(
+          kcal: 100,
+          fat: 1,
+          carbs: 2,
+          protein: 3,
+          sugar: 4,
+        ),
+        amount: 100,
+        unit: ConsumedUnit.grams,
+      ),
+      food!,
+    ]);
+
+    expect(food.amount, 200);
+    expect(meal.total.kcal, isNull);
+    expect(meal.total.sugar, 4);
+    expect(meal.incomplete, contains(Nutrient.sugar));
+  });
+
   test('reads a typed amount as the stock takes it, up to the stock', () {
     final rice = InventoryItem.create(
       id: 'rice',
