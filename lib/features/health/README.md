@@ -13,7 +13,10 @@ photos. From the platform it reads only weight.
 - Health weight samples synced to the cloud (`health_weight_samples`,
   encrypted with the data key): every measurement once, keyed by a hash of
   its minute and weight that only the data key can produce, so devices that
-  read the same scale store it once.
+  read the same scale store it once. Every weight reader reads these
+  samples, not the local Health store, through `weightSeriesProvider`: all
+  manual weights and samples of a day count as their median. A failed read
+  is an error, which the readers show.
 - The trend weight: one daily weight from manual entries and Health samples,
   interpolated between weigh-ins and smoothed, so water swings do not show as
   weight changes.
@@ -21,8 +24,7 @@ photos. From the platform it reads only weight.
   `application/`. Both are state-holding controllers that later features read
   and mutate: the connection state carries the connect, install, permission
   settings, and disconnect actions; the manual weight entries carry save and
-  delete, which fall back to manual storage when Health is not ready and
-  refresh the recent weight trend.
+  delete, which fall back to manual storage when Health is not ready.
 
 - Progress photos: body photos per day and pose, end-to-end encrypted. Each
   file has its own key, kept in the sealed photo document.
@@ -41,7 +43,9 @@ photos. From the platform it reads only weight.
   refresh and weekly check-in side effects of weight changes.
 - Saving a manual weight writes to Health when access is ready and clears the
   fallback entry of that day; otherwise the entry stays in the fallback
-  repository. A save or delete refreshes the recent weight trend.
+  repository. A weight saved to Health also goes to the cloud at once, so
+  readers count it before the next sync. The recent weight trend follows
+  the manual entries and the cloud samples by itself.
 - A day holds one progress photo per pose; a new one replaces the old. The
   weight typed for a photo stays on the photo and is never a weight entry.
 - Progress photos are never shared with the household. Decrypted image bytes

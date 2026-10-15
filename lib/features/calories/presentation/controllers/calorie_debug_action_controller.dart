@@ -12,7 +12,7 @@ import 'package:yamt/features/calories/data/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_debug_action_results.dart';
 import 'package:yamt/features/health/application/health_connection_controller.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
 
@@ -49,7 +49,6 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
     required String saveDialogTitle,
   }) async {
     final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
-    final healthWeightService = ref.read(healthWeightServiceProvider);
     final fileExporter = ref.read(calorieDebugFileExporterProvider);
     final manualWeightRepository = ref.read(
       manualHealthWeightRepositoryProvider,
@@ -58,11 +57,14 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
       healthConnectionControllerProvider.future,
     );
     final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
+    // Listened, not watched: a new sample must not rebuild the controller
+    // during the export.
+    final samples = ref.listen(healthWeightSamplesProvider.future, (_, _) {});
 
     try {
       final result = await buildCalorieDebugDump(
         calorieLogRepository: calorieLogRepository,
-        healthWeightService: healthWeightService,
+        healthWeightSamplesFuture: samples.read(),
         manualWeightRepository: manualWeightRepository,
         healthStatusFuture: healthStatusFuture,
         settingsFuture: settingsFuture,
@@ -90,6 +92,8 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
         stackTrace: stackTrace,
       );
       return const CalorieDebugDumpPrintFailure();
+    } finally {
+      samples.close();
     }
   }
 

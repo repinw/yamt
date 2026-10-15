@@ -107,7 +107,7 @@ final class GoalTdeeOffsetsByDayProvider
 }
 
 String _$goalTdeeOffsetsByDayHash() =>
-    r'09cb0897df51b30ddb02618c91da82cc32e38072';
+    r'cc178e513ca923344f15002e594b2a54236ab929';
 
 /// The diary entries from [startDay] on, from the local cache first.
 
@@ -194,116 +194,4 @@ final class CalorieEntriesFromFamily extends $Family
 
   @override
   String toString() => r'calorieEntriesFromProvider';
-}
-
-/// Health weights from before [startDay] on, loaded once, so an entry
-/// change only recomputes.
-///
-/// shortcut: a weight synced later in the day counts from the next day on;
-/// reload on a Health change event when one exists.
-
-@ProviderFor(healthWeightSamplesFrom)
-final healthWeightSamplesFromProvider = HealthWeightSamplesFromFamily._();
-
-/// Health weights from before [startDay] on, loaded once, so an entry
-/// change only recomputes.
-///
-/// shortcut: a weight synced later in the day counts from the next day on;
-/// reload on a Health change event when one exists.
-
-final class HealthWeightSamplesFromProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<HealthWeightSample>>,
-          List<HealthWeightSample>,
-          FutureOr<List<HealthWeightSample>>
-        >
-    with
-        $FutureModifier<List<HealthWeightSample>>,
-        $FutureProvider<List<HealthWeightSample>> {
-  /// Health weights from before [startDay] on, loaded once, so an entry
-  /// change only recomputes.
-  ///
-  /// shortcut: a weight synced later in the day counts from the next day on;
-  /// reload on a Health change event when one exists.
-  HealthWeightSamplesFromProvider._({
-    required HealthWeightSamplesFromFamily super.from,
-    required DateTime super.argument,
-  }) : super(
-         retry: null,
-         name: r'healthWeightSamplesFromProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() => _$healthWeightSamplesFromHash();
-
-  @override
-  String toString() {
-    return r'healthWeightSamplesFromProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $FutureProviderElement<List<HealthWeightSample>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<HealthWeightSample>> create(Ref ref) {
-    final argument = this.argument as DateTime;
-    return healthWeightSamplesFrom(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is HealthWeightSamplesFromProvider &&
-        other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$healthWeightSamplesFromHash() =>
-    r'176fe03226c3246910580c9506e7e7cc74046e6e';
-
-/// Health weights from before [startDay] on, loaded once, so an entry
-/// change only recomputes.
-///
-/// shortcut: a weight synced later in the day counts from the next day on;
-/// reload on a Health change event when one exists.
-
-final class HealthWeightSamplesFromFamily extends $Family
-    with
-        $FunctionalFamilyOverride<
-          FutureOr<List<HealthWeightSample>>,
-          DateTime
-        > {
-  HealthWeightSamplesFromFamily._()
-    : super(
-        retry: null,
-        name: r'healthWeightSamplesFromProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  /// Health weights from before [startDay] on, loaded once, so an entry
-  /// change only recomputes.
-  ///
-  /// shortcut: a weight synced later in the day counts from the next day on;
-  /// reload on a Health change event when one exists.
-
-  HealthWeightSamplesFromProvider call(DateTime startDay) =>
-      HealthWeightSamplesFromProvider._(argument: startDay, from: this);
-
-  @override
-  String toString() => r'healthWeightSamplesFromProvider';
 }

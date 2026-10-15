@@ -19,10 +19,10 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
@@ -102,7 +102,9 @@ ProviderContainer _createContainer({
             FakeHealthConnectionService(_notReadyStatus),
       ),
       if (healthWeightService != null)
-        healthWeightServiceProvider.overrideWith((ref) => healthWeightService),
+        healthWeightSamplesProvider.overrideWith(
+          (ref) => Stream.value(healthWeightService.samples),
+        ),
       manualHealthWeightRepositoryProvider.overrideWith(
         (ref) => manualRepository,
       ),
@@ -151,9 +153,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.hasPending, isTrue);
     expect(checkInData.shouldAutoOpen, isTrue);
@@ -215,9 +217,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.isReady, isTrue);
       expect(
@@ -268,9 +270,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.hasPending, isTrue);
       expect(checkInData.shouldAutoOpen, isTrue);
@@ -326,9 +328,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.isReady, isTrue);
       expect(
@@ -385,9 +387,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.hasPending, isTrue);
     expect(checkInData.isBlocked, isTrue);
@@ -432,9 +434,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(
       checkInData.blockedReason,
@@ -479,9 +481,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(
       checkInData.blockedReason,
@@ -540,9 +542,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.isReady, isTrue);
       expect(checkInData.days.first.weightKg, 82);
@@ -625,9 +627,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.isReady, isTrue);
       expect(
@@ -682,9 +684,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.isReady, isTrue);
     expect(checkInData.missingWeightDays, isEmpty);
@@ -737,9 +739,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.isReady, isTrue);
       expect(checkInData.blockedReason, isNull);
@@ -820,9 +822,9 @@ void main() {
       );
       addTearDown(subscription.close);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.isReady, isTrue);
       expect(
@@ -845,9 +847,9 @@ void main() {
       );
       container.read(calorieOverviewRevisionProvider.notifier).markChanged();
 
-      final recomputedData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final recomputedData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       // A changed day before the window still moves the daily TDEE.
       expect(
@@ -905,9 +907,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.hasPending, isTrue);
     expect(checkInData.shouldAutoOpen, isFalse);
@@ -966,9 +968,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(
       checkInData.pendingWeeklyCheckIn?.windowStartDate,
@@ -1037,9 +1039,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(
       checkInData.pendingWeeklyCheckIn?.windowStartDate,
@@ -1116,9 +1118,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.isReady, isTrue);
     expect(rangeStart, DateTime(2026, 4, 8));
@@ -1178,9 +1180,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.hasPending, isTrue);
     expect(checkInData.pendingWeeklyCheckIn?.windowStartDate, goalStart);
@@ -1248,9 +1250,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.hasPending, isFalse);
     expect(checkInData.pendingWeeklyCheckIn, isNull);
@@ -1301,9 +1303,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.freshness, CalorieLearnedTdeeFreshness.urgent);
     },
@@ -1350,9 +1352,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.freshness, CalorieLearnedTdeeFreshness.stale);
     },
@@ -1435,9 +1437,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.pendingWeeklyCheckIn, isNull);
     expect(
@@ -1499,9 +1501,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.hasPending, isTrue);
     expect(checkInData.pendingWeeklyCheckIn?.isDismissed, isTrue);
@@ -1566,9 +1568,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.hasPending, isTrue);
       expect(
@@ -1630,9 +1632,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.hasPending, isTrue);
       expect(
@@ -1703,9 +1705,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.hasPending, isTrue);
     expect(
@@ -1764,9 +1766,9 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final checkInData = await container.read(
-        calorieWeeklyCheckInDataProvider.future,
-      );
+      final checkInData = await container
+          .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+          .read();
 
       expect(checkInData.hasPending, isFalse);
       expect(checkInData.pendingWeeklyCheckIn, isNull);
@@ -1814,9 +1816,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final checkInData = await container.read(
-      calorieWeeklyCheckInDataProvider.future,
-    );
+    final checkInData = await container
+        .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
+        .read();
 
     expect(checkInData.isReady, isTrue);
     final skippedDay = checkInData.days.firstWhere(

@@ -10,8 +10,6 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_daily_tdee.dart';
 import 'package:yamt/features/calories/application/'
-    'calorie_weekly_checkin_health_loader.dart';
-import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_input_hash.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_intake_resolver.dart';
@@ -25,12 +23,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
-import 'package:yamt/features/health/application/health_connection_controller.dart';
-import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
-import 'package:yamt/features/health/data/health_weight_service.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 
 const _weeklyCheckInProviderLogName = 'CalorieWeeklyCheckInProvider';
@@ -48,14 +41,8 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
 
   final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
   final clock = ref.watch(clockProvider);
-  final manualEntriesFuture = ref.watch(
-    manualHealthWeightEntriesControllerProvider.future,
-  );
+  final weightSeriesFuture = ref.watch(weightSeriesProvider.future);
   final calorieLogRepository = ref.watch(calorieLogRepositoryProvider);
-  final healthStatusFuture = ref.watch(
-    healthConnectionControllerProvider.future,
-  );
-  final healthWeightService = ref.watch(healthWeightServiceProvider);
 
   final settings = await settingsFuture;
   if (!ref.mounted) {
@@ -98,9 +85,7 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
   final dayData = await _loadWindowDayData(
     ref: ref,
     calorieLogRepository: calorieLogRepository,
-    manualEntriesFuture: manualEntriesFuture,
-    healthStatusFuture: healthStatusFuture,
-    healthWeightService: healthWeightService,
+    weightSeriesFuture: weightSeriesFuture,
     settings: settings,
     pendingWeeklyCheckIn: cacheWeeklyCheckIn,
     today: today,
@@ -145,9 +130,7 @@ CalorieWeeklyCheckInData _emptyWeeklyCheckInData({
 Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
   required Ref ref,
   required CalorieLogRepositoryContract calorieLogRepository,
-  required Future<List<ManualHealthWeightEntry>> manualEntriesFuture,
-  required Future<HealthConnectionStatus> healthStatusFuture,
-  required HealthWeightService healthWeightService,
+  required Future<DailyWeightSeries> weightSeriesFuture,
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   required DateTime today,
@@ -164,20 +147,10 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  final manualEntries = await manualEntriesFuture;
+  final weightSeries = await weightSeriesFuture;
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  final healthData = await loadCalorieWeeklyCheckInHealthData(
-    healthStatusFuture: healthStatusFuture,
-    healthWeightService: healthWeightService,
-    dates: dates,
-    isMounted: () => ref.mounted,
-  );
-  final weightSeries = WeightTrendCalculator.fromSources(
-    manualEntries: manualEntries,
-    healthSamples: healthData.healthWeightSamples,
-  );
   final weightData = mergeWeeklyCheckInWeights(
     dates: dates,
     anchorEntry: dates.anchorEntry,

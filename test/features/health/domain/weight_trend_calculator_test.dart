@@ -108,7 +108,7 @@ void main() {
   });
 
   group('WeightTrendCalculator.fromSources', () {
-    test('prefers manual entries and uses the Health median per day', () {
+    test('takes the median of all manual and Health weights of a day', () {
       final series = WeightTrendCalculator.fromSources(
         manualEntries: [ManualHealthWeightEntry(day: start, weightKg: 81)],
         healthSamples: [
@@ -121,7 +121,7 @@ void main() {
         ],
       );
 
-      expect(series.rawByDay[localDayKey(start)], 81);
+      expect(series.rawByDay[localDayKey(start)], 80);
       expect(series.rawByDay[localDayKey(addLocalDays(start, 1))], 81);
     });
   });

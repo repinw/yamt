@@ -47,7 +47,9 @@ Future<void> healthWeightCloudSync(Ref ref) async {
       return;
     }
     final samples = await healthWeightService.loadWeightSamples(
-      startInclusive: firstGoalStart,
+      // The first check-in takes its start weight from the day before the
+      // first counting day.
+      startInclusive: previousDiaryDay(firstGoalStart),
       endExclusive: nextDiaryDay(today),
     );
     if (!ref.mounted) {

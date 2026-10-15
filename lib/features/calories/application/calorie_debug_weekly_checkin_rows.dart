@@ -19,8 +19,7 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
-import 'package:yamt/features/health/data/health_weight_service.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 
@@ -30,8 +29,7 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
   required CalorieGoalSettings settings,
   required List<CalorieEntry> calorieEntries,
   required List<ManualHealthWeightEntry> manualWeightEntries,
-  required HealthConnectionStatus healthStatus,
-  required HealthWeightService healthWeightService,
+  required List<HealthWeightSample> healthWeightSamples,
   required DateTime today,
 }) async {
   final windows = resolveCalorieDebugWeeklyCheckInWindows(
@@ -51,13 +49,6 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
     );
   }
   final entriesByDay = calorieDebugEntriesByDay(calorieEntries);
-  final healthWeightSamples = await loadCalorieDebugWeeklyHealthWeights(
-    settings: settings,
-    datesByWindow: datesByWindow.values,
-    windows: windows,
-    healthStatus: healthStatus,
-    healthWeightService: healthWeightService,
-  );
   final weightSeries = WeightTrendCalculator.fromSources(
     manualEntries: manualWeightEntries,
     healthSamples: healthWeightSamples,

@@ -36,6 +36,9 @@ class _RecordingSampleRepository implements HealthWeightSampleRepository {
   Future<void> addSamples(List<HealthWeightSample> samples) async {
     added.addAll(samples);
   }
+
+  @override
+  Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {

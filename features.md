@@ -418,8 +418,14 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - Health Connect and Apple Health connection/disconnection flows.
 - Health access status, permission, history, install, and unsupported states.
-- Imported weight data.
-- Manual weight repository with per-day overrides.
+- Imported weight data. A device with Health access copies its weighings
+  since the first goal into the cloud, so every device of the user computes
+  the trend, the TDEE, and the check-in from the same weights, also one
+  without Health access.
+- Manual weights. All weights of a day, manual and from Health, count as
+  their median.
+- Weight, trend, and TDEE start at the first goal; earlier weighings do not
+  settle the trend in advance.
 - Platform stubs for unsupported targets.
 
 ## Inventory

@@ -59,4 +59,4 @@ final class DiaryWeightActionsProvider
 }
 
 String _$diaryWeightActionsHash() =>
-    r'cf2d989cb12f8cb6f7d686058825a8c531b11298';
+    r'55dd4c4ec387b09e3fe52759e3476becf93a64da';
