@@ -4498,6 +4498,19 @@ class AppLocalizationsDe extends AppLocalizations {
       'Cookflow konnte nicht gespeichert werden.';
 
   @override
+  String get cookflowLeaveUnsavedTitle => 'Nicht gespeichert';
+
+  @override
+  String get cookflowLeaveUnsavedBody =>
+      'Die letzten Änderungen konnten nicht gespeichert werden. Ohne Speichern gehen sie verloren.';
+
+  @override
+  String get cookflowLeaveUnsavedAction => 'Ohne Speichern verlassen';
+
+  @override
+  String get cookflowLeaveRetryAction => 'Erneut versuchen';
+
+  @override
   String get cookflowResolveConflictsButton => 'Konflikte lösen';
 
   @override

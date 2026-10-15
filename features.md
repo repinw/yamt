@@ -886,6 +886,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Finalize phase for storage containers, gross weight, net weight, portion
   split, and ingredient-to-container assignment.
 - Save final meal into inventory and resume saved flow sessions.
+- Leaving from the first step saves the session first. When the save
+  fails, the flow stays open and a dialog offers to try again or to leave
+  without saving.
 
 ## Kitchen Utensils
 

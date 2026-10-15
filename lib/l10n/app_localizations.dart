@@ -7475,6 +7475,30 @@ abstract class AppLocalizations {
   /// **'Cookflow could not be saved.'**
   String get cookflowSessionSaveFailed;
 
+  /// Title of the dialog when the cooking session could not be saved before leaving the cook flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not saved'**
+  String get cookflowLeaveUnsavedTitle;
+
+  /// Body of the dialog: the latest cooking changes were not saved, and leaving now discards them. Earlier steps stay saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your latest changes could not be saved. Leaving without saving loses them.'**
+  String get cookflowLeaveUnsavedBody;
+
+  /// Button in the not-saved dialog that leaves the cook flow and discards the latest changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave without saving'**
+  String get cookflowLeaveUnsavedAction;
+
+  /// Button in the not-saved dialog that tries to save the cooking session again.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get cookflowLeaveRetryAction;
+
   /// No description provided for @cookflowResolveConflictsButton.
   ///
   /// In en, this message translates to:
