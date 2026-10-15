@@ -142,6 +142,15 @@ class CalorieGoalController extends _$CalorieGoalController {
     ),
   );
 
+  /// Number of diary entries on [day], for the start day question before a
+  /// goal save.
+  Future<int> readEntryCountForDay(DateTime day) async {
+    final entries = await ref
+        .read(calorieLogRepositoryProvider)
+        .readEntriesForDay(day);
+    return entries.length;
+  }
+
   /// Mark weekly check-in snapshots dirty from a changed diary day.
   Future<bool> invalidateWeeklyCheckInSnapshotsFromDay(DateTime day) =>
       _guarded(

@@ -37,7 +37,7 @@ final class CalorieGoalControllerProvider
 }
 
 String _$calorieGoalControllerHash() =>
-    r'9f9c9fd155b7b09492ed04a1675977e28f6bd644';
+    r'f17a041452e6b347571c1c7138976800986aa79a';
 
 /// Defines calorie goal controller.
 
