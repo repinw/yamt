@@ -56,7 +56,7 @@ void main() {
     });
   });
 
-  test('does not save while wizard is restoring session', () async {
+  test('keeps the stored session while the wizard restores it', () async {
     final store = _FakeCookingFlowSessionLocalStore();
     final container = _container(store);
 
@@ -75,7 +75,7 @@ void main() {
           ),
         );
 
-    expect(saved, isFalse);
+    expect(saved, isTrue);
     expect(store.savedSession, isNull);
   });
 

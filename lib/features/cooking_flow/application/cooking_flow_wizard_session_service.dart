@@ -73,13 +73,14 @@ class CookingFlowWizardSessionService {
     return _sessionCoordinator.clear();
   }
 
-  /// Saves current session.
+  /// Saves current session. While a session is restoring, the stored one
+  /// is still the newest, so nothing needs saving.
   Future<bool> saveSession({
     required CookingFlowWizardState state,
     required CookingFlowWizardSessionInput input,
   }) {
     if (state.isRestoringSession) {
-      return Future<bool>.value(false);
+      return Future<bool>.value(true);
     }
     return _sessionCoordinator.save(
       _sessionSnapshot(state: state, input: input),

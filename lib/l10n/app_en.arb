@@ -2502,6 +2502,22 @@
   "cookflowShoppingListAddSucceeded": "Ingredients added to shopping list.",
   "cookflowShoppingListAddFailed": "Shopping list could not be updated.",
   "cookflowSessionSaveFailed": "Cookflow could not be saved.",
+  "cookflowLeaveUnsavedTitle": "Not saved",
+  "@cookflowLeaveUnsavedTitle": {
+    "description": "Title of the dialog when the cooking session could not be saved before leaving the cook flow."
+  },
+  "cookflowLeaveUnsavedBody": "Your latest changes could not be saved. Leaving without saving loses them.",
+  "@cookflowLeaveUnsavedBody": {
+    "description": "Body of the dialog: the latest cooking changes were not saved, and leaving now discards them. Earlier steps stay saved."
+  },
+  "cookflowLeaveUnsavedAction": "Leave without saving",
+  "@cookflowLeaveUnsavedAction": {
+    "description": "Button in the not-saved dialog that leaves the cook flow and discards the latest changes."
+  },
+  "cookflowLeaveRetryAction": "Try again",
+  "@cookflowLeaveRetryAction": {
+    "description": "Button in the not-saved dialog that tries to save the cooking session again."
+  },
   "cookflowResolveConflictsButton": "Resolve conflicts",
   "cookflowContinueButton": "Continue",
   "cookflowPhaseChip": "Phase {currentPhase} / {totalPhases}",

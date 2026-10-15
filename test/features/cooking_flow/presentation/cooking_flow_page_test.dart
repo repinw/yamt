@@ -12,6 +12,7 @@ import 'package:yamt/features/cooking_flow/data/'
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/cooking_flow_leave_flow.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_progress_indicator.dart';
@@ -342,9 +343,8 @@ Widget _buildRouterHarness({
 }
 
 void main() {
-  testWidgets('start back leaves cookflow when session save fails', (
-    tester,
-  ) async {
+  testWidgets('start back stays on cookflow when the session save fails, '
+      'and leaves without saving from the dialog', (tester) async {
     final sessionStore = _FakeCookingFlowSessionLocalStore(saveSucceeds: false);
 
     await tester.pumpWidget(
@@ -361,7 +361,92 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sessionStore.saveCallCount, greaterThan(saveCallCountBeforeBack));
+    expect(find.text('Template list route'), findsNothing);
+    expect(find.byKey(cookflowLeaveUnsavedKey), findsOneWidget);
+
+    await tester.tap(find.byKey(cookflowLeaveUnsavedKey));
+    await tester.pumpAndSettle();
+
     expect(find.text('Template list route'), findsOneWidget);
+  });
+
+  testWidgets('start back saves again from the dialog and leaves once the '
+      'session is saved', (tester) async {
+    var saves = 0;
+    final sessionStore = _FakeCookingFlowSessionLocalStore(
+      onSave: (_) async => ++saves > 1,
+    );
+
+    await tester.pumpWidget(
+      _buildRouterHarness(
+        sessionStore: sessionStore,
+        templates: <PreparedMeal>[_template(id: 'template-1')],
+      ),
+    );
+    await tester.pumpAndSettle();
+    saves = 0;
+
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('Template list route'), findsNothing);
+
+    await tester.tap(find.byKey(cookflowLeaveRetryKey));
+    await tester.pumpAndSettle();
+
+    expect(saves, 2);
+    expect(find.byKey(cookflowLeaveRetryKey), findsNothing);
+    expect(find.text('Template list route'), findsOneWidget);
+  });
+
+  testWidgets('a session save that throws also offers the dialog', (
+    tester,
+  ) async {
+    var throws = false;
+    final sessionStore = _FakeCookingFlowSessionLocalStore(
+      onSave: (_) async => throws ? throw StateError('disk full') : true,
+    );
+
+    await tester.pumpWidget(
+      _buildRouterHarness(
+        sessionStore: sessionStore,
+        templates: <PreparedMeal>[_template(id: 'template-1')],
+      ),
+    );
+    await tester.pumpAndSettle();
+    throws = true;
+
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Template list route'), findsNothing);
+    await tester.tap(find.byKey(cookflowLeaveUnsavedKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Template list route'), findsOneWidget);
+  });
+
+  testWidgets('dismissing the dialog after a failed save stays on cookflow', (
+    tester,
+  ) async {
+    final sessionStore = _FakeCookingFlowSessionLocalStore(saveSucceeds: false);
+
+    await tester.pumpWidget(
+      _buildRouterHarness(
+        sessionStore: sessionStore,
+        templates: <PreparedMeal>[_template(id: 'template-1')],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(4, 4));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(cookflowLeaveUnsavedKey), findsNothing);
+    expect(find.text('Template list route'), findsNothing);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
   });
 
   testWidgets('restored intro shopping selection shows shopping CTA', (

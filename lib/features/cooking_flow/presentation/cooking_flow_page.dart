@@ -25,6 +25,7 @@ import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_storage_container_controller.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_wizard_controller.dart';
+import 'package:yamt/features/cooking_flow/presentation/cooking_flow_leave_flow.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_summary_ingredient_source_flow.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -488,11 +489,11 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
       return;
     }
     if (_step == CookingFlowStep.start) {
-      await _saveSession();
-      if (!mounted) {
-        return;
+      Future<bool> save() =>
+          _wizardController.saveSession(_currentSessionInput);
+      if (await saveBeforeLeavingCookflow(context, save) && mounted) {
+        _leaveCookflow();
       }
-      _leaveCookflow();
       return;
     }
     _goBackOneStep();
@@ -743,7 +744,6 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
     if (saved) {
       return true;
     }
-
     ScaffoldMessenger.of(context).showAppSnackBar(
       _l10n.cookflowSessionSaveFailed,
       tone: AppSnackBarTone.error,

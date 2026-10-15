@@ -4431,6 +4431,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookflowSessionSaveFailed => 'Cookflow could not be saved.';
 
   @override
+  String get cookflowLeaveUnsavedTitle => 'Not saved';
+
+  @override
+  String get cookflowLeaveUnsavedBody =>
+      'Your latest changes could not be saved. Leaving without saving loses them.';
+
+  @override
+  String get cookflowLeaveUnsavedAction => 'Leave without saving';
+
+  @override
+  String get cookflowLeaveRetryAction => 'Try again';
+
+  @override
   String get cookflowResolveConflictsButton => 'Resolve conflicts';
 
   @override
