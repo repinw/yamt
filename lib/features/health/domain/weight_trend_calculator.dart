@@ -82,32 +82,28 @@ abstract final class WeightTrendCalculator {
   /// Share of each day's weight that enters the trend.
   static const double smoothing = 0.1;
 
-  /// Days of weight history to load before the first day a chart needs, so
-  /// the trend is settled when that day starts.
-  static const int warmUpDays = 60;
-
   /// Default number of days used for the trend slope.
   static const int slopeWindowDays = 14;
 
   /// Builds the series from manual entries and Health samples.
   ///
-  /// A manual entry wins over Health samples on the same day. Several Health
-  /// samples on one day count as their median.
+  /// All weights of one day, manual and Health, count as their median.
   static DailyWeightSeries fromSources({
     List<ManualHealthWeightEntry> manualEntries =
         const <ManualHealthWeightEntry>[],
     List<HealthWeightSample> healthSamples = const <HealthWeightSample>[],
   }) {
-    final samplesByDay = <DateTime, List<double>>{};
-    for (final sample in healthSamples) {
-      samplesByDay
-          .putIfAbsent(normalizeLocalDay(sample.recordedAt), () => <double>[])
-          .add(sample.weightKg);
+    final weightsByDay = <DateTime, List<double>>{};
+    for (final (day, weightKg) in [
+      for (final sample in healthSamples) (sample.recordedAt, sample.weightKg),
+      for (final entry in manualEntries) (entry.day, entry.weightKg),
+    ]) {
+      weightsByDay
+          .putIfAbsent(normalizeLocalDay(day), () => <double>[])
+          .add(weightKg);
     }
     return fromDailyWeights(<DateTime, double>{
-      for (final entry in samplesByDay.entries) entry.key: _median(entry.value),
-      for (final entry in manualEntries)
-        normalizeLocalDay(entry.day): entry.weightKg,
+      for (final entry in weightsByDay.entries) entry.key: _median(entry.value),
     });
   }
 

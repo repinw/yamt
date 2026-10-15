@@ -7,9 +7,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
-import 'package:yamt/features/health/data/health_weight_service.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 /// The completed check-in windows of the goal active on [today].
 List<PendingCalorieGoalWeeklyCheckIn> resolveCalorieDebugWeeklyCheckInWindows({
@@ -51,31 +48,6 @@ List<PendingCalorieGoalWeeklyCheckIn> resolveCalorieDebugWeeklyCheckInWindows({
     windowStartDate = nextDiaryDay(windowEndDate);
   }
   return List<PendingCalorieGoalWeeklyCheckIn>.unmodifiable(windows);
-}
-
-/// Loads the Health weights of all windows when Health access is ready.
-Future<List<HealthWeightSample>> loadCalorieDebugWeeklyHealthWeights({
-  required CalorieGoalSettings settings,
-  required Iterable<CalorieWeeklyCheckInWindowDates> datesByWindow,
-  required List<PendingCalorieGoalWeeklyCheckIn> windows,
-  required HealthConnectionStatus healthStatus,
-  required HealthWeightService healthWeightService,
-}) async {
-  if (healthStatus.accessState != HealthDataAccessState.ready) {
-    return const <HealthWeightSample>[];
-  }
-
-  final dates = datesByWindow.toList(growable: false);
-  final weightStartCandidates = [
-    for (final date in dates) ...date.healthWeightStartCandidates,
-  ];
-  final weightEndDay = _latestDay([
-    for (final date in dates) date.nextBoundaryDay,
-  ]);
-  return await healthWeightService.loadWeightSamples(
-    startInclusive: _earliestDate(weightStartCandidates),
-    endExclusive: nextDiaryDay(weightEndDay),
-  );
 }
 
 /// The missing weight that blocks a window, or `null`.
@@ -145,20 +117,4 @@ Map<String, List<CalorieEntry>> calorieDebugEntriesByDay(
     entriesByDay.putIfAbsent(key, () => <CalorieEntry>[]).add(entry);
   }
   return entriesByDay;
-}
-
-DateTime _latestDay(List<DateTime> days) {
-  assert(days.isNotEmpty, 'At least one day is required.');
-  var latest = normalizeDiaryDay(days.first);
-  for (final day in days.skip(1)) {
-    final normalizedDay = normalizeDiaryDay(day);
-    if (normalizedDay.isAfter(latest)) {
-      latest = normalizedDay;
-    }
-  }
-  return latest;
-}
-
-DateTime _earliestDate(List<DateTime> dates) {
-  return dates.reduce((left, right) => left.isBefore(right) ? left : right);
 }

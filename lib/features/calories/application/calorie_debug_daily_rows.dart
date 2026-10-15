@@ -143,8 +143,16 @@ CalorieDebugDumpRow _dailyWeightRow({
   required double? manualWeightKg,
   required List<double> healthWeightsKg,
 }) {
-  final weightKg = manualWeightKg ?? CalorieDomainMath.median(healthWeightsKg);
-  final source = manualWeightKg == null ? 'health' : 'manual_fallback';
+  // Manual and Health weights of a day count together, as in the trend.
+  final weightKg = CalorieDomainMath.median([
+    ?manualWeightKg,
+    ...healthWeightsKg,
+  ]);
+  final source = switch ((manualWeightKg, healthWeightsKg.isEmpty)) {
+    (null, _) => 'health',
+    (_, true) => 'manual_fallback',
+    _ => 'manual_and_health',
+  };
   return _weightRow(sortAt: day, source: source, weightKg: weightKg);
 }
 

@@ -8,20 +8,14 @@ part of 'recent_weight_trend_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The weights of the last [dayCount] days from manual entries and Health
-/// samples.
-///
-/// Health samples load only when Health access is ready. Saving or deleting
-/// a weight through `ManualHealthWeightEntriesController` refreshes it.
+/// The weights of the last [dayCount] days from manual entries and the
+/// Health samples of all devices.
 
 @ProviderFor(recentWeightTrend)
 final recentWeightTrendProvider = RecentWeightTrendFamily._();
 
-/// The weights of the last [dayCount] days from manual entries and Health
-/// samples.
-///
-/// Health samples load only when Health access is ready. Saving or deleting
-/// a weight through `ManualHealthWeightEntriesController` refreshes it.
+/// The weights of the last [dayCount] days from manual entries and the
+/// Health samples of all devices.
 
 final class RecentWeightTrendProvider
     extends
@@ -33,11 +27,8 @@ final class RecentWeightTrendProvider
     with
         $FutureModifier<RecentWeightTrend>,
         $FutureProvider<RecentWeightTrend> {
-  /// The weights of the last [dayCount] days from manual entries and Health
-  /// samples.
-  ///
-  /// Health samples load only when Health access is ready. Saving or deleting
-  /// a weight through `ManualHealthWeightEntriesController` refreshes it.
+  /// The weights of the last [dayCount] days from manual entries and the
+  /// Health samples of all devices.
   RecentWeightTrendProvider._({
     required RecentWeightTrendFamily super.from,
     required int super.argument,
@@ -82,13 +73,10 @@ final class RecentWeightTrendProvider
   }
 }
 
-String _$recentWeightTrendHash() => r'b12939a03a3bb8edca6f71da2f82f257c64f1519';
+String _$recentWeightTrendHash() => r'7f1b275cd13ef9e44641853f04d992ca2e38b9ac';
 
-/// The weights of the last [dayCount] days from manual entries and Health
-/// samples.
-///
-/// Health samples load only when Health access is ready. Saving or deleting
-/// a weight through `ManualHealthWeightEntriesController` refreshes it.
+/// The weights of the last [dayCount] days from manual entries and the
+/// Health samples of all devices.
 
 final class RecentWeightTrendFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<RecentWeightTrend>, int> {
@@ -101,11 +89,8 @@ final class RecentWeightTrendFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The weights of the last [dayCount] days from manual entries and Health
-  /// samples.
-  ///
-  /// Health samples load only when Health access is ready. Saving or deleting
-  /// a weight through `ManualHealthWeightEntriesController` refreshes it.
+  /// The weights of the last [dayCount] days from manual entries and the
+  /// Health samples of all devices.
 
   RecentWeightTrendProvider call({
     int dayCount = RecentWeightTrend.chartDayCount,

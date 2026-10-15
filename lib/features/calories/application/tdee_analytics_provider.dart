@@ -12,12 +12,7 @@ import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
-import 'package:yamt/features/health/application/health_connection_controller.dart';
-import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/domain/health_weight_sample.dart';
-import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 
 part 'tdee_analytics_provider.g.dart';
 
@@ -57,17 +52,10 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
     ref.watch(calorieOverviewRevisionProvider);
     final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
     final logRepo = ref.watch(calorieLogRepositoryProvider);
-    final healthStatusFuture = ref.watch(
-      healthConnectionControllerProvider.future,
-    );
-    final manualEntriesFuture = ref.watch(
-      manualHealthWeightEntriesControllerProvider.future,
-    );
-    final healthWeightService = ref.watch(healthWeightServiceProvider);
+    final weightsFuture = ref.watch(weightSeriesProvider.future);
 
     final settings = await settingsFuture;
-    final healthStatus = await healthStatusFuture;
-    final manualEntries = await manualEntriesFuture;
+    final weights = await weightsFuture;
     if (!ref.mounted) {
       throw StateError('TdeeAnalytics provider was disposed.');
     }
@@ -107,26 +95,6 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
     if (!ref.mounted) {
       throw StateError('TdeeAnalytics provider was disposed.');
     }
-
-    // Load earlier weights too, so the trend weight is settled at the start.
-    final healthSamples =
-        healthStatus.accessState == HealthDataAccessState.ready
-        ? await healthWeightService.loadWeightSamples(
-            startInclusive: addDiaryDays(
-              loadStart,
-              -WeightTrendCalculator.warmUpDays,
-            ),
-            endExclusive: nextDiaryDay(window.end),
-          )
-        : const <HealthWeightSample>[];
-    if (!ref.mounted) {
-      throw StateError('TdeeAnalytics provider was disposed.');
-    }
-
-    final weights = WeightTrendCalculator.fromSources(
-      manualEntries: manualEntries,
-      healthSamples: healthSamples,
-    );
 
     final entriesByDay = entries.groupByDiaryDayKey();
     final points = TdeeAnalyticsService.buildPoints(

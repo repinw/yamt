@@ -201,8 +201,8 @@ reference = check-in goal: the TDEE of its check-in
 - The debug preview shows the latest completed window, or made-up data when
   the goal has none, and saves nothing.
 
-Weights per day: the median of the Health samples, and a manual weight
-overrides it. The daily TDEE smooths these raw weights itself; the smoothed
+Weights per day: the median of all manual weights and the Health samples of
+all devices, read from the cloud (`weightSeriesProvider`). The daily TDEE smooths these raw weights itself; the smoothed
 trend weight from Health is only the weight line, weight numbers, and goal
 projection of the charts.
 

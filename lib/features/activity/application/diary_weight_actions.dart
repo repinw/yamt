@@ -1,8 +1,11 @@
+import 'dart:developer' show log;
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weight_state_refresh.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
+import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
@@ -18,11 +21,28 @@ DiaryWeightActions diaryWeightActions(Ref ref) {
     manualHealthWeightEntriesControllerProvider.notifier,
   );
   final healthWeightService = ref.watch(healthWeightServiceProvider);
+  final sampleRepository = ref.watch(healthWeightSampleRepositoryProvider);
 
   return DiaryWeightActions(
     saveManualWeight: manualWeightEntries.saveEntry,
     deleteManualWeight: manualWeightEntries.deleteEntryForDay,
-    deleteHealthWeightSample: healthWeightService.deleteWeightSample,
+    deleteHealthWeightSample: (sample) async {
+      final deleted = await healthWeightService.deleteWeightSample(sample);
+      if (deleted) {
+        // Readers read the cloud copy, so it goes with the Health sample.
+        try {
+          await sampleRepository.deleteSample(sample);
+        } on Object catch (error, stackTrace) {
+          log(
+            'Failed to delete the cloud copy of a Health weight.',
+            name: 'DiaryWeightActions',
+            error: error,
+            stackTrace: stackTrace,
+          );
+        }
+      }
+      return deleted;
+    },
     refreshDependents: ({required selectedDay, day}) async {
       if (!ref.mounted) {
         return;

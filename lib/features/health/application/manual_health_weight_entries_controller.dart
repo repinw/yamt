@@ -4,8 +4,8 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/health/application/recent_weight_trend_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
@@ -43,6 +43,7 @@ class ManualHealthWeightEntriesController
         ? await _saveToHealth(
             repository: repository,
             healthWeightService: healthWeightService,
+            sampleRepository: ref.read(healthWeightSampleRepositoryProvider),
             previousEntries: previousEntries,
             normalizedDay: normalizedDay,
             now: now,
@@ -56,9 +57,6 @@ class ManualHealthWeightEntriesController
               weightKg: weightKg,
             ),
           );
-    if (saved && ref.mounted) {
-      ref.invalidate(recentWeightTrendProvider);
-    }
     return saved;
   }
 
@@ -80,12 +78,6 @@ class ManualHealthWeightEntriesController
       final deleted = await repository.deleteEntryForDay(normalizedDay);
       if (!deleted && ref.mounted) {
         state = AsyncData(previousEntries);
-      }
-      if (!deleted) {
-        return false;
-      }
-      if (ref.mounted) {
-        ref.invalidate(recentWeightTrendProvider);
       }
       return deleted;
     } on Object catch (error, stackTrace) {
@@ -116,15 +108,17 @@ class ManualHealthWeightEntriesController
   Future<bool> _saveToHealth({
     required ManualHealthWeightRepository repository,
     required HealthWeightService healthWeightService,
+    required HealthWeightSampleRepository sampleRepository,
     required List<ManualHealthWeightEntry> previousEntries,
     required DateTime normalizedDay,
     required DateTime now,
     required double weightKg,
   }) async {
     final nextEntries = _entriesWithoutDay(previousEntries, normalizedDay);
+    final recordedAt = _weightRecordedAtForDay(normalizedDay, now);
     try {
       final saved = await healthWeightService.saveWeightSample(
-        recordedAt: _weightRecordedAtForDay(normalizedDay, now),
+        recordedAt: recordedAt,
         weightKg: weightKg,
       );
       if (!saved) {
@@ -138,6 +132,20 @@ class ManualHealthWeightEntriesController
         );
       }
 
+      // Readers read the cloud, so the weight counts before the next sync.
+      try {
+        await sampleRepository.saveAppWeight(
+          recordedAt: recordedAt,
+          weightKg: weightKg,
+        );
+      } on Object catch (error, stackTrace) {
+        log(
+          'Failed to store the weight in the cloud; the sync retries.',
+          name: _logName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
       if (ref.mounted) {
         state = AsyncData(nextEntries);
       }

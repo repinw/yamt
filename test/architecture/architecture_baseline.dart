@@ -273,8 +273,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/core/widgets/app_switch_list_tile.dart': 1,
     'lib/features/calories/application/calorie_weekly_checkin_build_models.dart':
         1,
-    'lib/features/calories/application/calorie_weekly_checkin_health_loader.dart':
-        1,
     'lib/features/shared/widgets/auth_form_components.dart': 1,
   },
   'bare-keep-alive': {

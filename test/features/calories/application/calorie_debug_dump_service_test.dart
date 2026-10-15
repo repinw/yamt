@@ -31,12 +31,12 @@ void main() {
         ),
       ],
     );
-    final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
+    final healthWeightSamples = <HealthWeightSample>[
       HealthWeightSample(
         recordedAt: day.add(const Duration(hours: 7)),
         weightKg: 81.2,
       ),
-    ]);
+    ];
     final manualWeightRepository = FakeManualHealthWeightRepository(
       <ManualHealthWeightEntry>[
         ManualHealthWeightEntry(
@@ -48,7 +48,7 @@ void main() {
 
     final result = await buildCalorieDebugDump(
       calorieLogRepository: logRepository,
-      healthWeightService: healthWeightService,
+      healthWeightSamplesFuture: Future.value(healthWeightSamples),
       manualWeightRepository: manualWeightRepository,
       healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
       settingsFuture: Future<CalorieGoalSettings>.value(
@@ -104,7 +104,7 @@ void main() {
         ),
       ],
     );
-    final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
+    final healthWeightSamples = <HealthWeightSample>[
       HealthWeightSample(
         recordedAt: oldDay.add(const Duration(hours: 7)),
         weightKg: 85,
@@ -113,14 +113,14 @@ void main() {
         recordedAt: goalStart.add(const Duration(hours: 7)),
         weightKg: 84,
       ),
-    ]);
+    ];
     final manualWeightRepository = FakeManualHealthWeightRepository(
       const <ManualHealthWeightEntry>[],
     );
 
     final result = await buildCalorieDebugDump(
       calorieLogRepository: logRepository,
-      healthWeightService: healthWeightService,
+      healthWeightSamplesFuture: Future.value(healthWeightSamples),
       manualWeightRepository: manualWeightRepository,
       healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
       settingsFuture: Future<CalorieGoalSettings>.value(
@@ -156,20 +156,20 @@ void main() {
           ),
       ],
     );
-    final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
+    final healthWeightSamples = <HealthWeightSample>[
       for (var index = 0; index < 14; index += 1)
         HealthWeightSample(
           recordedAt: addDiaryDays(start, index).add(const Duration(hours: 7)),
           weightKg: 84,
         ),
-    ]);
+    ];
     final manualWeightRepository = FakeManualHealthWeightRepository(
       const <ManualHealthWeightEntry>[],
     );
 
     final result = await buildCalorieDebugDump(
       calorieLogRepository: logRepository,
-      healthWeightService: healthWeightService,
+      healthWeightSamplesFuture: Future.value(healthWeightSamples),
       manualWeightRepository: manualWeightRepository,
       healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
       settingsFuture: Future<CalorieGoalSettings>.value(
@@ -263,7 +263,7 @@ void main() {
 
     final result = await buildCalorieDebugDump(
       calorieLogRepository: logRepository,
-      healthWeightService: FakeHealthWeightService(const []),
+      healthWeightSamplesFuture: Future.value(const <HealthWeightSample>[]),
       manualWeightRepository: manualWeightRepository,
       healthStatusFuture: Future<HealthConnectionStatus>.value(
         const HealthConnectionStatus.unsupported(),

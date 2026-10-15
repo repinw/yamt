@@ -9,13 +9,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_tdee_offsets.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/application/health_connection_controller.dart';
-import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/domain/health_weight_sample.dart';
-import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 
 part 'calorie_budget_settings_provider.g.dart';
 
@@ -77,10 +71,9 @@ Future<GoalTdeeOffsets> goalTdeeOffsetsByDay(Ref ref) async {
   if (startDay == null) {
     return GoalTdeeOffsets(settings: settings, byDay: const {});
   }
-  final (entries, manualEntries, healthSamples) = await (
+  final (entries, weights) = await (
     ref.watch(calorieEntriesFromProvider(startDay).future),
-    ref.watch(manualHealthWeightEntriesControllerProvider.future),
-    ref.watch(healthWeightSamplesFromProvider(startDay).future),
+    ref.watch(weightSeriesProvider.future),
   ).wait;
   return GoalTdeeOffsets(
     settings: settings,
@@ -94,10 +87,7 @@ Future<GoalTdeeOffsets> goalTdeeOffsetsByDay(Ref ref) async {
         today: today,
         settings: settings,
         entriesByDay: entries.groupByDiaryDayKey(),
-        weights: WeightTrendCalculator.fromSources(
-          manualEntries: manualEntries,
-          healthSamples: healthSamples,
-        ),
+        weights: weights,
       ),
     ),
   );
@@ -107,26 +97,4 @@ Future<GoalTdeeOffsets> goalTdeeOffsetsByDay(Ref ref) async {
 @riverpod
 Stream<List<CalorieEntry>> calorieEntriesFrom(Ref ref, DateTime startDay) {
   return ref.watch(calorieLogRepositoryProvider).watchEntriesFrom(startDay);
-}
-
-/// Health weights from before [startDay] on, loaded once, so an entry
-/// change only recomputes.
-///
-/// shortcut: a weight synced later in the day counts from the next day on;
-/// reload on a Health change event when one exists.
-@riverpod
-Future<List<HealthWeightSample>> healthWeightSamplesFrom(
-  Ref ref,
-  DateTime startDay,
-) async {
-  final today = ref.watch(diaryTodayProvider);
-  final healthWeightService = ref.watch(healthWeightServiceProvider);
-  final status = await ref.watch(healthConnectionControllerProvider.future);
-  if (status.accessState != HealthDataAccessState.ready) {
-    return const <HealthWeightSample>[];
-  }
-  return await healthWeightService.loadWeightSamples(
-    startInclusive: addDiaryDays(startDay, -WeightTrendCalculator.warmUpDays),
-    endExclusive: nextDiaryDay(today),
-  );
 }

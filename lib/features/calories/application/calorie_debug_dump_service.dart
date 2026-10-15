@@ -6,7 +6,6 @@ import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -39,7 +38,7 @@ class CalorieDebugDumpResult {
 /// Builds one debug table with food and weight data.
 Future<CalorieDebugDumpResult> buildCalorieDebugDump({
   required CalorieLogRepositoryContract calorieLogRepository,
-  required HealthWeightService healthWeightService,
+  required Future<List<HealthWeightSample>> healthWeightSamplesFuture,
   required ManualHealthWeightRepository manualWeightRepository,
   required Future<HealthConnectionStatus> healthStatusFuture,
   required Future<CalorieGoalSettings> settingsFuture,
@@ -78,59 +77,44 @@ Future<CalorieDebugDumpResult> buildCalorieDebugDump({
     ),
   ];
 
-  if (healthStatus.accessState == HealthDataAccessState.ready) {
-    final weightSamples = await healthWeightService.loadWeightSamples(
+  final healthWeightSamples = await healthWeightSamplesFuture;
+  rows.addAll(
+    calorieDebugDailyWeightRows(
+      healthWeightSamples: healthWeightSamples,
+      manualWeightEntries: manualWeightEntries,
+      settings: settings,
       startInclusive: startInclusive,
       endExclusive: endExclusive,
-    );
-    rows.addAll(
-      calorieDebugDailyWeightRows(
-        healthWeightSamples: weightSamples,
-        manualWeightEntries: manualWeightEntries,
-        settings: settings,
-        startInclusive: startInclusive,
-        endExclusive: endExclusive,
+    ),
+  );
+  if (healthStatus.accessState != HealthDataAccessState.ready) {
+    rows.add(
+      CalorieDebugDumpRow(
+        sortAt: startInclusive,
+        typeOrder: 0,
+        cells: [
+          formatCalorieDebugDay(startInclusive),
+          '',
+          'health_access',
+          'not_ready',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          healthStatus.platform.name,
+          'access_state=${healthStatus.accessState.name}',
+        ],
       ),
     );
-  } else {
-    rows
-      ..addAll(
-        calorieDebugDailyWeightRows(
-          healthWeightSamples: const <HealthWeightSample>[],
-          manualWeightEntries: manualWeightEntries,
-          settings: settings,
-          startInclusive: startInclusive,
-          endExclusive: endExclusive,
-        ),
-      )
-      ..add(
-        CalorieDebugDumpRow(
-          sortAt: startInclusive,
-          typeOrder: 0,
-          cells: [
-            formatCalorieDebugDay(startInclusive),
-            '',
-            'health_access',
-            'not_ready',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            healthStatus.platform.name,
-            'access_state=${healthStatus.accessState.name}',
-          ],
-        ),
-      );
   }
   final weeklyCheckInResult = await buildCalorieDebugWeeklyCheckInRows(
     settings: settings,
     calorieEntries: calorieEntries,
     manualWeightEntries: manualWeightEntries,
-    healthStatus: healthStatus,
-    healthWeightService: healthWeightService,
+    healthWeightSamples: healthWeightSamples,
     today: today,
   );
   rows

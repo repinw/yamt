@@ -8,6 +8,7 @@ import 'package:yamt/features/health/application/manual_health_weight_entries_co
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
@@ -174,11 +175,25 @@ class _SelectedRepository extends Notifier<_FakeManualHealthWeightRepository> {
   }
 }
 
+class _RecordingSampleRepository extends Fake
+    implements HealthWeightSampleRepository {
+  final saved = <HealthWeightSample>[];
+
+  @override
+  Future<void> saveAppWeight({
+    required DateTime recordedAt,
+    required double weightKg,
+  }) async {
+    saved.add(HealthWeightSample(recordedAt: recordedAt, weightKg: weightKg));
+  }
+}
+
 void main() {
   ProviderContainer buildContainer({
     required _FakeManualHealthWeightRepository repository,
     HealthConnectionStatus status = _permissionRequiredStatus,
     _FakeHealthWeightService? healthWeightService,
+    _RecordingSampleRepository? sampleRepository,
     DateTime Function()? now,
   }) {
     return ProviderContainer(
@@ -191,6 +206,9 @@ void main() {
         healthWeightServiceProvider.overrideWith(
           (ref) => healthWeightService ?? _FakeHealthWeightService(),
         ),
+        healthWeightSampleRepositoryProvider.overrideWith(
+          (ref) => sampleRepository ?? _RecordingSampleRepository(),
+        ),
       ],
     );
   }
@@ -202,10 +220,12 @@ void main() {
       ],
     );
     final healthWeightService = _FakeHealthWeightService();
+    final sampleRepository = _RecordingSampleRepository();
     final container = buildContainer(
       repository: repository,
       status: _readyStatus,
       healthWeightService: healthWeightService,
+      sampleRepository: sampleRepository,
     );
     addTearDown(container.dispose);
 
@@ -215,6 +235,10 @@ void main() {
         .saveEntry(day: DateTime(2026, 3, 20, 18), weightKg: 71.2);
 
     expect(saved, isTrue);
+    // The cloud gets the weight at once, so readers count it before the
+    // next sync.
+    expect(sampleRepository.saved.single.recordedAt, DateTime(2026, 3, 20, 12));
+    expect(sampleRepository.saved.single.weightKg, 71.2);
     expect(healthWeightService.saveCallCount, 1);
     expect(healthWeightService.lastWeightKg, 71.2);
     expect(healthWeightService.lastRecordedAt?.year, 2026);

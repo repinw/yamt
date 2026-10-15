@@ -20,6 +20,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
@@ -478,59 +479,110 @@ void main() {
     expect(manualRepository.entries.single.weightKg, 80);
   });
 
-  test(
-    'saveCalculatedGoal skips seed when Health already has start weight',
-    () async {
-      final repository = FakeCalorieSettingsRepository();
-      final manualRepository = FakeManualHealthWeightRepository(
-        <ManualHealthWeightEntry>[],
-      );
-      final healthWeightService = FakeHealthWeightService(<HealthWeightSample>[
-        HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 80),
-      ]);
-      addTearDown(repository.dispose);
+  test('saveCalculatedGoal skips seed when this device has a Health start '
+      'weight that the cloud lacks', () async {
+    final repository = FakeCalorieSettingsRepository();
+    final health = _CountingHealthWeightService([
+      HealthWeightSample(recordedAt: DateTime(2026, 4, 8, 7), weightKg: 80),
+    ]);
+    addTearDown(repository.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieSettingsRepositoryProvider.overrideWithValue(repository),
-          healthConnectionServiceProvider.overrideWithValue(
-            FakeHealthConnectionService(
-              const HealthConnectionStatus(
-                platform: HealthPlatform.android,
-                healthConnectAvailability: HealthConnectAvailability.available,
-                permissionState: HealthPermissionState.granted,
-                historyAccess: HealthHistoryAccess.granted,
-              ),
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        healthConnectionServiceProvider.overrideWithValue(
+          FakeHealthConnectionService(
+            const HealthConnectionStatus(
+              platform: HealthPlatform.android,
+              healthConnectAvailability: HealthConnectAvailability.available,
+              permissionState: HealthPermissionState.granted,
+              historyAccess: HealthHistoryAccess.granted,
             ),
           ),
-          healthWeightServiceProvider.overrideWithValue(healthWeightService),
-          manualHealthWeightRepositoryProvider.overrideWithValue(
-            manualRepository,
+        ),
+        healthWeightServiceProvider.overrideWithValue(health),
+        healthWeightSampleRepositoryProvider.overrideWithValue(
+          _StoredSamples(const []),
+        ),
+        manualHealthWeightRepositoryProvider.overrideWithValue(
+          FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[]),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(calorieGoalControllerProvider.future);
+
+    const profile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.male,
+      weightKg: 80,
+      heightCm: 180,
+      ageYears: 30,
+      activityLevel: 1.2,
+      goalMode: CalorieGoalMode.maintain,
+      goalSpeedKgPerWeek: 0,
+    );
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveCalculatedGoal(profile, goalStartDate: DateTime(2026, 4, 8, 16));
+
+    expect(saved, isTrue);
+    expect(health.saveCount, 0);
+  });
+
+  test('saveCalculatedGoal skips seed when a device stored a Health start '
+      'weight', () async {
+    final repository = FakeCalorieSettingsRepository();
+    final manualRepository = FakeManualHealthWeightRepository(
+      <ManualHealthWeightEntry>[],
+    );
+    addTearDown(repository.dispose);
+
+    // Health is not ready here, so a seed would land in the manual
+    // repository.
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        healthConnectionServiceProvider.overrideWithValue(
+          FakeHealthConnectionService(
+            const HealthConnectionStatus.unsupported(),
           ),
-        ],
-      );
-      addTearDown(container.dispose);
+        ),
+        healthWeightSampleRepositoryProvider.overrideWithValue(
+          _StoredSamples([
+            HealthWeightSample(
+              recordedAt: DateTime(2026, 4, 8, 7),
+              weightKg: 80,
+            ),
+          ]),
+        ),
+        manualHealthWeightRepositoryProvider.overrideWithValue(
+          manualRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieGoalControllerProvider.future);
 
-      const profile = CalorieCalculatorProfile(
-        sex: CalorieCalculatorSex.male,
-        weightKg: 80,
-        heightCm: 180,
-        ageYears: 30,
-        activityLevel: 1.2,
-        goalMode: CalorieGoalMode.maintain,
-        goalSpeedKgPerWeek: 0,
-      );
+    const profile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.male,
+      weightKg: 80,
+      heightCm: 180,
+      ageYears: 30,
+      activityLevel: 1.2,
+      goalMode: CalorieGoalMode.maintain,
+      goalSpeedKgPerWeek: 0,
+    );
 
-      final saved = await container
-          .read(calorieGoalControllerProvider.notifier)
-          .saveCalculatedGoal(profile, goalStartDate: DateTime(2026, 4, 8, 16));
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveCalculatedGoal(profile, goalStartDate: DateTime(2026, 4, 8, 16));
 
-      expect(saved, isTrue);
-      expect(manualRepository.entries, isEmpty);
-    },
-  );
+    expect(saved, isTrue);
+    expect(manualRepository.entries, isEmpty);
+  });
 
   test('saveCalculatedGoal with unchanged date updates window only '
       'and preserves pending dismissal', () async {
@@ -1558,4 +1610,28 @@ void main() {
     expect(history.last.endedAt, isNull);
     expect(history.last.calculatorProfile?.goalMode, CalorieGoalMode.maintain);
   });
+}
+
+class _StoredSamples extends Fake implements HealthWeightSampleRepository {
+  new(this.samples);
+
+  final List<HealthWeightSample> samples;
+
+  @override
+  Future<List<HealthWeightSample>> readSamples() async => samples;
+}
+
+class _CountingHealthWeightService extends FakeHealthWeightService {
+  new(super.samples);
+
+  int saveCount = 0;
+
+  @override
+  Future<bool> saveWeightSample({
+    required DateTime recordedAt,
+    required double weightKg,
+  }) async {
+    saveCount += 1;
+    return true;
+  }
 }
