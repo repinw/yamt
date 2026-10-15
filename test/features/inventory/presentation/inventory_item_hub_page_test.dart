@@ -8,7 +8,6 @@ import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
@@ -181,15 +180,24 @@ void main() {
     expect(find.byKey(EatItemActionsCard.inedibleKey), findsOneWidget);
   });
 
-  testWidgets('combining starts from the item card', (tester) async {
-    await _openHub(tester, _chicken());
+  testWidgets('combining closes the hub for the stock selection', (
+    tester,
+  ) async {
+    InventoryItemHubResult? result;
+    await _openHub(tester, _chicken(), onResult: (value) => result = value);
 
     expect(find.byKey(EatCombineSection.addKey), findsNothing);
     expect(find.byKey(EatItemActionsCard.combineKey), findsOneWidget);
 
     await _tapKey(tester, EatItemActionsCard.combineKey);
 
-    expect(find.byType(InventoryCombinePickPage), findsOneWidget);
+    expect(find.byType(InventoryItemHubPage), findsNothing);
+    expect(
+      result,
+      isA<InventoryItemHubCombine>()
+          .having((r) => r.includesItem, 'includesItem', isTrue)
+          .having((r) => r.picks, 'picks', isEmpty),
+    );
   });
 
   testWidgets('a food counted in pieces offers no inedible part', (

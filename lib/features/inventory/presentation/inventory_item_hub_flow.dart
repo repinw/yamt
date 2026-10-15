@@ -8,12 +8,14 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combined_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_remove_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_candidate_swap_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -24,12 +26,14 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// reports on the inventory page, which then shows the changed item. Adding
 /// to the shopping list keeps the hub open.
 abstract final class InventoryItemHubFlow {
-  /// Opens the hub for [item]. [initialPicks] join the meal right away.
+  /// Opens the hub for [item]. [initialPicks] and the catalog foods
+  /// [initialFoods] join the meal right away.
   static Future<void> open({
     required BuildContext context,
     required WidgetRef ref,
     required InventoryItem item,
     List<InventoryItem> initialPicks = const <InventoryItem>[],
+    List<InventoryMealFoodPick> initialFoods = const <InventoryMealFoodPick>[],
   }) async {
     final pageMessenger = ScaffoldMessenger.of(context);
     final result = await Navigator.of(context, rootNavigator: true)
@@ -39,6 +43,7 @@ abstract final class InventoryItemHubFlow {
             builder: (_) => InventoryItemHubPage(
               item: item,
               initialPicks: initialPicks,
+              initialFoods: initialFoods,
               onAction: (hubContext, action) =>
                   _run(hubContext, ref, item, action, pageMessenger),
             ),
@@ -50,6 +55,22 @@ abstract final class InventoryItemHubFlow {
     switch (result) {
       case null:
         return;
+      case InventoryItemHubCombine(:final picks, :final includesItem):
+        ref
+            .read(preparedMealSelectionControllerProvider.notifier)
+            .startFrom(
+              anchorItemId: item.id,
+              itemIds: {
+                if (includesItem) item.id,
+                for (final pick in picks)
+                  if (pick.searchResult == null) pick.item.id,
+              },
+              catalogFoods: [
+                for (final pick in picks)
+                  if (pick.searchResult case final result?)
+                    (result: result, request: pick.request),
+              ],
+            );
       case InventoryItemHubEat(:final request):
         final started = await InventoryItemEatFlow.stageAndComplete(
           context: context,

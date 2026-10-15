@@ -107,6 +107,8 @@ List<RouteBase> buildAppRoutes(Ref ref) {
             AppRoutes.homeFoodPickStartAi => ProductSearchHubInitialIntent.ai,
             _ => ProductSearchHubInitialIntent.search,
           },
+          initialQuery:
+              state.uri.queryParameters[AppRoutes.homeFoodPickQueryParam],
         ),
       ),
     ),

@@ -17,8 +17,8 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
@@ -60,7 +60,8 @@ const _mealFoodArgs = ProductSearchHubRouteArgs(
   initialIntent: ProductSearchHubInitialIntent.search,
 );
 
-/// Opens the search for a meal from the combine pick page by default.
+/// Opens the search for a meal food, as the Vorrat selection does, by
+/// default.
 Widget _buildHarness({
   required Future<void> Function(BuildContext context) open,
   ProductSearchHubRouteArgs args = _mealFoodArgs,
@@ -216,23 +217,18 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('a searched food opens on its eat page and joins the meal', (
-    tester,
-  ) async {
-    InventoryCombinePickResult? result;
+  testWidgets('a searched meal food opens on its eat page and comes back '
+      'with its amount', (tester) async {
+    InventoryMealFoodPick? searched;
     await tester.pumpWidget(
       _buildHarness(
-        open: (context) async => result = await showInventoryCombinePickPage(
-          context,
-          candidates: const <InventoryItem>[],
-        ),
+        open: (context) async => searched = await context
+            .push<InventoryMealFoodPick>(AppRoutes.homeFoodPick),
       ),
     );
     await _pumpVisibleStep(tester);
 
     await tester.tap(find.byKey(_openKey));
-    await _pumpVisibleStep(tester);
-    await tester.tap(find.byKey(InventoryCombinePickPage.searchKey));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
     await _openMilkEatPage(tester);
     await _editAndComeBack(tester);
@@ -244,7 +240,6 @@ void main() {
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
 
     expect(find.byKey(_openKey), findsOneWidget);
-    final searched = result?.searched;
     expect(searched?.result.item.name, 'Vollmilch');
     expect(searched?.request.inventoryAmount, 250);
     expect(tester.takeException(), isNull);

@@ -1,37 +1,20 @@
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
-import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_entry_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Foods picked on [InventoryCombinePickPage]: ticked stock items in list
-/// order, and a food found by search with its amount.
-typedef InventoryCombinePickResult = ({
-  List<InventoryItem> stock,
-  InventoryMealFoodPick? searched,
-});
-
-/// Opens the inventory list to pick the foods to log together with the
-/// item hub's item. Returns null when the user closes it.
-Future<InventoryCombinePickResult?> showInventoryCombinePickPage(
+/// Opens the inventory list to pick stock foods for a prepared meal.
+/// Returns the ticked items in list order, or null when the user closes it.
+Future<List<InventoryItem>?> showInventoryCombinePickPage(
   BuildContext context, {
   required List<InventoryItem> candidates,
-  bool canSearch = true,
 }) {
-  return Navigator.of(
-    context,
-    rootNavigator: true,
-  ).push<InventoryCombinePickResult>(
-    MaterialPageRoute<InventoryCombinePickResult>(
+  return Navigator.of(context, rootNavigator: true).push<List<InventoryItem>>(
+    MaterialPageRoute<List<InventoryItem>>(
       fullscreenDialog: true,
-      builder: (_) => InventoryCombinePickPage(
-        candidates: candidates,
-        canSearch: canSearch,
-      ),
+      builder: (_) => InventoryCombinePickPage(candidates: candidates),
     ),
   );
 }
@@ -39,22 +22,16 @@ Future<InventoryCombinePickResult?> showInventoryCombinePickPage(
 /// The inventory list in selection mode, showing only [candidates].
 class InventoryCombinePickPage extends StatefulWidget {
   /// Creates the page.
-  const new({required this.candidates, this.canSearch = true, super.key});
+  const new({required this.candidates, super.key});
 
   /// Key of the button that takes over the selection.
   static const confirmKey = Key('inventory_combine_pick_confirm');
-
-  /// Key of the button that searches for a food outside the stock.
-  static const searchKey = Key('inventory_combine_pick_search');
 
   /// Key of the hint shown when no stock item is left to pick.
   static const emptyKey = Key('inventory_combine_pick_empty');
 
   /// Stock items that can be combined.
   final List<InventoryItem> candidates;
-
-  /// Whether a food outside the stock can be searched.
-  final bool canSearch;
 
   @override
   State<InventoryCombinePickPage> createState() =>
@@ -75,13 +52,6 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
               : l10n.preparedMealSelectionCount(_selected.length),
         ),
         actions: [
-          if (widget.canSearch)
-            IconButton(
-              key: InventoryCombinePickPage.searchKey,
-              tooltip: l10n.eatPageCombineSearch,
-              onPressed: _search,
-              icon: const Icon(Icons.search_rounded),
-            ),
           TextButton(
             key: InventoryCombinePickPage.confirmKey,
             onPressed: _selected.isEmpty ? null : _confirm,
@@ -133,16 +103,6 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
   ];
 
   void _confirm() {
-    Navigator.of(context).pop((stock: _selectedItems, searched: null));
-  }
-
-  Future<void> _search() async {
-    final result = await context.push<InventoryMealFoodPick>(
-      AppRoutes.homeFoodPick,
-    );
-    if (result == null || !mounted) {
-      return;
-    }
-    Navigator.of(context).pop((stock: _selectedItems, searched: result));
+    Navigator.of(context).pop(_selectedItems);
   }
 }

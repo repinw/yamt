@@ -56,3 +56,17 @@ final class InventoryItemHubMeal extends InventoryItemHubResult {
   /// made of [picks] alone; [request] still carries the log time and meal.
   final bool includesItem;
 }
+
+/// Continue the meal in the stock selection mode: [picks] and, when
+/// [includesItem] is set, the hub's item start selected (#654).
+@immutable
+final class InventoryItemHubCombine extends InventoryItemHubResult {
+  /// Creates the result.
+  const new({required this.picks, required this.includesItem});
+
+  /// The foods already picked on the hub.
+  final List<InventoryCombinePick> picks;
+
+  /// Whether the hub's item stays part of the meal.
+  final bool includesItem;
+}

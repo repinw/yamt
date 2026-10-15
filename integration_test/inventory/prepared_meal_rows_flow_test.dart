@@ -23,6 +23,7 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_detail_flow.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_edit_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -110,6 +111,20 @@ void main() {
     expect(
       find.byKey(PreparedMealEditOpenRows.openKey(_riceRow)),
       findsOneWidget,
+    );
+    // More stock foods come from the pick page; closing it adds nothing.
+    await _tap(tester, find.byKey(PreparedMealEditPage.addKey));
+    await _pumpUntilFound(tester, find.byType(InventoryCombinePickPage));
+    await _tap(
+      tester,
+      find.descendant(
+        of: find.byType(InventoryCombinePickPage),
+        matching: find.byIcon(Icons.close),
+      ),
+    );
+    await _pumpUntil(
+      tester,
+      () => find.byType(InventoryCombinePickPage).evaluate().isEmpty,
     );
     await _tap(tester, find.byKey(PreparedMealEditPage.saveKey));
 

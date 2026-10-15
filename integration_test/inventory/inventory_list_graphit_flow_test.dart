@@ -24,10 +24,14 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/prepared_meal_edit_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_meal_detail_sections.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_home_shell_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_entries_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_quick_filter_chips.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_selection_catalog_sliver.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_sort_sheet.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
@@ -261,6 +265,60 @@ void main() {
         matching: find.byType(Text),
       ),
       findsWidgets,
+    );
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the Vorrat search works in the selection mode and offers the '
+      'catalog', (tester) async {
+    await tester.pumpWidget(_buildHarness());
+    await _settle(tester);
+
+    await tester.longPress(
+      find.byKey(const ValueKey('inventory_entry_row_skyr')),
+    );
+    await _settle(tester);
+    final l10n = lookupAppLocalizations(const Locale('de'));
+    expect(
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(InventorySelectionCatalogSliver.searchKey),
+      findsOneWidget,
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('inventory_list_search_field')),
+      'quark',
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await _settle(tester);
+
+    expect(find.byKey(const ValueKey('inventory_entry_row_quark')), findsOne);
+    expect(
+      find.byKey(const ValueKey('inventory_entry_row_skyr')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(InventorySelectionCatalogSliver.searchKey),
+        matching: find.text(l10n.inventorySelectionCatalogSearchQuery('quark')),
+      ),
+      findsOneWidget,
+    );
+    // Sortieren and the layout switch wait until the selection ends.
+    expect(
+      tester
+          .widget<IconButton>(
+            find.descendant(
+              of: find.byKey(const Key('inventory_list_sort_button')),
+              matching: find.byType(IconButton),
+            ),
+          )
+          .onPressed,
+      isNull,
     );
 
     expect(tester.takeException(), isNull);

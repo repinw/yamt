@@ -289,7 +289,7 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
     }
   }
 
-  Future<void> _add() => InventoryCombinePickFlow.pick(
+  void _add() => InventoryCombinePickFlow.pick(
     context: context,
     ref: ref,
     hubItem: hubItem,

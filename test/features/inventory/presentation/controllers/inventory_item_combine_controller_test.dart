@@ -51,40 +51,12 @@ void main() {
     addTearDown(subscription.close);
   });
 
-  test('offers items with nutrition and stock, sorted by name', () {
-    final candidates = container.read(_provider.notifier).candidatesFrom([
-      _item('hub'),
-      _item('rice'),
-      _item('apple'),
-      _item('salt', nutrition: false),
-      _item('empty', amount: 0),
-    ]);
-
-    expect(candidates.map((item) => item.id), ['apple', 'rice']);
-  });
-
-  test('offers the hub item once it left the meal', () {
-    final candidates = container.read(_provider.notifier).candidatesFrom([
-      _item('hub'),
-      _item('rice'),
-    ], includesHub: false);
-
-    expect(candidates.map((item) => item.id), ['hub', 'rice']);
-  });
-
-  test('adds a food with its calories and hides it from the offer', () {
-    final notifier = container.read(_provider.notifier)
-      ..add(_item('rice'), _request(150));
+  test('adds a food with its calories', () {
+    container.read(_provider.notifier).add(_item('rice'), _request(150));
 
     final pick = container.read(_provider).single;
     expect(pick.component.totalKcal, 300);
     expect(pick.component.amountLabel, '150 g');
-    expect(
-      notifier
-          .candidatesFrom([_item('rice'), _item('apple')])
-          .map((item) => item.id),
-      ['apple'],
-    );
   });
 
   test('sets a typed amount and keeps one the food cannot take', () {

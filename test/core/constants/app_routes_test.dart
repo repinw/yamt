@@ -29,4 +29,13 @@ void main() {
       AppRoutes.homeFoodPickStartBarcode,
     );
   });
+
+  test('food pick path carries the text the search starts with', () {
+    final uri = Uri.parse(AppRoutes.homeFoodPickPath(query: 'Reis & Bohnen'));
+
+    expect(uri.path, AppRoutes.homeFoodPick);
+    expect(uri.queryParameters, {
+      AppRoutes.homeFoodPickQueryParam: 'Reis & Bohnen',
+    });
+  });
 }

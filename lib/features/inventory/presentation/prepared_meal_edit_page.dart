@@ -254,7 +254,6 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
         items,
         taken: {for (final row in _rows) row.itemId},
       ),
-      canSearch: false,
     );
     if (picked == null || !mounted) {
       return;
@@ -262,7 +261,7 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
     setState(() {
       _rows = [
         ..._rows,
-        for (final item in picked.stock)
+        for (final item in picked)
           if (defaultMealFoodAmount(item) case final amount?)
             ?PreparedMealEditRow.ofItem(item, amount),
       ];

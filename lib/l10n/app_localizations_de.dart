@@ -899,10 +899,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get eatPageCombineNoMoreStock =>
-      'Alle passenden Lebensmittel aus deinem Vorrat sind schon in der Mahlzeit. Über die Suche kannst du weitere hinzufügen.';
-
-  @override
-  String get eatPageCombineSearch => 'Lebensmittel suchen';
+      'Alle passenden Lebensmittel aus deinem Vorrat sind schon in der Mahlzeit.';
 
   @override
   String get eatPageCombineNeedsNutrition =>
@@ -1356,6 +1353,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String preparedMealSelectionCount(int count) {
     return '$count ausgewählt';
   }
+
+  @override
+  String get inventorySelectionCatalogSearch => 'Im Katalog suchen';
+
+  @override
+  String inventorySelectionCatalogSearchQuery(String query) {
+    return '„$query“ im Katalog suchen';
+  }
+
+  @override
+  String get inventorySelectionCatalogFoodRemove =>
+      'Aus der Mahlzeit entfernen';
 
   @override
   String get preparedMealUpdatedMessage => 'Mahlzeit wurde aktualisiert.';

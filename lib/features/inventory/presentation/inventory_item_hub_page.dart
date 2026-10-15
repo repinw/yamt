@@ -14,6 +14,7 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_item_
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
@@ -42,6 +43,7 @@ class InventoryItemHubPage extends ConsumerStatefulWidget {
     required this.item,
     required this.onAction,
     this.initialPicks = const <InventoryItem>[],
+    this.initialFoods = const <InventoryMealFoodPick>[],
     super.key,
   });
 
@@ -50,6 +52,10 @@ class InventoryItemHubPage extends ConsumerStatefulWidget {
 
   /// Foods that join the meal on open; those without a default amount stay out.
   final List<InventoryItem> initialPicks;
+
+  /// Foods found in the catalog that join the meal on open, with their
+  /// entered amounts.
+  final List<InventoryMealFoodPick> initialFoods;
 
   /// Runs a picked action.
   final InventoryItemHubActionRunner onAction;
@@ -72,7 +78,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialPicks.isEmpty) {
+    if (widget.initialPicks.isEmpty && widget.initialFoods.isEmpty) {
       return;
     }
     // Riverpod refuses changes while the first frame builds.
@@ -84,6 +90,9 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
         inventoryItemCombineControllerProvider(widget.item.id).notifier,
       );
       widget.initialPicks.forEach(combine.addWithDefaultAmount);
+      for (final (:result, :request) in widget.initialFoods) {
+        combine.add(result.item, request, searchResult: result);
+      }
     });
   }
 

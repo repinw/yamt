@@ -40,20 +40,6 @@ class InventoryItemCombineController extends _$InventoryItemCombineController {
     return const <InventoryCombinePick>[];
   }
 
-  /// Stock items that can join the list: counted in grams or milliliters,
-  /// with nutrition values and stock, and not already picked. The hub's
-  /// item is left out while it is part of the meal ([includesHub]).
-  /// Sorted by name.
-  List<InventoryItem> candidatesFrom(
-    List<InventoryItem> items, {
-    bool includesHub = true,
-  }) {
-    return inventoryMealCandidates(
-      items,
-      taken: {if (includesHub) hubItemId, ...state.map((pick) => pick.item.id)},
-    );
-  }
-
   /// Adds [request] of [item] to the list. A food found by search passes
   /// its [searchResult], and [item] is its draft.
   void add(
