@@ -263,6 +263,19 @@ void main() {
     expect(storage.files, isEmpty);
   });
 
+  test('a file that fails to delete still deletes the photo', () async {
+    final photo = await repository.savePhoto(
+      day: DateTime(2026, 10, 15),
+      pose: ProgressPhotoPose.front,
+      imageBytes: jpeg,
+    );
+    storage.files.clear();
+
+    await repository.deletePhoto(photo.id);
+
+    expect(await repository.watchPhotos().first, isEmpty);
+  });
+
   test('signed out: no photos, writes throw', () async {
     final signedOut = ProgressPhotoRepository(
       firestore: null,

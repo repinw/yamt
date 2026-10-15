@@ -144,9 +144,10 @@ class ProgressPhotoRepository {
   Future<void> deletePhoto(String photoId) async {
     final (:photos, :storage, :uid) = _require();
     // The document holds the only copy of the photo key: once it is gone,
-    // a file that fails to delete can no longer be read.
+    // the photo is deleted, and a file that fails to delete can no longer
+    // be read.
     await photos.reference.doc(photoId).delete();
-    await storage.ref(_filePath(uid, photoId)).delete();
+    await _deleteOrphanFile(storage.ref(_filePath(uid, photoId)));
   }
 
   /// The photos of [pose] on [day]. A photo whose content does not parse,
@@ -179,7 +180,7 @@ class ProgressPhotoRepository {
     try {
       await file.delete();
     } on Object catch (error, stackTrace) {
-      _log('Failed to delete the file of an unsaved photo.', error, stackTrace);
+      _log('Failed to delete an unused photo file.', error, stackTrace);
     }
   }
 
