@@ -11,7 +11,6 @@ import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/'
     'diary_weight_dialog_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/progress_photo_capture_sheet.dart';
-import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/progress_actions.dart';
@@ -79,15 +78,12 @@ Future<void> _pumpProgressTab(
   addTearDown(router.dispose);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        ...progressSourceOverrides(
-          settingsRepository: settings,
-          calorieLog: calorieLog,
-          weighInsReady: weighInsReady,
-        ),
-        if (photos != null)
-          progressPhotoRepositoryProvider.overrideWithValue(photos),
-      ],
+      overrides: progressSourceOverrides(
+        settingsRepository: settings,
+        calorieLog: calorieLog,
+        weighInsReady: weighInsReady,
+        photos: photos,
+      ),
       child: MaterialApp.router(
         locale: const Locale('en'),
         localizationsDelegates: appLocalizationsDelegates,
@@ -130,10 +126,10 @@ void main() {
     await _pumpProgressTab(tester);
 
     expect(find.byKey(HomeBottomNavBar.actionKey), findsOneWidget);
-    expect(find.text('WEIGH IN'), findsOneWidget);
+    expect(find.text('LOG'), findsOneWidget);
     expect(
       tester.getSemantics(find.byKey(HomeBottomNavBar.actionKey)),
-      isSemantics(label: 'Weigh in', isButton: true),
+      isSemantics(label: 'Log', isButton: true),
     );
     semantics.dispose();
   });

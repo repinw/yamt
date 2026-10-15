@@ -3450,6 +3450,10 @@
   },
   "homeActionCook": "Cook",
   "homeActionWeigh": "Weigh in",
+  "homeActionProgress": "Log",
+  "@homeActionProgress": {
+    "description": "Fortschritt bar button that opens the weigh-in and photo actions."
+  },
   "cookbookFreeCookingAction": "Cook freely",
   "cookbookFreeCookingDescription": "Say or type ingredients while you cook",
   "freeCookingNameHint": "What is the dish called?",
@@ -4096,5 +4100,24 @@
   "diaryCheckInPhotoFirst": "First",
   "diaryCheckInPhotoMiddle": "Middle",
   "diaryCheckInPhotoNew": "New",
-  "diaryCheckInPhotoAdd": "Photo"
+  "diaryCheckInPhotoAdd": "Photo",
+  "progressPhotosKicker": "Photos · before / after",
+  "progressPhotosEmpty": "No photos yet. Add one, or take it at the next check-in.",
+  "progressPhotosAdd": "Add photo",
+  "progressPhotosAll": "All photos",
+  "progressPhotosCompare": "Compare",
+  "progressPhotosBefore": "Before",
+  "progressPhotosAfter": "After",
+  "progressPhotosTitle": "Photos",
+  "progressPhotosGoalGroup": "Goal {number} · since {date}",
+  "@progressPhotosGoalGroup": {"placeholders": {"number": {"type": "int"}, "date": {"type": "String"}}},
+  "progressPhotosBeforeGoals": "Before the first goal",
+  "progressPhotosWeeks": "{weeks, plural, =0{this week} =1{in 1 week} other{in {weeks} weeks}}",
+  "@progressPhotosWeeks": {"placeholders": {"weeks": {"type": "int"}}},
+  "progressPhotoDeleteTitle": "Delete photo?",
+  "progressPhotoDeleteBody": "The photo is deleted for good.",
+  "progressPhotoDelete": "Delete",
+  "progressPhotoDeleteFailed": "Could not delete the photo.",
+  "progressPhotoCompareTitle": "Compare",
+  "progressPhotoCompareSlider": "Compare before and after"
 }

@@ -124,7 +124,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       HomeTabType.inventory => l10n.inventoryDockAddAction,
       HomeTabType.diary => l10n.homeActionEat,
       HomeTabType.cookbook => l10n.homeActionCook,
-      HomeTabType.progress => l10n.homeActionWeigh,
+      HomeTabType.progress => l10n.homeActionProgress,
     };
   }
 

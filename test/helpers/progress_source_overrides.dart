@@ -4,9 +4,11 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
 import '../features/calories/support/fake_calories_repositories.dart';
+import 'fake_progress_photo_repository.dart';
 import 'profile_summary_source_overrides.dart';
 
 /// Today of the Fortschritt examples: Thursday, 24 September 2026.
@@ -25,11 +27,13 @@ const progressProfile = CalorieCalculatorProfile(
   trainingWeekdays: [DateTime.monday, DateTime.wednesday],
 );
 
-/// Backs the Fortschritt tab with a goal, two weeks of meals, and weigh-ins.
+/// Backs the Fortschritt tab with a goal, two weeks of meals, weigh-ins, and
+/// the progress [photos] (none by default).
 List<Override> progressSourceOverrides({
   required FakeCalorieSettingsRepository settingsRepository,
   required FakeCalorieLogRepository calorieLog,
   Future<void>? weighInsReady,
+  FakeProgressPhotoRepository? photos,
 }) {
   return [
     ...profileSummarySourceOverrides(
@@ -45,6 +49,9 @@ List<Override> progressSourceOverrides({
       ],
     ),
     calorieLogRepositoryProvider.overrideWithValue(calorieLog),
+    progressPhotoRepositoryProvider.overrideWithValue(
+      photos ?? FakeProgressPhotoRepository(),
+    ),
   ];
 }
 
