@@ -1,0 +1,34 @@
+{
+  "de": {
+    "new": [
+      "Fortschrittsfotos: Vorher und Nachher vergleichen, Ende-zu-Ende verschlüsselt",
+      "Der Kalorienbedarf wird jeden Tag neu geschätzt, die Tagesziele folgen ihm",
+      "Rezepte und Vorlagen für einen Tag planen"
+    ],
+    "improved": [
+      "Health-Gewichte aller Geräte zählen gemeinsam",
+      "Kombinieren über die Auswahl im Vorrat, mit Suche im Katalog",
+      "Der Barcode-Scanner liest nur, was im Rahmen liegt"
+    ],
+    "fixed": [
+      "Doppeltippen speichert nichts mehr doppelt",
+      "Ein fehlgeschlagenes Speichern des Ziels wird angezeigt"
+    ]
+  },
+  "en": {
+    "new": [
+      "Progress photos: compare before and after, end-to-end encrypted",
+      "Your calorie needs are estimated every day, and the daily goals follow them",
+      "Plan recipes and templates for a day"
+    ],
+    "improved": [
+      "Health weights from all your devices count together",
+      "Combine foods from the pantry selection, with a catalog search",
+      "The barcode scanner reads only what is inside the frame"
+    ],
+    "fixed": [
+      "A double tap no longer saves twice",
+      "A failed goal save is now shown"
+    ]
+  }
+}
