@@ -250,6 +250,72 @@ void main() {
     ]);
   });
 
+  test('moves a photo and keeps its image and weight', () async {
+    final photo = await repository.savePhoto(
+      day: DateTime(2026, 10, 15),
+      pose: ProgressPhotoPose.front,
+      imageBytes: jpeg,
+      weightKg: 82.4,
+    );
+    final before = await openPhoto(photo.id);
+
+    await repository.movePhoto(
+      photo.id,
+      day: DateTime(2026, 10, 2, 9),
+      pose: ProgressPhotoPose.side,
+    );
+
+    expect(await repository.watchPhotos().first, [
+      ProgressPhoto(
+        id: photo.id,
+        day: DateTime(2026, 10, 2),
+        pose: ProgressPhotoPose.side,
+        weightKg: 82.4,
+      ),
+    ]);
+    expect(await openPhoto(photo.id), before);
+    expect(storage.files, {'users/u1/progress_photos/${photo.id}'});
+  });
+
+  test('a move deletes the photo on the target day and pose', () async {
+    final mover = await repository.savePhoto(
+      day: DateTime(2026, 10, 15),
+      pose: ProgressPhotoPose.front,
+      imageBytes: jpeg,
+    );
+    final taken = await repository.savePhoto(
+      day: DateTime(2026, 10, 2),
+      pose: ProgressPhotoPose.side,
+      imageBytes: jpeg,
+    );
+
+    await repository.movePhoto(
+      mover.id,
+      day: DateTime(2026, 10, 2),
+      pose: ProgressPhotoPose.side,
+    );
+
+    final photos = await repository.watchPhotos().first;
+    expect(photos.map((photo) => photo.id), [mover.id]);
+    expect(storage.files, {'users/u1/progress_photos/${mover.id}'});
+    expect(
+      (await firestore.doc('users/u1/progress_photos/${taken.id}').get())
+          .exists,
+      isFalse,
+    );
+  });
+
+  test('moving a missing photo throws', () async {
+    await expectLater(
+      repository.movePhoto(
+        'missing',
+        day: DateTime(2026, 10, 2),
+        pose: ProgressPhotoPose.side,
+      ),
+      throwsStateError,
+    );
+  });
+
   test('deletes the document and the file', () async {
     final photo = await repository.savePhoto(
       day: DateTime(2026, 10, 15),
