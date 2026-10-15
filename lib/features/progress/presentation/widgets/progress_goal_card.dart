@@ -25,6 +25,10 @@ class ProgressGoalCard extends ConsumerWidget {
   /// Stable key of the card.
   static const cardKey = ValueKey<String>('progress-goal-card');
 
+  /// Key of the fill of the goal bar segment [index].
+  static ValueKey<String> shareFillKey(int index) =>
+      ValueKey<String>('progress-goal-share-fill-$index');
+
   /// Stable key of the goal archive button.
   static const archiveButtonKey = ValueKey<String>(
     'progress-goal-archive-button',
@@ -179,10 +183,13 @@ class _GoalShareBar extends StatelessWidget {
             child: Container(
               height: AppProgress.legendSwatch,
               color: label.rule,
-              alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
+                alignment: AlignmentDirectional.centerStart,
                 widthFactor: (share * segments - index).clamp(0, 1).toDouble(),
-                child: ColoredBox(color: label.ink),
+                child: ColoredBox(
+                  key: ProgressGoalCard.shareFillKey(index),
+                  color: label.ink,
+                ),
               ),
             ),
           ),
