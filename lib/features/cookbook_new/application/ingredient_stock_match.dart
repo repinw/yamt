@@ -29,9 +29,11 @@ InventoryItem? bestIngredientStockMatch({
 }
 
 /// The Vorrat items that can supply [requirement] of the ingredient [text]:
-/// the matches by name first, best first, then every other item in a fitting
-/// unit by name. [amountConversion] works as in [bestIngredientStockMatch].
-List<InventoryItem> ingredientStockCandidates({
+/// the `matches` by name, best first, so the first is
+/// [bestIngredientStockMatch], and the `others` in a fitting unit by name.
+/// [amountConversion] works as in [bestIngredientStockMatch].
+({List<InventoryItem> matches, List<InventoryItem> others})
+ingredientStockCandidates({
   required String text,
   required TemplateIngredientRequirement? requirement,
   required List<InventoryItem> items,
@@ -39,7 +41,7 @@ List<InventoryItem> ingredientStockCandidates({
   RecipeIngredientAmountConversion? amountConversion,
 }) {
   if (requirement == null) {
-    return const <InventoryItem>[];
+    return (matches: const <InventoryItem>[], others: const <InventoryItem>[]);
   }
   final matches = _matches(
     text,
@@ -60,7 +62,7 @@ List<InventoryItem> ingredientStockCandidates({
           (left, right) =>
               left.name.toLowerCase().compareTo(right.name.toLowerCase()),
         );
-  return [...matches, ...others];
+  return (matches: matches, others: others);
 }
 
 /// How much of [requirement] the [items] cannot supply, in the unit the
