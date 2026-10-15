@@ -11,6 +11,7 @@ const _privateCollectionNames = <String>[
   'health_weights',
   'health_weight_samples',
   'calorie_product_overrides',
+  'progress_photos',
   'burn_week_run_state',
   'inventory_items',
   'shopping_list_items',
@@ -23,6 +24,7 @@ const _privateCollectionNames = <String>[
 
 /// Files that encrypt what they write to the private collections.
 const _allowedFiles = <String>{
+  'lib/features/auth/data/private_data_paths.dart',
   'lib/features/auth/data/user_data_key_repository.dart',
   'lib/features/calories/data/burn_week_run_state_repository.dart',
   'lib/features/calories/data/calorie_log_repository.dart',
@@ -31,6 +33,7 @@ const _allowedFiles = <String>{
   'lib/features/calories/data/planned_entry_repository.dart',
   'lib/features/health/data/health_weight_sample_repository.dart',
   'lib/features/health/data/firestore_manual_health_weight_repository.dart',
+  'lib/features/health/data/progress_photo_repository.dart',
   'lib/features/household/data/household_key_repository.dart',
   'lib/features/inventory/data/inventory_activity_event_repository.dart',
   'lib/features/inventory/data/inventory_discard_event_repository.dart',

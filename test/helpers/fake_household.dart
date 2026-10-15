@@ -127,6 +127,7 @@ class FakeHousehold {
           storage: const FlutterSecureStorage(),
           firestore: firestore,
           keyBackup: FakeKeyBackup(),
+          files: null,
         ),
       ),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository()),

@@ -78,6 +78,24 @@ service firebase.storage {
       allow update: if false;
     }
 
+    // Progress photos: encrypted on the device with a key per photo, so the
+    // files are cipher text. Only the owner reads, adds, or deletes them; a
+    // replaced photo is a new file.
+    match /users/{uid}/progress_photos/{photoId} {
+      allow read, delete: if isSignedIn() && request.auth.uid == uid;
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType == 'application/octet-stream';
+      allow update: if false;
+    }
+
+    // The owner lists the progress photos to delete them after a fresh
+    // start.
+    match /users/{uid}/progress_photos/{allPaths=**} {
+      allow list: if isSignedIn() && request.auth.uid == uid;
+    }
+
     // Package photos from the product editor. Every signed-in user sees
     // them as shared product images. Only the uploader writes into their
     // own folder, and nobody changes or deletes a photo from the app, so a

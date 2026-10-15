@@ -3,7 +3,8 @@
 ## Purpose
 
 Health owns platform health access, Health Connect permission state, health
-weight samples, and manual fallback weight entries. It reads only weight.
+weight samples, manual fallback weight entries, and the user's progress
+photos. From the platform it reads only weight.
 
 ## Owns
 
@@ -23,6 +24,9 @@ weight samples, and manual fallback weight entries. It reads only weight.
   delete, which fall back to manual storage when Health is not ready and
   refresh the recent weight trend.
 
+- Progress photos: body photos per day and pose, end-to-end encrypted. Each
+  file has its own key, kept in the sealed photo document.
+
 ## Does Not Own
 
 - Calorie goal settings, weekly check-in state, or calorie refresh behavior.
@@ -38,3 +42,7 @@ weight samples, and manual fallback weight entries. It reads only weight.
 - Saving a manual weight writes to Health when access is ready and clears the
   fallback entry of that day; otherwise the entry stays in the fallback
   repository. A save or delete refreshes the recent weight trend.
+- A day holds one progress photo per pose; a new one replaces the old. The
+  weight typed for a photo stays on the photo and is never a weight entry.
+- Progress photos are never shared with the household. Decrypted image bytes
+  stay in memory and never reach a disk cache.
