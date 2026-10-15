@@ -101,7 +101,21 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.pickedSources, isEmpty);
-    expect(find.text('Enter a weight above 0.'), findsOneWidget);
+    expect(find.text('Enter a weight between 30 and 300 kg.'), findsOneWidget);
+  });
+
+  testWidgets('a weight above 300 kg stops the save', (tester) async {
+    await _pumpSheet(tester, repository);
+    await _open(tester);
+
+    await tester.enterText(
+      find.byKey(ProgressPhotoCaptureSheet.weightKey),
+      '789',
+    );
+    await tester.tap(find.byKey(ProgressPhotoCaptureSheet.galleryKey));
+    await tester.pumpAndSettle();
+
+    expect(repository.pickedSources, isEmpty);
   });
 
   testWidgets('says that a photo of the same day and pose is replaced', (

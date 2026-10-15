@@ -36,6 +36,17 @@ abstract class ProgressPhoto with _$ProgressPhoto {
   factory fromJson(Map<String, dynamic> json) => _$ProgressPhotoFromJson(json);
 }
 
+/// Lightest weight in kg that a progress photo records.
+const minimumProgressPhotoWeightKg = 30.0;
+
+/// Heaviest weight in kg that a progress photo records.
+const maximumProgressPhotoWeightKg = 300.0;
+
+/// Whether a progress photo may record [weightKg].
+bool isValidProgressPhotoWeightKg(double weightKg) =>
+    weightKg >= minimumProgressPhotoWeightKg &&
+    weightKg <= maximumProgressPhotoWeightKg;
+
 /// The photos of [pose] that a check-in compares: the first from [since] on,
 /// the one closest to halfway between that and [today], and today's.
 ///
