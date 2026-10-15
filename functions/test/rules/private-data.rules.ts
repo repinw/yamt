@@ -30,6 +30,7 @@ const payloadOnly = [
   'health_weights',
   'health_weight_samples',
   'calorie_product_overrides',
+  'progress_photos',
 ];
 // Private collections that also keep the time in plaintext for queries.
 const timed = ['calorie_entries', 'planned_entries'];

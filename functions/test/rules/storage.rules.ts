@@ -129,6 +129,36 @@ describe('food photos of a user', () => {
   });
 });
 
+describe('progress photos of a user', () => {
+  const path = 'users/ada/progress_photos/p1';
+  const sealed = 'application/octet-stream';
+
+  it('lets the owner upload, read, list and delete a sealed photo', async () => {
+    const ada = account(env, 'ada');
+    await assertSucceeds(upload(ada, path, sealed));
+    await assertSucceeds(read(ada, path));
+    await assertSucceeds(list(ada, 'users/ada/progress_photos'));
+    await assertSucceeds(remove(ada, path));
+  });
+
+  it('refuses a plain image and a file of 2 MB or more', async () => {
+    const ada = account(env, 'ada');
+    await assertFails(upload(ada, path, jpeg));
+    await assertFails(upload(ada, path, sealed, megabytes(2)));
+  });
+
+  it('keeps a co-member and a stranger out', async () => {
+    await env.withSecurityRulesDisabled((context) => upload(context, path, sealed));
+    for (const uid of ['bob', 'dora']) {
+      const other = account(env, uid);
+      await assertFails(read(other, path));
+      await assertFails(list(other, 'users/ada/progress_photos'));
+      await assertFails(upload(other, 'users/ada/progress_photos/p2', sealed));
+      await assertFails(remove(other, path));
+    }
+  });
+});
+
 describe('product images', () => {
   const path = 'product_images/ada/p1/front.jpg';
 
