@@ -1,5 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 
+/// The reticle cutout in an overlay of [size]: slightly above the middle for
+/// natural hand ergonomics. The scanner reads only inside this rect.
+Rect barcodeReticleRect(Size size, Size windowSize, {double scale = 1}) {
+  return Rect.fromCenter(
+    center: Offset(size.width / 2, size.height * 0.40),
+    width: windowSize.width * scale,
+    height: windowSize.height * scale,
+  );
+}
+
 /// Custom painter for the darkened backdrop, cutout window, corner brackets,
 /// and animated laser sweep beam.
 class BarcodeScannerOverlayPainter extends CustomPainter {
@@ -33,15 +43,7 @@ class BarcodeScannerOverlayPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Cutout center (slightly above middle for natural hand ergonomics)
-    final center = Offset(size.width / 2, size.height * 0.40);
-    final scaledWidth = windowSize.width * scale;
-    final scaledHeight = windowSize.height * scale;
-    final windowRect = Rect.fromCenter(
-      center: center,
-      width: scaledWidth,
-      height: scaledHeight,
-    );
+    final windowRect = barcodeReticleRect(size, windowSize, scale: scale);
     final windowRRect = RRect.fromRectAndRadius(
       windowRect,
       const Radius.circular(_cornerRadius),

@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
+import 'package:yamt/core/widgets/barcode_scanner/windowed_mobile_scanner.dart';
 
 const _scannerLogName = 'AppBarcodeScannerPage';
 
@@ -15,7 +18,7 @@ const _scannerLogName = 'AppBarcodeScannerPage';
 typedef AppBarcodeScanCallback = FutureOr<bool> Function(String barcode);
 
 /// Generic, feature-independent full-screen or modal barcode scanner page.
-class AppBarcodeScannerPage extends StatefulWidget {
+class AppBarcodeScannerPage extends ConsumerStatefulWidget {
   /// Creates an [AppBarcodeScannerPage].
   const new({
     required this.title,
@@ -42,24 +45,14 @@ class AppBarcodeScannerPage extends StatefulWidget {
   final String? unsupportedMessage;
 
   @override
-  State<AppBarcodeScannerPage> createState() => _AppBarcodeScannerPageState();
+  ConsumerState<AppBarcodeScannerPage> createState() =>
+      _AppBarcodeScannerPageState();
 }
 
-class _AppBarcodeScannerPageState extends State<AppBarcodeScannerPage> {
-  final MobileScannerController _scannerController = MobileScannerController(
-    formats: const [
-      BarcodeFormat.ean13,
-      BarcodeFormat.ean8,
-      BarcodeFormat.upcA,
-      BarcodeFormat.upcE,
-      BarcodeFormat.code128,
-      BarcodeFormat.code39,
-      BarcodeFormat.code93,
-      BarcodeFormat.itf14,
-    ],
-    detectionSpeed: DetectionSpeed.noDuplicates,
-    detectionTimeoutMs: 1000,
-  );
+class _AppBarcodeScannerPageState extends ConsumerState<AppBarcodeScannerPage> {
+  final MobileScannerController _scannerController =
+      createBarcodeScannerController();
+  final _confirmation = BarcodeScanConfirmation();
 
   bool _isLocked = false;
   bool _isTorchOn = false;
@@ -96,7 +89,10 @@ class _AppBarcodeScannerPageState extends State<AppBarcodeScannerPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          MobileScanner(controller: _scannerController, onDetect: _onDetect),
+          WindowedMobileScanner(
+            controller: _scannerController,
+            onDetect: _onDetect,
+          ),
           BarcodeScannerOverlay(
             isLocked: _isLocked,
             isTorchOn: _isTorchOn,
@@ -131,6 +127,7 @@ class _AppBarcodeScannerPageState extends State<AppBarcodeScannerPage> {
 
     final barcode = extractValidBarcodeFromCapture(capture);
     if (barcode == null ||
+        !_confirmation.confirm(barcode, ref.read(clockProvider)()) ||
         isBarcodeScanThrottled(
           barcode: barcode,
           lastScannedBarcode: _lastScannedBarcode,
@@ -169,6 +166,7 @@ class _AppBarcodeScannerPageState extends State<AppBarcodeScannerPage> {
         _isLocked = false;
       });
       try {
+        _confirmation.reset();
         await _scannerController.start();
       } on Object {
         // Ignored if starting fails.

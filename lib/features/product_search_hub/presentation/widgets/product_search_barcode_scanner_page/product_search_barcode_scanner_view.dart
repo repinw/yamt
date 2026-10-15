@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
+import 'package:yamt/core/widgets/barcode_scanner/windowed_mobile_scanner.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -67,20 +69,9 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
 
 class _InventoryBarcodeScannerViewState
     extends ConsumerState<InventoryBarcodeScannerView> {
-  final MobileScannerController _scannerController = MobileScannerController(
-    formats: const [
-      BarcodeFormat.ean13,
-      BarcodeFormat.ean8,
-      BarcodeFormat.upcA,
-      BarcodeFormat.upcE,
-      BarcodeFormat.code128,
-      BarcodeFormat.code39,
-      BarcodeFormat.code93,
-      BarcodeFormat.itf14,
-    ],
-    detectionSpeed: DetectionSpeed.noDuplicates,
-    detectionTimeoutMs: 1000,
-  );
+  final MobileScannerController _scannerController =
+      createBarcodeScannerController();
+  final _confirmation = BarcodeScanConfirmation();
   bool _isResolving = false;
   bool _isLocked = false;
   bool _isTorchOn = false;
@@ -111,7 +102,10 @@ class _InventoryBarcodeScannerViewState
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        MobileScanner(controller: _scannerController, onDetect: _onDetect),
+        WindowedMobileScanner(
+          controller: _scannerController,
+          onDetect: _onDetect,
+        ),
         BarcodeScannerOverlay(
           isLocked: _isLocked,
           isTorchOn: _isTorchOn,
@@ -148,6 +142,7 @@ class _InventoryBarcodeScannerViewState
 
     final barcode = extractValidBarcodeFromCapture(capture);
     if (barcode == null ||
+        !_confirmation.confirm(barcode, ref.read(clockProvider)()) ||
         isBarcodeScanThrottled(
           barcode: barcode,
           lastScannedBarcode: _lastScannedBarcode,
@@ -267,6 +262,7 @@ class _InventoryBarcodeScannerViewState
 
   Future<void> _startScanner() async {
     try {
+      _confirmation.reset();
       await _scannerController.start();
     } on Object catch (error, stackTrace) {
       log(
