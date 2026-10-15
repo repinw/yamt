@@ -371,9 +371,12 @@ class FakeHealthWeightService implements HealthWeightService {
 }
 
 class FakeManualHealthWeightRepository implements ManualHealthWeightRepository {
-  new(this.entries);
+  new(this.entries, {this.ready});
 
   final List<ManualHealthWeightEntry> entries;
+
+  /// Holds every read back until it completes, like a slow load.
+  final Future<void>? ready;
   final List<DateTime> deletedDays = <DateTime>[];
 
   int get deleteEntryForDayCallCount => deletedDays.length;
@@ -386,7 +389,10 @@ class FakeManualHealthWeightRepository implements ManualHealthWeightRepository {
   }
 
   @override
-  Future<List<ManualHealthWeightEntry>> readEntries() async => entries;
+  Future<List<ManualHealthWeightEntry>> readEntries() async {
+    await ready;
+    return entries;
+  }
 
   @override
   Future<bool> saveEntry(ManualHealthWeightEntry entry) async {

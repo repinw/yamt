@@ -29,11 +29,13 @@ const progressProfile = CalorieCalculatorProfile(
 List<Override> progressSourceOverrides({
   required FakeCalorieSettingsRepository settingsRepository,
   required FakeCalorieLogRepository calorieLog,
+  Future<void>? weighInsReady,
 }) {
   return [
     ...profileSummarySourceOverrides(
       settingsRepository: settingsRepository,
       now: progressNow,
+      weighInsReady: weighInsReady,
       weighIns: [
         for (var offset = 0; offset < 20; offset += 2)
           ManualHealthWeightEntry(

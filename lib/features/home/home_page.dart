@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
+import 'package:yamt/core/utils/exclusive_runner.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_action_entry.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
@@ -55,6 +56,9 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
 
   /// Whether a sheet, dialog, or page covers the shell.
   var _isCovered = false;
+
+  /// Opens one weight entry at a time, also on a double tap (#703).
+  final _weightEntry = ExclusiveRunner();
 
   @override
   void didChangeDependencies() {
@@ -124,20 +128,20 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     };
   }
 
-  /// What the action button of [tab] does. Fortschritt has one action, so
-  /// its button enters the weight without the action panel; a tab with
-  /// several actions opens them in the panel.
+  /// What the action button of [tab] does: the weight entry on Fortschritt,
+  /// its only action, else the action panel.
   VoidCallback _onActionPressed(HomeTabType tab) {
     return switch (tab) {
       HomeTabType.inventory ||
       HomeTabType.diary ||
       HomeTabType.cookbook => () => _open(const HomeTabActionsPanel()),
-      HomeTabType.progress => () => unawaited(showProgressWeightEntry(context)),
+      HomeTabType.progress => () => unawaited(
+        _weightEntry.run(() => showProgressWeightEntry(context)),
+      ),
     };
   }
 
-  /// The actions of [tab] for the action panel. Fortschritt has none there:
-  /// its button enters the weight directly.
+  /// The actions of [tab] for the action panel; Fortschritt has none.
   List<HomeActionSection> _actions(HomeTabType tab) {
     return switch (tab) {
       HomeTabType.inventory => inventoryAddActions(context, ref),
@@ -169,10 +173,8 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     );
   }
 
-  /// The action panel of a header tool, at the top right under the tool.
-  ///
-  /// Its own [Consumer] runs [build], so the watched providers rebuild only
-  /// the panel, and only while it is in the tree.
+  /// The action panel of a header tool at the top right; its own [Consumer]
+  /// runs [build], so watched providers rebuild only the open panel.
   Widget _buildHeaderPanel(HomeHeaderActionsBuilder build) {
     return Consumer(
       builder: (context, ref, _) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -28,8 +30,12 @@ GoRoute _placeholder(String path) {
 }
 
 /// Pumps the home shell on the Fortschritt tab with its real page, backed by
-/// the Fortschritt examples: the last weigh-in is 82,0 kg today.
-Future<void> _pumpProgressTab(WidgetTester tester) async {
+/// the Fortschritt examples: the last weigh-in is 82,0 kg today. The
+/// weigh-ins load once [weighInsReady] completes, when it is given.
+Future<void> _pumpProgressTab(
+  WidgetTester tester, {
+  Future<void>? weighInsReady,
+}) async {
   tester.view.physicalSize = const Size(1080, 6000);
   addTearDown(tester.view.reset);
   final settings = FakeCalorieSettingsRepository(
@@ -70,6 +76,7 @@ Future<void> _pumpProgressTab(WidgetTester tester) async {
       overrides: progressSourceOverrides(
         settingsRepository: settings,
         calorieLog: calorieLog,
+        weighInsReady: weighInsReady,
       ),
       child: MaterialApp.router(
         locale: const Locale('en'),
@@ -79,7 +86,7 @@ Future<void> _pumpProgressTab(WidgetTester tester) async {
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  await (weighInsReady == null ? tester.pumpAndSettle() : tester.pump());
 }
 
 /// The weigh-in of today in the weight chart.
@@ -137,6 +144,20 @@ void main() {
       expect(field.controller!.text, '82.0');
     },
   );
+
+  testWidgets('a double tap while the weights load opens one weight entry '
+      '(#703)', (tester) async {
+    final weighIns = Completer<void>();
+    await _pumpProgressTab(tester, weighInsReady: weighIns.future);
+
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
+    await tester.pump();
+    weighIns.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsOneWidget);
+  });
 
   testWidgets('a saved weight shows in the chart and the goal right away', (
     tester,
