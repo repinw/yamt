@@ -545,6 +545,40 @@ void main() {
     );
   });
 
+  testWidgets('a failed read of today shows the error (#710)', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final logRepository = FakeCalorieLogRepository()
+      ..onReadEntriesForDay = (_) async => throw StateError('offline');
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        logRepository: logRepository,
+      ),
+    );
+    await _openSheet(tester);
+    await _goToResultsWithDefaults(tester);
+    await _ensureSaveButtonVisible(tester);
+    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Calorie calculator'), findsOneWidget);
+    expect(
+      find.text('Could not save the calculated calorie target.'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(CalorieGoalCalculatorSheetKeys.saveButton),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
+
   testWidgets('keeps existing goal start date when editing calculator goal', (
     tester,
   ) async {

@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
@@ -154,8 +156,8 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     return _save(const BurnWeekRunState.initial(), previous: current);
   }
 
-  /// Restarts Burn Week run from given fresh day.
-  Future<void> restartRunFrom({
+  /// Restarts the run from [weekStartDate]; returns whether it was stored.
+  Future<bool> restartRunFrom({
     required DateTime weekStartDate,
     int? runWeekNumber,
   }) async {
@@ -169,13 +171,34 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     );
   }
 
+  /// Like [restartRunFrom], but logs a throwing save and returns `false`.
+  Future<bool> tryRestartRunFrom({
+    required DateTime weekStartDate,
+    int? runWeekNumber,
+  }) async {
+    try {
+      return await restartRunFrom(
+        weekStartDate: weekStartDate,
+        runWeekNumber: runWeekNumber,
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Could not restart the Burn Week run.',
+        name: 'BurnWeekRunController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
   /// Bootstraps Burn Week run from given day with onboarding placement.
   Future<void> bootstrapRunFrom({
     required DateTime weekStartDate,
     int runWeekNumber = burnWeekLearningRunWeekNumber,
   }) async {
     final current = await future;
-    return await _save(
+    await _save(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: runWeekNumber,
@@ -212,7 +235,8 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     );
   }
 
-  Future<void> _save(
+  /// Shows and stores [next]; a failed or throwing save restores the run.
+  Future<bool> _save(
     BurnWeekRunState next, {
     BurnWeekRunState? previous,
   }) async {
@@ -221,11 +245,21 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     if (ref.mounted) {
       state = AsyncValue<BurnWeekRunState>.data(next);
     }
-    final didSave = await _repository.saveState(next);
-    if (!ref.mounted) {
-      return;
+    try {
+      if (await _repository.saveState(next)) {
+        return true;
+      }
+    } on Object {
+      _restore(previousState, saveGeneration);
+      rethrow;
     }
-    if (!didSave &&
+    _restore(previousState, saveGeneration);
+    return false;
+  }
+
+  /// Puts [previousState] back unless a later save replaced the state.
+  void _restore(BurnWeekRunState? previousState, int saveGeneration) {
+    if (ref.mounted &&
         saveGeneration == _saveGeneration &&
         previousState != null) {
       state = AsyncValue<BurnWeekRunState>.data(previousState);

@@ -1045,6 +1045,7 @@
   "caloriesLearnedTdeeResultLabel": "Neues Tagesziel",
   "caloriesLearnedTdeeUseProfileResetAction": "Profilbasierten Reset nutzen",
   "caloriesLearnedTdeeSaveFailed": "Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.",
+  "caloriesLearnedTdeeRunRestartFailed": "Ziel gespeichert, aber der Run konnte nicht neu starten.",
   "caloriesWeeklyCheckInDialogTitle": "Wochen-Check-in",
   "caloriesWeeklyCheckInDialogBlockedBody": "Uns fehlen noch ein paar Daten, bevor diese Wochenzusammenfassung vollständig ist.",
   "caloriesWeeklyCheckInDialogLowConfidence": "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",

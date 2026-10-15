@@ -3700,6 +3700,12 @@ abstract class AppLocalizations {
   /// **'Could not save the learned TDEE target.'**
   String get caloriesLearnedTdeeSaveFailed;
 
+  /// No description provided for @caloriesLearnedTdeeRunRestartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal saved, but the run could not restart.'**
+  String get caloriesLearnedTdeeRunRestartFailed;
+
   /// No description provided for @caloriesWeeklyCheckInDialogTitle.
   ///
   /// In en, this message translates to:

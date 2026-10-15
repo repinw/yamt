@@ -50,13 +50,14 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
   }
 
   @override
-  Future<void> restartRunFrom({
+  Future<bool> restartRunFrom({
     required DateTime weekStartDate,
     int? runWeekNumber,
   }) async {
     restartCalls.add(normalizeDiaryDay(weekStartDate));
     restartRunWeekNumbers.add(runWeekNumber);
     await restartBlocker?.future;
+    return true;
   }
 
   @override
