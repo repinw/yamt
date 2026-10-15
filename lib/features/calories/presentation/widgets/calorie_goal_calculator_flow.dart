@@ -8,11 +8,10 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/utils/exclusive_runner.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/presentation/calorie_goal_start_day_flow.dart';
 import 'package:yamt/features/calories/presentation/controllers/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_fields.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
@@ -30,8 +29,6 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_maintain_until_tile.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_sheet_title.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -170,20 +167,21 @@ class _CalorieGoalCalculatorFlowState
       widget.initialSettings.calculatorProfile,
     );
     final formNotifier = ref.read(formProvider.notifier);
-    final logRepository = ref.read(calorieLogRepositoryProvider);
     final allowsFutureGoalStart = _goalStartDate.isAfter(
       CalorieGoalStartPicker.normalizeDate(DateTime.now()),
     );
-    final countGoalStartDayForLearning =
-        await _resolveCountGoalStartDayForLearning(logRepository);
-    if (countGoalStartDayForLearning == null && _shouldAskTrackedFoodToday) {
+    final startDay = await askGoalStartDayForLearning(
+      context,
+      goalStartDate: _goalStartDate,
+    );
+    if (!mounted || startDay == null) {
       return;
     }
     final save = formNotifier.save(
       goalStartDate: _goalStartDate,
       maintainUntil: _maintainUntil,
       allowFutureGoalStart: allowsFutureGoalStart,
-      countGoalStartDayForLearning: countGoalStartDayForLearning,
+      countGoalStartDayForLearning: startDay.countsToday,
       archiveCurrentGoal: widget.startsNewGoal,
     );
     widget.onSaveStarted?.call(save.catchError((Object _) => false));
@@ -251,34 +249,6 @@ class _CalorieGoalCalculatorFlowState
 
   void _clearMaintainUntil() {
     setState(() => _maintainUntil = null);
-  }
-
-  bool get _startsToday {
-    return CalorieGoalStartPicker.isSameDay(
-      _goalStartDate,
-      CalorieGoalStartPicker.normalizeDate(DateTime.now()),
-    );
-  }
-
-  bool get _shouldAskTrackedFoodToday {
-    return _startsToday;
-  }
-
-  Future<bool?> _resolveCountGoalStartDayForLearning(
-    CalorieLogRepositoryContract logRepository,
-  ) async {
-    if (!_shouldAskTrackedFoodToday) {
-      return null;
-    }
-    final today = CalorieGoalStartPicker.normalizeDate(DateTime.now());
-    final entries = await logRepository.readEntriesForDay(today);
-    if (!mounted) {
-      return null;
-    }
-    return await showCalorieGoalStartFoodTrackingDialog(
-      context,
-      entryCount: entries.length,
-    );
   }
 }
 
