@@ -2187,6 +2187,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Das Ziel aus dem gelernten TDEE konnte nicht gespeichert werden.';
 
   @override
+  String get caloriesLearnedTdeeRunRestartFailed =>
+      'Ziel gespeichert, aber der Run konnte nicht neu starten.';
+
+  @override
   String get caloriesWeeklyCheckInDialogTitle => 'Wochen-Check-in';
 
   @override

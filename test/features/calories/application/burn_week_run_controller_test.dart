@@ -9,12 +9,16 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   new(this.state);
 
   BurnWeekRunState state;
+  bool saveThrows = false;
 
   @override
   Future<BurnWeekRunState> readState() async => state;
 
   @override
   Future<bool> saveState(BurnWeekRunState nextState) async {
+    if (saveThrows) {
+      throw StateError('offline');
+    }
     state = nextState;
     return true;
   }
@@ -431,5 +435,48 @@ void main() {
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
     expect(repository.state.runWeekNumber, burnWeekLearningRunWeekNumber);
     expect(repository.state.starCount, 0);
+  });
+
+  test('a throwing save puts the previous run back (#710)', () async {
+    const previous = BurnWeekRunState(
+      currentWeekStartDayKey: '2026-4-15',
+      runWeekNumber: 3,
+      starCount: 2,
+      starBrokeThisWeek: false,
+      missedTrackingThisWeek: false,
+    );
+    final repository = _FakeBurnWeekRunStateRepository(previous)
+      ..saveThrows = true;
+    final container = buildContainer(repository);
+    await container.read(burnWeekRunControllerProvider.future);
+
+    await expectLater(
+      container
+          .read(burnWeekRunControllerProvider.notifier)
+          .restartRunFrom(weekStartDate: DateTime(2026, 4, 21)),
+      throwsStateError,
+    );
+
+    final state = container.read(burnWeekRunControllerProvider).value;
+    expect(state?.currentWeekStartDayKey, '2026-4-15');
+    expect(state?.runWeekNumber, 3);
+  });
+
+  test('tryRestartRunFrom reports a throwing save as false (#710)', () async {
+    final repository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial(),
+    )..saveThrows = true;
+    final container = buildContainer(repository);
+    await container.read(burnWeekRunControllerProvider.future);
+
+    final restarted = await container
+        .read(burnWeekRunControllerProvider.notifier)
+        .tryRestartRunFrom(weekStartDate: DateTime(2026, 4, 21));
+
+    expect(restarted, isFalse);
+    expect(
+      container.read(burnWeekRunControllerProvider).value,
+      const BurnWeekRunState.initial(),
+    );
   });
 }

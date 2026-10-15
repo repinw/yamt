@@ -431,6 +431,7 @@ class _CalorieLearnedTdeeGoalSheetState
     final startDay = await askGoalStartDayForLearning(
       context,
       goalStartDate: _goalStartDate,
+      failedMessage: l10n.caloriesLearnedTdeeSaveFailed,
     );
     if (!mounted || startDay == null) {
       return;
@@ -473,16 +474,24 @@ class _CalorieLearnedTdeeGoalSheetState
       return;
     }
     if (saveResult.saved) {
-      if (saveResult.goalChanged) {
-        await burnWeekController.restartRunFrom(
-          weekStartDate: _goalStartDate,
-          runWeekNumber: burnWeekLearningRunWeekNumber,
-        );
-        if (!mounted) {
-          return;
-        }
+      final restarted =
+          !saveResult.goalChanged ||
+          await burnWeekController.tryRestartRunFrom(
+            weekStartDate: _goalStartDate,
+            runWeekNumber: burnWeekLearningRunWeekNumber,
+          );
+      if (!mounted) {
+        return;
       }
+      final messenger = ScaffoldMessenger.of(context);
       Navigator.of(context).pop(true);
+      if (!restarted) {
+        // The goal is saved; only the run keeps its old week (#710).
+        messenger.showAppSnackBar(
+          l10n.caloriesLearnedTdeeRunRestartFailed,
+          tone: AppSnackBarTone.error,
+        );
+      }
       return;
     }
     setState(() {

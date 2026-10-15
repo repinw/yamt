@@ -173,6 +173,7 @@ class _CalorieGoalCalculatorFlowState
     final startDay = await askGoalStartDayForLearning(
       context,
       goalStartDate: _goalStartDate,
+      failedMessage: l10n.caloriesCalculatorSaveFailed,
     );
     if (!mounted || startDay == null) {
       return;

@@ -2144,6 +2144,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not save the learned TDEE target.';
 
   @override
+  String get caloriesLearnedTdeeRunRestartFailed =>
+      'Goal saved, but the run could not restart.';
+
+  @override
   String get caloriesWeeklyCheckInDialogTitle => 'Weekly check-in';
 
   @override

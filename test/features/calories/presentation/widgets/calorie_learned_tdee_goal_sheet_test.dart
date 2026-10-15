@@ -31,6 +31,7 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 
   BurnWeekRunState state;
   int saveCallCount = 0;
+  bool saveThrows = false;
 
   @override
   Future<BurnWeekRunState> readState() async => state;
@@ -38,6 +39,9 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   @override
   Future<bool> saveState(BurnWeekRunState nextState) async {
     saveCallCount += 1;
+    if (saveThrows) {
+      throw StateError('Saving the Burn Week run failed.');
+    }
     state = nextState;
     return true;
   }
@@ -527,6 +531,113 @@ void main() {
       findsOneWidget,
     );
   });
+  testWidgets('a failed read of today shows the error and keeps save usable '
+      '(#710)', (tester) async {
+    _useTallView(tester);
+    final initialSettings = _learnedTdeeSettings(
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    final logRepository = FakeCalorieLogRepository()
+      ..onReadEntriesForDay = (_) async => throw StateError('offline');
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        initialSettings: initialSettings,
+        overrides: <Override>[
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Maintain'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsOneWidget);
+    expect(
+      find.text('Could not save the learned TDEE target.'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('a failed Burn Week restart closes the saved goal and says so '
+      '(#710)', (tester) async {
+    _useTallView(tester);
+    final today = normalizeDiaryDay(DateTime.now());
+    final goalStartDate = today.subtract(const Duration(days: 6));
+    final initialSettings = _learnedTdeeSettings(goalStartDate: goalStartDate);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    final logRepository = FakeCalorieLogRepository();
+    final runStateRepository = _FakeBurnWeekRunStateRepository(
+      const BurnWeekRunState.initial(),
+    )..saveThrows = true;
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        initialSettings: initialSettings,
+        overrides: <Override>[
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          burnWeekRunStateRepositoryProvider.overrideWithValue(
+            runStateRepository,
+          ),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lose'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      '60',
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(runStateRepository.saveCallCount, 1);
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
+    expect(
+      find.text('Goal saved, but the run could not restart.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('lose needs a target weight before it can be saved', (
     tester,
   ) async {

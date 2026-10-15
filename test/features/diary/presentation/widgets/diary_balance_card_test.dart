@@ -1013,11 +1013,12 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
   Future<BurnWeekRunState> build() async => initialState;
 
   @override
-  Future<void> restartRunFrom({
+  Future<bool> restartRunFrom({
     required DateTime weekStartDate,
     int? runWeekNumber,
   }) async {
     onRestartRunFrom?.call(weekStartDate);
+    return true;
   }
 }
 
