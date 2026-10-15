@@ -1,13 +1,14 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
 
 const _dateTimeTag = r'$dt';
 
-/// Encrypts JSON documents with AES-256-GCM before they are stored.
+/// Encrypts JSON documents and files with AES-256-GCM before they are stored.
 ///
-/// The additional authenticated data (`aad`) is the document path, so a
-/// payload cannot be copied into another document. `DateTime` values survive
+/// The additional authenticated data (`aad`) is the document or file path, so
+/// a payload cannot be copied into another document. `DateTime` values survive
 /// the round trip as `DateTime`, like Firestore timestamps do after
 /// `normalizeFirestoreJson`.
 class PayloadCipher {
@@ -29,12 +30,7 @@ class PayloadCipher {
     required String aad,
   }) async {
     final clearText = utf8.encode(jsonEncode(json, toEncodable: _encodeValue));
-    final secretBox = await _algorithm.encrypt(
-      clearText,
-      secretKey: _dataKey,
-      aad: utf8.encode(aad),
-    );
-    return base64Encode(secretBox.concatenation());
+    return base64Encode(await encryptBytes(clearText, aad: aad));
   }
 
   /// A stable id for [value] that only this data key can produce.
@@ -59,21 +55,46 @@ class PayloadCipher {
     String payload, {
     required String aad,
   }) async {
-    final secretBox = SecretBox.fromConcatenation(
-      base64Decode(payload),
-      nonceLength: _algorithm.nonceLength,
-      macLength: _algorithm.macAlgorithm.macLength,
-    );
-    final clearText = await _algorithm.decrypt(
-      secretBox,
-      secretKey: _dataKey,
-      aad: utf8.encode(aad),
-    );
+    final clearText = await decryptBytes(base64Decode(payload), aad: aad);
     final decoded = jsonDecode(utf8.decode(clearText), reviver: _reviveValue);
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('Payload is not a JSON object.');
     }
     return decoded;
+  }
+
+  /// Encrypts [clearBytes] and returns the nonce, the cipher text, and the
+  /// MAC in one block.
+  Future<Uint8List> encryptBytes(
+    List<int> clearBytes, {
+    required String aad,
+  }) async {
+    final secretBox = await _algorithm.encrypt(
+      clearBytes,
+      secretKey: _dataKey,
+      aad: utf8.encode(aad),
+    );
+    return secretBox.concatenation();
+  }
+
+  /// Decrypts a block created by [encryptBytes].
+  ///
+  /// Throws [SecretBoxAuthenticationError] for a wrong key or a wrong [aad].
+  Future<Uint8List> decryptBytes(
+    List<int> sealedBytes, {
+    required String aad,
+  }) async {
+    final secretBox = SecretBox.fromConcatenation(
+      sealedBytes,
+      nonceLength: _algorithm.nonceLength,
+      macLength: _algorithm.macAlgorithm.macLength,
+    );
+    final clearBytes = await _algorithm.decrypt(
+      secretBox,
+      secretKey: _dataKey,
+      aad: utf8.encode(aad),
+    );
+    return Uint8List.fromList(clearBytes);
   }
 }
 

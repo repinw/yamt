@@ -91,4 +91,18 @@ void main() {
     expect(id, isNot(contains('80')));
     expect(id, matches(RegExp(r'^[A-Za-z0-9_-]+$')));
   });
+
+  test('encrypts bytes and opens them only with the same path', () async {
+    final cipher = PayloadCipher(await PayloadCipher.newDataKey());
+    final image = List<int>.generate(100, (i) => i % 256);
+
+    final sealed = await cipher.encryptBytes(image, aad: 'users/u1/p/a');
+
+    expect(sealed, hasLength(image.length + 28));
+    expect(await cipher.decryptBytes(sealed, aad: 'users/u1/p/a'), image);
+    await expectLater(
+      cipher.decryptBytes(sealed, aad: 'users/u1/p/b'),
+      throwsA(isA<SecretBoxAuthenticationError>()),
+    );
+  });
 }

@@ -42,6 +42,7 @@ void main() {
       storage: const FlutterSecureStorage(),
       firestore: firestore,
       keyBackup: FakeKeyBackup(),
+      files: null,
     );
     dataCipher = (
       uid: _uid,

@@ -3,16 +3,18 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cryptography/cryptography.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/payload_field_backfill.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/device/key_backup.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
+import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/core/provider/secure_storage_provider.dart';
+import 'package:yamt/features/auth/data/private_data_paths.dart';
 
 part 'user_data_key_repository.g.dart';
 
@@ -31,11 +33,13 @@ class UserDataKeyRepository {
     required this._storage,
     required this._firestore,
     required this._keyBackup,
+    required this._files,
   });
 
   final FlutterSecureStorage _storage;
   final FirebaseFirestore _firestore;
   final KeyBackup _keyBackup;
+  final FirebaseStorage? _files;
 
   /// Loads the data key stored on this device.
   Future<SecretKey?> loadLocalDataKey(String uid) async {
@@ -214,16 +218,19 @@ class UserDataKeyRepository {
         .set(<String, dynamic>{_wrappedKeyField: wrappedKey});
   }
 
-  /// Deletes all private data of [uid] that the data key encrypts.
+  /// Deletes all private data of [uid] that the data key encrypts, with files.
   Future<void> deletePrivateData(String uid) async {
     await deleteFirestoreCollections(
       _firestore,
-      _privateCollections(uid).map(_firestore.collection),
+      privateDataCollections(uid).map(_firestore.collection),
     );
-    for (final field in _privateFields(uid)) {
+    for (final field in privateDataFields(uid)) {
       await _firestore.doc(field.documentPath).set(<String, dynamic>{
         field.field: FieldValue.delete(),
       }, SetOptions(merge: true));
+    }
+    if (_files case final files?) {
+      await deletePrivateFiles(files, uid);
     }
   }
 
@@ -242,26 +249,6 @@ class UserDataKeyRepository {
   Future<void> _saveFlag(String name, {required bool value}) {
     return _storage.write(key: name, value: value ? _storedFlagValue : null);
   }
-}
-
-/// The paths of the private collections of [uid] that the data key encrypts.
-List<String> _privateCollections(String uid) {
-  final userPath = '$_usersCollection/$uid';
-  return <String>[
-    '$userPath/calorie_entries',
-    '$userPath/planned_entries',
-    '$userPath/calorie_settings',
-    '$userPath/health_weights',
-    '$userPath/health_weight_samples',
-    '$userPath/calorie_product_overrides',
-  ];
-}
-
-/// The private fields of [uid] that the data key encrypts.
-List<EncryptedDocumentField> _privateFields(String uid) {
-  return <EncryptedDocumentField>[
-    EncryptedDocumentField('$_usersCollection/$uid', 'burn_week_run_state'),
-  ];
 }
 
 String _dataKeyName(String uid) => 'data_key_$uid';
@@ -286,5 +273,6 @@ UserDataKeyRepository? userDataKeyRepository(Ref ref) {
     storage: ref.watch(secureStorageProvider),
     firestore: firestore,
     keyBackup: ref.watch(keyBackupProvider),
+    files: ref.watch(firebaseStorageProvider),
   );
 }
