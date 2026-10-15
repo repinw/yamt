@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:developer' show log;
-import 'dart:typed_data';
+import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
-import 'package:cryptography/cryptography.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
@@ -22,6 +24,8 @@ const _usersCollection = 'users';
 const _photosFolder = 'progress_photos';
 const _photoKeyField = 'photo_key';
 const _sealedContentType = 'application/octet-stream';
+const _maxPhotoSide = 1600;
+const _jpegQuality = 85;
 
 /// Stores the user's progress photos, end-to-end encrypted.
 ///
@@ -34,11 +38,27 @@ class ProgressPhotoRepository {
     required this._firestore,
     required this._storage,
     required this._dataCipher,
+    required this._imagePicker,
   });
 
   final FirebaseFirestore? _firestore;
   final FirebaseStorage? _storage;
   final UserDataCipher? _dataCipher;
+  final ImagePicker _imagePicker;
+
+  /// Lets the user take a photo or pick one from [source]; `null` when the
+  /// user cancels.
+  Future<Uint8List?> pickPhoto(ImageSource source) async {
+    // The platform scales and re-encodes first, which also turns HEIC
+    // photos into JPEGs that cleanProgressPhoto can read.
+    final file = await _imagePicker.pickImage(
+      source: source,
+      maxWidth: _maxPhotoSide.toDouble(),
+      maxHeight: _maxPhotoSide.toDouble(),
+      requestFullMetadata: false,
+    );
+    return await file?.readAsBytes();
+  }
 
   /// The photos, oldest day first. Empty while signed out.
   Stream<List<ProgressPhoto>> watchPhotos() {
@@ -51,33 +71,19 @@ class ProgressPhotoRepository {
     );
   }
 
-  /// Downloads and decrypts the image of the photo [photoId].
-  Future<Uint8List> loadPhotoBytes(String photoId) async {
-    final (:photos, :storage, :uid) = _require();
-    final data = await photos.open(await photos.reference.doc(photoId).get());
-    if (data == null) {
-      throw StateError('Progress photo $photoId does not exist.');
-    }
-    final file = storage.ref(_filePath(uid, photoId));
-    final sealedBytes = await file.getData();
-    if (sealedBytes == null) {
-      throw StateError('Progress photo file ${file.fullPath} is empty.');
-    }
-    return await _photoCipher(data)
-        .decryptBytes(sealedBytes, aad: file.fullPath);
-  }
-
-  /// Saves [jpegBytes] as the [pose] photo of [day] and replaces the earlier
+  /// Saves [imageBytes] as the [pose] photo of [day] and replaces the earlier
   /// photo of that pose and day.
   ///
-  /// [jpegBytes] must already be free of metadata such as EXIF.
+  /// The image is stored as a JPEG of at most 1600 pixels a side, without
+  /// its metadata (see [cleanProgressPhoto]).
   Future<ProgressPhoto> savePhoto({
     required DateTime day,
     required ProgressPhotoPose pose,
-    required Uint8List jpegBytes,
+    required Uint8List imageBytes,
     double? weightKg,
   }) async {
     final (:photos, :storage, :uid) = _require();
+    final jpegBytes = await compute(cleanProgressPhoto, imageBytes);
     final photo = ProgressPhoto(
       id: photos.reference.doc().id,
       day: normalizeLocalDay(day),
@@ -147,19 +153,13 @@ class ProgressPhotoRepository {
   List<ProgressPhoto> _decode(List<OpenedDocument> documents) {
     return documents
         .map((document) => ProgressPhoto.fromJson(_photoJson(document.data)))
+        // A day stored in another time zone is not local midnight here.
+        .map((photo) => photo.copyWith(day: normalizeLocalDay(photo.day)))
         .sortedBy((photo) => photo.day);
   }
 
   Map<String, dynamic> _photoJson(Map<String, dynamic> data) {
     return normalizeFirestoreJson(data)..remove(_photoKeyField);
-  }
-
-  PayloadCipher _photoCipher(Map<String, dynamic> data) {
-    final photoKey = data[_photoKeyField];
-    if (photoKey is! String) {
-      throw const FormatException('Progress photo has no key.');
-    }
-    return PayloadCipher(SecretKey(base64Decode(photoKey)));
   }
 
   SealedCollection? _photos() {
@@ -188,6 +188,29 @@ class ProgressPhotoRepository {
   }
 }
 
+/// Re-encodes [imageBytes] as a JPEG without metadata.
+///
+/// The EXIF block with location, device, and time is dropped after its
+/// rotation is applied to the pixels, and the long side shrinks to 1600
+/// pixels. Throws a [FormatException] for bytes that are no image.
+@visibleForTesting
+Uint8List cleanProgressPhoto(Uint8List imageBytes) {
+  final decoded = img.findDecoderForData(imageBytes)?.decode(imageBytes);
+  if (decoded == null) {
+    throw const FormatException('The progress photo is no image.');
+  }
+  final upright = img.bakeOrientation(decoded);
+  final scale = _maxPhotoSide / math.max(upright.width, upright.height);
+  final sized = scale >= 1
+      ? upright
+      : img.copyResize(
+          upright,
+          width: (upright.width * scale).round(),
+          height: (upright.height * scale).round(),
+        );
+  return img.encodeJpg(sized..exif = img.ExifData(), quality: _jpegQuality);
+}
+
 String _filePath(String uid, String photoId) =>
     '$_usersCollection/$uid/$_photosFolder/$photoId';
 
@@ -198,5 +221,19 @@ ProgressPhotoRepository progressPhotoRepository(Ref ref) {
     firestore: ref.watch(firebaseFirestoreProvider),
     storage: ref.watch(firebaseStorageProvider),
     dataCipher: ref.watch(userDataCipherProvider),
+    imagePicker: ImagePicker(),
   );
+}
+
+/// The progress photos of the signed-in user, oldest day first.
+@riverpod
+Stream<List<ProgressPhoto>> progressPhotos(Ref ref) {
+  return ref.watch(progressPhotoRepositoryProvider).watchPhotos();
+}
+
+/// Whether a photo of [pose] exists on [day], so a new one replaces it.
+@riverpod
+bool progressPhotoExists(Ref ref, DateTime day, ProgressPhotoPose pose) {
+  final photos = ref.watch(progressPhotosProvider).value ?? const [];
+  return photos.any((photo) => photo.day == day && photo.pose == pose);
 }

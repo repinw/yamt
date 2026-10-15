@@ -6564,4 +6564,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get connectivityBackOnline => 'Back online';
+
+  @override
+  String get progressPhotoCaptureTitle => 'Add photo';
+
+  @override
+  String get progressPhotoPoseLabel => 'Pose';
+
+  @override
+  String get progressPhotoPoseFront => 'Front';
+
+  @override
+  String get progressPhotoPoseSide => 'Side';
+
+  @override
+  String get progressPhotoPoseBack => 'Back';
+
+  @override
+  String get progressPhotoDayLabel => 'Day';
+
+  @override
+  String get progressPhotoWeightLabel => 'Weight in kg (optional)';
+
+  @override
+  String get progressPhotoWeightHelper => 'Leave empty: weight of the day';
+
+  @override
+  String get progressPhotoWeightInvalid => 'Enter a weight above 0.';
+
+  @override
+  String get progressPhotoReplaceHint =>
+      'This day and pose already have a photo. A new one replaces it.';
+
+  @override
+  String get progressPhotoSaveFailed => 'Could not save the photo.';
+
+  @override
+  String get progressPhotoFromGallery => 'From gallery';
+
+  @override
+  String get progressPhotoCamera => 'Camera';
+
+  @override
+  String get progressPhotoPrivacy => 'Encrypted. Only you see your photos.';
+
+  @override
+  String get progressPhotoSaved => 'Photo saved';
+
+  @override
+  String get progressActionWeighDescription => 'Enter today\'s weight';
+
+  @override
+  String get progressActionPhoto => 'Photo';
+
+  @override
+  String get progressActionPhotoDescription =>
+      'Take a progress photo or pick one from the gallery';
 }
