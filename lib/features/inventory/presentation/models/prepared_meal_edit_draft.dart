@@ -81,15 +81,20 @@ class PreparedMealEditRow {
     if (nutrition == null) {
       return null;
     }
+    final unit = item.amountUnit ?? InventoryAmountUnit.piece;
     return PreparedMealEditRow._(
       itemId: item.id,
       name: item.name,
       imageUrl: item.imageUrl,
-      unit: item.amountUnit ?? InventoryAmountUnit.piece,
+      unit: unit,
       amount: amount,
       maxAmount: mealFoodMaxAmount(item),
       baseFacts: EatNutrition.fromPer100(nutrition, _per100).eaten,
-      baseAmount: _per100,
+      // As [preparedMealNutritionFactor] counts it: the label once per
+      // piece, else per 100 g or ml.
+      baseAmount: unit == InventoryAmountUnit.piece
+          ? (item.usesAmountProgress ? item.amountScale : 1).toDouble()
+          : _per100,
     );
   }
 
