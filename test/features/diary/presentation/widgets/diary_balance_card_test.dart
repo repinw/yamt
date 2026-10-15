@@ -571,6 +571,23 @@ void main() {
 
     expect(find.text('1,200 with plan'), findsOneWidget);
 
+    // The budget details follow the card.
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetPlannedRow),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(DiaryBalanceCardKeys.dailyBudgetLeftRow),
+        matching: find.text('Left after plan'),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byKey(DiaryBalanceCardKeys.afterPlanChip));
     await tester.pumpAndSettle();
 

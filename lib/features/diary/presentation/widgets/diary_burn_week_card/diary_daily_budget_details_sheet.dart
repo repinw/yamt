@@ -13,6 +13,7 @@ Future<void> showDiaryDailyBudgetDetailsSheet({
   required BuildContext context,
   required DiaryDailyBudgetDetailsData data,
   required NumberFormat numberFormat,
+  double? plannedKcal,
   bool useRootNavigator = true,
 }) {
   return showModalBottomSheet<void>(
@@ -20,8 +21,11 @@ Future<void> showDiaryDailyBudgetDetailsSheet({
     useRootNavigator: useRootNavigator,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) =>
-        DiaryDailyBudgetDetailsSheet(data: data, numberFormat: numberFormat),
+    builder: (_) => DiaryDailyBudgetDetailsSheet(
+      data: data,
+      numberFormat: numberFormat,
+      plannedKcal: plannedKcal,
+    ),
   );
 }
 
@@ -29,13 +33,21 @@ Future<void> showDiaryDailyBudgetDetailsSheet({
 /// and the carryover accumulated from previous days.
 class DiaryDailyBudgetDetailsSheet extends StatelessWidget {
   /// Creates the daily budget details sheet.
-  const new({required this.data, required this.numberFormat, super.key});
+  const new({
+    required this.data,
+    required this.numberFormat,
+    this.plannedKcal,
+    super.key,
+  });
 
   /// The budget details data to render.
   final DiaryDailyBudgetDetailsData data;
 
   /// Number formatter matching the active locale.
   final NumberFormat numberFormat;
+
+  /// Kcal of the open plans when "Nach Plan" counts them, otherwise null.
+  final double? plannedKcal;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +111,7 @@ class DiaryDailyBudgetDetailsSheet extends StatelessWidget {
                   DiaryDailyBudgetTodayCard(
                     data: data,
                     numberFormat: numberFormat,
+                    plannedKcal: plannedKcal,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   DiaryDailyBudgetCarryoverSection(

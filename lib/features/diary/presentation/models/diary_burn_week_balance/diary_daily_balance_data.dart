@@ -242,6 +242,11 @@ class DiaryDailyBalanceData {
   /// day offers none, so no chip shows.
   final bool? countsOpenPlans;
 
+  /// Kcal of the open plans while the head counts them, also when they add
+  /// up to 0; null otherwise. The budget details count them the same way.
+  double? get countedPlannedKcal =>
+      countsOpenPlans == true ? plannedKcal : null;
+
   /// What is left without the open plans, when the head counts them.
   final String? withoutPlanValue;
 }

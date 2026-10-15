@@ -4,19 +4,28 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_budget_sheet_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Calculation breakdown card for today's calorie budget.
 class DiaryDailyBudgetTodayCard extends StatelessWidget {
   /// Creates the today calculation card.
-  const new({required this.data, required this.numberFormat, super.key});
+  const new({
+    required this.data,
+    required this.numberFormat,
+    this.plannedKcal,
+    super.key,
+  });
 
   /// Budget details data.
   final DiaryDailyBudgetDetailsData data;
 
   /// Locale-aware number format.
   final NumberFormat numberFormat;
+
+  /// Kcal of the open plans when "Nach Plan" counts them, otherwise null.
+  final double? plannedKcal;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +35,7 @@ class DiaryDailyBudgetTodayCard extends StatelessWidget {
     final accents = MetricAccentColors.of(context);
     final primary = accents.today;
     final unit = l10n.caloriesUnitKcal;
+    final planned = plannedKcal;
 
     return DiaryDailyBudgetSheetCard(
       child: Column(
@@ -91,12 +101,26 @@ class DiaryDailyBudgetTodayCard extends StatelessWidget {
             value: '-${formatDiaryKcal(numberFormat, data.eatenKcal, unit)}',
             valueColor: colors.onSurfaceVariant,
           ),
+          if (planned != null)
+            DiaryDailyBudgetRow(
+              key: DiaryBalanceCardKeys.dailyBudgetPlannedRow,
+              label: l10n.diaryBudgetDetailsPlannedLabel,
+              value: '-${formatDiaryKcal(numberFormat, planned, unit)}',
+              valueColor: colors.onSurfaceVariant,
+            ),
           const Divider(height: AppSpacing.md),
           DiaryDailyBudgetRow(
-            label: l10n.diaryBudgetDetailsLeftLabel,
+            key: DiaryBalanceCardKeys.dailyBudgetLeftRow,
+            label: planned != null
+                ? l10n.diaryBalanceLeftAfterPlanLabel
+                : l10n.diaryBudgetDetailsLeftLabel,
             value: data.isPauseDay
                 ? l10n.diaryBalancePauseDayValue
-                : formatDiaryKcal(numberFormat, data.dayLeftKcal, unit),
+                : formatDiaryKcal(
+                    numberFormat,
+                    data.dayLeftKcal - (planned ?? 0),
+                    unit,
+                  ),
             isBold: true,
             isHighlight: true,
             valueColor: data.isPauseDay ? colors.onSurfaceVariant : primary,
