@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/utils/exclusive_runner.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_logic.dart';
@@ -66,6 +67,10 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
   late final CookingFlowStorageContainerController _storageController;
   final CookingFlowRawIngredientLogger _rawIngredientLogger =
       CookingFlowRawIngredientLogger();
+
+  /// Saves the session and leaves the page once, also on a double tap of
+  /// back or of the utensil library (#703).
+  final _leaving = ExclusiveRunner();
 
   @override
   void initState() {
@@ -474,7 +479,7 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
   }
 
   void _handleBackPressed() {
-    unawaited(_handleBackPressedAsync());
+    unawaited(_leaving.run(_handleBackPressedAsync));
   }
 
   Future<void> _handleBackPressedAsync() async {
@@ -669,8 +674,11 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
   }
 
   Future<void> _openKitchenUtensils() async {
-    final saved = await _saveSession();
-    if (!mounted || !saved) {
+    var saved = false;
+    // Only the save runs exclusively: a page pushed with go_router can be
+    // dropped by a later go without completing its future.
+    final ran = await _leaving.run(() async => saved = await _saveSession());
+    if (!ran || !mounted || !saved) {
       return;
     }
     await context.push(AppRoutes.homeKitchenUtensils);

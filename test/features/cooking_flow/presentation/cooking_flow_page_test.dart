@@ -403,6 +403,34 @@ void main() {
     expect(find.text('Später'), findsOneWidget);
   });
 
+  testWidgets('a double tap on back while the session saves leaves once '
+      '(#703)', (tester) async {
+    final saving = Completer<bool>();
+    final sessionStore = _FakeCookingFlowSessionLocalStore(
+      onSave: (_) => saving.future,
+    );
+
+    await tester.pumpWidget(
+      _buildRouterHarness(
+        sessionStore: sessionStore,
+        templates: <PreparedMeal>[_template(id: 'template-1')],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final savesBeforeBack = sessionStore.saveCallCount;
+
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pump();
+    saving.complete(true);
+    await tester.pumpAndSettle();
+
+    // A second leave would save again and pop once more.
+    expect(sessionStore.saveCallCount, savesBeforeBack + 1);
+    expect(find.text('Template list route'), findsOneWidget);
+  });
+
   testWidgets('adds all selected intro shopping ingredients', (tester) async {
     final shoppingListRepository = FakeShoppingListRepository();
 
@@ -668,6 +696,49 @@ void main() {
 
     expect(find.text('Kitchen utensil route'), findsOneWidget);
     expect(sessionStore.savedSession?.taraText, '321');
+  });
+
+  testWidgets('a double tap while the session saves opens one utensil '
+      'library (#703)', (tester) async {
+    final saving = Completer<bool>();
+    final sessionStore = _FakeCookingFlowSessionLocalStore(
+      initialSession: const CookingFlowSession(
+        templateId: 'template-1',
+        step: CookingFlowSessionStep.preparation,
+        taraText: '321',
+        adjustmentInputText: '',
+        adjustments: <String>[],
+        summaryIngredients: <CookingFlowSummaryIngredientSessionDraft>[],
+        grossWeightText: '',
+        splitIntoPortions: true,
+        portionCount: 3,
+        introDraft: CookingFlowIntroDraft(),
+        introShoppingHandled: false,
+        introShoppingBaselineInventoryItemIds: <String>[],
+      ),
+      onSave: (_) => saving.future,
+    );
+
+    await tester.pumpWidget(
+      _buildRouterHarness(
+        sessionStore: sessionStore,
+        templates: <PreparedMeal>[_template(id: 'template-1')],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Utensil hinzufügen'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Utensil hinzufügen'));
+    await tester.tap(find.text('Utensil hinzufügen'));
+    await tester.pump();
+    saving.complete(true);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Kitchen utensil route', skipOffstage: false),
+      findsOneWidget,
+    );
   });
 
   testWidgets('preparation can swap selected cooking utensil', (tester) async {
