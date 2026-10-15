@@ -40,6 +40,29 @@ Future<CalorieEntry> decodeCalorieEntryDocument(
   );
 }
 
+/// Decrypts [document], or logs it as malformed and returns `null`.
+Future<CalorieEntry?> decodeCalorieEntryDocumentOrNull(
+  DocumentSnapshot<Map<String, dynamic>> document, {
+  required PayloadCipher cipher,
+  void Function(String docId, Object error, StackTrace stackTrace)? onMalformed,
+}) async {
+  try {
+    return await decodeCalorieEntryDocument(document, cipher: cipher);
+  } on Object catch (error, stackTrace) {
+    if (onMalformed != null) {
+      onMalformed(document.id, error, stackTrace);
+    } else {
+      log(
+        'Skipping malformed calorie entry ${document.id}',
+        name: _codecLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+    return null;
+  }
+}
+
 /// Decrypts a Firestore query snapshot into a list of [CalorieEntry],
 /// skipping and logging any malformed documents.
 Future<List<CalorieEntry>> decodeCalorieEntrySnapshot(
@@ -48,23 +71,13 @@ Future<List<CalorieEntry>> decodeCalorieEntrySnapshot(
   void Function(String docId, Object error, StackTrace stackTrace)? onMalformed,
 }) async {
   final entries = await Future.wait(
-    snapshot.docs.map((document) async {
-      try {
-        return await decodeCalorieEntryDocument(document, cipher: cipher);
-      } on Object catch (error, stackTrace) {
-        if (onMalformed != null) {
-          onMalformed(document.id, error, stackTrace);
-        } else {
-          log(
-            'Skipping malformed calorie entry ${document.id}',
-            name: _codecLogName,
-            error: error,
-            stackTrace: stackTrace,
-          );
-        }
-        return null;
-      }
-    }),
+    snapshot.docs.map(
+      (document) => decodeCalorieEntryDocumentOrNull(
+        document,
+        cipher: cipher,
+        onMalformed: onMalformed,
+      ),
+    ),
   );
   return entries.nonNulls.toList();
 }

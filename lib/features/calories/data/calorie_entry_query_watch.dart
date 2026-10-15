@@ -8,7 +8,7 @@ import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
 /// Watches the entries of [query], the local cache first, and remembers
-/// them in [cache].
+/// them in [cache]. Each snapshot decrypts only the documents that changed.
 ///
 /// A failure is logged, then delivered as an empty list when [emptyOnError]
 /// is set, or as the error.
@@ -20,11 +20,33 @@ Stream<List<CalorieEntry>> watchCalorieEntryQuery(
   required bool emptyOnError,
 }) {
   return Stream<List<CalorieEntry>>.multi((controller) {
+    // Decoded entries by document id; null marks a malformed document.
+    final decoded = <String, CalorieEntry?>{};
+    Future<List<CalorieEntry>> decodeChanges(
+      QuerySnapshot<Map<String, dynamic>> snapshot,
+    ) async {
+      final changed = <DocumentSnapshot<Map<String, dynamic>>>[];
+      for (final change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.removed) {
+          decoded.remove(change.doc.id);
+        } else {
+          changed.add(change.doc);
+        }
+      }
+      await Future.wait(
+        changed.map((document) async {
+          decoded[document.id] = await decodeCalorieEntryDocumentOrNull(
+            document,
+            cipher: cipher,
+          );
+        }),
+      );
+      return [for (final document in snapshot.docs) ?decoded[document.id]];
+    }
+
     final subscription = query
         .snapshots()
-        .asyncMap(
-          (snapshot) => decodeCalorieEntrySnapshot(snapshot, cipher: cipher),
-        )
+        .asyncMap(decodeChanges)
         .listen(
           (entries) {
             controller.add(cache.rememberAll(entries));

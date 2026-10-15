@@ -175,7 +175,8 @@ reference = check-in goal: the TDEE of its check-in
 - Until the offsets are computed, the stored goals stand, so a budget never
   waits; an unchanged offset rebuilds nothing.
 - The history comes from `watchEntriesFrom`, which starts from the local
-  cache; Health weights load once per diary day.
+  cache and decrypts only the entries a change touched; Health weights load
+  once per diary day.
 
 #### Pause Days & Missing Days
 
