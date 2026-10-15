@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/utils/exclusive_runner.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
@@ -86,6 +88,10 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _targetWeightController;
   late DateTime _goalStartDate;
   DateTime? _maintainUntil;
+
+  /// Saves once, also on a double tap while the food-tracking question
+  /// loads (#703).
+  final _saveRunner = ExclusiveRunner();
   late _CalculatorStep _currentStep = _hasBodyData
       ? _CalculatorStep.body
       : _CalculatorStep.sex;
@@ -371,7 +377,9 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
                     child: currentStep == _CalculatorStep.results
                         ? FilledButton(
                             key: CalorieGoalCalculatorSheetKeys.saveButton,
-                            onPressed: _canSaveResults(state) ? _save : null,
+                            onPressed: _canSaveResults(state)
+                                ? () => unawaited(_saveRunner.run(_save))
+                                : null,
                             child: state.isSaving
                                 ? const SizedBox.square(
                                     dimension: AppSizes.inlineProgressIndicator,
