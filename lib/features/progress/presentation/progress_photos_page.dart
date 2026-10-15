@@ -1,22 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/diary/presentation/widgets/progress_photo_frame.dart';
 import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/features/progress/application/progress_photo_overview_provider.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/domain/progress_photo_overview.dart';
-import 'package:yamt/features/progress/presentation/controllers/progress_photo_delete_controller.dart';
+import 'package:yamt/features/progress/presentation/progress_photo_edit_flow.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_photo_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_header.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// All progress photos, grouped by goal, newest first. A long press deletes
-/// a photo.
+/// All progress photos, grouped by goal, newest first. A tap opens a photo
+/// with its edits; a long press deletes it.
 class ProgressPhotosPage extends ConsumerWidget {
   /// Creates the photos page.
   const new({super.key});
@@ -24,11 +29,6 @@ class ProgressPhotosPage extends ConsumerWidget {
   /// Key of the thumbnail of [photoId].
   static ValueKey<String> photoKey(String photoId) =>
       ValueKey<String>('progress-photos-photo-$photoId');
-
-  /// Key of the delete button in the confirm dialog.
-  static const deleteConfirmKey = ValueKey<String>(
-    'progress-photos-delete-confirm',
-  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,11 +105,19 @@ class _DayRow extends ConsumerWidget {
                 Expanded(
                   child: switch (day.poses[pose]) {
                     final photo? => Semantics(
+                      onTapHint: AppLocalizations.of(context)!
+                          .progressPhotoOpen,
                       onLongPressHint: AppLocalizations.of(context)!
                           .progressPhotoDelete,
-                      child: GestureDetector(
+                      child: AppInkWell(
                         key: ProgressPhotosPage.photoKey(photo.id),
-                        onLongPress: () => _confirmDelete(context, ref, photo),
+                        onTap: () => unawaited(
+                          context.push(
+                            AppRoutes.homeProgressPhotoViewerPath(photo.id),
+                          ),
+                        ),
+                        onLongPress: () =>
+                            unawaited(deleteProgressPhoto(context, ref, photo)),
                         child: ProgressPhotoFrame(photoId: photo.id),
                       ),
                     ),
@@ -124,43 +132,6 @@ class _DayRow extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _confirmDelete(
-    BuildContext context,
-    WidgetRef ref,
-    ProgressPhoto photo,
-  ) async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.progressPhotoDeleteTitle),
-        content: Text(l10n.progressPhotoDeleteBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-          ),
-          TextButton(
-            key: ProgressPhotosPage.deleteConfirmKey,
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.progressPhotoDelete),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) {
-      return;
-    }
-    final deleted = await ref
-        .read(progressPhotoDeleteControllerProvider.notifier)
-        .delete(photo.id);
-    if (!deleted && context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.progressPhotoDeleteFailed)));
-    }
   }
 }
 

@@ -63,7 +63,8 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   (`showProgressPhotoCapture`) is public UI for `features/home` and
   `features/progress`: the sheet
   that adds a progress photo for a pose and a day, from the camera or the
-  gallery, and saves it through the Health progress photo repository. Diary
+  gallery, and saves it through the Health progress photo repository. It
+  takes a preset pose and day and returns whether a photo was saved. Diary
   owns it because the weekly check-in adds photos too: its photo step shows
   the first, a middle, and today's photo of a pose since the goal start.
   `presentation/widgets/progress_photo_frame.dart` (`ProgressPhotoFrame`) is

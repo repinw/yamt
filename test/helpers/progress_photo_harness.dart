@@ -44,6 +44,7 @@ Future<GoRouter> pumpProgressPhotoHarness(
   required Widget home,
   required FakeProgressPhotoRepository photos,
   List<String> stubRoutes = const [],
+  List<GoRoute> routes = const [],
 }) async {
   tester.view.physicalSize = const Size(1080, 4000);
   addTearDown(tester.view.reset);
@@ -62,6 +63,7 @@ Future<GoRouter> pumpProgressPhotoHarness(
         path: '/',
         builder: (context, state) => Scaffold(body: home),
       ),
+      ...routes,
       for (final path in stubRoutes)
         GoRoute(
           path: path,

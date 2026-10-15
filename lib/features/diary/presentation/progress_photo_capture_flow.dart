@@ -7,14 +7,16 @@ import 'package:yamt/features/diary/presentation/widgets/progress_photo_capture_
 import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Opens the sheet that adds a progress photo, preset to [pose], and
-/// confirms a saved photo unless [confirmSaved] is off.
+/// Opens the sheet that adds a progress photo, preset to [pose], or that
+/// replaces the image of [replacing], and confirms a saved photo unless
+/// [confirmSaved] is off. Returns whether a photo was saved.
 ///
 /// A caller inside a modal turns [confirmSaved] off: the snack bar would show
 /// behind the modal.
-Future<void> showProgressPhotoCapture(
+Future<bool> showProgressPhotoCapture(
   BuildContext context, {
   ProgressPhotoPose pose = ProgressPhotoPose.front,
+  ProgressPhoto? replacing,
   bool confirmSaved = true,
 }) async {
   final container = ProviderScope.containerOf(context, listen: false);
@@ -28,12 +30,19 @@ Future<void> showProgressPhotoCapture(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
     ),
-    builder: (_) => ProgressPhotoCaptureSheet(today: today, pose: pose),
+    builder: (_) => ProgressPhotoCaptureSheet(
+      today: today,
+      pose: pose,
+      replacing: replacing,
+    ),
   );
-  if (saved != true || !confirmSaved || !context.mounted) {
-    return;
+  if (saved != true) {
+    return false;
   }
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(AppLocalizations.of(context)!.progressPhotoSaved)),
-  );
+  if (confirmSaved && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.progressPhotoSaved)),
+    );
+  }
+  return true;
 }

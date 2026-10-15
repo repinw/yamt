@@ -4128,6 +4128,25 @@
   "progressPhotoDeleteBody": "The photo is deleted for good.",
   "progressPhotoDelete": "Delete",
   "progressPhotoDeleteFailed": "Could not delete the photo.",
+  "progressPhotoReplace": "Replace",
+  "progressPhotoMove": "Move",
+  "progressPhotoOpen": "Open photo",
+  "progressPhotoMoveTitle": "Move photo",
+  "progressPhotoMoveReplaceTitle": "Replace photo?",
+  "progressPhotoMoveReplaceBody": "There is already a photo of this pose on this day. It will be deleted.",
+  "progressPhotoMoveFailed": "Could not move the photo.",
+  "progressPhotoMissing": "This photo no longer exists.",
+  "progressPhotoViewerCaption": "{pose} · {caption}",
+  "@progressPhotoViewerCaption": {
+    "placeholders": {
+      "pose": {
+        "type": "String"
+      },
+      "caption": {
+        "type": "String"
+      }
+    }
+  },
   "progressPhotoCompareTitle": "Compare",
   "progressPhotoCompareSlider": "Compare before and after"
 }

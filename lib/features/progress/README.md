@@ -10,7 +10,8 @@ week, and the longer trends are going, so the diary can stay focused on today.
 - The Fortschritt tab page with its two scopes, "Aktuelles Ziel" and
   "Gesamt", and its sections: the current goal with the way to the goal
   archive, the progress photos (before and after, all photos grouped by goal,
-  and the slider comparison), the 7-day run with its week budget and one bar
+  the slider comparison, and one photo in full size with its edits: replace,
+  move to another day or pose, delete), the 7-day run with its week budget and one bar
   per day, the weight trend with the goal forecast, the TDEE per confirmed weekly check-in, and
   training days against rest days.
 - The read models of these sections in `domain/` and the providers that build

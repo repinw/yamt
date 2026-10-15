@@ -11216,6 +11216,60 @@ abstract class AppLocalizations {
   /// **'Could not delete the photo.'**
   String get progressPhotoDeleteFailed;
 
+  /// No description provided for @progressPhotoReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get progressPhotoReplace;
+
+  /// No description provided for @progressPhotoMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Move'**
+  String get progressPhotoMove;
+
+  /// No description provided for @progressPhotoOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open photo'**
+  String get progressPhotoOpen;
+
+  /// No description provided for @progressPhotoMoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move photo'**
+  String get progressPhotoMoveTitle;
+
+  /// No description provided for @progressPhotoMoveReplaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace photo?'**
+  String get progressPhotoMoveReplaceTitle;
+
+  /// No description provided for @progressPhotoMoveReplaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'There is already a photo of this pose on this day. It will be deleted.'**
+  String get progressPhotoMoveReplaceBody;
+
+  /// No description provided for @progressPhotoMoveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not move the photo.'**
+  String get progressPhotoMoveFailed;
+
+  /// No description provided for @progressPhotoMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo no longer exists.'**
+  String get progressPhotoMissing;
+
+  /// No description provided for @progressPhotoViewerCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'{pose} · {caption}'**
+  String progressPhotoViewerCaption(String pose, String caption);
+
   /// No description provided for @progressPhotoCompareTitle.
   ///
   /// In en, this message translates to:

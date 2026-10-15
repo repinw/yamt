@@ -21,6 +21,7 @@ class ProgressPhotoCaptureSheet extends ConsumerStatefulWidget {
   const new({
     required this.today,
     this.pose = ProgressPhotoPose.front,
+    this.replacing,
     super.key,
   });
 
@@ -46,6 +47,10 @@ class ProgressPhotoCaptureSheet extends ConsumerStatefulWidget {
   /// The pose picked at first.
   final ProgressPhotoPose pose;
 
+  /// The photo whose image the new one replaces. Its day, pose, and typed
+  /// weight are kept; only the weight can change.
+  final ProgressPhoto? replacing;
+
   @override
   ConsumerState<ProgressPhotoCaptureSheet> createState() =>
       _ProgressPhotoCaptureSheetState();
@@ -53,9 +58,16 @@ class ProgressPhotoCaptureSheet extends ConsumerStatefulWidget {
 
 class _ProgressPhotoCaptureSheetState
     extends ConsumerState<ProgressPhotoCaptureSheet> {
-  final _weight = TextEditingController();
-  late ProgressPhotoPose _pose = widget.pose;
-  late DateTime _day = widget.today;
+  late final _weight = TextEditingController(
+    text: switch (widget.replacing?.weightKg) {
+      final kg? => NumberFormat.decimalPattern(
+        Intl.getCurrentLocale(),
+      ).format(kg),
+      null => '',
+    },
+  );
+  late ProgressPhotoPose _pose = widget.replacing?.pose ?? widget.pose;
+  late DateTime _day = widget.replacing?.day ?? widget.today;
   var _weightInvalid = false;
 
   @override
@@ -131,7 +143,7 @@ class _ProgressPhotoCaptureSheetState
                     key: ProgressPhotoCaptureSheet.poseKey(pose),
                     label: Text(progressPhotoPoseLabel(l10n, pose)),
                     selected: pose == _pose,
-                    onSelected: saving
+                    onSelected: saving || widget.replacing != null
                         ? null
                         : (_) => setState(() => _pose = pose),
                   ),
@@ -140,7 +152,9 @@ class _ProgressPhotoCaptureSheetState
             Text(l10n.progressPhotoDayLabel.toUpperCase(), style: kick),
             FilledButton.tonal(
               key: ProgressPhotoCaptureSheet.dayKey,
-              onPressed: saving ? null : () => unawaited(_pickDay()),
+              onPressed: saving || widget.replacing != null
+                  ? null
+                  : () => unawaited(_pickDay()),
               child: Text(DateFormat.yMMMMEEEEd(localeName).format(_day)),
             ),
             TextField(

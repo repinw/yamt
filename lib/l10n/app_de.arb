@@ -3210,6 +3210,15 @@
   "progressPhotoDeleteBody": "Das Foto wird endgültig gelöscht.",
   "progressPhotoDelete": "Löschen",
   "progressPhotoDeleteFailed": "Das Foto konnte nicht gelöscht werden.",
+  "progressPhotoReplace": "Ersetzen",
+  "progressPhotoMove": "Verschieben",
+  "progressPhotoOpen": "Foto öffnen",
+  "progressPhotoMoveTitle": "Foto verschieben",
+  "progressPhotoMoveReplaceTitle": "Foto ersetzen?",
+  "progressPhotoMoveReplaceBody": "An diesem Tag gibt es schon ein Foto dieser Pose. Es wird gelöscht.",
+  "progressPhotoMoveFailed": "Das Foto konnte nicht verschoben werden.",
+  "progressPhotoMissing": "Dieses Foto gibt es nicht mehr.",
+  "progressPhotoViewerCaption": "{pose} · {caption}",
   "progressPhotoCompareTitle": "Vergleich",
   "progressPhotoCompareSlider": "Vorher und Nachher vergleichen"
 }

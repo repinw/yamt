@@ -6738,6 +6738,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progressPhotoDeleteFailed => 'Could not delete the photo.';
 
   @override
+  String get progressPhotoReplace => 'Replace';
+
+  @override
+  String get progressPhotoMove => 'Move';
+
+  @override
+  String get progressPhotoOpen => 'Open photo';
+
+  @override
+  String get progressPhotoMoveTitle => 'Move photo';
+
+  @override
+  String get progressPhotoMoveReplaceTitle => 'Replace photo?';
+
+  @override
+  String get progressPhotoMoveReplaceBody =>
+      'There is already a photo of this pose on this day. It will be deleted.';
+
+  @override
+  String get progressPhotoMoveFailed => 'Could not move the photo.';
+
+  @override
+  String get progressPhotoMissing => 'This photo no longer exists.';
+
+  @override
+  String progressPhotoViewerCaption(String pose, String caption) {
+    return '$pose · $caption';
+  }
+
+  @override
   String get progressPhotoCompareTitle => 'Compare';
 
   @override
