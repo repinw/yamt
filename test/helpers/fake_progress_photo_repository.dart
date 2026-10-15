@@ -29,6 +29,9 @@ class FakeProgressPhotoRepository extends Fake
   /// The error the next delete throws, if any.
   Exception? deleteError;
 
+  /// The error the next move throws, if any.
+  Exception? moveError;
+
   /// The sources the picker was opened with.
   final pickedSources = <ImageSource>[];
 
@@ -85,6 +88,30 @@ class FakeProgressPhotoRepository extends Fake
       throw error;
     }
     _photos.removeWhere((photo) => photo.id == photoId);
+    _changes.add(photos);
+  }
+
+  @override
+  Future<void> movePhoto(
+    String photoId, {
+    required DateTime day,
+    required ProgressPhotoPose pose,
+  }) async {
+    await Future<void>.delayed(Duration.zero);
+    if (moveError case final error?) {
+      throw error;
+    }
+    final index = _photos.indexWhere((photo) => photo.id == photoId);
+    if (index < 0) {
+      throw StateError('Progress photo $photoId does not exist.');
+    }
+    final moved = _photos[index].copyWith(day: day, pose: pose);
+    _photos
+      ..removeWhere(
+        (old) => old.id != photoId && old.day == day && old.pose == pose,
+      )
+      ..removeWhere((photo) => photo.id == photoId)
+      ..add(moved);
     _changes.add(photos);
   }
 

@@ -128,8 +128,35 @@ class ProgressPhotoRepository {
       await _deleteOrphanFile(file);
       rethrow;
     }
-    // The new photo is saved; a replaced one that fails to delete stays
-    // until the next save of its day and pose.
+    await _deleteReplaced(replaced);
+    return photo;
+  }
+
+  /// Moves the photo [photoId] to [day] and [pose] and replaces the photo
+  /// that was there. The image and its typed weight stay.
+  Future<void> movePhoto(
+    String photoId, {
+    required DateTime day,
+    required ProgressPhotoPose pose,
+  }) async {
+    final (:photos, storage: _, uid: _) = _require();
+    final reference = photos.reference.doc(photoId);
+    final data = await photos.open(await reference.get());
+    if (data == null) {
+      throw StateError('Progress photo $photoId does not exist.');
+    }
+    final moved = ProgressPhoto.fromJson(_photoJson(data))
+        .copyWith(day: normalizeLocalDay(day), pose: pose);
+    final replaced = await _photosOn(photos, moved.day, pose);
+    await reference.set(
+      await photos.seal(photoId, <String, dynamic>{...data, ...moved.toJson()}),
+    );
+    await _deleteReplaced(replaced.where((old) => old.id != photoId));
+  }
+
+  // The new photo is saved; a replaced one that fails to delete stays until
+  // the next save of its day and pose.
+  Future<void> _deleteReplaced(Iterable<ProgressPhoto> replaced) async {
     for (final old in replaced) {
       try {
         await deletePhoto(old.id);
@@ -137,7 +164,6 @@ class ProgressPhotoRepository {
         _log('Failed to delete a replaced progress photo.', error, stackTrace);
       }
     }
-    return photo;
   }
 
   /// Deletes the photo [photoId].
