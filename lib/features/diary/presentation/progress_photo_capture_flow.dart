@@ -8,10 +8,14 @@ import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the sheet that adds a progress photo, preset to [pose], and
-/// confirms a saved photo.
+/// confirms a saved photo unless [confirmSaved] is off.
+///
+/// A caller inside a modal turns [confirmSaved] off: the snack bar would show
+/// behind the modal.
 Future<void> showProgressPhotoCapture(
   BuildContext context, {
   ProgressPhotoPose pose = ProgressPhotoPose.front,
+  bool confirmSaved = true,
 }) async {
   final container = ProviderScope.containerOf(context, listen: false);
   final today = normalizeLocalDay(container.read(clockProvider)());
@@ -26,7 +30,7 @@ Future<void> showProgressPhotoCapture(
     ),
     builder: (_) => ProgressPhotoCaptureSheet(today: today, pose: pose),
   );
-  if (saved != true || !context.mounted) {
+  if (saved != true || !confirmSaved || !context.mounted) {
     return;
   }
   ScaffoldMessenger.of(context).showSnackBar(

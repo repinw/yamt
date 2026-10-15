@@ -122,8 +122,14 @@ class _DiaryWeeklyCheckInPhotoStepState
             kicker: l10n.diaryCheckInPhotoNew,
             photo: milestones.today?.photo,
             caption: _caption(milestones.today),
-            onAdd: () =>
-                unawaited(showProgressPhotoCapture(context, pose: _pose)),
+            // The new photo shows in this slot; no snack bar is needed.
+            onAdd: () => unawaited(
+              showProgressPhotoCapture(
+                context,
+                pose: _pose,
+                confirmSaved: false,
+              ),
+            ),
             addLabel: l10n.diaryCheckInPhotoAdd,
           ),
         ),
