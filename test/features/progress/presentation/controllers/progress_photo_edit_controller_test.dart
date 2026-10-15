@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/health/domain/progress_photo.dart';
-import 'package:yamt/features/progress/presentation/controllers/progress_photo_delete_controller.dart';
+import 'package:yamt/features/progress/presentation/controllers/progress_photo_edit_controller.dart';
 
 import '../../../../helpers/fake_progress_photo_repository.dart';
 
@@ -30,7 +30,7 @@ void main() {
     addTearDown(repository.dispose);
     states.clear();
     container.listen(
-      progressPhotoDeleteControllerProvider,
+      progressPhotoEditControllerProvider,
       (_, next) => states.add(next),
       fireImmediately: true,
     );
@@ -38,7 +38,7 @@ void main() {
 
   test('deletes the photo', () async {
     final deleted = await container
-        .read(progressPhotoDeleteControllerProvider.notifier)
+        .read(progressPhotoEditControllerProvider.notifier)
         .delete('p1');
 
     expect(deleted, isTrue);
@@ -51,11 +51,35 @@ void main() {
     repository.deleteError = Exception('offline');
 
     final deleted = await container
-        .read(progressPhotoDeleteControllerProvider.notifier)
+        .read(progressPhotoEditControllerProvider.notifier)
         .delete('p1');
 
     expect(deleted, isFalse);
     expect(repository.photos, hasLength(1));
+    expect(states.last.hasError, isTrue);
+  });
+
+  test('moves the photo', () async {
+    final moved = await container
+        .read(progressPhotoEditControllerProvider.notifier)
+        .move('p1', day: DateTime(2026, 9, 5), pose: ProgressPhotoPose.side);
+
+    expect(moved, isTrue);
+    expect(repository.photos.single.day, DateTime(2026, 9, 5));
+    expect(repository.photos.single.pose, ProgressPhotoPose.side);
+    expect(states.map((state) => state.isLoading), [false, true, false]);
+    expect(states.last.hasError, isFalse);
+  });
+
+  test('reports a failed move and keeps the photo', () async {
+    repository.moveError = Exception('offline');
+
+    final moved = await container
+        .read(progressPhotoEditControllerProvider.notifier)
+        .move('p1', day: DateTime(2026, 9, 5), pose: ProgressPhotoPose.side);
+
+    expect(moved, isFalse);
+    expect(repository.photos.single.pose, ProgressPhotoPose.front);
     expect(states.last.hasError, isTrue);
   });
 }

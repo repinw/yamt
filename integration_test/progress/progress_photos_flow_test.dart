@@ -5,11 +5,15 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
 import 'package:yamt/features/progress/presentation/progress_photo_compare_page.dart';
+import 'package:yamt/features/progress/presentation/progress_photo_edit_flow.dart';
+import 'package:yamt/features/progress/presentation/progress_photo_viewer_page.dart';
 import 'package:yamt/features/progress/presentation/progress_photos_page.dart';
-import 'package:yamt/features/progress/presentation/widgets/'
-    'progress_photo_section.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_photo_move_sheet.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_photo_pose_chips.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_photo_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
@@ -21,7 +25,8 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-    'Fortschritt opens all photos, deletes one, and compares before and after',
+    'Fortschritt opens all photos, moves one, deletes one, and compares '
+    'before and after',
     (tester) async {
       final settings = FakeCalorieSettingsRepository(
         initialSettings: progressSettings(),
@@ -44,6 +49,14 @@ void main() {
           GoRoute(
             path: AppRoutes.homeProgressPhotos,
             builder: (context, state) => const ProgressPhotosPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.homeProgressPhotoViewer,
+            builder: (context, state) => ProgressPhotoViewerPage(
+              photoId: state
+                  .uri
+                  .queryParameters[AppRoutes.homeProgressPhotoIdParam]!,
+            ),
           ),
           GoRoute(
             path: AppRoutes.homeProgressPhotoCompare,
@@ -83,10 +96,28 @@ void main() {
         find.byKey(ProgressPhotosPage.photoKey('mid')),
       );
       await tester.pumpAndSettle();
-      await tester.longPress(find.byKey(ProgressPhotosPage.photoKey('mid')));
+      await tester.tap(find.byKey(ProgressPhotosPage.photoKey('mid')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(ProgressPhotosPage.deleteConfirmKey));
+      expect(find.byType(ProgressPhotoViewerPage), findsOneWidget);
+
+      await tester.tap(find.byKey(ProgressPhotoViewerPage.moveKey));
       await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(ProgressPhotoPoseChips.poseKey(ProgressPhotoPose.back)),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ProgressPhotoMoveSheet.moveKey));
+      await tester.pumpAndSettle();
+      expect(
+        photos.photos.singleWhere((photo) => photo.id == 'mid').pose,
+        ProgressPhotoPose.back,
+      );
+
+      await tester.tap(find.byKey(ProgressPhotoViewerPage.deleteKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(progressPhotoConfirmKey));
+      await tester.pumpAndSettle();
+      expect(find.byType(ProgressPhotoViewerPage), findsNothing);
       expect(find.byKey(ProgressPhotosPage.photoKey('mid')), findsNothing);
       expect(photos.photos.map((photo) => photo.id), ['old', 'new', 'side']);
 

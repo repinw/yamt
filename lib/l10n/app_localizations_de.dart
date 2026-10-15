@@ -6851,6 +6851,37 @@ class AppLocalizationsDe extends AppLocalizations {
       'Das Foto konnte nicht gelöscht werden.';
 
   @override
+  String get progressPhotoReplace => 'Ersetzen';
+
+  @override
+  String get progressPhotoMove => 'Verschieben';
+
+  @override
+  String get progressPhotoOpen => 'Foto öffnen';
+
+  @override
+  String get progressPhotoMoveTitle => 'Foto verschieben';
+
+  @override
+  String get progressPhotoMoveReplaceTitle => 'Foto ersetzen?';
+
+  @override
+  String get progressPhotoMoveReplaceBody =>
+      'An diesem Tag gibt es schon ein Foto dieser Pose. Es wird gelöscht.';
+
+  @override
+  String get progressPhotoMoveFailed =>
+      'Das Foto konnte nicht verschoben werden.';
+
+  @override
+  String get progressPhotoMissing => 'Dieses Foto gibt es nicht mehr.';
+
+  @override
+  String progressPhotoViewerCaption(String pose, String caption) {
+    return '$pose · $caption';
+  }
+
+  @override
   String get progressPhotoCompareTitle => 'Vergleich';
 
   @override

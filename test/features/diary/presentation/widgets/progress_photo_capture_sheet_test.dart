@@ -16,8 +16,9 @@ final _today = DateTime(2026, 10, 15);
 
 Future<Object? Function()> _pumpSheet(
   WidgetTester tester,
-  FakeProgressPhotoRepository repository,
-) async {
+  FakeProgressPhotoRepository repository, {
+  ProgressPhoto? replacing,
+}) async {
   Object? result;
   await tester.pumpWidget(
     ProviderScope(
@@ -35,7 +36,10 @@ Future<Object? Function()> _pumpSheet(
                 result = await showModalBottomSheet<bool>(
                   context: context,
                   isScrollControlled: true,
-                  builder: (_) => ProgressPhotoCaptureSheet(today: _today),
+                  builder: (_) => ProgressPhotoCaptureSheet(
+                    today: _today,
+                    replacing: replacing,
+                  ),
                 );
               },
               child: const Text('open'),
@@ -87,6 +91,30 @@ void main() {
     expect(photo.weightKg, 78.9);
     expect(find.byType(ProgressPhotoCaptureSheet), findsNothing);
     expect(result(), isTrue);
+  });
+
+  testWidgets('a replacement keeps the day, pose, and typed weight', (
+    tester,
+  ) async {
+    final old = ProgressPhoto(
+      id: 'old',
+      day: DateTime(2026, 9, 3),
+      pose: ProgressPhotoPose.side,
+      weightKg: 92.5,
+    );
+    await _pumpSheet(tester, repository, replacing: old);
+    await _open(tester);
+
+    await tester.tap(
+      find.byKey(ProgressPhotoCaptureSheet.poseKey(ProgressPhotoPose.front)),
+    );
+    await tester.tap(find.byKey(ProgressPhotoCaptureSheet.cameraKey));
+    await tester.pumpAndSettle();
+
+    final photo = repository.photos.single;
+    expect(photo.day, old.day);
+    expect(photo.pose, ProgressPhotoPose.side);
+    expect(photo.weightKg, 92.5);
   });
 
   testWidgets('a weight that is no number stops the save', (tester) async {

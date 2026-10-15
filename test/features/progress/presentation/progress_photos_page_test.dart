@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/progress/presentation/progress_photo_edit_flow.dart';
 import 'package:yamt/features/progress/presentation/progress_photos_page.dart';
 
 import '../../../helpers/fake_progress_photo_repository.dart';
@@ -11,6 +13,7 @@ Future<FakeProgressPhotoRepository> _pump(WidgetTester tester) async {
     tester,
     home: const ProgressPhotosPage(),
     photos: photos,
+    stubRoutes: [AppRoutes.homeProgressPhotoViewer],
   );
   return photos;
 }
@@ -18,7 +21,7 @@ Future<FakeProgressPhotoRepository> _pump(WidgetTester tester) async {
 Future<void> _deleteMid(WidgetTester tester) async {
   await tester.longPress(find.byKey(ProgressPhotosPage.photoKey('mid')));
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(ProgressPhotosPage.deleteConfirmKey));
+  await tester.tap(find.byKey(progressPhotoConfirmKey));
   await tester.pumpAndSettle();
 }
 
@@ -40,6 +43,18 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('a tap opens the viewer of the photo', (tester) async {
+    await _pump(tester);
+
+    await tester.tap(find.byKey(ProgressPhotosPage.photoKey('mid')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(AppRoutes.homeProgressPhotoViewerPath('mid')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('a long press and a confirm delete the photo', (tester) async {
     final photos = await _pump(tester);
 
@@ -59,7 +74,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(photos.photos, hasLength(4));
-    expect(find.byKey(ProgressPhotosPage.deleteConfirmKey), findsNothing);
+    expect(find.byKey(progressPhotoConfirmKey), findsNothing);
   });
 
   testWidgets('a failed delete keeps the photo and shows a snackbar', (

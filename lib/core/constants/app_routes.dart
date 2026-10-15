@@ -133,6 +133,16 @@ abstract final class AppRoutes {
   /// The before and after comparison of the progress photos.
   static const homeProgressPhotoCompare = '/home/progress/photos/compare';
 
+  /// One progress photo in full size, with its edits.
+  static const homeProgressPhotoViewer = '/home/progress/photos/view';
+
+  /// Query parameter with the id of the photo that the viewer shows.
+  static const homeProgressPhotoIdParam = 'photo';
+
+  /// The viewer of the photo [photoId].
+  static String homeProgressPhotoViewerPath(String photoId) =>
+      '$homeProgressPhotoViewer?$homeProgressPhotoIdParam=$photoId';
+
   /// Query parameter with the pose that the comparison opens with.
   static const homeProgressPhotoPoseParam = 'pose';
 

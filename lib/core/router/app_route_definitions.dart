@@ -39,6 +39,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/progress/presentation/progress_photo_compare_page.dart';
+import 'package:yamt/features/progress/presentation/progress_photo_viewer_page.dart';
 import 'package:yamt/features/progress/presentation/progress_photos_page.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
@@ -168,6 +169,13 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.homeProgressPhotos,
       builder: (context, state) => const ProgressPhotosPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.homeProgressPhotoViewer,
+      builder: (context, state) => ProgressPhotoViewerPage(
+        photoId:
+            state.uri.queryParameters[AppRoutes.homeProgressPhotoIdParam] ?? '',
+      ),
     ),
     GoRoute(
       path: AppRoutes.homeProgressPhotoCompare,
