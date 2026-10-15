@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'dart:developer' show log;
-import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
@@ -17,6 +15,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/health/data/progress_photo_image.dart';
 import 'package:yamt/features/health/domain/progress_photo.dart';
 
 part 'progress_photo_repository.g.dart';
@@ -25,8 +24,6 @@ const _usersCollection = 'users';
 const _photosFolder = 'progress_photos';
 const _photoKeyField = 'photo_key';
 const _sealedContentType = 'application/octet-stream';
-const _maxPhotoSide = 1600;
-const _jpegQuality = 85;
 
 /// Stores the user's progress photos, end-to-end encrypted.
 ///
@@ -54,8 +51,8 @@ class ProgressPhotoRepository {
     // photos into JPEGs that cleanProgressPhoto can read.
     final file = await _imagePicker.pickImage(
       source: source,
-      maxWidth: _maxPhotoSide.toDouble(),
-      maxHeight: _maxPhotoSide.toDouble(),
+      maxWidth: progressPhotoMaxSide.toDouble(),
+      maxHeight: progressPhotoMaxSide.toDouble(),
       requestFullMetadata: false,
     );
     return await file?.readAsBytes();
@@ -240,29 +237,6 @@ class ProgressPhotoRepository {
     }
     return (photos: photos, storage: storage, uid: uid);
   }
-}
-
-/// Re-encodes [imageBytes] as a JPEG without metadata.
-///
-/// The EXIF block with location, device, and time is dropped after its
-/// rotation is applied to the pixels, and the long side shrinks to 1600
-/// pixels. Throws a [FormatException] for bytes that are no image.
-@visibleForTesting
-Uint8List cleanProgressPhoto(Uint8List imageBytes) {
-  final decoded = img.findDecoderForData(imageBytes)?.decode(imageBytes);
-  if (decoded == null) {
-    throw const FormatException('The progress photo is no image.');
-  }
-  final upright = img.bakeOrientation(decoded);
-  final scale = _maxPhotoSide / math.max(upright.width, upright.height);
-  final sized = scale >= 1
-      ? upright
-      : img.copyResize(
-          upright,
-          width: (upright.width * scale).round(),
-          height: (upright.height * scale).round(),
-        );
-  return img.encodeJpg(sized..exif = img.ExifData(), quality: _jpegQuality);
 }
 
 String _filePath(String uid, String photoId) =>
