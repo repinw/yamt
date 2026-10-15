@@ -9,6 +9,10 @@ weight samples, and manual fallback weight entries. It reads only weight.
 
 - Health platform services and repositories under `data/`.
 - Health connection and weight domain models under `domain/`.
+- Health weight samples synced to the cloud (`health_weight_samples`,
+  encrypted with the data key): every measurement once, keyed by a hash of
+  its minute and weight that only the data key can produce, so devices that
+  read the same scale store it once.
 - The trend weight: one daily weight from manual entries and Health samples,
   interpolated between weigh-ins and smoothed, so water swings do not show as
   weight changes.

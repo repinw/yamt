@@ -252,6 +252,7 @@ List<String> _privateCollections(String uid) {
     '$userPath/planned_entries',
     '$userPath/calorie_settings',
     '$userPath/health_weights',
+    '$userPath/health_weight_samples',
     '$userPath/calorie_product_overrides',
   ];
 }

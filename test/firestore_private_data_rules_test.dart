@@ -39,6 +39,7 @@ void main() {
       for (final collection in <String>[
         'calorie_settings/{settingsId}',
         'health_weights/{weightId}',
+        'health_weight_samples/{sampleId}',
         'calorie_product_overrides/{barcode}',
       ]) {
         expect(

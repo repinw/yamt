@@ -8,17 +8,20 @@ part of 'diary_provider_warmup.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Keeps lightweight diary clock dependencies warm while the page is open.
+/// Keeps lightweight diary clock dependencies warm while the page is open,
+/// and syncs the Health weights of this device once the diary has its data.
 
 @ProviderFor(diaryProviderWarmup)
 final diaryProviderWarmupProvider = DiaryProviderWarmupProvider._();
 
-/// Keeps lightweight diary clock dependencies warm while the page is open.
+/// Keeps lightweight diary clock dependencies warm while the page is open,
+/// and syncs the Health weights of this device once the diary has its data.
 
 final class DiaryProviderWarmupProvider
     extends $FunctionalProvider<void, void, void>
     with $Provider<void> {
-  /// Keeps lightweight diary clock dependencies warm while the page is open.
+  /// Keeps lightweight diary clock dependencies warm while the page is open,
+  /// and syncs the Health weights of this device once the diary has its data.
   DiaryProviderWarmupProvider._()
     : super(
         from: null,
@@ -53,7 +56,7 @@ final class DiaryProviderWarmupProvider
 }
 
 String _$diaryProviderWarmupHash() =>
-    r'94456750b8e9181630f238a20736dba037f9faf8';
+    r'f3194bbe5b36e2b4f4a7fa46ecbe14437b1b823a';
 
 /// Current diary day that should be warmed.
 
