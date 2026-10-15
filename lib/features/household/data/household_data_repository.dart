@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
+import 'package:yamt/core/data/storage_folder.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
@@ -30,19 +31,9 @@ class HouseholdDataRepository {
       householdEncryptedCollections.map(household.collection),
     );
     for (final folder in householdImageFolders) {
-      await _deleteFolder(
+      await deleteStorageFolder(
         _storage.ref('$_householdsCollection/$householdId/$folder'),
       );
-    }
-  }
-
-  Future<void> _deleteFolder(Reference folder) async {
-    final result = await folder.listAll();
-    for (final item in result.items) {
-      await item.delete();
-    }
-    for (final prefix in result.prefixes) {
-      await _deleteFolder(prefix);
     }
   }
 }
