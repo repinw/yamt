@@ -83,6 +83,21 @@ void main() {
     expect((loaded.width, loaded.height), (30, 40));
   });
 
+  test('loads the decrypted image of a photo', () async {
+    final photo = await repository.savePhoto(
+      day: DateTime(2026, 10, 15),
+      pose: ProgressPhotoPose.back,
+      imageBytes: jpeg,
+    );
+
+    final loaded = img.decodeJpg(await repository.loadPhotoBytes(photo.id))!;
+    expect((loaded.width, loaded.height), (30, 40));
+    await expectLater(
+      repository.loadPhotoBytes('missing'),
+      throwsA(isA<StateError>()),
+    );
+  });
+
   test('encrypts every photo with its own key', () async {
     final first = await repository.savePhoto(
       day: DateTime(2026, 10, 2),

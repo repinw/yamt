@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
@@ -69,6 +70,22 @@ class ProgressPhotoRepository {
     return photos.reference.snapshots().asyncMap(
       (snapshot) async => _decode(await photos.openAll(snapshot)),
     );
+  }
+
+  /// Downloads and decrypts the image of the photo [photoId].
+  Future<Uint8List> loadPhotoBytes(String photoId) async {
+    final (:photos, :storage, :uid) = _require();
+    final data = await photos.open(await photos.reference.doc(photoId).get());
+    if (data == null) {
+      throw StateError('Progress photo $photoId does not exist.');
+    }
+    final file = storage.ref(_filePath(uid, photoId));
+    final sealedBytes = await file.getData();
+    if (sealedBytes == null) {
+      throw StateError('Progress photo file ${file.fullPath} is empty.');
+    }
+    return await _photoCipher(data)
+        .decryptBytes(sealedBytes, aad: file.fullPath);
   }
 
   /// Saves [imageBytes] as the [pose] photo of [day] and replaces the earlier
@@ -162,6 +179,14 @@ class ProgressPhotoRepository {
     return normalizeFirestoreJson(data)..remove(_photoKeyField);
   }
 
+  PayloadCipher _photoCipher(Map<String, dynamic> data) {
+    final photoKey = data[_photoKeyField];
+    if (photoKey is! String) {
+      throw const FormatException('Progress photo has no key.');
+    }
+    return PayloadCipher(SecretKey(base64Decode(photoKey)));
+  }
+
   SealedCollection? _photos() {
     final firestore = _firestore;
     final dataCipher = _dataCipher;
@@ -223,6 +248,12 @@ ProgressPhotoRepository progressPhotoRepository(Ref ref) {
     dataCipher: ref.watch(userDataCipherProvider),
     imagePicker: ImagePicker(),
   );
+}
+
+/// The decrypted image of the photo [photoId]. It stays in memory only.
+@riverpod
+Future<Uint8List> progressPhotoBytes(Ref ref, String photoId) {
+  return ref.watch(progressPhotoRepositoryProvider).loadPhotoBytes(photoId);
 }
 
 /// The progress photos of the signed-in user, oldest day first.

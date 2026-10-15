@@ -19,6 +19,9 @@ class FakeProgressPhotoRepository extends Fake
   /// The image the picker returns; `null` acts like a cancelled pick.
   Uint8List? pickedImage;
 
+  /// The error the photo stream fails with, if any.
+  Exception? watchError;
+
   /// The error the next save throws, if any.
   Exception? saveError;
 
@@ -30,6 +33,9 @@ class FakeProgressPhotoRepository extends Fake
 
   @override
   Stream<List<ProgressPhoto>> watchPhotos() async* {
+    if (watchError case final error?) {
+      throw error;
+    }
     yield photos;
     yield* _changes.stream;
   }

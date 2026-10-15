@@ -14,6 +14,9 @@ enum DiaryWeeklyCheckInStep {
   /// Plan the training days of the next run.
   training,
 
+  /// Compare the progress photos and add today's.
+  photo,
+
   /// Show the new daily targets.
   targets,
 }

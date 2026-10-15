@@ -1192,7 +1192,7 @@ Future<void> _finishWeeklyCheckIn(
     await tester.tap(choice);
     await _pumpFrames(tester);
   }
-  for (var step = 0; step < 2; step++) {
+  for (var step = 0; step < 3; step++) {
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await _pumpFrames(tester);
   }

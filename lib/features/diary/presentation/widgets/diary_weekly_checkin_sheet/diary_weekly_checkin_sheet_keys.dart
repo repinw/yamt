@@ -62,4 +62,11 @@ abstract final class DiaryWeeklyCheckInSheetKeys {
   /// The chip of the next run day at [index].
   static ValueKey<String> trainingDay(int index) =>
       ValueKey<String>('diary-weekly-checkin-training-day-$index');
+
+  /// The chip of the photo pose named [pose].
+  static ValueKey<String> photoPose(String pose) =>
+      ValueKey<String>('diary-weekly-checkin-photo-pose-$pose');
+
+  /// The slot that adds or replaces today's photo.
+  static const photoAdd = ValueKey<String>('diary-weekly-checkin-photo-add');
 }

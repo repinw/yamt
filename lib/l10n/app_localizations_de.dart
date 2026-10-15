@@ -6744,6 +6744,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get progressPhotoSaved => 'Foto gespeichert';
 
   @override
+  String progressPhotoCaption(String day, String kg) {
+    return '$day · $kg kg';
+  }
+
+  @override
+  String get progressPhotosLoadFailed =>
+      'Die Fotos konnten nicht geladen werden.';
+
+  @override
+  String get progressPhotoLoadFailed => 'Das Foto konnte nicht geladen werden.';
+
+  @override
+  String get progressPhotoLabel => 'Fortschrittsfoto';
+
+  @override
   String get progressActionWeighDescription => 'Gewicht für heute eintragen';
 
   @override
@@ -6752,4 +6767,23 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get progressActionPhotoDescription =>
       'Fortschrittsfoto aufnehmen oder aus der Galerie';
+
+  @override
+  String get diaryCheckInPhotoTitle => 'Dein Weg bisher';
+
+  @override
+  String get diaryCheckInPhotoSubtitle =>
+      'Gleiche Pose, gleiches Licht wie beim letzten Mal.';
+
+  @override
+  String get diaryCheckInPhotoFirst => 'Erstes';
+
+  @override
+  String get diaryCheckInPhotoMiddle => 'Mitte';
+
+  @override
+  String get diaryCheckInPhotoNew => 'Neu';
+
+  @override
+  String get diaryCheckInPhotoAdd => 'Foto';
 }

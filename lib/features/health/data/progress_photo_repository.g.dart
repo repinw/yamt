@@ -61,6 +61,90 @@ final class ProgressPhotoRepositoryProvider
 String _$progressPhotoRepositoryHash() =>
     r'0abcb314c68c47d59b6b82c75d16648c0923cba8';
 
+/// The decrypted image of the photo [photoId]. It stays in memory only.
+
+@ProviderFor(progressPhotoBytes)
+final progressPhotoBytesProvider = ProgressPhotoBytesFamily._();
+
+/// The decrypted image of the photo [photoId]. It stays in memory only.
+
+final class ProgressPhotoBytesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Uint8List>,
+          Uint8List,
+          FutureOr<Uint8List>
+        >
+    with $FutureModifier<Uint8List>, $FutureProvider<Uint8List> {
+  /// The decrypted image of the photo [photoId]. It stays in memory only.
+  ProgressPhotoBytesProvider._({
+    required ProgressPhotoBytesFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'progressPhotoBytesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$progressPhotoBytesHash();
+
+  @override
+  String toString() {
+    return r'progressPhotoBytesProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Uint8List> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Uint8List> create(Ref ref) {
+    final argument = this.argument as String;
+    return progressPhotoBytes(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProgressPhotoBytesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$progressPhotoBytesHash() =>
+    r'10e9dc36b5f9890bf409e96056e4d1f85f1cd2b1';
+
+/// The decrypted image of the photo [photoId]. It stays in memory only.
+
+final class ProgressPhotoBytesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Uint8List>, String> {
+  ProgressPhotoBytesFamily._()
+    : super(
+        retry: null,
+        name: r'progressPhotoBytesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// The decrypted image of the photo [photoId]. It stays in memory only.
+
+  ProgressPhotoBytesProvider call(String photoId) =>
+      ProgressPhotoBytesProvider._(argument: photoId, from: this);
+
+  @override
+  String toString() => r'progressPhotoBytesProvider';
+}
+
 /// The progress photos of the signed-in user, oldest day first.
 
 @ProviderFor(progressPhotos)

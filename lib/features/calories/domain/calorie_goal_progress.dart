@@ -39,6 +39,16 @@ class CalorieGoalProgress {
   /// Learned TDEE of every finished run, first to last.
   final List<CalorieGoalProgressTdee> tdeePoints;
 
+  /// The weight of [day]: its trend weight, else its weigh-in, if any.
+  double? weightKgOn(DateTime day) {
+    for (final weight in weights) {
+      if (weight.day == day) {
+        return weight.trendWeightKg ?? weight.scaleWeightKg;
+      }
+    }
+    return null;
+  }
+
   /// Latest trend weight, if any.
   double? get latestTrendWeightKg {
     for (final weight in weights.reversed) {
