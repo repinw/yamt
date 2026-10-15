@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/features/health/data/progress_photo_repository.dart';
@@ -24,6 +25,9 @@ class FakeProgressPhotoRepository extends Fake
 
   /// The error the next save throws, if any.
   Exception? saveError;
+
+  /// The error the next delete throws, if any.
+  Exception? deleteError;
 
   /// The sources the picker was opened with.
   final pickedSources = <ImageSource>[];
@@ -68,6 +72,20 @@ class FakeProgressPhotoRepository extends Fake
       ..add(photo);
     _changes.add(photos);
     return photo;
+  }
+
+  @override
+  Future<Uint8List> loadPhotoBytes(String photoId) async =>
+      img.encodePng(img.Image(width: 1, height: 1));
+
+  @override
+  Future<void> deletePhoto(String photoId) async {
+    await Future<void>.delayed(Duration.zero);
+    if (deleteError case final error?) {
+      throw error;
+    }
+    _photos.removeWhere((photo) => photo.id == photoId);
+    _changes.add(photos);
   }
 
   /// Closes the change stream.

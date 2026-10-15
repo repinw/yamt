@@ -60,13 +60,17 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   saves a calorie quick entry through the calories entry saver without an
   inventory item.
 - `presentation/progress_photo_capture_flow.dart`
-  (`showProgressPhotoCapture`) is public UI for `features/home`: the sheet
+  (`showProgressPhotoCapture`) is public UI for `features/home` and
+  `features/progress`: the sheet
   that adds a progress photo for a pose and a day, from the camera or the
   gallery, and saves it through the Health progress photo repository. Diary
   owns it because the weekly check-in adds photos too: its photo step shows
   the first, a middle, and today's photo of a pose since the goal start.
   `presentation/widgets/progress_photo_frame.dart` (`ProgressPhotoFrame`) is
-  public UI too: one decrypted photo in a portrait frame.
+  public UI for `features/progress` too: one decrypted photo in a portrait
+  frame. So is `progressPhotoPoseLabel` in
+  `presentation/widgets/progress_photo_capture_sheet.dart`, the name of a
+  pose.
 - `presentation/widgets/diary_meals_empty_state.dart` points to the "Essen"
   button on a day without logged food.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the

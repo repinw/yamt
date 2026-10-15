@@ -9,6 +9,7 @@ import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/controllers/progress_scope_controller.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_day_type_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_goal_card.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_photo_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_scope_switch.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_tdee_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_week_section.dart';
@@ -29,6 +30,7 @@ class ProgressPage extends ConsumerWidget {
     final scope = ref.watch(progressScopeControllerProvider);
     final isGoal = scope == ProgressScope.goal;
     final sections = <Widget>[
+      ProgressPhotoSection(scope: scope),
       if (isGoal) const ProgressWeekSection(),
       ProgressWeightSection(scope: scope),
       ProgressTdeeSection(scope: scope),

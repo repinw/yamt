@@ -877,9 +877,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(_headerActionKey), findsOneWidget);
 
-    GoRouter.of(
-      tester.element(find.byKey(_headerToolKey)),
-    ).go(AppRoutes.homeProgress);
+    GoRouter.of(tester.element(find.byKey(_headerToolKey)))
+        .go(AppRoutes.homeProgress);
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeActionPanel), findsNothing);

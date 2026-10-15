@@ -9962,6 +9962,12 @@ abstract class AppLocalizations {
   /// **'Weigh in'**
   String get homeActionWeigh;
 
+  /// Fortschritt bar button that opens the weigh-in and photo actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Log'**
+  String get homeActionProgress;
+
   /// No description provided for @cookbookFreeCookingAction.
   ///
   /// In en, this message translates to:
@@ -11119,6 +11125,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Photo'**
   String get diaryCheckInPhotoAdd;
+
+  /// No description provided for @progressPhotosKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos · before / after'**
+  String get progressPhotosKicker;
+
+  /// No description provided for @progressPhotosEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No photos yet. Add one, or take it at the next check-in.'**
+  String get progressPhotosEmpty;
+
+  /// No description provided for @progressPhotosAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get progressPhotosAdd;
+
+  /// No description provided for @progressPhotosAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All photos'**
+  String get progressPhotosAll;
+
+  /// No description provided for @progressPhotosCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare'**
+  String get progressPhotosCompare;
+
+  /// No description provided for @progressPhotosBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Before'**
+  String get progressPhotosBefore;
+
+  /// No description provided for @progressPhotosAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'After'**
+  String get progressPhotosAfter;
+
+  /// No description provided for @progressPhotosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get progressPhotosTitle;
+
+  /// No description provided for @progressPhotosGoalGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {number} · since {date}'**
+  String progressPhotosGoalGroup(int number, String date);
+
+  /// No description provided for @progressPhotosBeforeGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Before the first goal'**
+  String get progressPhotosBeforeGoals;
+
+  /// No description provided for @progressPhotosWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{weeks, plural, =0{this week} =1{in 1 week} other{in {weeks} weeks}}'**
+  String progressPhotosWeeks(int weeks);
+
+  /// No description provided for @progressPhotoDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete photo?'**
+  String get progressPhotoDeleteTitle;
+
+  /// No description provided for @progressPhotoDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo is deleted for good.'**
+  String get progressPhotoDeleteBody;
+
+  /// No description provided for @progressPhotoDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get progressPhotoDelete;
+
+  /// No description provided for @progressPhotoDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the photo.'**
+  String get progressPhotoDeleteFailed;
+
+  /// No description provided for @progressPhotoCompareTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare'**
+  String get progressPhotoCompareTitle;
+
+  /// No description provided for @progressPhotoCompareSlider.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare before and after'**
+  String get progressPhotoCompareSlider;
 }
 
 class _AppLocalizationsDelegate

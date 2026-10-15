@@ -38,6 +38,8 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
+import 'package:yamt/features/progress/presentation/progress_photo_compare_page.dart';
+import 'package:yamt/features/progress/presentation/progress_photos_page.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
@@ -162,6 +164,19 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.homeSettingsGoalArchive,
       builder: (context, state) => const CalorieGoalArchivePage(),
+    ),
+    GoRoute(
+      path: AppRoutes.homeProgressPhotos,
+      builder: (context, state) => const ProgressPhotosPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.homeProgressPhotoCompare,
+      builder: (context, state) => ProgressPhotoComparePage(
+        poseName:
+            state.uri.queryParameters[AppRoutes.homeProgressPhotoPoseParam],
+        scopeName:
+            state.uri.queryParameters[AppRoutes.homeProgressPhotoScopeParam],
+      ),
     ),
     GoRoute(
       path: AppRoutes.homeInventoryReceiptReview,

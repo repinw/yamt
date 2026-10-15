@@ -6026,6 +6026,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeActionWeigh => 'Wiegen';
 
   @override
+  String get homeActionProgress => 'Erfassen';
+
+  @override
   String get cookbookFreeCookingAction => 'Frei kochen';
 
   @override
@@ -6786,4 +6789,68 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryCheckInPhotoAdd => 'Foto';
+
+  @override
+  String get progressPhotosKicker => 'Fotos · Vorher / Nachher';
+
+  @override
+  String get progressPhotosEmpty =>
+      'Noch keine Fotos. Füg eins hinzu oder mach es im nächsten Check-in.';
+
+  @override
+  String get progressPhotosAdd => 'Foto hinzufügen';
+
+  @override
+  String get progressPhotosAll => 'Alle Fotos';
+
+  @override
+  String get progressPhotosCompare => 'Vergleichen';
+
+  @override
+  String get progressPhotosBefore => 'Vorher';
+
+  @override
+  String get progressPhotosAfter => 'Nachher';
+
+  @override
+  String get progressPhotosTitle => 'Fotos';
+
+  @override
+  String progressPhotosGoalGroup(int number, String date) {
+    return 'Ziel $number · seit $date';
+  }
+
+  @override
+  String get progressPhotosBeforeGoals => 'Vor dem ersten Ziel';
+
+  @override
+  String progressPhotosWeeks(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: 'in $weeks Wochen',
+      one: 'in 1 Woche',
+      zero: 'diese Woche',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressPhotoDeleteTitle => 'Foto löschen?';
+
+  @override
+  String get progressPhotoDeleteBody => 'Das Foto wird endgültig gelöscht.';
+
+  @override
+  String get progressPhotoDelete => 'Löschen';
+
+  @override
+  String get progressPhotoDeleteFailed =>
+      'Das Foto konnte nicht gelöscht werden.';
+
+  @override
+  String get progressPhotoCompareTitle => 'Vergleich';
+
+  @override
+  String get progressPhotoCompareSlider => 'Vorher und Nachher vergleichen';
 }

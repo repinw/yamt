@@ -127,6 +127,27 @@ abstract final class AppRoutes {
   /// Progress home route.
   static const homeProgress = '/home/progress';
 
+  /// All progress photos, grouped by goal.
+  static const homeProgressPhotos = '/home/progress/photos';
+
+  /// The before and after comparison of the progress photos.
+  static const homeProgressPhotoCompare = '/home/progress/photos/compare';
+
+  /// Query parameter with the pose that the comparison opens with.
+  static const homeProgressPhotoPoseParam = 'pose';
+
+  /// Query parameter with the Fortschritt scope that the comparison covers.
+  static const homeProgressPhotoScopeParam = 'scope';
+
+  /// The comparison opened with the pose named [pose] in the scope named
+  /// [scope].
+  static String homeProgressPhotoComparePath({
+    required String pose,
+    required String scope,
+  }) =>
+      '$homeProgressPhotoCompare?$homeProgressPhotoPoseParam=$pose'
+      '&$homeProgressPhotoScopeParam=$scope';
+
   /// Settings route, opened from the home side menu.
   static const homeSettings = '/home/settings';
 

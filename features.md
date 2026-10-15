@@ -19,7 +19,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   The tab header and the bottom navigation stay in place while a tab
   scrolls. In the middle of the bar a round button in the accent color opens
   the actions of the current tab, with a haptic pulse; its word changes per
-  tab ("Hinzufügen", "Essen", "Kochen", "Wiegen").
+  tab ("Hinzufügen", "Essen", "Kochen", "Erfassen").
   The actions open like the side menu, but mirrored: the page slides to the
   left and shrinks, and the actions stand at the bottom right, where the
   thumb is. The app counts on the device how often each action is tapped;
@@ -375,6 +375,14 @@ and feature description docs. This is product-facing; architecture rules stay in
     macro colors (protein red, carbs blue, fat yellow) by kcal share; the part
     over the goal is hatched orange. Under them the average grams per macro
     against their goals;
+  - progress photos, under the goal card: pose chips, "Vorher" (the first
+    photo of the pose in the scope; in Gesamt also photos from before the
+    first goal) next to "Nachher" (the newest), each with its day and weight,
+    the weight change between them and the weeks in between. "Alle Fotos"
+    opens every photo grouped by goal, newest first; a long press deletes a
+    photo after a question. "Vergleichen" lays both photos on top of each
+    other with a slider between them; both days can be picked. Without
+    photos the section offers "Foto hinzufügen";
   - the weight trend: weigh-ins as squares, the trend as a line through gaps,
     the trend per week, and the day the trend reaches the goal weight;
   - the daily TDEE: a line per day from the first goal on, the value that
@@ -383,7 +391,7 @@ and feature description docs. This is product-facing; architecture rules stay in
     TDEE, the change since yesterday and this week, and the next check-in;
   - training days against rest days up to yesterday: days of each,
     and average kcal, protein, carbs, and fat.
-- The round button of the bar ("Wiegen") opens the Fortschritt actions:
+- The round button of the bar ("Erfassen") opens the Fortschritt actions:
   - "Wiegen" opens the weight entry for today, filled with the last weigh-in
     of the weight chart. Saving updates the weight trend and the goal right
     away.
