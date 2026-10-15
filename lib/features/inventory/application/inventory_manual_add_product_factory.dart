@@ -74,12 +74,16 @@ GlobalFoodItem buildInventoryManualAddGlobalFoodItem({
 }
 
 /// Builds inventory item persisted from manual add selection.
+///
+/// Without [inCatalog], [globalProduct] is not in the shared catalog, so the
+/// item gets its pending id instead of the catalog id.
 InventoryItem buildInventoryManualAddSavedItem({
   required String id,
   required GlobalFoodItem globalProduct,
   required DateTime now,
   required String storeName,
   required String? inventoryWeight,
+  required bool inCatalog,
   String? imageUrl,
   bool aiEstimated = false,
 }) {
@@ -87,7 +91,7 @@ InventoryItem buildInventoryManualAddSavedItem({
     id: id,
     // An AI estimate gets no catalog document, so it keeps a pending id
     // like a swapped one (#701).
-    globalFoodItemId: aiEstimated
+    globalFoodItemId: aiEstimated || !inCatalog
         ? buildPendingGlobalFoodItemId(globalProduct.resolvedFoodFingerprint)
         : globalProduct.id,
     name: globalProduct.name,

@@ -172,6 +172,11 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     // A private food photo stays on the user's own item only.
     imageUrl: normalizeProductImageUrl(promptResult.item.imageUrl),
     aiEstimated: promptResult.item.aiEstimated,
+    // A save that skips the catalog only has a catalog id when the user
+    // picked a catalog product (#698).
+    inCatalog:
+        result.requiresGlobalPersistence ||
+        result.selectedGlobalFoodItemId != null,
   );
   final savedItem = adjustItem?.call(builtItem) ?? builtItem;
   final inventorySaved =
@@ -192,7 +197,11 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
         container: container,
         globalProduct: globalProduct,
         requiresGlobalPersistence: result.requiresGlobalPersistence,
-        barcode: promptResult.barcode,
+        // The barcode candidate shows the whole product to other users, so a
+        // product outside the catalog gets none (#698).
+        barcode: isPendingGlobalFoodItemId(builtItem.globalFoodItemId)
+            ? null
+            : promptResult.barcode,
         selectedAt: now,
       ),
     );

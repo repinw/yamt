@@ -71,6 +71,7 @@ void main() {
       now: DateTime.parse('2026-04-13T10:00:00Z'),
       storeName: 'Added manually',
       inventoryWeight: '300 ml',
+      inCatalog: true,
     );
 
     expect(savedItem.id, 'inventory-1');
@@ -97,9 +98,32 @@ void main() {
       storeName: 'Added manually',
       inventoryWeight: '300 ml',
       aiEstimated: true,
+      inCatalog: true,
     );
 
     expect(savedItem.aiEstimated, isTrue);
+    expect(isPendingGlobalFoodItemId(savedItem.globalFoodItemId), isTrue);
+  });
+
+  test('a product outside the catalog keeps a pending id (#698)', () {
+    final globalItem = buildInventoryManualAddGlobalFoodItem(
+      item: _milkItem(weight: '300 ml'),
+      barcode: '4006381333931',
+      now: DateTime.parse('2026-04-13T10:00:00Z'),
+      packageWeight: null,
+      manualGlobalFoodItemId: 'manual-1',
+    );
+
+    final savedItem = buildInventoryManualAddSavedItem(
+      id: 'inventory-1',
+      globalProduct: globalItem,
+      now: DateTime.parse('2026-04-13T10:00:00Z'),
+      storeName: 'Added manually',
+      inventoryWeight: '300 ml',
+      inCatalog: false,
+    );
+
+    expect(savedItem.aiEstimated, isFalse);
     expect(isPendingGlobalFoodItemId(savedItem.globalFoodItemId), isTrue);
   });
 
@@ -123,6 +147,7 @@ void main() {
       storeName: 'Added manually',
       inventoryWeight: '300 ml',
       imageUrl: photo,
+      inCatalog: true,
     );
 
     expect(globalItem.imageUrl, isNull);

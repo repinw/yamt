@@ -350,6 +350,9 @@ void main() {
         overrides: [
           plannedEntryRepositoryProvider.overrideWithValue(plans),
           clockProvider.overrideWithValue(() => DateTime(2026, 4, 12, 20)),
+          globalFoodItemRepositoryProvider.overrideWithValue(
+            FakeGlobalFoodItemRepository(),
+          ),
         ],
         onRun: (context, container, l10n) async {
           completion = await completeProductSearchHubResult(
@@ -367,6 +370,7 @@ void main() {
                 loggedAt: DateTime(2026, 4, 13, 12),
                 mealType: MealType.lunch,
               ),
+              requiresGlobalPersistence: true,
             ),
           );
         },
@@ -556,6 +560,11 @@ void main() {
       _buildCompletionHarness(
         inventoryController: inventoryController,
         barcodeRepository: barcodeRepository,
+        overrides: [
+          globalFoodItemRepositoryProvider.overrideWithValue(
+            FakeGlobalFoodItemRepository(),
+          ),
+        ],
         onRun: (context, container, l10n) async {
           completion = await completeProductSearchHubResult(
             context: context,
@@ -563,7 +572,10 @@ void main() {
             l10n: l10n,
             args: const ProductSearchHubRouteArgs.inventory(),
             sourceKey: 'manual-source',
-            result: _manualResult(skipMissingBarcodePrompt: false),
+            result: _manualResult(
+              skipMissingBarcodePrompt: false,
+              requiresGlobalPersistence: true,
+            ),
           );
         },
       ),
@@ -711,6 +723,89 @@ void main() {
 
       expect(catalog.appendedItems, isEmpty);
       expect(savedItems.single.aiEstimated, isTrue);
+    });
+  });
+
+  group('barcode candidate', () {
+    Future<(List<InventoryItem>, List<String>)> save(
+      WidgetTester tester,
+      InventoryReceiptManualProductResult result,
+    ) async {
+      final inventoryController = _RecordingInventoryItemsController();
+      final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository();
+      await tester.pumpWidget(
+        _buildCompletionHarness(
+          inventoryController: inventoryController,
+          barcodeRepository: barcodeRepository,
+          overrides: [
+            globalFoodItemRepositoryProvider.overrideWithValue(
+              FakeGlobalFoodItemRepository(),
+            ),
+          ],
+          onRun: (context, container, l10n) async {
+            await completeProductSearchHubResult(
+              context: context,
+              container: container,
+              l10n: l10n,
+              args: const ProductSearchHubRouteArgs.inventory(),
+              sourceKey: 'manual-source',
+              result: result,
+            );
+          },
+        ),
+      );
+
+      await tester.tap(find.text('run'));
+      await tester.pumpAndSettle();
+
+      return (
+        inventoryController.addedItems,
+        barcodeRepository.recordedBarcodes,
+      );
+    }
+
+    testWidgets('a product outside the catalog gets none and a pending id '
+        '(#698)', (tester) async {
+      final (items, barcodes) = await save(
+        tester,
+        _manualResult(item: _manualItem().copyWith(barcode: '4006381333931')),
+      );
+
+      expect(barcodes, isEmpty);
+      expect(isPendingGlobalFoodItemId(items.single.globalFoodItemId), isTrue);
+    });
+
+    testWidgets('a picked catalog product keeps its id and its barcode', (
+      tester,
+    ) async {
+      final (items, barcodes) = await save(
+        tester,
+        InventoryReceiptManualProductResult(
+          item: _manualItem().copyWith(barcode: '4006381333931'),
+          action: InventoryReceiptManualProductAction.addToInventory,
+          requiresGlobalPersistence: false,
+          skipMissingBarcodePrompt: true,
+          selectedGlobalFoodItemId: 'catalog-muesli',
+        ),
+      );
+
+      expect(barcodes, ['4006381333931']);
+      expect(items.single.globalFoodItemId, 'catalog-muesli');
+    });
+
+    testWidgets('a new product for the catalog records its barcode', (
+      tester,
+    ) async {
+      final (items, barcodes) = await save(
+        tester,
+        _manualResult(
+          item: _manualItem().copyWith(barcode: '4006381333931'),
+          requiresGlobalPersistence: true,
+        ),
+      );
+
+      expect(barcodes, ['4006381333931']);
+      expect(isPendingGlobalFoodItemId(items.single.globalFoodItemId), isFalse);
     });
   });
 
@@ -969,13 +1064,14 @@ InventoryReceiptManualProductResult _manualResult({
   InventoryItem? item,
   EatSelection? eatSelection,
   bool skipMissingBarcodePrompt = true,
+  bool requiresGlobalPersistence = false,
 }) {
   return InventoryReceiptManualProductResult(
     item: item ?? _manualItem(),
     action: eatSelection == null
         ? InventoryReceiptManualProductAction.addToInventory
         : InventoryReceiptManualProductAction.eatNow,
-    requiresGlobalPersistence: false,
+    requiresGlobalPersistence: requiresGlobalPersistence,
     skipMissingBarcodePrompt: skipMissingBarcodePrompt,
     eatSelection: eatSelection,
   );
