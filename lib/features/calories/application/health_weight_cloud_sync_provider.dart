@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/app_update/data/app_client_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
@@ -13,6 +14,9 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 
 part 'health_weight_cloud_sync_provider.g.dart';
 
+// Health deletions older than this stay in the cloud: Health may not return
+// older samples without its history access.
+const _mirrorDays = 30;
 const _logName = 'HealthWeightCloudSync';
 
 /// Copies the Health weights of this device to the cloud, so every device
@@ -26,11 +30,13 @@ const _logName = 'HealthWeightCloudSync';
 @riverpod
 Future<void> healthWeightCloudSync(Ref ref) async {
   final today = ref.watch(diaryTodayProvider);
-  if (ref.watch(userDataCipherProvider) == null) {
+  final cipher = ref.watch(userDataCipherProvider);
+  if (cipher == null) {
     // No data key yet: nothing can be stored encrypted.
     return;
   }
   final repository = ref.watch(healthWeightSampleRepositoryProvider);
+  final clientRepository = ref.watch(appClientRepositoryProvider);
   final healthWeightService = ref.watch(healthWeightServiceProvider);
   final firstGoalStartFuture = ref.watch(
     calorieGoalControllerProvider.selectAsync(
@@ -46,16 +52,23 @@ Future<void> healthWeightCloudSync(Ref ref) async {
         !ref.mounted) {
       return;
     }
-    final samples = await healthWeightService.loadWeightSamples(
-      // The first check-in takes its start weight from the day before the
-      // first counting day.
-      startInclusive: previousDiaryDay(firstGoalStart),
-      endExclusive: nextDiaryDay(today),
+    // The first check-in takes its start weight from the day before the
+    // first counting day.
+    final loadStart = previousDiaryDay(firstGoalStart);
+    final recentStart = addDiaryDays(today, -_mirrorDays);
+    final activeDevices = await clientRepository.loadActiveInstallIds(
+      uid: cipher.uid,
+      since: addDiaryDays(today, -_mirrorDays),
     );
-    if (!ref.mounted) {
-      return;
-    }
-    await repository.addSamples(samples);
+    await repository.syncDevice(
+      activeDevices: activeDevices,
+      loadHealth: () => healthWeightService.loadWeightSamples(
+        startInclusive: loadStart,
+        endExclusive: nextDiaryDay(today),
+      ),
+      // Only days the load covers can show a deletion.
+      mirrorSince: recentStart.isAfter(loadStart) ? recentStart : loadStart,
+    );
   } on Object catch (error, stackTrace) {
     log(
       'Failed to sync Health weights to the cloud.',

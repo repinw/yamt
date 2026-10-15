@@ -72,7 +72,7 @@ final class DiaryActivityWeightDataProvider
 }
 
 String _$diaryActivityWeightDataHash() =>
-    r'4539427532a0145311368a338d364aa343c99c7b';
+    r'9d05a0ee4660cd7cf016158c937dca4a3de5f084';
 
 /// Provides weight data for the selected diary day.
 

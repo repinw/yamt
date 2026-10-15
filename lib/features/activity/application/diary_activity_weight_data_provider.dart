@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/application/calorie_goal_controller.dart'
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/health_connection_controller.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 
 part 'diary_activity_weight_data_provider.g.dart';
@@ -23,6 +24,7 @@ Future<DiaryActivityWeightData> diaryActivityWeightData(
     final manualEntriesFuture = ref.watch(
       manualHealthWeightEntriesControllerProvider.future,
     );
+    final weightsFuture = ref.watch(weightSeriesProvider.future);
     final service = ref.watch(diaryActivityWeightServiceProvider);
     final healthWeightService = ref.watch(healthWeightServiceProvider);
     final status = await statusFuture;
@@ -30,6 +32,10 @@ Future<DiaryActivityWeightData> diaryActivityWeightData(
       throw StateError('Diary activity weight provider disposed.');
     }
     final manualEntries = await manualEntriesFuture;
+    if (!ref.mounted) {
+      throw StateError('Diary activity weight provider disposed.');
+    }
+    final weights = await weightsFuture;
     if (!ref.mounted) {
       throw StateError('Diary activity weight provider disposed.');
     }
@@ -42,6 +48,7 @@ Future<DiaryActivityWeightData> diaryActivityWeightData(
           : DiaryActivityWeightProfile(weightKg: calculatorProfile.weightKg),
       healthStatus: status,
       manualEntries: manualEntries,
+      weightByDay: weights.rawByDay,
       healthWeightService: healthWeightService,
       isCancelled: () => !ref.mounted,
     );

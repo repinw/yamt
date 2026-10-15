@@ -95,4 +95,23 @@ void main() {
     final u2 = await firestore.collection('users/u2/clients').get();
     expect(u1.docs.single.id, u2.docs.single.id);
   });
+
+  test('lists the install ids seen since a day', () async {
+    for (final (id, seen) in [
+      ('phone', DateTime.utc(2026, 10, 6)),
+      ('old-phone', DateTime.utc(2026, 8)),
+    ]) {
+      await firestore.doc('users/u1/clients/$id').set({
+        'last_seen_at': Timestamp.fromDate(seen),
+      });
+    }
+
+    expect(
+      await repository.loadActiveInstallIds(
+        uid: 'u1',
+        since: DateTime.utc(2026, 9, 7),
+      ),
+      {'phone'},
+    );
+  });
 }

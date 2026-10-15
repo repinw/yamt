@@ -60,4 +60,4 @@ final class HealthWeightSampleRepositoryProvider
 }
 
 String _$healthWeightSampleRepositoryHash() =>
-    r'323b1daa5d70e3e5973408391eeabe5a997557fb';
+    r'2633559d4f154e5919dfe93bf789ae8add55a6f9';

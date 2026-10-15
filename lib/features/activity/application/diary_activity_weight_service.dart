@@ -18,11 +18,16 @@ class DiaryActivityWeightService {
   const new();
 
   /// Loads weight data for the selected seven-day window.
+  ///
+  /// [weightByDay] is the weight of each day from the weights of all
+  /// devices; the Health store of this device only gives the samples this
+  /// app may delete.
   Future<DiaryActivityWeightData> load({
     required DateTime day,
     required DiaryActivityWeightProfile? profile,
     required HealthConnectionStatus healthStatus,
     required List<ManualHealthWeightEntry> manualEntries,
+    required Map<String, double> weightByDay,
     required HealthWeightService healthWeightService,
     bool Function()? isCancelled,
   }) async {
@@ -45,11 +50,6 @@ class DiaryActivityWeightService {
 
     final manualWeightByDay = <String, double>{
       for (final entry in manualEntries) diaryDayKey(entry.day): entry.weightKg,
-    };
-    final weightByDay = <String, double>{
-      for (final entry in healthWeightByDay.entries)
-        entry.key: entry.value.weightKg,
-      ...manualWeightByDay,
     };
     final selectedDayKey = diaryDayKey(selectedDay);
     final weightDays = days

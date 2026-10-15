@@ -37,7 +37,7 @@ class HealthWeightSample {
   final String? sourcePackageName;
 
   /// Whether this sample was written by this app.
-  @JsonKey(name: 'fromThisApp')
+  @JsonKey(name: 'fromThisApp', required: true, disallowNullValue: true)
   final bool isFromThisApp;
 
   /// Encodes the payload of a cloud copy.
