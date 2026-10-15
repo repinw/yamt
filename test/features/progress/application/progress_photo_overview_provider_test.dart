@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/features/progress/application/progress_photo_overview_provider.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
@@ -17,7 +18,11 @@ ProgressPhoto _photo(String id, DateTime day, {double? weightKg}) =>
       weightKg: weightKg,
     );
 
-Future<ProgressPhotoOverview> _overview(ProgressScope scope) async {
+Future<ProgressPhotoOverview> _overview(
+  ProgressScope scope, {
+  List<ProgressPhoto> olderPhotos = const [],
+  List<ManualHealthWeightEntry> extraWeighIns = const [],
+}) async {
   final settings = FakeCalorieSettingsRepository(
     initialSettings: progressSettings(),
   );
@@ -25,7 +30,9 @@ Future<ProgressPhotoOverview> _overview(ProgressScope scope) async {
   final calorieLog = FakeCalorieLogRepository();
   addTearDown(calorieLog.dispose);
   final photos = FakeProgressPhotoRepository(
+    // Oldest first, as the repository returns them.
     photos: [
+      ...olderPhotos,
       _photo('before', DateTime(2026, 9)),
       _photo('start', DateTime(2026, 9, 7)),
       _photo('typed', DateTime(2026, 9, 12), weightKg: 90),
@@ -37,6 +44,7 @@ Future<ProgressPhotoOverview> _overview(ProgressScope scope) async {
       settingsRepository: settings,
       calorieLog: calorieLog,
       photos: photos,
+      extraWeighIns: extraWeighIns,
     ),
   );
   addTearDown(container.dispose);
@@ -74,5 +82,17 @@ void main() {
     expect(overview.dayWeightsKg[DateTime(2026, 9, 12)], isNotNull);
     expect(overview.weightKg(overview.photos.last), 90);
     expect(overview.weightKg(overview.photos[1]), isNotNull);
+  });
+
+  test('a photo of years ago gets the weight of its day', () async {
+    final longAgo = DateTime(2024, 3, 4);
+    final overview = await _overview(
+      ProgressScope.all,
+      olderPhotos: [_photo('old', longAgo)],
+      extraWeighIns: [ManualHealthWeightEntry(day: longAgo, weightKg: 101)],
+    );
+
+    expect(overview.dayWeightsKg[longAgo], isNotNull);
+    expect(overview.weightKg(overview.photos.first), isNotNull);
   });
 }
