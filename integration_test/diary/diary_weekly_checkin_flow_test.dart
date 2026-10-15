@@ -187,6 +187,14 @@ void main() {
 
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
+    // The photo step: pose chips and the slot for today's photo.
+    expect(
+      find.byKey(DiaryWeeklyCheckInSheetKeys.photoPose('front')),
+      findsOneWidget,
+    );
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.photoAdd), findsOneWidget);
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.startWeekButton));
     await tester.pumpAndSettle();
 
@@ -221,6 +229,8 @@ void main() {
 
     // The section opens the due check-in; apply it as it is.
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));

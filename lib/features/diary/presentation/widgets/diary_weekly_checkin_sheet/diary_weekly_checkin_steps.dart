@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_weekly_checkin_sheet_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_number_format.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_photo_step.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_review_step.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_frame.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
@@ -11,7 +14,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sh
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_training_step.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// The three steps of a ready check-in in one frame.
+/// The four steps of a ready check-in in one frame.
 class DiaryWeeklyCheckInSteps extends ConsumerWidget {
   /// Creates the steps of a ready check-in.
   const new({
@@ -86,7 +89,7 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
         dock: [
           FilledButton(
             key: DiaryWeeklyCheckInSheetKeys.nextButton,
-            onPressed: () => controller().goTo(DiaryWeeklyCheckInStep.targets),
+            onPressed: () => controller().goTo(DiaryWeeklyCheckInStep.photo),
             child: Text(l10n.diaryCheckInNext),
           ),
         ],
@@ -101,10 +104,29 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
           ),
         ],
       ),
-      DiaryWeeklyCheckInStep.targets => DiaryWeeklyCheckInSheetFrame(
+      DiaryWeeklyCheckInStep.photo => DiaryWeeklyCheckInSheetFrame(
         kicker: _nextRunKicker(l10n),
         stepIndex: 2,
         onBack: () => controller().goTo(DiaryWeeklyCheckInStep.training),
+        dock: [
+          FilledButton(
+            key: DiaryWeeklyCheckInSheetKeys.nextButton,
+            onPressed: () => controller().goTo(DiaryWeeklyCheckInStep.targets),
+            child: Text(l10n.diaryCheckInNext),
+          ),
+        ],
+        children: [
+          DiaryWeeklyCheckInPhotoStep(
+            sheet: controllerProvider,
+            today: normalizeLocalDay(ref.watch(clockProvider)()),
+            format: format,
+          ),
+        ],
+      ),
+      DiaryWeeklyCheckInStep.targets => DiaryWeeklyCheckInSheetFrame(
+        kicker: _nextRunKicker(l10n),
+        stepIndex: 3,
+        onBack: () => controller().goTo(DiaryWeeklyCheckInStep.photo),
         dock: [
           FilledButton(
             key: DiaryWeeklyCheckInSheetKeys.startWeekButton,

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -13,7 +15,13 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_result.dart';
+import 'package:yamt/features/diary/presentation/widgets/progress_photo_capture_sheet.dart';
+import 'package:yamt/features/diary/presentation/widgets/progress_photo_frame.dart';
+import 'package:yamt/features/health/data/progress_photo_repository.dart';
+import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../../helpers/fake_progress_photo_repository.dart';
 
 final _today = DateTime(2026, 4, 20);
 
@@ -45,6 +53,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('4'), findsOneWidget);
 
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
     expect(find.text('Daily goal on average'.toUpperCase()), findsOneWidget);
@@ -90,6 +100,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.startWeekButton));
     await tester.pumpAndSettle();
 
@@ -97,6 +109,57 @@ void main() {
     expect(results.single!.training!.trainingDays, plan.suggestedTrainingDays);
     expect(results.single!.training!.runDay, plan.nextRunDays.first);
     semantics.dispose();
+  });
+
+  testWidgets("the photo step adds today's photo of the picked pose", (
+    tester,
+  ) async {
+    final photos = FakeProgressPhotoRepository(
+      pickedImage: Uint8List.fromList(<int>[1, 2, 3]),
+    );
+    addTearDown(photos.dispose);
+    await tester.pumpWidget(
+      _scoped(
+        _App(checkInData: _readyData(), onResult: (_) {}),
+        photos: photos,
+      ),
+    );
+    await _openSheet(tester);
+    for (var step = 0; step < 2; step++) {
+      await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+      await tester.pumpAndSettle();
+    }
+
+    expect(find.text('Your way so far'), findsOneWidget);
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.photoPose('side')));
+    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.byKey(DiaryWeeklyCheckInSheetKeys.photoAdd));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ProgressPhotoCaptureSheet.cameraKey));
+    await tester.pumpAndSettle();
+
+    expect(photos.photos.single.pose, ProgressPhotoPose.side);
+    expect(find.byType(ProgressPhotoFrame), findsOneWidget);
+  });
+
+  testWidgets('the photo step names a failed photo load', (tester) async {
+    final photos = FakeProgressPhotoRepository()
+      ..watchError = Exception('offline');
+    addTearDown(photos.dispose);
+    await tester.pumpWidget(
+      _scoped(
+        _App(checkInData: _readyData(), onResult: (_) {}),
+        photos: photos,
+      ),
+    );
+    await _openSheet(tester);
+    for (var step = 0; step < 2; step++) {
+      await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+      await tester.pumpAndSettle();
+    }
+
+    expect(find.text('The photos could not be loaded.'), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.photoAdd), findsNothing);
   });
 
   testWidgets('keeping the previous TDEE returns reject', (tester) async {
@@ -117,6 +180,8 @@ void main() {
       tester,
       find.byKey(DiaryWeeklyCheckInSheetKeys.noSessionButton),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
@@ -268,12 +333,18 @@ CalorieWeeklyCheckInPlan _latePlan() {
   );
 }
 
-Widget _scoped(Widget app, {CalorieWeeklyCheckInPlan? plan}) {
+Widget _scoped(
+  Widget app, {
+  CalorieWeeklyCheckInPlan? plan,
+  FakeProgressPhotoRepository? photos,
+}) {
   final container = ProviderContainer(
     overrides: [
       calorieWeeklyCheckInPlanProvider.overrideWith(
         (ref) async => plan ?? _demoPlan(),
       ),
+      if (photos != null)
+        progressPhotoRepositoryProvider.overrideWithValue(photos),
     ],
   );
   addTearDown(container.dispose);

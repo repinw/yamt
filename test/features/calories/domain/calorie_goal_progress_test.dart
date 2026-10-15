@@ -45,4 +45,25 @@ void main() {
     expect(points.map((point) => point.tdeeKcal), [2610, 2500]);
     expect(points.first.runEndDate, addDiaryDays(goalStart, 6));
   });
+
+  test('the weight of a day is its trend, else its weigh-in', () {
+    final progress = CalorieGoalProgress(
+      startDate: goalStart,
+      startWeightKg: null,
+      targetWeightKg: null,
+      weights: [
+        (day: goalStart, scaleWeightKg: 80.4, trendWeightKg: 80.1),
+        (
+          day: addDiaryDays(goalStart, 1),
+          scaleWeightKg: 79.9,
+          trendWeightKg: null,
+        ),
+      ],
+      tdeePoints: const [],
+    );
+
+    expect(progress.weightKgOn(goalStart), 80.1);
+    expect(progress.weightKgOn(addDiaryDays(goalStart, 1)), 79.9);
+    expect(progress.weightKgOn(addDiaryDays(goalStart, 2)), isNull);
+  });
 }

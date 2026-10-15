@@ -8,7 +8,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Number of steps of the weekly check-in.
-const diaryWeeklyCheckInStepCount = 3;
+const diaryWeeklyCheckInStepCount = 4;
 
 /// Top bar, scrolling body, and bottom dock of one check-in step.
 class DiaryWeeklyCheckInSheetFrame extends StatelessWidget {

@@ -11042,6 +11042,30 @@ abstract class AppLocalizations {
   /// **'Photo saved'**
   String get progressPhotoSaved;
 
+  /// Day and weight under a progress photo.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} · {kg} kg'**
+  String progressPhotoCaption(String day, String kg);
+
+  /// No description provided for @progressPhotosLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The photos could not be loaded.'**
+  String get progressPhotosLoadFailed;
+
+  /// No description provided for @progressPhotoLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo could not be loaded.'**
+  String get progressPhotoLoadFailed;
+
+  /// No description provided for @progressPhotoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress photo'**
+  String get progressPhotoLabel;
+
   /// No description provided for @progressActionWeighDescription.
   ///
   /// In en, this message translates to:
@@ -11059,6 +11083,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Take a progress photo or pick one from the gallery'**
   String get progressActionPhotoDescription;
+
+  /// No description provided for @diaryCheckInPhotoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your way so far'**
+  String get diaryCheckInPhotoTitle;
+
+  /// No description provided for @diaryCheckInPhotoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Same pose and light as last time.'**
+  String get diaryCheckInPhotoSubtitle;
+
+  /// No description provided for @diaryCheckInPhotoFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'First'**
+  String get diaryCheckInPhotoFirst;
+
+  /// No description provided for @diaryCheckInPhotoMiddle.
+  ///
+  /// In en, this message translates to:
+  /// **'Middle'**
+  String get diaryCheckInPhotoMiddle;
+
+  /// No description provided for @diaryCheckInPhotoNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get diaryCheckInPhotoNew;
+
+  /// No description provided for @diaryCheckInPhotoAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get diaryCheckInPhotoAdd;
 }
 
 class _AppLocalizationsDelegate

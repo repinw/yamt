@@ -1,5 +1,8 @@
 /// Shared fixed dimensions used by widgets.
 abstract final class AppSizes {
+  /// Width to height of a progress photo, portrait 3:4.
+  static const double progressPhotoAspectRatio = 3 / 4;
+
   /// Size of icon container in dialogs.
   static const double dialogIconContainer = 44;
 

@@ -315,11 +315,15 @@ and feature description docs. This is product-facing; architecture rules stay in
   week. The check-in moves the goal at most 200 kcal from the corrected goal
   of the week's last day.
 - Weekly check-in with weight trend, learned TDEE, target refresh, and blocking
-  reasons for missing intake or weight data. It is a tall sheet in three
+  reasons for missing intake or weight data. It is a tall sheet in four
   steps: a look back since the goal start (trend, eaten, training days, weight
   chart, and the TDEE of each run) with the choice "Gemessenen übernehmen" or
   "Bisherigen behalten" and a link to change the goal; the training days of
-  the next run, preset from the last run; and the new targets with the
+  the next run, preset from the last run; the progress photos of a pose
+  ("Dein Weg bisher": the first since the goal start, the one nearest
+  halfway, and today's, each with day and weight), where the slot of today
+  adds or replaces today's photo and "Weiter" skips it; and the new targets
+  with the
   training and rest day split and the macros before and after. "Woche
   starten" saves the choice and the training days. A reached goal shows a
   congratulations page instead of the look back. The goal sheet that the

@@ -18,7 +18,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Pops `true` once the photo is saved.
 class ProgressPhotoCaptureSheet extends ConsumerStatefulWidget {
   /// Creates the sheet.
-  const new({required this.today, super.key});
+  const new({
+    required this.today,
+    this.pose = ProgressPhotoPose.front,
+    super.key,
+  });
 
   /// Key of the camera button.
   static const cameraKey = ValueKey<String>('progress-photo-camera');
@@ -39,6 +43,9 @@ class ProgressPhotoCaptureSheet extends ConsumerStatefulWidget {
   /// The current day, the latest day a photo can have.
   final DateTime today;
 
+  /// The pose picked at first.
+  final ProgressPhotoPose pose;
+
   @override
   ConsumerState<ProgressPhotoCaptureSheet> createState() =>
       _ProgressPhotoCaptureSheetState();
@@ -47,7 +54,7 @@ class ProgressPhotoCaptureSheet extends ConsumerStatefulWidget {
 class _ProgressPhotoCaptureSheetState
     extends ConsumerState<ProgressPhotoCaptureSheet> {
   final _weight = TextEditingController();
-  ProgressPhotoPose _pose = ProgressPhotoPose.front;
+  late ProgressPhotoPose _pose = widget.pose;
   late DateTime _day = widget.today;
   var _weightInvalid = false;
 

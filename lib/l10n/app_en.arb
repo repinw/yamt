@@ -4077,7 +4077,24 @@
   "progressPhotoCamera": "Camera",
   "progressPhotoPrivacy": "Encrypted. Only you see your photos.",
   "progressPhotoSaved": "Photo saved",
+  "progressPhotoCaption": "{day} · {kg} kg",
+  "@progressPhotoCaption": {
+    "description": "Day and weight under a progress photo.",
+    "placeholders": {
+      "day": {"type": "String"},
+      "kg": {"type": "String"}
+    }
+  },
+  "progressPhotosLoadFailed": "The photos could not be loaded.",
+  "progressPhotoLoadFailed": "The photo could not be loaded.",
+  "progressPhotoLabel": "Progress photo",
   "progressActionWeighDescription": "Enter today's weight",
   "progressActionPhoto": "Photo",
-  "progressActionPhotoDescription": "Take a progress photo or pick one from the gallery"
+  "progressActionPhotoDescription": "Take a progress photo or pick one from the gallery",
+  "diaryCheckInPhotoTitle": "Your way so far",
+  "diaryCheckInPhotoSubtitle": "Same pose and light as last time.",
+  "diaryCheckInPhotoFirst": "First",
+  "diaryCheckInPhotoMiddle": "Middle",
+  "diaryCheckInPhotoNew": "New",
+  "diaryCheckInPhotoAdd": "Photo"
 }

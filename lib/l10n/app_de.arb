@@ -3181,7 +3181,17 @@
   "progressPhotoCamera": "Kamera",
   "progressPhotoPrivacy": "Verschlüsselt. Nur du siehst deine Fotos.",
   "progressPhotoSaved": "Foto gespeichert",
+  "progressPhotoCaption": "{day} · {kg} kg",
+  "progressPhotosLoadFailed": "Die Fotos konnten nicht geladen werden.",
+  "progressPhotoLoadFailed": "Das Foto konnte nicht geladen werden.",
+  "progressPhotoLabel": "Fortschrittsfoto",
   "progressActionWeighDescription": "Gewicht für heute eintragen",
   "progressActionPhoto": "Foto",
-  "progressActionPhotoDescription": "Fortschrittsfoto aufnehmen oder aus der Galerie"
+  "progressActionPhotoDescription": "Fortschrittsfoto aufnehmen oder aus der Galerie",
+  "diaryCheckInPhotoTitle": "Dein Weg bisher",
+  "diaryCheckInPhotoSubtitle": "Gleiche Pose, gleiches Licht wie beim letzten Mal.",
+  "diaryCheckInPhotoFirst": "Erstes",
+  "diaryCheckInPhotoMiddle": "Mitte",
+  "diaryCheckInPhotoNew": "Neu",
+  "diaryCheckInPhotoAdd": "Foto"
 }
