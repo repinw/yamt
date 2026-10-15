@@ -2742,6 +2742,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPlanAcceptedWithoutStock => 'Logged – no longer in stock';
 
   @override
+  String get diaryPlanAcceptedRecipe => 'Logged – stock not deducted';
+
+  @override
   String get diaryPlanAcceptFailed => 'Plan could not be logged';
 
   @override
@@ -2800,6 +2803,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryPlanAcceptNutritionPending =>
       'Fill the open rows of the meal first';
+
+  @override
+  String get diaryPlanAcceptRecipePending =>
+      'Match every ingredient of the recipe to a stock item first';
+
+  @override
+  String get diaryPlanAcceptRecipeGone =>
+      'The recipe is no longer in the cookbook';
 
   @override
   String get diaryPlanNutritionPending => 'kcal open';
@@ -5898,6 +5909,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookbookRemoveAction => 'Remove';
+
+  @override
+  String get cookbookEntryMenuHint => 'Show actions';
 
   @override
   String cookbookRemovedMessage(String name) {

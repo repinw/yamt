@@ -18,6 +18,7 @@ class CookbookRecipeCard extends StatelessWidget {
     required this.entry,
     required this.onOpen,
     required this.onRemove,
+    required this.onPlan,
     super.key,
   });
 
@@ -34,12 +35,16 @@ class CookbookRecipeCard extends StatelessWidget {
   /// Removes the recipe.
   final VoidCallback onRemove;
 
+  /// Plans one portion of the recipe for a day.
+  final VoidCallback onPlan;
+
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
     return CookbookEntryInkWell(
       onOpen: onOpen,
       onRemove: onRemove,
+      onPlan: onPlan,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpacing.xs,

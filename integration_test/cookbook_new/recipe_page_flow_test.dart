@@ -9,11 +9,14 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/calories/data/closed_day_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/cookbook_new/presentation/'
     'cookbook_remove_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/recipe_plan_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooking_guide_body.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -45,8 +48,10 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/helpers/fake_prepared_meal_template_repository.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
+import '../../test/helpers/memory_app_preferences.dart';
 
 const _startKey = ValueKey<String>('open-recipe');
 
@@ -243,6 +248,48 @@ void main() {
     expect(find.byKey(RecipePage.cookKey), findsOneWidget);
   });
 
+  testWidgets('plans a portion of the recipe and takes it back', (
+    tester,
+  ) async {
+    final plans = FakePlannedEntryRepository();
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        inventory: _FakeInventoryRepository([
+          _item('mince', 'Hackfleisch'),
+          _item('carrots', 'Karotten'),
+        ]),
+        plans: plans,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(RecipeHero.planKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    // Planned for today with the Vorrat values; nothing is cooked.
+    final plan = plans.plans.single;
+    expect(plan.bundleSourceTemplateId, 'stew');
+    expect(plan.nutritionPending, isFalse);
+    expect(plan.bundleConsumedPortions, 1);
+    expect(meals.saved, isEmpty);
+    expect(find.byType(RecipePage), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(RecipePlanFlow.snackBarKey),
+        matching: find.byType(TextButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(plans.plans, isEmpty);
+  });
+
   testWidgets('a recipe that is gone says so', (tester) async {
     await tester.pumpWidget(
       _app(
@@ -292,6 +339,7 @@ Widget _app({
   required _FakeMealRepository meals,
   required _FakeInventoryRepository inventory,
   FakePreparedMealTemplateRepository? templates,
+  FakePlannedEntryRepository? plans,
   List<bool>? screenOn,
   VoiceSearchService? voice,
 }) {
@@ -351,6 +399,12 @@ Widget _app({
       ),
       kitchenUtensilRepositoryProvider.overrideWithValue(
         _FakeUtensilRepository(),
+      ),
+      plannedEntryRepositoryProvider.overrideWithValue(
+        plans ?? FakePlannedEntryRepository(),
+      ),
+      closedDayRepositoryProvider.overrideWithValue(
+        ClosedDayRepository(MemoryAppPreferences(), 'user-1'),
       ),
     ],
   );

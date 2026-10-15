@@ -27,7 +27,9 @@ void main() {
             ),
             child: Scaffold(
               body: ListView(
-                children: [RecipeHero(recipe: recipe, onRemove: () {})],
+                children: [
+                  RecipeHero(recipe: recipe, onRemove: () {}, onPlan: () {}),
+                ],
               ),
             ),
           ),

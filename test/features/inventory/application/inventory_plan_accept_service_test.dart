@@ -15,6 +15,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_plan_accept_service.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -32,6 +33,8 @@ class _MockPendings extends Mock implements InventoryPendingConsumptionStore;
 class _MockQuickEat extends Mock implements InventoryQuickEatApplication;
 
 class _MockDeleteService extends Mock implements InventoryEntryDeleteService;
+
+class _MockTemplates extends Mock implements PreparedMealTemplateRepository;
 
 final _planDay = DateTime(2026, 10, 6, 8);
 
@@ -112,8 +115,35 @@ CalorieEntry _mealPlan() => CalorieEntry.bundle(
   updatedAt: _planDay,
 );
 
+/// A recipe of two portions with 200 g oats.
+PreparedMeal _recipe({Map<String, List<String>> assignments = const {}}) =>
+    PreparedMeal(
+      id: 'recipe-1',
+      name: 'Porridge',
+      totalPortions: 2,
+      remainingPortions: 2,
+      totalKcal: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      createdAt: DateTime(2026, 10, 5),
+      updatedAt: DateTime(2026, 10, 5),
+      components: const <PreparedMealComponent>[],
+      recipeIngredients: const ['200 g Oats'],
+      recipeIngredientAssignments: assignments,
+    );
+
+/// A reminder of one of four portions of [_recipe].
+CalorieEntry _recipeReminder() => _mealPlan().copyWith(
+  bundleSourcePreparedMealId: null,
+  bundleSourceTemplateId: 'recipe-1',
+  nutritionPending: true,
+  totalKcal: 0,
+);
+
 void main() {
   late FakePlannedEntryRepository plans;
+  late _MockTemplates templates;
   late _MockEatService eatService;
   late _MockPendings pendings;
   late _MockQuickEat quickEat;
@@ -143,6 +173,7 @@ void main() {
     pendings = _MockPendings();
     quickEat = _MockQuickEat();
     deleter = _MockDeleteService();
+    templates = _MockTemplates();
     saved = [];
     when(() => pendings.discard(any())).thenAnswer((_) async => true);
     when(() => pendings.stage(any(), any())).thenAnswer(
@@ -161,6 +192,7 @@ void main() {
         inventoryPendingConsumptionStoreProvider.overrideWithValue(pendings),
         inventoryQuickEatApplicationProvider.overrideWithValue(quickEat),
         inventoryEntryDeleteServiceProvider.overrideWithValue(deleter),
+        preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
         calorieEntrySaverProvider.overrideWithValue((
           entry, {
           scannedSourceRef,
@@ -350,6 +382,81 @@ void main() {
               isFalse,
             )
             .having((error) => error.isMealGone, 'isMealGone', isTrue),
+      ),
+    );
+    expect(saved, isEmpty);
+  });
+
+  test('a recipe reminder takes the values of its matched recipe without '
+      'stock', () async {
+    when(() => templates.readAll()).thenAnswer(
+      (_) async => [
+        _recipe(
+          assignments: const {
+            '200 g Oats': ['oats-1'],
+          },
+        ),
+      ],
+    );
+
+    final result = await service.accept(
+      _recipeReminder(),
+      items: [_oats(id: 'oats-1')],
+      meals: const [],
+    );
+
+    expect(result.missedStock, isFalse);
+    final entry = saved.single;
+    // 400 g oats for four portions, one of them: 100 g at 400 kcal.
+    expect(entry.totalKcal, closeTo(400, 0.01));
+    expect(entry.nutritionPending, isFalse);
+    expect(entry.bundleSourceTemplateId, 'recipe-1');
+    expect(entry.loggedAt, _planDay);
+    verifyNever(() => pendings.stage(any(), any()));
+  });
+
+  test('a recipe reminder takes the best match of an ingredient without a '
+      'saved item and its planned portions', () async {
+    when(() => templates.readAll()).thenAnswer((_) async => [_recipe()]);
+
+    await service.accept(
+      _recipeReminder().copyWith(bundleConsumedPortions: 2),
+      items: [_oats(id: 'oats-2', currentAmount: 100)],
+      meals: const [],
+    );
+
+    // Two of four portions of 400 g oats, though the pack holds 100 g.
+    expect(saved.single.totalKcal, closeTo(800, 0.01));
+  });
+
+  test('a recipe reminder waits while an ingredient has no item', () async {
+    when(() => templates.readAll()).thenAnswer((_) async => [_recipe()]);
+
+    await expectLater(
+      service.accept(_recipeReminder(), items: const [], meals: const []),
+      throwsA(
+        isA<InventoryPlanAcceptException>().having(
+          (error) => error.isNutritionPending,
+          'isNutritionPending',
+          isTrue,
+        ),
+      ),
+    );
+    expect(saved, isEmpty);
+    expect(plans.plans.map((plan) => plan.id), contains('plan-2'));
+  });
+
+  test('a reminder of a removed recipe cannot be eaten', () async {
+    when(() => templates.readAll()).thenAnswer((_) async => const []);
+
+    await expectLater(
+      service.accept(_recipeReminder(), items: const [], meals: const []),
+      throwsA(
+        isA<InventoryPlanAcceptException>().having(
+          (error) => error.isMealGone,
+          'isMealGone',
+          isTrue,
+        ),
       ),
     );
     expect(saved, isEmpty);

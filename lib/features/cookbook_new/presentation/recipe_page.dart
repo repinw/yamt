@@ -13,6 +13,7 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_contr
 import 'package:yamt/features/cookbook_new/presentation/cookbook_remove_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_cook_flow.dart';
+import 'package:yamt/features/cookbook_new/presentation/recipe_plan_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_section_title.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/portion_stepper.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_bottom_bar.dart';
@@ -136,6 +137,15 @@ class _RecipeBody extends ConsumerWidget {
                           context,
                           template: view.saved,
                           closePage: true,
+                        ),
+                      ),
+                onPlan: isCooking
+                    ? null
+                    : () => unawaited(
+                        RecipePlanFlow.plan(
+                          context: context,
+                          ref: ref,
+                          recipeId: recipe.id,
                         ),
                       ),
               ),

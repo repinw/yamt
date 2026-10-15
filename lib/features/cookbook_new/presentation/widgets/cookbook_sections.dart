@@ -24,6 +24,7 @@ class CookbookSections extends StatelessWidget {
     required this.onOpenTemplate,
     required this.onOpenRecipe,
     required this.onRemove,
+    required this.onPlan,
     super.key,
   });
 
@@ -44,6 +45,9 @@ class CookbookSections extends StatelessWidget {
 
   /// Removes a Vorlage or recipe from the Kochbuch.
   final ValueChanged<PreparedMeal> onRemove;
+
+  /// Plans one portion of a Vorlage or recipe for a day.
+  final ValueChanged<PreparedMeal> onPlan;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +97,7 @@ class CookbookSections extends StatelessWidget {
                 onCreate: onCreateTemplate,
                 onOpen: (entry) => onOpenTemplate(entry.meal),
                 onRemove: (entry) => onRemove(entry.meal),
+                onPlan: (entry) => onPlan(entry.meal),
               ),
             ],
           ),
@@ -107,6 +112,7 @@ class CookbookSections extends StatelessWidget {
                   recipes: overview.recipes,
                   onOpen: (entry) => onOpenRecipe(entry.meal),
                   onRemove: (entry) => onRemove(entry.meal),
+                  onPlan: (entry) => onPlan(entry.meal),
                 ),
               ],
             ),

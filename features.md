@@ -855,8 +855,21 @@ and feature description docs. This is product-facing; architecture rules stay in
     back too. Listening goes on across sentences until the next tap.
   - "Fertig gekocht" puts the meal in the pot like "Kochen" and goes on to
     "Gekocht". Leaving the Kochhelfer before that cooks nothing.
-- A long press on a Vorlage or recipe opens a small menu with
-  "Entfernen"; screen readers offer "Entfernen" as an action of the card.
+- A long press on a Vorlage or recipe opens a small menu with "Planen"
+  and "Entfernen"; screen readers offer both as actions of the card.
+- "Planen" (in that menu, or the calendar button on the recipe photo) asks
+  for today or one of the next 14 days and plans one portion for the meal
+  of the current time, with "Rückgängig". A recipe counts as cooked the way
+  its page shows it (portions, the Vorrat food of each ingredient, counted
+  as a full pack when the Vorrat holds less); a Vorlage keeps its own
+  values. A
+  recipe with an ingredient that has no Vorrat food is planned as a
+  reminder ("kcal offen", counts nowhere). Accepting a recipe plan logs it
+  without taking stock ("Eingetragen – Vorrat nicht abgezogen"); a
+  reminder takes the recipe's Vorrat foods then (saved, else the best
+  match), or says "Erst alle
+  Zutaten des Rezepts einem Vorrat zuordnen", or "Das Rezept ist nicht
+  mehr im Kochbuch" with "Aus Plan entfernen".
   The recipe page has an "Entfernen" button on its photo, which closes the
   page. The Kochbuch then says "„Name“ entfernt", and "Rückgängig" saves it
   back as it was: the same id, photo, ingredients, steps, and saved Vorrat

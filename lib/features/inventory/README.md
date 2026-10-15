@@ -69,6 +69,13 @@ Other features may consume these public Inventory entry points:
   still has open rows and `isMealGone` without its meal, instead of
   logging an entry without kcal. Once the meal is filled, a reminder eats
   it, or, without portions left, logs the meal's values without stock.
+  A plan of a Kochbuch recipe or Vorlage (`CalorieEntry.bundleSourceTemplateId`)
+  is logged without stock; its reminder takes the recipe's Vorrat items
+  (saved, else the best match) and its planned portions when accepted and throws the same flags while one is missing or
+  the recipe is gone.
+- `application/template_plan_entry.dart`: `buildTemplatePlanEntry` builds
+  the plan of one portion of a Kochbuch recipe (cooked on paper from its
+  assigned Vorrat items, each counted as a full pack) or Vorlage.
 - `application/prepared_meal_reminder_plan_service.dart`: keeps a meal's
   plans in step with its rows (reminders while a row is open, the meal's values once
   none is). The meals controller runs it after every change of the rows
@@ -156,7 +163,7 @@ already documented as a reusable presentation surface.
   `EatInlineAmountField`, `EatFramedBox`, `EatLabelTitle`, `EatLabelInputRow`
   (one editable row of a food label), `EatTextLink`, `EatMissingValuesHint`
   with `productMissingValuesText` (the line that names a product's missing
-  values), and `consumedUnitSymbol` (`eat_sheet_l10n.dart`), so later
+  values), `consumedUnitSymbol` and `planSavedMessage` (`eat_sheet_l10n.dart`), so later
   features can show and edit foods in the same food label look.
 
 ## Rules

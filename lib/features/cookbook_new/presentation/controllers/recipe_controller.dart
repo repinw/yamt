@@ -3,6 +3,11 @@ import 'dart:developer' show log;
 import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
+import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/cookbook_new/domain/free_cooking_transcript.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_ingredient_texts.dart';
@@ -11,6 +16,7 @@ import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_cooking_service.dart';
+import 'package:yamt/features/inventory/application/template_plan_entry.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 part 'recipe_controller.g.dart';
@@ -175,6 +181,61 @@ class RecipeController extends _$RecipeController {
       if (ref.mounted) {
         state = state.copyWith(isCooking: false);
       }
+      link.close();
+    }
+  }
+
+  /// Plans one portion of [view], cooked as the page shows it now, on [day]
+  /// for the meal of the current time. Returns the plan, or `null` when
+  /// there is nothing to plan or saving failed.
+  Future<CalorieEntry?> plan(RecipeView view, DateTime day) async {
+    final link = ref.keepAlive();
+    try {
+      final now = ref.read(clockProvider);
+      final plan = buildTemplatePlanEntry(
+        template: view.recipe.copyWith(totalPortions: view.basePortions),
+        cookedPortions: view.portions,
+        assignments: view.assignments,
+        items: ref.read(inventoryQuickEatItemsProvider).value ?? const [],
+        parser: ref.read(templateIngredientParserProvider),
+        mealType: MealType.defaultForDateTime(now()),
+        loggedDay: day,
+        now: now,
+        nextEntryId: const Uuid().v4,
+      );
+      if (plan == null) {
+        return null;
+      }
+      await ref.read(calorieDayLogServiceProvider).plan(plan);
+      return plan;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to plan the recipe.',
+        name: 'RecipeController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    } finally {
+      link.close();
+    }
+  }
+
+  /// Deletes the saved recipe [plan] again. Returns whether it worked.
+  Future<bool> unplan(CalorieEntry plan) async {
+    final link = ref.keepAlive();
+    try {
+      await ref.read(calorieDayLogServiceProvider).deletePlans([plan]);
+      return true;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to remove the recipe plan.',
+        name: 'RecipeController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    } finally {
       link.close();
     }
   }

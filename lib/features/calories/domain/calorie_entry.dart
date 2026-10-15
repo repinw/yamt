@@ -62,6 +62,7 @@ class CalorieEntry {
     this.sourceInventoryItemId,
     this.sourceInventoryAmountToRestore,
     this.bundleSourcePreparedMealId,
+    this.bundleSourceTemplateId,
     this.bundleConsumedPortions,
     this.bundleTotalPortions,
     this.bundleComponents = const <CalorieEntryBundleComponent>[],
@@ -255,6 +256,11 @@ class CalorieEntry {
   /// The bundle source prepared meal id.
   final String? bundleSourcePreparedMealId;
 
+  /// The Kochbuch recipe or Vorlage a plan comes from; null for every other
+  /// entry, which stores no key for it.
+  @JsonKey(includeIfNull: false)
+  final String? bundleSourceTemplateId;
+
   /// The bundle consumed portions.
   final num? bundleConsumedPortions;
 
@@ -418,6 +424,7 @@ class CalorieEntry {
     Object? sourceInventoryItemId = _keepValue,
     Object? sourceInventoryAmountToRestore = _keepValue,
     Object? bundleSourcePreparedMealId = _keepValue,
+    Object? bundleSourceTemplateId = _keepValue,
     Object? bundleConsumedPortions = _keepValue,
     Object? bundleTotalPortions = _keepValue,
     Object? portionAmount = _keepValue,
@@ -460,6 +467,9 @@ class CalorieEntry {
       bundleSourcePreparedMealId: bundleSourcePreparedMealId == _keepValue
           ? this.bundleSourcePreparedMealId
           : bundleSourcePreparedMealId as String?,
+      bundleSourceTemplateId: bundleSourceTemplateId == _keepValue
+          ? this.bundleSourceTemplateId
+          : bundleSourceTemplateId as String?,
       bundleConsumedPortions: bundleConsumedPortions == _keepValue
           ? this.bundleConsumedPortions
           : bundleConsumedPortions as num?,
