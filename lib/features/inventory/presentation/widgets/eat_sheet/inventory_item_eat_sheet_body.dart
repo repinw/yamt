@@ -98,8 +98,9 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   /// this instead of [onSubmitted], to eat the food instead.
   final ValueChanged<InventoryItemEatSheetResult>? onEatInstead;
 
-  /// Calories of the whole meal on the button, when other foods are picked.
-  final double? mealKcal;
+  /// Calories of the whole meal on the button, when other foods are picked;
+  /// its kcal is null when a food lacks them.
+  final ({double? kcal})? mealKcal;
 
   /// Runs in place of logging the food from the second button.
   final VoidCallback? onSecondary;
@@ -195,7 +196,7 @@ class _InventoryItemEatSheetBodyState
         allowsPlanDays: _canPlan,
       ),
       isPlan: state.isPlan || plansOnly,
-      kcal: widget.mealKcal ?? state.nutrition?.eaten.kcal,
+      kcal: (widget.mealKcal ?? (kcal: state.nutrition?.eaten.kcal)).kcal,
       confirmLabel: widget.confirmLabel,
       confirmButtonKey: _confirmKey,
       onConfirm: () => _submit(widget.confirmIntent, asPlan: plansOnly),

@@ -47,9 +47,12 @@ InventoryItem _food(String id, String name, {required int stock}) {
 final InventoryItem _oats = _food('oats', 'Oats', stock: 500);
 final InventoryItem _rice = _food('rice', 'Rice', stock: 250);
 
-/// Opens the item hub of oats with rice picked, and records what it
-/// closes with in [results].
-Widget _buildHarness(List<InventoryItemHubResult?> results) {
+/// Opens the item hub of oats with [picks], rice by default, and records
+/// what it closes with in [results].
+Widget _buildHarness(
+  List<InventoryItemHubResult?> results, {
+  List<InventoryItem>? picks,
+}) {
   final container = ProviderContainer(
     overrides: [
       clockProvider.overrideWithValue(() => _now),
@@ -79,7 +82,7 @@ Widget _buildHarness(List<InventoryItemHubResult?> results) {
                       fullscreenDialog: true,
                       builder: (_) => InventoryItemHubPage(
                         item: _oats,
-                        initialPicks: [_rice],
+                        initialPicks: picks ?? [_rice],
                         onAction: (_, _) async => false,
                       ),
                     ),
@@ -98,8 +101,9 @@ Widget _buildHarness(List<InventoryItemHubResult?> results) {
 Future<void> _openHub(
   WidgetTester tester, [
   List<InventoryItemHubResult?>? results,
+  List<InventoryItem>? picks,
 ]) async {
-  await tester.pumpWidget(_buildHarness(results ?? []));
+  await tester.pumpWidget(_buildHarness(results ?? [], picks: picks));
   await tester.tap(find.byKey(_openKey));
   await tester.pumpAndSettle();
 }
@@ -159,6 +163,34 @@ int _mealKcal(WidgetTester tester) {
 }
 
 void main() {
+  testWidgets('a picked food without calories leaves the meal kcal off the '
+      'button instead of the hub item kcal', (tester) async {
+    final water = InventoryItem.create(
+      id: 'water',
+      name: 'Water',
+      entryDate: DateTime(2026, 10),
+      storeName: 'Store',
+      quantity: 1,
+      initialAmount: 500,
+      currentAmount: 500,
+      amountUnit: InventoryAmountUnit.gram,
+      nutrition: const GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Sugar: 1,
+      ),
+    );
+    await _openHub(tester, null, [water]);
+    expect(_inRow('Water', 'Water'), findsOneWidget);
+
+    expect(
+      find.descendant(
+        of: find.byKey(_confirmKey),
+        matching: find.textContaining('kcal'),
+      ),
+      findsNothing,
+    );
+  });
+
   testWidgets('tapping the amount of a food types its grams', (tester) async {
     await _openHub(tester);
     expect(_inRow('Rice', '100 g'), findsOneWidget);
