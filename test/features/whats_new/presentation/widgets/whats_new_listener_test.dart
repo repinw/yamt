@@ -74,7 +74,7 @@ void main() {
     final (_, preferences) = await _pumpApp(tester, location: AppRoutes.home);
 
     expect(find.byKey(WhatsNewListener.noticeKey), findsOneWidget);
-    expect(find.textContaining('New in 3.8.0: Progress photos'), findsOneWidget);
+    expect(find.textContaining('New in 3.8.0: Progress'), findsOneWidget);
     expect(await preferences.getString(_lastSeenKey), '3.8.0');
 
     await tester.tap(find.text('See all'));
