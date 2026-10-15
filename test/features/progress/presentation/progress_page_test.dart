@@ -77,6 +77,28 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('fills the goal bar as far as the weight got', (tester) async {
+    await _pumpProgressPage(tester);
+
+    // Start 84 kg, target 78 kg, trend near 82 kg: about a third of the way,
+    // so the first quarter is full and the second partly.
+    Size fill(int index) =>
+        tester.getSize(find.byKey(ProgressGoalCard.shareFillKey(index)));
+    final segment = tester.getSize(
+      find
+          .ancestor(
+            of: find.byKey(ProgressGoalCard.shareFillKey(0)),
+            matching: find.byType(Container),
+          )
+          .first,
+    );
+    expect(fill(0), segment);
+    expect(fill(1).height, segment.height);
+    expect(fill(1).width, inExclusiveRange(0, segment.width));
+    expect(fill(3).width, 0);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('opens the goal archive from the goal card', (tester) async {
     await _pumpProgressPage(tester);
 
