@@ -92,8 +92,12 @@ class DiaryMealGroup extends StatelessWidget {
                 ),
                 icon: const Icon(Icons.content_copy_rounded),
               ),
+            // Reminders wait for their meal's values.
             if (onAcceptAllPlans case final acceptAll?
-                when section.plannedEntries.length > 1)
+                when section.plannedEntries
+                        .where((plan) => !plan.nutritionPending)
+                        .length >
+                    1)
               IconButton(
                 key: DiaryMealsSectionKeys.planAcceptAllButton(
                   section.mealType,

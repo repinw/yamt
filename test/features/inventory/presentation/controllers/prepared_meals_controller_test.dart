@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_reminder_plan_service.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -91,6 +92,9 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   bool saveShouldFail = false;
   bool throwOnSave;
 
+  /// Holds every save until it completes.
+  Completer<void>? saveGate;
+
   @override
   Stream<List<PreparedMeal>> watchAll() {
     return Stream<List<PreparedMeal>>.multi((controller) {
@@ -124,6 +128,9 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   ]);
 
   Future<bool> _saveAll(List<PreparedMeal> meals) async {
+    if (saveGate case final gate?) {
+      await gate.future;
+    }
     if (saveShouldFail) {
       return false;
     }
@@ -1060,6 +1067,7 @@ void main() {
         initialMeals: [existingMeal],
       );
       final calorieLogRepository = FakeCalorieLogRepository();
+      final reminders = _RecordingReminderPlanService();
       addTearDown(inventoryRepository.dispose);
       addTearDown(preparedMealRepository.dispose);
       addTearDown(calorieLogRepository.dispose);
@@ -1073,6 +1081,7 @@ void main() {
             preparedMealRepository,
           ),
           calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          preparedMealReminderPlanServiceProvider.overrideWithValue(reminders),
         ],
       );
       addTearDown(container.dispose);
@@ -1092,6 +1101,54 @@ void main() {
         preparedMealRepository.savedMeals.single.pendingRecipeIngredients,
         isEmpty,
       );
+      // The meal's plans follow its rows before the call returns.
+      expect(reminders.mealIds, ['meal-1']);
+    },
+  );
+
+  test(
+    'a rebuild during a row change still reports the save and refreshes plans',
+    () async {
+      final item = _item(id: 'rice', name: 'Rice');
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: [
+          _meal(
+            id: 'meal-1',
+            name: 'Lunch box',
+            item: item,
+          ).copyWith(pendingRecipeIngredients: const <String>['Sour cream']),
+        ],
+      );
+      final reminders = _RecordingReminderPlanService();
+      addTearDown(preparedMealRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          preparedMealRepositoryProvider.overrideWith(
+            (ref) => preparedMealRepository,
+          ),
+          preparedMealReminderPlanServiceProvider.overrideWithValue(reminders),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+
+      await container.read(preparedMealsControllerProvider.future);
+      final gate = preparedMealRepository.saveGate = Completer<void>();
+      final ignored = container
+          .read(preparedMealsControllerProvider.notifier)
+          .ignorePreparedMealPendingIngredient(
+            mealId: 'meal-1',
+            ingredient: 'Sour cream',
+          );
+      await Future<void>.delayed(Duration.zero);
+      container.invalidate(preparedMealRepositoryProvider);
+      await container.read(preparedMealsControllerProvider.future);
+      gate.complete();
+
+      expect(await ignored, isTrue);
+      expect(reminders.mealIds, ['meal-1']);
     },
   );
 
@@ -1205,4 +1262,12 @@ void main() {
       ],
     );
   });
+}
+
+/// Records the meals whose plans were brought in step with their rows.
+class _RecordingReminderPlanService implements PreparedMealReminderPlanService {
+  final mealIds = <String>[];
+
+  @override
+  Future<void> refresh(String mealId) async => mealIds.add(mealId);
 }

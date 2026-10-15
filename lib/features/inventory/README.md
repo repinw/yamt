@@ -63,6 +63,17 @@ Other features may consume these public Inventory entry points:
   a cooked meal takes its portions. Without stock left the food is logged
   without stock. The plan is deleted first and comes back when the eat
   fails; `undo` deletes the entry with its stock and saves the plan again.
+  A reminder (`CalorieEntry.nutritionPending`, a plan of a meal with open
+  rows, built with no kcal by `buildConsumedPreparedMealCalorieEntry`)
+  throws `InventoryPlanAcceptException.isNutritionPending` while its meal
+  still has open rows and `isMealGone` without its meal, instead of
+  logging an entry without kcal. Once the meal is filled, a reminder eats
+  it, or, without portions left, logs the meal's values without stock.
+- `application/prepared_meal_reminder_plan_service.dart`: keeps a meal's
+  plans in step with its rows (reminders while a row is open, the meal's values once
+  none is). The meals controller runs it after every change of the rows
+  (fill, ignore, unignore, take a food out, edit, undo of an edit); a
+  failure there is logged and leaves the saved rows alone.
 - `application/inventory_quick_eat_application.dart` for eating prepared
   meals from integrating features. Callers pass the `PreparedMeal` they
   show, so no server read delays the save. The calorie entry commit stores

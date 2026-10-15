@@ -297,6 +297,64 @@ void main() {
     expect(saved.single.bundleSourcePreparedMealId, isNull);
   });
 
+  test('a reminder waits until its meal has no open row', () async {
+    await expectLater(
+      service.accept(
+        _mealPlan().copyWith(nutritionPending: true, totalKcal: 0),
+        items: const [],
+        meals: [
+          _meal().copyWith(pendingRecipeIngredients: ['Salz']),
+        ],
+      ),
+      throwsA(
+        isA<InventoryPlanAcceptException>().having(
+          (error) => error.isNutritionPending,
+          'isNutritionPending',
+          isTrue,
+        ),
+      ),
+    );
+    // No entry without kcal; the plan stays.
+    expect(saved, isEmpty);
+    expect(plans.plans.map((plan) => plan.id), contains('plan-2'));
+  });
+
+  test('a reminder of a meal filled elsewhere takes its values without '
+      'portions left', () async {
+    final result = await service.accept(
+      _mealPlan().copyWith(nutritionPending: true, totalKcal: 0),
+      items: const [],
+      meals: [_meal(remaining: 0)],
+    );
+
+    expect(result.missedStock, isTrue);
+    final entry = saved.single;
+    // 1 of 4 portions of 2,000 kcal.
+    expect(entry.totalKcal, 500);
+    expect(entry.nutritionPending, isFalse);
+    expect(entry.bundleSourcePreparedMealId, isNull);
+  });
+
+  test('a reminder of a meal that is gone cannot be eaten', () async {
+    await expectLater(
+      service.accept(
+        _mealPlan().copyWith(nutritionPending: true, totalKcal: 0),
+        items: const [],
+        meals: const [],
+      ),
+      throwsA(
+        isA<InventoryPlanAcceptException>()
+            .having(
+              (error) => error.isNutritionPending,
+              'isNutritionPending',
+              isFalse,
+            )
+            .having((error) => error.isMealGone, 'isMealGone', isTrue),
+      ),
+    );
+    expect(saved, isEmpty);
+  });
+
   test('a failed eat keeps the plan and releases the stock', () async {
     when(
       () => eatService.log(

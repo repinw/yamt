@@ -367,6 +367,36 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('a meal with an open row plans only as a reminder', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_harness(<String>[]));
+    await _settle(tester);
+
+    await tester.tap(find.byKey(const ValueKey('inventory_entry_row_pan')));
+    await _settle(tester);
+
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const Key('prepared_meal_eat_confirm_button')),
+          )
+          .onPressed,
+      isNull,
+    );
+    expect(
+      tester
+          .widget<IconButton>(find.byKey(EatPageScaffold.planButtonKey))
+          .onPressed,
+      isNotNull,
+    );
+    expect(
+      find.byKey(PreparedMealEatSheetBody.reminderHintKey),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the meal shows every nutrient of its ingredients, and a row '
       'filled with a food that lacks values marks it', (tester) async {
     final rice = labeledFoodTestData(

@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_plan_days_provider.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
@@ -9,9 +10,6 @@ import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 part 'diary_overdue_plans_controller.g.dart';
 
 const _dismissedKey = 'diary_overdue_plans_dismissed_v1';
-
-/// How many days back the diary looks for plans that were never eaten.
-const diaryOverduePlanLookbackDays = 7;
 
 /// The days of the last week before [today] that the calendar can open
 /// and whose plans were never eaten or removed, or null when there are none

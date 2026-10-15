@@ -627,6 +627,44 @@ void main() {
     );
   });
 
+  testWidgets('a reminder plan says its kcal are open', (tester) async {
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'curry',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Curry',
+              kcal: 0,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+              bundleConsumedPortions: 1,
+              bundleTotalPortions: 5,
+              nutritionPending: true,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    final row = find.byKey(DiaryMealsSectionKeys.plannedEntryTile('curry'));
+    expect(
+      find.descendant(of: row, matching: find.text('kcal open')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: row, matching: find.text('0 kcal')),
+      findsNothing,
+    );
+  });
+
   testWidgets('a plan the Vorrat cannot cover says so', (tester) async {
     DiaryMealEntry planRow(String id) => _entry(
       id: id,
@@ -1136,6 +1174,7 @@ DiaryMealEntry _entry({
   double? amount,
   num? bundleConsumedPortions,
   int? bundleTotalPortions,
+  bool nutritionPending = false,
 }) {
   return DiaryMealEntry(
     id: id,
@@ -1149,6 +1188,7 @@ DiaryMealEntry _entry({
     consumedUnit: amount == null ? null : ConsumedUnit.grams,
     bundleConsumedPortions: bundleConsumedPortions,
     bundleTotalPortions: bundleTotalPortions,
+    nutritionPending: nutritionPending,
   );
 }
 

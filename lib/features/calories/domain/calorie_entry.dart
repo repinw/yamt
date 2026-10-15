@@ -68,6 +68,7 @@ class CalorieEntry {
     this.nutrientDetails,
     this.portionAmount,
     this.portionLabel,
+    this.pendingNutrition,
   });
 
   /// Creates a [CalorieEntry] for create.
@@ -343,6 +344,17 @@ class CalorieEntry {
   /// The name of the portion the user counted, e.g. "Brotscheibe".
   final String? portionLabel;
 
+  /// `true` for a plan of a cooked meal whose nutrition is not known yet;
+  /// null for every other entry, which stores no key for it. Read it
+  /// through [nutritionPending].
+  @JsonKey(name: 'nutrition_pending', includeIfNull: false)
+  final bool? pendingNutrition;
+
+  /// Whether the entry is a plan of a cooked meal whose nutrition is not
+  /// known yet, a reminder to eat it: its totals are 0, so it counts for
+  /// nothing until the meal gets its values.
+  bool get nutritionPending => pendingNutrition ?? false;
+
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieEntryToJson(this);
 
@@ -410,6 +422,7 @@ class CalorieEntry {
     Object? bundleTotalPortions = _keepValue,
     Object? portionAmount = _keepValue,
     Object? portionLabel = _keepValue,
+    bool? nutritionPending,
     List<CalorieEntryBundleComponent>? bundleComponents,
     MealType? mealType,
     double? consumedAmount,
@@ -476,6 +489,11 @@ class CalorieEntry {
           ? portionLabel as String?
           : (keepsPortion ? this.portionLabel : null),
       isQuickEntry: isQuickEntry,
+      pendingNutrition: switch (nutritionPending) {
+        null => pendingNutrition,
+        true => true,
+        false => null,
+      },
     );
   }
 

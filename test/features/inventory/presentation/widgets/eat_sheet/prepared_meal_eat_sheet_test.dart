@@ -413,6 +413,24 @@ void main() {
     expect(find.byKey(EatPageScaffold.planButtonKey), findsOneWidget);
   });
 
+  testWidgets('a meal with open rows cannot be eaten, only planned as a '
+      'reminder', (tester) async {
+    await _openEat(
+      tester,
+      _meal().copyWith(pendingRecipeIngredients: const ['Salz']),
+    );
+
+    expect(
+      tester.widget<FilledButton>(find.byKey(_confirmKey)).onPressed,
+      isNull,
+    );
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsOneWidget);
+    expect(
+      find.byKey(PreparedMealEatSheetBody.reminderHintKey),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('the nutrition label shows every nutrient that the '
       'ingredients list, per portion', (tester) async {
     final rice = _ingredient('rice', riceLabelTestData);

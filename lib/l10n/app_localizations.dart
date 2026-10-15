@@ -1468,6 +1468,12 @@ abstract class AppLocalizations {
   /// **'Rest takes everything in the pot, so the sum is right without a scale.'**
   String get eatPageRestHint;
 
+  /// No description provided for @eatPagePlanReminderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A plan counts only once every row is filled. Until then it is a reminder without kcal.'**
+  String get eatPagePlanReminderHint;
+
   /// No description provided for @eatPageMealPortionGrams.
   ///
   /// In en, this message translates to:
@@ -4761,6 +4767,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark the meal as cooked first'**
   String get diaryPlanAcceptMealInPot;
+
+  /// No description provided for @diaryPlanAcceptMealGone.
+  ///
+  /// In en, this message translates to:
+  /// **'The meal is no longer in stock'**
+  String get diaryPlanAcceptMealGone;
+
+  /// No description provided for @diaryPlanAcceptNutritionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill the open rows of the meal first'**
+  String get diaryPlanAcceptNutritionPending;
+
+  /// No description provided for @diaryPlanNutritionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal open'**
+  String get diaryPlanNutritionPending;
 
   /// No description provided for @diaryPlanShortTag.
   ///

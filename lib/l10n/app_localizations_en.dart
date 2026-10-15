@@ -841,6 +841,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Rest takes everything in the pot, so the sum is right without a scale.';
 
   @override
+  String get eatPagePlanReminderHint =>
+      'A plan counts only once every row is filled. Until then it is a reminder without kcal.';
+
+  @override
   String eatPageMealPortionGrams(String portions, int grams) {
     return '$portions · $grams g';
   }
@@ -2785,6 +2789,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryPlanAcceptMealInPot => 'Mark the meal as cooked first';
+
+  @override
+  String get diaryPlanAcceptMealGone => 'The meal is no longer in stock';
+
+  @override
+  String get diaryPlanAcceptNutritionPending =>
+      'Fill the open rows of the meal first';
+
+  @override
+  String get diaryPlanNutritionPending => 'kcal open';
 
   @override
   String get diaryPlanShortTag => 'Not in stock';

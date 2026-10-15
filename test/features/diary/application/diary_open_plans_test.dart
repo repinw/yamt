@@ -56,4 +56,11 @@ void main() {
     // A tomorrow whose day before is open is a plan itself.
     expect(_openPlans(today: _day.subtract(const Duration(days: 1))), isNull);
   });
+
+  test('reminders without kcal leave nothing to count', () {
+    final reminder = _plan(0).copyWith(nutritionPending: true);
+
+    expect(_openPlans(today: _day, plans: [reminder]), isNull);
+    expect(_openPlans(today: _day, plans: [reminder, _plan(300)])!.kcal, 300);
+  });
 }
