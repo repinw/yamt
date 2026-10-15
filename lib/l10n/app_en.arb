@@ -1899,6 +1899,7 @@
   "diaryBudgetDetailsCarryoverLabel": "Carryover from previous days",
   "diaryBudgetDetailsEffectiveGoalLabel": "Effective daily goal",
   "diaryBudgetDetailsEatenLabel": "Food eaten so far",
+  "diaryBudgetDetailsPlannedLabel": "Open plans",
   "diaryBudgetDetailsLeftLabel": "Left",
   "diaryBudgetDetailsCarryoverSectionTitle": "Carryover origin",
   "diaryBudgetDetailsCarryoverExplanation": "Carryover is the balance of completed days spread across the remaining days in this 7-day run.",

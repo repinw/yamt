@@ -107,6 +107,7 @@ class DiaryDailyBalanceCard extends StatelessWidget {
                         context: context,
                         data: budgetDetails,
                         numberFormat: data.numberFormat,
+                        plannedKcal: data.countedPlannedKcal,
                       )
                     : null,
               ),

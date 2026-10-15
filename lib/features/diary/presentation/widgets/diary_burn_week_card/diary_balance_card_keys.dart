@@ -22,6 +22,16 @@ abstract final class DiaryBalanceCardKeys {
     'diary-balance-kcal-head-value',
   );
 
+  /// Row with the open plans in the budget details, while they count.
+  static const dailyBudgetPlannedRow = ValueKey<String>(
+    'diary-balance-daily-budget-planned-row',
+  );
+
+  /// Row with the kcal left in the budget details.
+  static const dailyBudgetLeftRow = ValueKey<String>(
+    'diary-balance-daily-budget-left-row',
+  );
+
   /// Chip that counts the open plans of the day in the head.
   static const afterPlanChip = ValueKey<String>(
     'diary-balance-after-plan-chip',

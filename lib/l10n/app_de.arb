@@ -1626,6 +1626,7 @@
   "diaryBudgetDetailsCarryoverLabel": "Übertrag aus Vortagen",
   "diaryBudgetDetailsEffectiveGoalLabel": "Effektives Tagesziel",
   "diaryBudgetDetailsEatenLabel": "Bisher gegessen",
+  "diaryBudgetDetailsPlannedLabel": "Offene Pläne",
   "diaryBudgetDetailsLeftLabel": "Noch übrig",
   "diaryBudgetDetailsCarryoverSectionTitle": "Übertrag aus den Vortagen",
   "diaryBudgetDetailsCarryoverExplanation": "Der Übertrag ist die Bilanz abgeschlossener Tage, verteilt auf die verbleibenden Tage dieses 7-Tage-Runs.",

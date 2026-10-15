@@ -5356,6 +5356,12 @@ abstract class AppLocalizations {
   /// **'Food eaten so far'**
   String get diaryBudgetDetailsEatenLabel;
 
+  /// No description provided for @diaryBudgetDetailsPlannedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open plans'**
+  String get diaryBudgetDetailsPlannedLabel;
+
   /// No description provided for @diaryBudgetDetailsLeftLabel.
   ///
   /// In en, this message translates to:

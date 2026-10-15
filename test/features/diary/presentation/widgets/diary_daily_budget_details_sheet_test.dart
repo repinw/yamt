@@ -10,7 +10,10 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
-  Widget buildTestWidget(DiaryDailyBudgetDetailsData data) {
+  Widget buildTestWidget(
+    DiaryDailyBudgetDetailsData data, {
+    double? plannedKcal,
+  }) {
     return MaterialApp(
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -31,6 +34,7 @@ void main() {
                   context: context,
                   data: data,
                   numberFormat: numberFormat,
+                  plannedKcal: plannedKcal,
                 ),
                 child: const Text('Open Sheet'),
               ),
@@ -42,6 +46,70 @@ void main() {
   }
 
   group('DiaryDailyBudgetDetailsSheet', () {
+    testWidgets('counts the open plans when "Nach Plan" is on', (tester) async {
+      final data = DiaryDailyBudgetDetailsData(
+        selectedDay: DateTime(2026, 4, 15),
+        baseGoalKcal: 2000,
+        carryoverKcal: 0,
+        targetKcal: 2000,
+        eatenKcal: 1000,
+        dayLeftKcal: 1000,
+        isPauseDay: false,
+        totalCarryoverBeforeTodayKcal: 0,
+        remainingRunDays: 7,
+        previousDays: const [],
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
+      );
+
+      await tester.pumpWidget(buildTestWidget(data, plannedKcal: 600));
+      await tester.tap(find.text('Open Sheet'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(DiaryBalanceCardKeys.dailyBudgetPlannedRow),
+        findsOneWidget,
+      );
+      expect(find.text('Open plans'), findsOneWidget);
+      expect(find.text('-600 kcal'), findsOneWidget);
+      // The same words and number as the card's "Left after plan".
+      final left = find.byKey(DiaryBalanceCardKeys.dailyBudgetLeftRow);
+      expect(
+        find.descendant(of: left, matching: find.text('Left after plan')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: left, matching: find.text('400 kcal')),
+        findsOneWidget,
+      );
+
+      // Without "Nach Plan" the sheet stays at what was eaten.
+      Navigator.of(
+        tester.element(
+          find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+        ),
+      ).pop();
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(buildTestWidget(data));
+      await tester.tap(find.text('Open Sheet'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(DiaryBalanceCardKeys.dailyBudgetPlannedRow),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(DiaryBalanceCardKeys.dailyBudgetLeftRow),
+          matching: find.text('1,000 kcal'),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('renders all calculation rows and previous days breakdown', (
       tester,
     ) async {

@@ -171,6 +171,23 @@ void main() {
     expect(textOf(DiaryNutritionBarsContent.carbsTotalKey), '160 / 200 g');
     expect(textOf(DiaryNutritionBarsContent.fatTotalKey), '40 / 64 g');
 
+    // The budget details count the plans the same way.
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetPlannedRow),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(DiaryBalanceCardKeys.dailyBudgetLeftRow),
+        matching: find.text('500 kcal'),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+
     await tester.tap(chip);
     await tester.pumpAndSettle();
 
@@ -179,6 +196,21 @@ void main() {
     expect(textOf(DiaryNutritionBarsContent.proteinTotalKey), '50 / 156 g');
     expect(textOf(DiaryNutritionBarsContent.carbsTotalKey), '100 / 200 g');
     expect(textOf(DiaryNutritionBarsContent.fatTotalKey), '30 / 64 g');
+
+    // Without "Nach Plan" the budget details stay at what was eaten.
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetPlannedRow),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(DiaryBalanceCardKeys.dailyBudgetLeftRow),
+        matching: find.text('1.000 kcal'),
+      ),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 }

@@ -344,11 +344,46 @@ void main() {
       expect(byPlan.eatenSubtitle, isNull);
       expect(byPlan.targetAddition, '/ 2,000');
       expect(byPlan.leftValue, '500');
+      // The budget details count the same plans.
+      expect(byPlan.countedPlannedKcal, 500);
 
       final real = dataFor(counted: false);
       expect(real.eatenValue, '1,000');
       expect(real.eatenSubtitle, isNotNull);
       expect(real.leftValue, '1,000');
+      expect(real.countedPlannedKcal, isNull);
+    });
+
+    test('"Nach Plan" counts plans of 0 kcal like the head', () {
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 1000,
+        eatenKcal: 1000,
+        realDayLeftKcal: 1000,
+        dayLeftKcal: 1000,
+        targetKcal: 2000,
+        baseGoalKcal: 2000,
+      );
+
+      final data = DiaryDailyBalanceData.from(
+        selectedDay: selectedDay,
+        metrics: metrics,
+        isPauseDay: false,
+        numberFormat: numberFormat,
+        l10n: l10n,
+        now: selectedDay,
+        // A planned glass of water.
+        openPlans: const DiaryOpenPlans(
+          kcal: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          counted: true,
+        ),
+      );
+
+      expect(data.countsOpenPlans, isTrue);
+      expect(data.countedPlannedKcal, 0);
     });
 
     test('never marks a pause day over target', () {

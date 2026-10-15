@@ -3242,6 +3242,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBudgetDetailsEatenLabel => 'Bisher gegessen';
 
   @override
+  String get diaryBudgetDetailsPlannedLabel => 'Offene Pläne';
+
+  @override
   String get diaryBudgetDetailsLeftLabel => 'Noch übrig';
 
   @override
