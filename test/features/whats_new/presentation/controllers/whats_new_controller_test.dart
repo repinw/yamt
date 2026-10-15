@@ -22,11 +22,11 @@ class _ReadOnlyPreferences extends MemoryAppPreferences {
   Future<bool> setString(String key, String value) async => false;
 }
 
-/// An asset bundle with one notes file of [text] for 3.7.0.
+/// An asset bundle with one notes file of [text] for 3.8.0.
 class _NotesBundle extends CachingAssetBundle {
   new(this.text);
 
-  static const _path = 'assets/whats_new/3.7.0.json';
+  static const _path = 'assets/whats_new/3.8.0.json';
 
   final String text;
 
@@ -48,7 +48,7 @@ class _NotesBundle extends CachingAssetBundle {
 
 ProviderContainer _container(
   AppPreferences preferences, {
-  String version = '3.7.0+70',
+  String version = '3.8.0+70',
   AssetBundle? bundle,
 }) {
   final container = ProviderContainer(
@@ -99,7 +99,7 @@ void main() {
       expect(states, hasLength(2));
       expect(states.first, isA<AsyncLoading<WhatsNewNotice?>>());
       final notice = states.last.requireValue;
-      expect(notice?.version, const AppVersion(3, 7, 0));
+      expect(notice?.version, const AppVersion(3, 8, 0));
       expect(notice?.release.de.headline, isNotNull);
       expect(await preferences.getString(_lastSeenKey), isNull);
 
@@ -110,7 +110,7 @@ void main() {
         container.read(whatsNewControllerProvider),
         const AsyncData<WhatsNewNotice?>(null),
       );
-      expect(await preferences.getString(_lastSeenKey), '3.7.0');
+      expect(await preferences.getString(_lastSeenKey), '3.8.0');
     },
   );
 
@@ -130,13 +130,13 @@ void main() {
     final states = await _states(_container(preferences));
 
     expect(states.last, const AsyncData<WhatsNewNotice?>(null));
-    expect(await preferences.getString(_lastSeenKey), '3.7.0');
+    expect(await preferences.getString(_lastSeenKey), '3.8.0');
   });
 
   test('notes seen once do not show again', () async {
     final preferences = MemoryAppPreferences(
       completedCalorieGoalOnboardingUserIds: {'user-1'},
-      initialStrings: {_lastSeenKey: '3.7.0'},
+      initialStrings: {_lastSeenKey: '3.8.0'},
     );
 
     final states = await _states(_container(preferences));
@@ -161,7 +161,7 @@ void main() {
     final states = await _states(_container(preferences, bundle: bundle));
 
     expect(states.last, const AsyncData<WhatsNewNotice?>(null));
-    expect(await preferences.getString(_lastSeenKey), '3.7.0');
+    expect(await preferences.getString(_lastSeenKey), '3.8.0');
   });
 
   test('malformed notes are an error and nothing is stored', () async {

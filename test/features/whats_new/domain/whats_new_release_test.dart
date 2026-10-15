@@ -14,8 +14,8 @@ Map<String, dynamic> _notes({List<String> added = const ['A']}) => {
 
 void main() {
   group('WhatsNewRelease', () {
-    test('reads the bundled notes of 3.7.0', () {
-      final json = File('assets/whats_new/3.7.0.json').readAsStringSync();
+    test('reads the bundled notes of 3.8.0', () {
+      final json = File('assets/whats_new/3.8.0.json').readAsStringSync();
       final release = WhatsNewRelease.fromJson(
         jsonDecode(json) as Map<String, dynamic>,
       );
