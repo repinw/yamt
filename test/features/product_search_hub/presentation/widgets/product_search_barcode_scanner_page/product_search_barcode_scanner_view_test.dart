@@ -2,7 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
+import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay_painter.dart';
+import 'package:yamt/core/widgets/barcode_scanner/windowed_mobile_scanner.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'composite_product_search_adapter.dart';
@@ -129,6 +133,46 @@ void main() {
       findsOneWidget,
     );
     expect(calls.notFound, [_barcode]);
+  });
+
+  testWidgets('a barcode read on a single frame does not count', (
+    tester,
+  ) async {
+    final calls = await _pumpScanner(
+      tester,
+      off: FakeOffBarcodeRepository(),
+      learned: FakeGlobalBarcodeCandidateRepository(),
+    );
+
+    camera.glimpse(_barcode);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(barcodeSourceAnswerDelay * 2);
+
+    expect(calls.notFound, isEmpty);
+    expect(camera.isRunning, isTrue);
+  });
+
+  testWidgets('the scanner reads only inside the drawn frame', (tester) async {
+    await _pumpScanner(
+      tester,
+      off: FakeOffBarcodeRepository(),
+      learned: FakeGlobalBarcodeCandidateRepository(),
+    );
+    await tester.pump();
+
+    final size = tester.getSize(find.byType(MobileScanner));
+    final frame = barcodeReticleRect(size, defaultBarcodeScanWindowSize);
+    final scanner = tester.widget<MobileScanner>(find.byType(MobileScanner));
+    expect(
+      scanner.scanWindow,
+      frame.inflate(WindowedMobileScanner.margin).intersect(Offset.zero & size),
+    );
+    // The camera gets the frame as a part of its picture, not all of it.
+    final window = camera.scanWindow!;
+    expect(window.left, greaterThan(0));
+    expect(window.top, greaterThan(0));
+    expect(window.right, lessThan(1));
+    expect(window.bottom, lessThan(1));
   });
 
   testWidgets('an unknown barcode still counts as not found', (tester) async {

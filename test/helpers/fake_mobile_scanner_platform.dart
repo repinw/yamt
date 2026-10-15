@@ -32,8 +32,19 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   /// Whether a scanner runs and so sees what [scan] shows.
   bool get isRunning => _isRunning;
 
-  /// Shows the EAN-13 [barcode] to the camera.
+  /// The area the scanner reads in, as the scanner last set it.
+  Rect? scanWindow;
+
+  /// Shows the EAN-13 [barcode] to the camera, which reads it on two frames
+  /// in a row, as a held barcode is.
   void scan(String barcode) {
+    glimpse(barcode);
+    glimpse(barcode);
+  }
+
+  /// Lets the camera read [barcode] on a single frame only, as a code that
+  /// crosses the picture or a misread is.
+  void glimpse(String barcode) {
     expect(isRunning, isTrue, reason: 'No scanner sees the barcode.');
     _barcodes.add(
       BarcodeCapture(
@@ -73,7 +84,9 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   Future<void> pause() async {}
 
   @override
-  Future<void> updateScanWindow(Rect? window) async {}
+  Future<void> updateScanWindow(Rect? window) async {
+    scanWindow = window;
+  }
 
   @override
   Future<void> dispose() async {}
