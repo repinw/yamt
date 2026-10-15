@@ -141,7 +141,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
           ? InventoryItemEatSheetIntent.logOnly
           : InventoryItemEatSheetIntent.storeAsMeal,
       confirmLabel: picks.isEmpty ? null : l10n.eatPageCombineStore,
-      mealKcal: meal?.total.kcal,
+      mealKcal: meal == null ? null : (kcal: meal.total.kcal),
       addMoreActionText: picks.isEmpty ? null : l10n.eatPageCombineConfirm,
       header: meal == null
           ? null
