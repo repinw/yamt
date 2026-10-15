@@ -13,6 +13,7 @@ class CookbookRecipeGrid extends StatelessWidget {
     required this.recipes,
     required this.onOpen,
     required this.onRemove,
+    required this.onPlan,
     super.key,
   });
 
@@ -24,6 +25,9 @@ class CookbookRecipeGrid extends StatelessWidget {
 
   /// Removes a recipe.
   final ValueChanged<CookbookEntry> onRemove;
+
+  /// Plans one portion of an entry for a day.
+  final ValueChanged<CookbookEntry> onPlan;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +64,7 @@ class CookbookRecipeGrid extends StatelessWidget {
       entry: entry,
       onOpen: () => onOpen(entry),
       onRemove: () => onRemove(entry),
+      onPlan: () => onPlan(entry),
     );
   }
 }

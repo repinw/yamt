@@ -22,6 +22,7 @@ class CookbookTemplateTile extends StatelessWidget {
     required this.entry,
     required this.onOpen,
     required this.onRemove,
+    required this.onPlan,
     super.key,
   });
 
@@ -38,6 +39,9 @@ class CookbookTemplateTile extends StatelessWidget {
   /// Removes the Vorlage.
   final VoidCallback onRemove;
 
+  /// Plans one portion of the Vorlage for a day.
+  final VoidCallback onPlan;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -51,6 +55,7 @@ class CookbookTemplateTile extends StatelessWidget {
       child: CookbookEntryInkWell(
         onOpen: onOpen,
         onRemove: onRemove,
+        onPlan: onPlan,
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: colors.card,

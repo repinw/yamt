@@ -8,20 +8,32 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The top of the recipe page: the recipe photo with its source and name
-/// over the lower edge, and the back and "Entfernen" buttons on it. Text
+/// over the lower edge, and the back, "Planen" and "Entfernen" buttons on
+/// it. Text
 /// over a photo needs the dark palette in both themes.
 class RecipeHero extends StatelessWidget {
   /// Creates the header of [recipe].
-  const new({required this.recipe, required this.onRemove, super.key});
+  const new({
+    required this.recipe,
+    required this.onRemove,
+    required this.onPlan,
+    super.key,
+  });
 
   /// Key of the "Entfernen" button.
   static const removeKey = ValueKey<String>('recipe-remove');
+
+  /// Key of the "Planen" button.
+  static const planKey = ValueKey<String>('recipe-plan');
 
   /// The recipe.
   final PreparedMeal recipe;
 
   /// Removes the recipe from the Kochbuch; `null` turns the button off.
   final VoidCallback? onRemove;
+
+  /// Plans one portion of the recipe for a day; `null` turns the button off.
+  final VoidCallback? onPlan;
 
   @override
   Widget build(BuildContext context) {
@@ -107,12 +119,24 @@ class RecipeHero extends StatelessWidget {
           Positioned(
             top: top + AppSpacing.sm,
             right: AppSpacing.sm,
-            child: IconButton.filled(
-              key: removeKey,
-              tooltip: AppLocalizations.of(context)!.cookbookRemoveAction,
-              style: buttonStyle,
-              onPressed: onRemove,
-              icon: const Icon(Icons.delete_outline_rounded),
+            child: Row(
+              spacing: AppSpacing.xs,
+              children: [
+                IconButton.filled(
+                  key: planKey,
+                  tooltip: AppLocalizations.of(context)!.eatPagePlanIconTooltip,
+                  style: buttonStyle,
+                  onPressed: onPlan,
+                  icon: const Icon(Icons.event_rounded),
+                ),
+                IconButton.filled(
+                  key: removeKey,
+                  tooltip: AppLocalizations.of(context)!.cookbookRemoveAction,
+                  style: buttonStyle,
+                  onPressed: onRemove,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                ),
+              ],
             ),
           ),
         ],

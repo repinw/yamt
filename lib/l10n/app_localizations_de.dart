@@ -2804,6 +2804,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Eingetragen – nicht mehr im Vorrat';
 
   @override
+  String get diaryPlanAcceptedRecipe => 'Eingetragen – Vorrat nicht abgezogen';
+
+  @override
   String get diaryPlanAcceptFailed => 'Plan konnte nicht eingetragen werden';
 
   @override
@@ -2863,6 +2866,14 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diaryPlanAcceptNutritionPending =>
       'Erst die offenen Zeilen des Gerichts füllen';
+
+  @override
+  String get diaryPlanAcceptRecipePending =>
+      'Erst alle Zutaten des Rezepts einem Vorrat zuordnen';
+
+  @override
+  String get diaryPlanAcceptRecipeGone =>
+      'Das Rezept ist nicht mehr im Kochbuch';
 
   @override
   String get diaryPlanNutritionPending => 'kcal offen';
@@ -5994,6 +6005,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cookbookRemoveAction => 'Entfernen';
+
+  @override
+  String get cookbookEntryMenuHint => 'Aktionen zeigen';
 
   @override
   String cookbookRemovedMessage(String name) {

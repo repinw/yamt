@@ -4732,6 +4732,12 @@ abstract class AppLocalizations {
   /// **'Logged – no longer in stock'**
   String get diaryPlanAcceptedWithoutStock;
 
+  /// No description provided for @diaryPlanAcceptedRecipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged – stock not deducted'**
+  String get diaryPlanAcceptedRecipe;
+
   /// No description provided for @diaryPlanAcceptFailed.
   ///
   /// In en, this message translates to:
@@ -4797,6 +4803,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fill the open rows of the meal first'**
   String get diaryPlanAcceptNutritionPending;
+
+  /// No description provided for @diaryPlanAcceptRecipePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Match every ingredient of the recipe to a stock item first'**
+  String get diaryPlanAcceptRecipePending;
+
+  /// No description provided for @diaryPlanAcceptRecipeGone.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe is no longer in the cookbook'**
+  String get diaryPlanAcceptRecipeGone;
 
   /// No description provided for @diaryPlanNutritionPending.
   ///
@@ -9913,6 +9931,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get cookbookRemoveAction;
+
+  /// No description provided for @cookbookEntryMenuHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show actions'**
+  String get cookbookEntryMenuHint;
 
   /// No description provided for @cookbookRemovedMessage.
   ///

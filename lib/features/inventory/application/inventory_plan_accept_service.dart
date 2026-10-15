@@ -12,12 +12,15 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
+import 'package:yamt/features/inventory/application/template_plan_entry.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 part 'inventory_plan_accept_service.g.dart';
 
@@ -65,6 +68,8 @@ InventoryPlanAcceptService inventoryPlanAcceptService(Ref ref) {
     saver: ref.watch(calorieEntrySaverProvider),
     deleter: ref.watch(inventoryEntryDeleteServiceProvider),
     overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
+    templates: ref.watch(preparedMealTemplateRepositoryProvider),
+    parser: ref.watch(templateIngredientParserProvider),
   );
 }
 
@@ -80,6 +85,8 @@ class InventoryPlanAcceptService {
     required this._saver,
     required this._deleter,
     required this._overviewRevision,
+    required this._templates,
+    required this._parser,
   });
 
   final PlannedEntryRepository _plans;
@@ -89,6 +96,8 @@ class InventoryPlanAcceptService {
   final CalorieEntrySaver _saver;
   final InventoryEntryDeleteService _deleter;
   final CalorieOverviewRevision _overviewRevision;
+  final PreparedMealTemplateRepository _templates;
+  final TemplateIngredientParser _parser;
 
   /// Accepts [plan] on its own day and meal, taking the stock from [items]
   /// or the portions from [meals]. Throws when nothing was saved; the plan
@@ -175,6 +184,13 @@ class InventoryPlanAcceptService {
       }
       return await _saveWithoutStock(plan);
     }
+    if (plan.bundleSourceTemplateId case final templateId?
+        when plan.nutritionPending) {
+      return await _saveWithoutStock(
+        await _countedTemplatePlan(plan, templateId, items),
+        missedStock: false,
+      );
+    }
     if (plan.sourceInventoryItemId == null) {
       return await _saveWithoutStock(plan, missedStock: false);
     }
@@ -204,6 +220,46 @@ class InventoryPlanAcceptService {
     // The calorie editor keeps the stock reserved; accepting has no editor.
     await _pendings.discard(pending.id);
     throw InventoryPlanAcceptException('The plan ${plan.id} was not eaten.');
+  }
+
+  /// The reminder [plan] of the Kochbuch recipe [templateId] with the values
+  /// of the recipe's Vorrat items now. Throws while one of its ingredients
+  /// still has none, or when the recipe is gone or has nothing to eat.
+  Future<CalorieEntry> _countedTemplatePlan(
+    CalorieEntry plan,
+    String templateId,
+    List<InventoryItem> items,
+  ) async {
+    final templates = await _templates.readAll();
+    final template = templates.firstWhereOrNull(
+      (template) => template.id == templateId,
+    );
+    final counted = template == null
+        ? null
+        : buildTemplatePlanEntry(
+            template: template,
+            cookedPortions: plan.bundleTotalPortions ?? template.totalPortions,
+            assignments: templatePlanAssignments(template, items),
+            items: items,
+            parser: _parser,
+            mealType: plan.mealType,
+            loggedDay: plan.loggedAt,
+            now: () => plan.updatedAt,
+            nextEntryId: () => plan.id,
+            portions: plan.bundleConsumedPortions ?? 1,
+          );
+    if (counted == null || counted.nutritionPending) {
+      throw InventoryPlanAcceptException(
+        'The recipe $templateId has no nutrition to eat.',
+        isNutritionPending: counted?.nutritionPending ?? false,
+        isMealGone: template == null,
+      );
+    }
+    return counted.copyWith(
+      userId: plan.userId,
+      loggedAt: plan.loggedAt,
+      createdAt: plan.createdAt,
+    );
   }
 
   Future<InventoryPlanAcceptResult> _saveWithoutStock(

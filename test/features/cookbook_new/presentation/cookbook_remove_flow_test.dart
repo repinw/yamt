@@ -162,8 +162,8 @@ void main() {
       isSemantics(
         hasTapAction: true,
         hasLongPressAction: true,
-        onLongPressHint: 'Remove',
-        customActions: const [remove],
+        onLongPressHint: 'Show actions',
+        customActions: const [CustomSemanticsAction(label: 'Plan'), remove],
       ),
     );
     node.owner!.performAction(

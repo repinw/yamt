@@ -27,6 +27,8 @@ templates list and later the cooking flow.
   which foods the Vorrat holds.
 - Removing a Vorlage or recipe from the Kochbuch, from a long press on its
   card or from the recipe page, and its undo.
+- Planning one portion of a Vorlage or recipe for a day, from a long press
+  on its card or from the recipe page (`RecipePlanFlow`), and its undo.
 
 ## Does Not Own
 
@@ -46,6 +48,11 @@ templates list and later the cooking flow.
 ## Rules
 
 - A template with recipe ingredients is a recipe; one without is a Vorlage.
+- A recipe plan is one portion of the recipe cooked as its page shows it
+  (portions and Vorrat items), built by inventory's `buildTemplatePlanEntry`
+  and saved without stock. An ingredient without a Vorrat item makes it a
+  reminder without kcal ("kcal offen"); accepting it later takes the
+  recipe's items then and logs it without deducting stock.
 - Removing a template deletes only its document. Its photo stays, because
   Vorrat meals cooked from it keep the same photo reference, and the undo
   saves the same template back.

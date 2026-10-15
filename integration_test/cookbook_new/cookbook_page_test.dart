@@ -6,9 +6,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/data/closed_day_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/'
     'cookbook_remove_flow.dart';
+import 'package:yamt/features/cookbook_new/presentation/recipe_plan_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_entry_ink_well.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -28,7 +31,9 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/helpers/fake_prepared_meal_template_repository.dart';
+import '../../test/helpers/memory_app_preferences.dart';
 import '../../test/support/prepared_meal_test_data.dart';
 
 GoRoute _placeholder(String path, String label) {
@@ -44,6 +49,7 @@ GoRoute _placeholder(String path, String label) {
 Widget _app({
   required FakePreparedMealTemplateRepository templates,
   required List<PreparedMeal> meals,
+  FakePlannedEntryRepository? plans,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -82,6 +88,12 @@ Widget _app({
     overrides: [
       clockProvider.overrideWithValue(() => DateTime(2026, 10, 2, 20)),
       preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
+      plannedEntryRepositoryProvider.overrideWithValue(
+        plans ?? FakePlannedEntryRepository(),
+      ),
+      closedDayRepositoryProvider.overrideWithValue(
+        ClosedDayRepository(MemoryAppPreferences(), 'user-1'),
+      ),
       inventoryQuickEatMealsProvider.overrideWith((ref) => Stream.value(meals)),
       inventoryQuickEatItemsProvider.overrideWith(
         (ref) => Stream.value([
@@ -205,6 +217,46 @@ void main() {
     expect(templateTile, findsNothing);
     expect(templates.templates, [recipe]);
     expect(snackBar, findsOneWidget);
+  });
+
+  testWidgets('plans a Vorlage and a recipe by long press', (tester) async {
+    final plans = FakePlannedEntryRepository();
+    await tester.pumpWidget(
+      _app(
+        templates: FakePreparedMealTemplateRepository(
+          templates: [recipe, template],
+        ),
+        meals: const [],
+        plans: plans,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Future<void> plan(Finder card) async {
+      // Center the card, so the dock does not cover it.
+      await Scrollable.ensureVisible(tester.element(card), alignment: 0.3);
+      await tester.pumpAndSettle();
+      await tester.longPress(card);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(CookbookEntryInkWell.planKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(RecipePlanFlow.snackBarKey), findsOneWidget);
+    }
+
+    await plan(find.byKey(CookbookTemplateTile.tileKey('bowl')));
+    await plan(find.byKey(CookbookRecipeCard.cardKey('pasta')));
+
+    final [vorlage, pasta] = plans.plans;
+    // The Vorlage keeps its own values; the pasta lacks tomato sauce, so it
+    // is a reminder without kcal.
+    expect(vorlage.bundleSourceTemplateId, 'bowl');
+    expect(vorlage.nutritionPending, isFalse);
+    expect(vorlage.totalKcal, greaterThan(0));
+    expect(pasta.bundleSourceTemplateId, 'pasta');
+    expect(pasta.nutritionPending, isTrue);
+    expect(pasta.totalKcal, 0);
   });
 
   testWidgets('sends a new template to the Vorrat', (tester) async {

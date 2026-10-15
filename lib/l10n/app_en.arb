@@ -1456,6 +1456,7 @@
   "diaryPlanAcceptAction": "Eaten as planned",
   "diaryPlanAccepted": "Eaten as planned",
   "diaryPlanAcceptedWithoutStock": "Logged – no longer in stock",
+  "diaryPlanAcceptedRecipe": "Logged – stock not deducted",
   "diaryPlanAcceptFailed": "Plan could not be logged",
   "diaryPlanRemoveAction": "Remove from plan",
   "diaryOverduePlansHint": "{count, plural, =1{Open plans from {day}} other{Open plans on {count} days, last {day}}}",
@@ -1501,6 +1502,8 @@
   "diaryPlanAcceptMealInPot": "Mark the meal as cooked first",
   "diaryPlanAcceptMealGone": "The meal is no longer in stock",
   "diaryPlanAcceptNutritionPending": "Fill the open rows of the meal first",
+  "diaryPlanAcceptRecipePending": "Match every ingredient of the recipe to a stock item first",
+  "diaryPlanAcceptRecipeGone": "The recipe is no longer in the cookbook",
   "diaryPlanNutritionPending": "kcal open",
   "diaryPlanShortTag": "Not in stock",
   "diaryPlanMealPrepTag": "Meal Prep",
@@ -3429,6 +3432,7 @@
   },
   "cookbookLoadFailed": "Could not load the cookbook.",
   "cookbookRemoveAction": "Remove",
+  "cookbookEntryMenuHint": "Show actions",
   "@cookbookRemoveAction": {
     "description": "Removes a recipe or Vorlage from the cookbook."
   },

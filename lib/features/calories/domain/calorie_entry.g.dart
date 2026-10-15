@@ -48,6 +48,7 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   sourceInventoryAmountToRestore:
       (json['source_inventory_amount_to_restore'] as num?)?.toInt(),
   bundleSourcePreparedMealId: json['bundle_source_prepared_meal_id'] as String?,
+  bundleSourceTemplateId: json['bundle_source_template_id'] as String?,
   bundleConsumedPortions: json['bundle_consumed_portions'] as num?,
   bundleTotalPortions: (json['bundle_total_portions'] as num?)?.toInt(),
   bundleComponents:
@@ -78,6 +79,7 @@ Map<String, dynamic> _$CalorieEntryToJson(
   'source_inventory_item_id': instance.sourceInventoryItemId,
   'source_inventory_amount_to_restore': instance.sourceInventoryAmountToRestore,
   'bundle_source_prepared_meal_id': instance.bundleSourcePreparedMealId,
+  'bundle_source_template_id': ?instance.bundleSourceTemplateId,
   'bundle_consumed_portions': instance.bundleConsumedPortions,
   'bundle_total_portions': instance.bundleTotalPortions,
   'bundle_components': instance.bundleComponents

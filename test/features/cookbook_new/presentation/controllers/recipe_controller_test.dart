@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
@@ -89,10 +92,27 @@ class _FakeCookingService implements PreparedMealCookingService {
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
+/// Keeps the plans saved and deleted through it.
+class _FakeDayLog implements CalorieDayLogService {
+  final saved = <CalorieEntry>[];
+  final deleted = <CalorieEntry>[];
+
+  @override
+  Future<void> plan(CalorieEntry plan) async => saved.add(plan);
+
+  @override
+  Future<void> deletePlans(List<CalorieEntry> plans) async =>
+      deleted.addAll(plans);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
+}
+
 ProviderContainer _container({
   PreparedMeal? recipe,
   _FakeCookingService? service,
   List<InventoryItem>? items,
+  _FakeDayLog? dayLog,
 }) {
   final container = ProviderContainer(
     overrides: [
@@ -110,6 +130,8 @@ ProviderContainer _container({
       preparedMealCookingServiceProvider.overrideWithValue(
         service ?? _FakeCookingService(),
       ),
+      calorieDayLogServiceProvider.overrideWithValue(dayLog ?? _FakeDayLog()),
+      clockProvider.overrideWithValue(() => DateTime(2026, 10, 9, 12)),
     ],
   );
   addTearDown(container.dispose);
@@ -339,6 +361,85 @@ void main() {
 
     expect(await _controller(container).cook(view), isNull);
     expect(container.read(recipeControllerProvider('stew')).isCooking, isFalse);
+  });
+
+  test('plan saves one portion of the recipe as the page cooks it', () async {
+    final dayLog = _FakeDayLog();
+    final container = _container(recipe: _recipe(), dayLog: dayLog);
+    _controller(container).setPortions(4);
+    final view = (await _view(container))!;
+
+    final plan = await _controller(container)
+        .plan(view, DateTime(2026, 10, 11));
+
+    expect(dayLog.saved, [plan]);
+    expect(plan!.bundleSourceTemplateId, 'stew');
+    expect(plan.bundleSourcePreparedMealId, isNull);
+    expect(plan.bundleConsumedPortions, 1);
+    expect(plan.bundleTotalPortions, 4);
+    expect(plan.nutritionPending, isFalse);
+    expect(plan.bundleComponents.map((component) => component.name), [
+      'Hackfleisch',
+      'Karotten',
+    ]);
+    expect(plan.loggedAt, DateTime(2026, 10, 11, 12));
+  });
+
+  test('plan counts an item with too little stock in full', () async {
+    final container = _container(
+      recipe: _recipe(),
+      items: [
+        _item('mince', 'Hackfleisch', amount: 100),
+        _item('carrots', 'Karotten'),
+      ],
+    );
+    final view = (await _view(container))!;
+
+    final plan = await _controller(container)
+        .plan(view, DateTime(2026, 10, 11));
+
+    expect(plan!.nutritionPending, isFalse);
+    expect(plan.bundleComponents.first.amountLabel, '250 g');
+  });
+
+  test('plan with an ingredient not from the Vorrat is a reminder', () async {
+    final container = _container(recipe: _recipe());
+    _controller(container).pick('500 g Hackfleisch', null);
+    final view = (await _view(container))!;
+
+    final plan = await _controller(container)
+        .plan(view, DateTime(2026, 10, 11));
+
+    expect(plan!.nutritionPending, isTrue);
+    expect(plan.totalKcal, 0);
+  });
+
+  test('plan of a Vorlage takes a portion of its own values', () async {
+    final vorlage = _recipe().copyWith(
+      recipeIngredients: const <String>[],
+      ignoredRecipeIngredients: const <String>[],
+      totalKcal: 800,
+    );
+    final container = _container(recipe: vorlage);
+    final view = (await _view(container))!;
+
+    final plan = await _controller(
+      container,
+    ).plan(view, DateTime(2026, 10, 11));
+
+    expect(plan!.totalKcal, 400);
+    expect(plan.bundleSourceTemplateId, 'stew');
+  });
+
+  test('unplan deletes the plan again', () async {
+    final dayLog = _FakeDayLog();
+    final container = _container(recipe: _recipe(), dayLog: dayLog);
+    final view = (await _view(container))!;
+    final plan = await _controller(container)
+        .plan(view, DateTime(2026, 10, 11));
+
+    expect(await _controller(container).unplan(plan!), isTrue);
+    expect(dayLog.deleted, [plan]);
   });
 
   test('a recipe that is gone has no view', () async {
