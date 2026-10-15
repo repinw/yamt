@@ -150,7 +150,8 @@ class _DiaryPlanDetailsPageState extends ConsumerState<DiaryPlanDetailsPage> {
         onMealTypeChanged: controller.setMealType,
         onDayPicked: controller.setDay,
       ),
-      kcal: preview.totalKcal,
+      // A reminder has no kcal yet.
+      kcal: preview.nutritionPending ? null : preview.totalKcal,
       confirmLabel: isChanged
           ? l10n.diaryPlanSaveAction
           : l10n.diaryPlanAcceptAction,
@@ -167,7 +168,7 @@ class _DiaryPlanDetailsPageState extends ConsumerState<DiaryPlanDetailsPage> {
           : l10n.diaryPlanAcceptLaterHint,
       cancelButtonKey: DiaryPlanDetailsPage.closeButtonKey,
       children: [
-        DiaryEntryLabelSection(entry: preview),
+        if (!preview.nutritionPending) DiaryEntryLabelSection(entry: preview),
         if (amountState.canEditAmount)
           EatAmountRuler(
             key: DiaryPlanDetailsPage.amountKey,

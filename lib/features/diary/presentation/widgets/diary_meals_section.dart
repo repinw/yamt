@@ -134,8 +134,13 @@ class DiaryMealsSection extends ConsumerWidget {
                     acceptAllDiaryPlansFlow(
                       context,
                       ref,
+                      // A reminder waits for its meal's values; one tap
+                      // on its own row says so.
                       plans: [
-                        for (final row in section.plannedEntries) ?planOf(row),
+                        for (final row in section.plannedEntries)
+                          if (planOf(row) case final plan?
+                              when !plan.nutritionPending)
+                            plan,
                       ],
                     ),
                   )

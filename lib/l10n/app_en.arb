@@ -502,6 +502,7 @@
   "eatPotTakeOutHint": "Then tare the scale and enter the grams you took.",
   "eatPageRest": "Rest",
   "eatPageRestHint": "Rest takes everything in the pot, so the sum is right without a scale.",
+  "eatPagePlanReminderHint": "A plan counts only once every row is filled. Until then it is a reminder without kcal.",
   "eatPageMealPortionGrams": "{portions} · {grams} g",
   "@eatPageMealPortionGrams": {
     "placeholders": {
@@ -1488,6 +1489,9 @@
     }
   },
   "diaryPlanAcceptMealInPot": "Mark the meal as cooked first",
+  "diaryPlanAcceptMealGone": "The meal is no longer in stock",
+  "diaryPlanAcceptNutritionPending": "Fill the open rows of the meal first",
+  "diaryPlanNutritionPending": "kcal open",
   "diaryPlanShortTag": "Not in stock",
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance could not be loaded",

@@ -44,6 +44,9 @@ class PreparedMealEatSheetBody extends ConsumerStatefulWidget {
   /// Key of the meal's nutrition label.
   static const nutritionTableKey = Key('prepared_meal_nutrition_table');
 
+  /// Key of the note that a plan of a meal with open rows is a reminder.
+  static const reminderHintKey = Key('prepared_meal_reminder_hint');
+
   /// Meal to eat.
   final PreparedMeal meal;
 
@@ -103,9 +106,10 @@ class _PreparedMealEatSheetBodyState
     // The entered portions start from the opened copy, so a meal that was in
     // the pot when the page opened waits for "Gekocht" and a reopen.
     final isInPot = widget.meal.isInPot || meal.isInPot;
-    // A meal plans once every row is filled or ignored, also from the pot;
-    // eating it waits for "Gekocht". A pot cooked while the page is open
-    // waits for a reopen, as the entered share would turn into portions.
+    // A meal plans also from the pot, and with open rows as a reminder
+    // without kcal; eating it waits for "Gekocht" and every row. A pot
+    // cooked while the page is open waits for a reopen, as the entered
+    // share would turn into portions.
     final canPlan =
         meal.allows(PreparedMealAction.plan) &&
         widget.meal.isInPot == meal.isInPot;
@@ -137,7 +141,8 @@ class _PreparedMealEatSheetBodyState
         allowsPlanDays: canPlan,
       ),
       isPlan: state.isPlan,
-      kcal: nutrition?.total.kcal,
+      // A reminder of a meal with open rows saves no kcal.
+      kcal: meal.hasPendingRecipeIngredients ? null : nutrition?.total.kcal,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
       // A meal in the pot can only be planned, a share of the pot.
       onConfirm: !state.isPotTooLight && (canEat || (canPlan && state.isPlan))
@@ -216,6 +221,13 @@ class _PreparedMealEatSheetBodyState
           Text(
             l10n.eatPageRestHint,
             key: PreparedMealEatSheetBody.restHintKey,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: FoodLabelColors.of(context).muted),
+          ),
+        if (canPlan && meal.hasPendingRecipeIngredients)
+          Text(
+            l10n.eatPagePlanReminderHint,
+            key: PreparedMealEatSheetBody.reminderHintKey,
             style: Theme.of(context).textTheme.bodySmall
                 ?.copyWith(color: FoodLabelColors.of(context).muted),
           ),

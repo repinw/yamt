@@ -180,7 +180,12 @@ class _DiaryMealCopySheetState extends State<DiaryMealCopySheet> {
         () => checked ?? false ? _meals.add(type) : _meals.remove(type),
       ),
       title: Text(type.localizedName(l10n)),
-      secondary: Text(l10n.eatPageKcal(kcal.round())),
+      // Reminders have no kcal; their 0 adds nothing to the sum.
+      secondary: Text(
+        entries.every((entry) => entry.nutritionPending)
+            ? l10n.diaryPlanNutritionPending
+            : l10n.eatPageKcal(kcal.round()),
+      ),
     );
   }
 }

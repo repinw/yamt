@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
@@ -27,7 +28,12 @@ typedef InventoryPlanAcceptResult = ({CalorieEntry entry, bool missedStock});
 /// Thrown when a plan could not be eaten or its eat could not be undone.
 class InventoryPlanAcceptException implements Exception {
   /// Creates the exception for [message].
-  const new(this.message, {this.isMealInPot = false});
+  const new(
+    this.message, {
+    this.isMealInPot = false,
+    this.isNutritionPending = false,
+    this.isMealGone = false,
+  });
 
   /// What failed.
   final String message;
@@ -35,6 +41,14 @@ class InventoryPlanAcceptException implements Exception {
   /// Whether the planned meal is still in the pot, so it can be eaten once
   /// "Gekocht" has given it its portions.
   final bool isMealInPot;
+
+  /// Whether the planned meal still has open rows, so the plan is a
+  /// reminder that can be eaten once every row is filled.
+  final bool isNutritionPending;
+
+  /// Whether the planned meal of a reminder is gone, so the plan can only
+  /// be removed.
+  final bool isMealGone;
 
   @override
   String toString() => 'InventoryPlanAcceptException: $message';
@@ -138,6 +152,26 @@ class InventoryPlanAcceptService {
           throw InventoryPlanAcceptException('The meal $mealId was not eaten.');
         }
         return (entry: eaten.entry, missedStock: false);
+      }
+      if (plan.nutritionPending) {
+        // A reminder takes the values of its meal once every row is
+        // filled, then counts like any plan without portions left.
+        final counted = meal == null || meal.hasPendingRecipeIngredients
+            ? null
+            : preparedMealPlanWithPortions(
+                plan,
+                meal,
+                portions,
+                now: () => plan.updatedAt,
+              );
+        if (counted == null) {
+          throw InventoryPlanAcceptException(
+            'The meal $mealId has no nutrition to eat.',
+            isNutritionPending: meal?.hasPendingRecipeIngredients ?? false,
+            isMealGone: meal == null,
+          );
+        }
+        return await _saveWithoutStock(counted);
       }
       return await _saveWithoutStock(plan);
     }

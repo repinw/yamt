@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -201,10 +203,19 @@ Future<void> acceptDiaryPlanFlow(
   final result = await controller.accept(plan);
   if (result == null) {
     messenger.showAppSnackBar(
-      _isMealInPot(container)
-          ? l10n.diaryPlanAcceptMealInPot
-          : l10n.diaryPlanAcceptFailed,
+      _acceptFailedMessage(container, l10n),
       tone: AppSnackBarTone.error,
+      // A reminder of a meal that is gone can only be removed.
+      action: _isMealGone(container)
+          ? (
+              label: l10n.diaryPlanRemoveAction,
+              onPressed: () {
+                if (context.mounted) {
+                  unawaited(deleteDiaryPlanFlow(context, ref, plan: plan));
+                }
+              },
+            )
+          : null,
     );
     return;
   }
@@ -259,9 +270,24 @@ Future<void> acceptAllDiaryPlansFlow(
   );
 }
 
-/// Whether the last accept failed because its meal is still in the pot.
-bool _isMealInPot(ProviderContainer container) =>
+/// Why the last accept failed: its meal is still in the pot, its meal
+/// still has open rows, or something else.
+String _acceptFailedMessage(
+  ProviderContainer container,
+  AppLocalizations l10n,
+) => switch (container.read(diaryPlanControllerProvider).error) {
+  InventoryPlanAcceptException(isMealInPot: true) =>
+    l10n.diaryPlanAcceptMealInPot,
+  InventoryPlanAcceptException(isMealGone: true) =>
+    l10n.diaryPlanAcceptMealGone,
+  InventoryPlanAcceptException(isNutritionPending: true) =>
+    l10n.diaryPlanAcceptNutritionPending,
+  _ => l10n.diaryPlanAcceptFailed,
+};
+
+/// Whether the last accept failed because the reminder's meal is gone.
+bool _isMealGone(ProviderContainer container) =>
     switch (container.read(diaryPlanControllerProvider).error) {
-      InventoryPlanAcceptException(:final isMealInPot) => isMealInPot,
+      InventoryPlanAcceptException(:final isMealGone) => isMealGone,
       _ => false,
     };

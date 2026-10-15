@@ -23,6 +23,7 @@ class DiaryMealEntry {
     this.combinedFoods,
     this.portionAmount,
     this.portionLabel,
+    this.nutritionPending = false,
   });
 
   /// Entry id.
@@ -73,6 +74,10 @@ class DiaryMealEntry {
 
   /// Name of the portion the user counted, e.g. "Brotscheibe".
   final String? portionLabel;
+
+  /// Whether the entry is a plan of a meal without known nutrition, a
+  /// reminder without kcal.
+  final bool nutritionPending;
 
   /// Whether the entry is portions of a prepared meal.
   bool get isPreparedMeal =>

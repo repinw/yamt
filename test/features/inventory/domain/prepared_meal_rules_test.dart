@@ -41,7 +41,8 @@ void main() {
     'ready': (_meal(), true, true, false, false),
     'untouched': (_meal(remaining: 4), true, true, true, false),
     'in the pot': (_meal(remaining: 4, inPot: true), false, true, true, true),
-    'open rows': (_meal(openRows: ['Salz']), false, false, false, true),
+    // Planned only as a reminder without kcal.
+    'open rows': (_meal(openRows: ['Salz']), false, true, false, true),
     'eaten up': (_meal(remaining: 0), false, false, false, false),
   };
 

@@ -18,8 +18,11 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
+import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_nutrition_bars/diary_nutrition_bars_content.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -64,27 +67,89 @@ CalorieEntry _food({
   );
 }
 
+/// Shows the diary of today with a lunch of 1,000 kcal eaten and [planned].
+Future<void> _pumpDiary(
+  WidgetTester tester, {
+  required List<CalorieEntry> planned,
+}) async {
+  final log = FakeCalorieLogRepository(
+    initialEntries: [
+      _food(
+        id: 'lunch',
+        name: 'Linsensuppe',
+        mealType: MealType.lunch,
+        hour: 11,
+        kcal: 1000,
+        protein: 50,
+        carbs: 100,
+        fat: 30,
+      ),
+    ],
+  );
+  final plans = FakePlannedEntryRepository(plans: planned);
+  final settings = FakeCalorieSettingsRepository(
+    initialSettings: CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: null,
+      effectiveDate: _today,
+    ),
+  );
+  addTearDown(log.dispose);
+  addTearDown(settings.dispose);
+  final user = _MockUser();
+  when(() => user.uid).thenReturn(_userId);
+  final auth = _MockFirebaseAuth();
+  when(() => auth.currentUser).thenReturn(user);
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        clockProvider.overrideWithValue(
+          () => _today.add(const Duration(hours: 12)),
+        ),
+        firebaseAuthProvider.overrideWithValue(auth),
+        // A value, not a stream: a stream stays paused under a route.
+        authStateChangesProvider.overrideWithValue(AsyncData(user)),
+        userProfileProvider.overrideWithValue(
+          const AsyncData(UserProfile(uid: _userId)),
+        ),
+        calorieLogRepositoryProvider.overrideWithValue(log),
+        plannedEntryRepositoryProvider.overrideWithValue(plans),
+        calorieSettingsRepositoryProvider.overrideWithValue(settings),
+        burnWeekRunStateRepositoryProvider.overrideWithValue(
+          const _StaticBurnWeekRunStateRepository(),
+        ),
+        healthConnectionServiceProvider.overrideWithValue(
+          FakeHealthConnectionService(
+            const HealthConnectionStatus.unsupported(),
+          ),
+        ),
+        healthWeightServiceProvider.overrideWithValue(
+          FakeHealthWeightService(const []),
+        ),
+        manualHealthWeightRepositoryProvider.overrideWithValue(
+          FakeManualHealthWeightRepository(const []),
+        ),
+      ],
+      child: const MaterialApp(
+        locale: Locale('de'),
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: DiaryPage()),
+      ),
+    ),
+  );
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('after plan counts the open plans in the eaten totals until '
       'the chip is off', (tester) async {
-    final log = FakeCalorieLogRepository(
-      initialEntries: [
-        _food(
-          id: 'lunch',
-          name: 'Linsensuppe',
-          mealType: MealType.lunch,
-          hour: 11,
-          kcal: 1000,
-          protein: 50,
-          carbs: 100,
-          fat: 30,
-        ),
-      ],
-    );
-    final plans = FakePlannedEntryRepository(
-      plans: [
+    await _pumpDiary(
+      tester,
+      planned: [
         _food(
           id: 'plan-dinner',
           name: 'Nudeln',
@@ -96,59 +161,6 @@ void main() {
           fat: 10,
         ),
       ],
-    );
-    final settings = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: null,
-        effectiveDate: _today,
-      ),
-    );
-    addTearDown(log.dispose);
-    addTearDown(settings.dispose);
-    final user = _MockUser();
-    when(() => user.uid).thenReturn(_userId);
-    final auth = _MockFirebaseAuth();
-    when(() => auth.currentUser).thenReturn(user);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-          clockProvider.overrideWithValue(
-            () => _today.add(const Duration(hours: 12)),
-          ),
-          firebaseAuthProvider.overrideWithValue(auth),
-          // A value, not a stream: a stream stays paused under a route.
-          authStateChangesProvider.overrideWithValue(AsyncData(user)),
-          userProfileProvider.overrideWithValue(
-            const AsyncData(UserProfile(uid: _userId)),
-          ),
-          calorieLogRepositoryProvider.overrideWithValue(log),
-          plannedEntryRepositoryProvider.overrideWithValue(plans),
-          calorieSettingsRepositoryProvider.overrideWithValue(settings),
-          burnWeekRunStateRepositoryProvider.overrideWithValue(
-            const _StaticBurnWeekRunStateRepository(),
-          ),
-          healthConnectionServiceProvider.overrideWithValue(
-            FakeHealthConnectionService(
-              const HealthConnectionStatus.unsupported(),
-            ),
-          ),
-          healthWeightServiceProvider.overrideWithValue(
-            FakeHealthWeightService(const []),
-          ),
-          manualHealthWeightRepositoryProvider.overrideWithValue(
-            FakeManualHealthWeightRepository(const []),
-          ),
-        ],
-        child: const MaterialApp(
-          locale: Locale('de'),
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: DiaryPage()),
-        ),
-      ),
     );
     final chip = find.byKey(DiaryBalanceCardKeys.afterPlanChip);
     await _pumpUntil(
@@ -211,6 +223,50 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a reminder plan says its kcal are open and counts nowhere', (
+    tester,
+  ) async {
+    final reminder = _food(
+      id: 'plan-curry',
+      name: 'Curry',
+      mealType: MealType.dinner,
+      hour: 19,
+      kcal: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+    ).copyWith(nutritionPending: true);
+    await _pumpDiary(tester, planned: [reminder]);
+    final row = find.byKey(
+      DiaryMealsSectionKeys.plannedEntryTile('plan-curry'),
+    );
+    await _pumpUntil(
+      tester,
+      () => row.evaluate().length == 1,
+      description: 'the reminder row',
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(of: row, matching: find.text('kcal offen')),
+      findsOneWidget,
+    );
+    // Nothing to count, so no "Nach Plan".
+    expect(find.byKey(DiaryBalanceCardKeys.afterPlanChip), findsNothing);
+    expect(
+      tester.widget<Text>(find.byKey(DiaryBalanceCardKeys.kcalHeadValue)).data,
+      '1.000',
+    );
+
+    await tester.ensureVisible(row);
+    await tester.pumpAndSettle();
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryPlanDetailsPage), findsOneWidget);
+    expect(find.byType(DiaryEntryLabelSection), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

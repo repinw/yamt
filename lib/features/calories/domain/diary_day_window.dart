@@ -40,6 +40,9 @@ List<DateTime> buildDiaryVisibleDays({DateTime? anchorDay}) {
 /// Number of days after today that can be planned.
 const int diaryPlanAheadDayCount = 14;
 
+/// How many days back the diary looks for plans that were never eaten.
+const int diaryOverduePlanLookbackDays = 7;
+
 /// Returns whether two timestamps belong to the same diary day.
 bool isSameDiaryDay(DateTime left, DateTime right) {
   return isSameLocalDay(left, right);

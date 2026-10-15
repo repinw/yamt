@@ -23,7 +23,11 @@ class DiaryOpenPlans {
     required DateTime today,
     required bool counted,
   }) {
-    final plans = data.plannedEntries;
+    // Reminders of meals with open rows have no kcal to count.
+    final plans = [
+      for (final plan in data.plannedEntries)
+        if (!plan.nutritionPending) plan,
+    ];
     final day = normalizeDiaryDay(data.selectedDay);
     final overview = data.weekOverview;
     final isPauseDay = overview.days.any(

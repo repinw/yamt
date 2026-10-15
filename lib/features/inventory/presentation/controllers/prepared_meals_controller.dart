@@ -8,6 +8,7 @@ import 'package:yamt/features/household/application/'
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_pending_ingredients.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_reminder_plan_service.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -88,7 +89,8 @@ class PreparedMealsController extends _$PreparedMealsController {
     int? totalPortions,
     List<PreparedMealItemInput>? items,
     List<String> deletedRows = const <String>[],
-  }) => _keptAlive(
+  }) => _rowsChanged(
+    mealId,
     (service) => service.updatePreparedMealDetails(
       mealId: mealId,
       name: name,
@@ -98,13 +100,12 @@ class PreparedMealsController extends _$PreparedMealsController {
       items: items,
       deletedRows: deletedRows,
     ),
-    failed: false,
   );
 
   /// Puts the meal back as [previous] was before an edit.
-  Future<bool> restorePreparedMeal(PreparedMeal previous) => _keptAlive(
+  Future<bool> restorePreparedMeal(PreparedMeal previous) => _rowsChanged(
+    previous.id,
     (service) => service.restorePreparedMeal(previous),
-    failed: false,
   );
 
   /// Fills the open row [ingredient] with the Vorrat items [inventoryItemIds].
@@ -112,13 +113,13 @@ class PreparedMealsController extends _$PreparedMealsController {
     required String mealId,
     required String ingredient,
     required List<String> inventoryItemIds,
-  }) => _keptAlive(
+  }) => _rowsChanged(
+    mealId,
     (service) => service.fillPreparedMealPendingIngredient(
       mealId: mealId,
       ingredient: ingredient,
       inventoryItemIds: inventoryItemIds,
     ),
-    failed: false,
   );
 
   /// The best item of [inventoryItems] that can fill the open row
@@ -142,38 +143,38 @@ class PreparedMealsController extends _$PreparedMealsController {
     required String ingredient,
     required String itemId,
     required int usedAmount,
-  }) => _keptAlive(
+  }) => _rowsChanged(
+    mealId,
     (service) => service.fillPreparedMealPendingIngredientWithItem(
       mealId: mealId,
       ingredient: ingredient,
       itemId: itemId,
       usedAmount: usedAmount,
     ),
-    failed: false,
   );
 
   /// Marks the open row [ingredient] as left out on purpose.
   Future<bool> ignorePreparedMealPendingIngredient({
     required String mealId,
     required String ingredient,
-  }) => _keptAlive(
+  }) => _rowsChanged(
+    mealId,
     (service) => service.ignorePreparedMealPendingIngredient(
       mealId: mealId,
       ingredient: ingredient,
     ),
-    failed: false,
   );
 
   /// Opens the ignored row [ingredient] again.
   Future<bool> unignorePreparedMealPendingIngredient({
     required String mealId,
     required String ingredient,
-  }) => _keptAlive(
+  }) => _rowsChanged(
+    mealId,
     (service) => service.unignorePreparedMealPendingIngredient(
       mealId: mealId,
       ingredient: ingredient,
     ),
-    failed: false,
   );
 
   /// Takes [component] out of the meal [mealId]: its row opens again and its
@@ -181,12 +182,12 @@ class PreparedMealsController extends _$PreparedMealsController {
   Future<bool> unassignPreparedMealComponent({
     required String mealId,
     required PreparedMealComponent component,
-  }) => _keptAlive(
+  }) => _rowsChanged(
+    mealId,
     (service) => service.unassignPreparedMealComponent(
       mealId: mealId,
       component: component,
     ),
-    failed: false,
   );
 
   /// Throws away [discardedPortions] of a meal and records why.
@@ -217,6 +218,39 @@ class PreparedMealsController extends _$PreparedMealsController {
   }) => _keptAlive((service) async {
     await service.changeWeight(meal: meal, netWeight: netWeight);
     return true;
+  }, failed: false);
+
+  /// Runs [mutation], which changes the rows of the meal [mealId], and
+  /// then brings the meal's plans in step with its rows
+  /// (`PreparedMealReminderPlanService`); a failure there is only logged and
+  /// leaves the saved rows alone.
+  Future<bool> _rowsChanged(
+    String mealId,
+    Future<bool> Function(PreparedMealMutationService service) mutation,
+  ) => _keptAlive((service) async {
+    // Subscribed before the save, so a rebuild during it cannot drop the ref.
+    final reminders = ref.listen(
+      preparedMealReminderPlanServiceProvider,
+      (_, _) {},
+    );
+    try {
+      if (!await mutation(service)) {
+        return false;
+      }
+      try {
+        await reminders.read().refresh(mealId);
+      } on Object catch (error, stackTrace) {
+        log(
+          'Plans of $mealId kept their kind.',
+          name: _preparedMealsControllerLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
+      return true;
+    } finally {
+      reminders.close();
+    }
   }, failed: false);
 
   /// Runs [mutation] on the meal service and keeps this controller and the

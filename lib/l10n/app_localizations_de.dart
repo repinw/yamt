@@ -850,6 +850,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Rest nimmt alles, was im Topf ist. So stimmt die Summe auch ohne Waage.';
 
   @override
+  String get eatPagePlanReminderHint =>
+      'Ein Plan zählt erst, wenn alle Zeilen gefüllt sind. Bis dahin ist er eine Erinnerung ohne kcal.';
+
+  @override
   String eatPageMealPortionGrams(String portions, int grams) {
     return '$portions · $grams g';
   }
@@ -2839,6 +2843,16 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diaryPlanAcceptMealInPot =>
       'Erst das Gericht als „Gekocht“ eintragen';
+
+  @override
+  String get diaryPlanAcceptMealGone => 'Das Gericht ist nicht mehr im Vorrat';
+
+  @override
+  String get diaryPlanAcceptNutritionPending =>
+      'Erst die offenen Zeilen des Gerichts füllen';
+
+  @override
+  String get diaryPlanNutritionPending => 'kcal offen';
 
   @override
   String get diaryPlanShortTag => 'Fehlt im Vorrat';

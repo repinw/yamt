@@ -72,7 +72,10 @@ CalorieWeekDayOverview addDiaryPlansToDay(
         ),
         goalKcal: day.goalKcal,
         baseGoalKcal: day.baseGoalKcal,
-        entryCount: day.entryCount + plannedEntries.length,
+        // A reminder without kcal tracks nothing yet.
+        entryCount:
+            day.entryCount +
+            plannedEntries.where((entry) => !entry.nutritionPending).length,
         isPauseDay: day.isPauseDay,
       );
 
@@ -96,5 +99,6 @@ DiaryMealEntry _mealEntryFrom(CalorieEntry entry) {
     combinedFoods: entry.isCombined ? entry.bundleComponents : null,
     portionAmount: hasAmount ? entry.portionAmount : null,
     portionLabel: hasAmount ? entry.portionLabel : null,
+    nutritionPending: entry.nutritionPending,
   );
 }

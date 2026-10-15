@@ -199,6 +199,19 @@ and feature description docs. This is product-facing; architecture rules stay in
   the top also offers the next 14 days; a later day turns the main button
   into "Einplanen".
   Adding a food to a meal has no plan button.
+- A cooked meal with open rows cannot be eaten, but it can be planned as a
+  reminder: the eat page says the plan counts only once every row is filled.
+  The plan row says "kcal offen" instead of its kcal and macros, and it
+  counts nowhere (head, stripes, "Nach Plan", future days), while its
+  portions still count as "verplant". When the last row is filled or
+  ignored on this phone, the meal's reminders get its values and count like
+  any plan; when a row opens again, its plans turn back into reminders.
+  Accepting a reminder eats the meal once its rows are filled (without
+  portions left it logs the meal's values without stock, like any plan),
+  else it says "Erst die offenen Zeilen des Gerichts füllen"; for a meal
+  that is gone it says "Das Gericht ist nicht mehr im Vorrat" with "Aus
+  Plan entfernen". "Alle annehmen" leaves reminders out, and the plan
+  details show no kcal for them.
 - Plans show in their meal below the eaten food, faded in a dashed frame.
   A plan of a cooked meal carries the tag "Meal Prep". Tapping a plan
   deletes it, with undo. Plans are stored encrypted apart from eaten food,

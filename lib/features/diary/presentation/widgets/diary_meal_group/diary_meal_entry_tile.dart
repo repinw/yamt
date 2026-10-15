@@ -87,11 +87,13 @@ class DiaryMealEntryTile extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      DiaryMacroSummary(
-                        protein: entry.totalProtein,
-                        carbs: entry.totalCarbs,
-                        fat: entry.totalFat,
-                      ),
+                      // A reminder has no macros to sum up.
+                      if (!entry.nutritionPending)
+                        DiaryMacroSummary(
+                          protein: entry.totalProtein,
+                          carbs: entry.totalCarbs,
+                          fat: entry.totalFat,
+                        ),
                       if (tag case final tag?) ...[
                         const SizedBox(height: AppSpacing.xxs),
                         tag,
@@ -105,8 +107,10 @@ class DiaryMealEntryTile extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${numberFormat.format(entry.totalKcal.round())} '
-                      '${l10n.caloriesUnitKcal}',
+                      entry.nutritionPending
+                          ? l10n.diaryPlanNutritionPending
+                          : '${numberFormat.format(entry.totalKcal.round())} '
+                                '${l10n.caloriesUnitKcal}',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colors.onSurface,
                         fontWeight: FontWeight.w600,

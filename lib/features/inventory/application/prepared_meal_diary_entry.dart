@@ -13,7 +13,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 CalorieEntry? preparedMealPlanWithPortions(
   CalorieEntry plan,
   PreparedMeal meal,
-  int portions, {
+  num portions, {
   required DateTime Function() now,
 }) {
   return buildConsumedPreparedMealCalorieEntry(
@@ -31,6 +31,10 @@ CalorieEntry? preparedMealPlanWithPortions(
 
 /// The diary entry for eating [consumedPortions] of [meal], scaled from the
 /// whole meal, or null when the meal has no portions to share.
+///
+/// A meal with open rows has no known nutrition, so it can only be planned
+/// as a reminder: the entry then has no kcal or macros and is marked
+/// [CalorieEntry.nutritionPending].
 CalorieEntry? buildConsumedPreparedMealCalorieEntry({
   required PreparedMeal meal,
   required num consumedPortions,
@@ -46,6 +50,8 @@ CalorieEntry? buildConsumedPreparedMealCalorieEntry({
   final currentTime = now();
   final loggedAt = _resolveLoggedAt(now: currentTime, loggedDay: loggedDay);
   final portionRatio = consumedPortions / meal.totalPortions;
+  final pending = meal.hasPendingRecipeIngredients;
+  final share = pending ? 0.0 : portionRatio;
   return CalorieEntry.bundle(
     id: nextEntryId(),
     userId: '',
@@ -58,10 +64,10 @@ CalorieEntry? buildConsumedPreparedMealCalorieEntry({
             .firstOrNull,
     imageAssetId: meal.imageAssetId,
     mealType: mealType,
-    totalKcal: meal.totalKcal * portionRatio,
-    totalProtein: meal.totalProtein * portionRatio,
-    totalCarbs: meal.totalCarbs * portionRatio,
-    totalFat: meal.totalFat * portionRatio,
+    totalKcal: meal.totalKcal * share,
+    totalProtein: meal.totalProtein * share,
+    totalCarbs: meal.totalCarbs * share,
+    totalFat: meal.totalFat * share,
     bundleSourcePreparedMealId: meal.id,
     bundleConsumedPortions: consumedPortions,
     bundleTotalPortions: meal.totalPortions,
@@ -72,7 +78,7 @@ CalorieEntry? buildConsumedPreparedMealCalorieEntry({
     loggedAt: loggedAt,
     createdAt: currentTime,
     updatedAt: currentTime,
-  );
+  ).copyWith(nutritionPending: pending);
 }
 
 DateTime _resolveLoggedAt({

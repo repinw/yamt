@@ -25,16 +25,17 @@ enum PreparedMealAction {
 extension PreparedMealRules on PreparedMeal {
   /// Whether [action] is allowed now.
   ///
-  /// A meal with open rows has unknown nutrition, so it can be neither
-  /// eaten nor planned. A meal in the pot can be planned as a share of the
-  /// pot, but eaten only after "Gekocht" gives it portions. Ingredients stay
-  /// editable until the first portion is gone. A weight is set at
-  /// "Gekocht" and can change afterwards while food is left; pieces split
-  /// the nutrients by count, so they have no weight.
+  /// A meal with open rows has unknown nutrition, so it cannot be eaten;
+  /// it can be planned only as a reminder without kcal
+  /// (`CalorieEntry.nutritionPending`). A meal in the pot can be planned as
+  /// a share of the pot, but eaten only after "Gekocht" gives it portions.
+  /// Ingredients stay editable until the first portion is gone. A weight is
+  /// set at "Gekocht" and can change afterwards while food is left; pieces
+  /// split the nutrients by count, so they have no weight.
   bool allows(PreparedMealAction action) => switch (action) {
     PreparedMealAction.eat =>
       !isInPot && !hasPendingRecipeIngredients && !isDepleted,
-    PreparedMealAction.plan => !hasPendingRecipeIngredients && !isDepleted,
+    PreparedMealAction.plan => !isDepleted,
     PreparedMealAction.editIngredients => remainingPortions >= totalPortions,
     PreparedMealAction.changeWeight =>
       finalNetWeight != null &&
