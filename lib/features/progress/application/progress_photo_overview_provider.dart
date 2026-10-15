@@ -31,14 +31,9 @@ Future<ProgressPhotoOverview> progressPhotoOverview(
     ProgressScope.all => allPhotos,
   };
   final oldest = photos.firstOrNull?.day ?? today;
-  // shortcut: older photos show only their typed weight; raise the cap if
-  // users miss the trend weight on old photos.
-  final dayCount = (diaryDaysBetween(oldest, today) + 1).clamp(
-    1,
-    _maxTrendDays,
-  );
+  final dayCount = diaryDaysBetween(oldest, today) + 1;
   final trend = await ref.watch(
-    recentWeightTrendProvider(dayCount: dayCount).future,
+    recentWeightTrendProvider(dayCount: dayCount < 1 ? 1 : dayCount).future,
   );
   return ProgressPhotoOverview(
     photos: List.unmodifiable(photos),
@@ -50,6 +45,3 @@ Future<ProgressPhotoOverview> progressPhotoOverview(
     dayWeightsKg: {for (final day in trend.days) day.day: ?day.trendWeightKg},
   );
 }
-
-/// Most days of weight history loaded for the photo weights.
-const _maxTrendDays = 400;

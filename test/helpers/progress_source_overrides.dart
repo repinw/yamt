@@ -27,13 +27,14 @@ const progressProfile = CalorieCalculatorProfile(
   trainingWeekdays: [DateTime.monday, DateTime.wednesday],
 );
 
-/// Backs the Fortschritt tab with a goal, two weeks of meals, weigh-ins, and
-/// the progress [photos] (none by default).
+/// Backs the Fortschritt tab with a goal, two weeks of meals, weigh-ins
+/// plus [extraWeighIns], and the progress [photos] (none by default).
 List<Override> progressSourceOverrides({
   required FakeCalorieSettingsRepository settingsRepository,
   required FakeCalorieLogRepository calorieLog,
   Future<void>? weighInsReady,
   FakeProgressPhotoRepository? photos,
+  List<ManualHealthWeightEntry> extraWeighIns = const [],
 }) {
   return [
     ...profileSummarySourceOverrides(
@@ -46,6 +47,7 @@ List<Override> progressSourceOverrides({
             day: DateTime(2026, 9, 24 - offset),
             weightKg: 82 + offset * 0.05,
           ),
+        ...extraWeighIns,
       ],
     ),
     calorieLogRepositoryProvider.overrideWithValue(calorieLog),
