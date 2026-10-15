@@ -7,12 +7,20 @@ import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
-import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/preferences/install_id.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
+import 'package:yamt/features/health/domain/health_weight_sample_devices.dart';
 
 part 'health_weight_sample_repository.g.dart';
+
+typedef _Session = ({
+  CollectionReference<Map<String, dynamic>> collection,
+  PayloadCipher cipher,
+  String deviceId,
+});
 
 const _usersCollection = 'users';
 const _samplesCollection = 'health_weight_samples';
@@ -26,71 +34,60 @@ HealthWeightSampleRepository healthWeightSampleRepository(Ref ref) {
   return HealthWeightSampleRepository(
     firestore: ref.watch(firebaseFirestoreProvider),
     dataCipher: ref.watch(userDataCipherProvider),
+    preferences: ref.watch(appPreferencesProvider),
   );
 }
 
 /// Stores Health weight samples encrypted with the data key of the user.
 ///
 /// Nothing is readable without the key: the document id is a keyed hash of
-/// the minute and the weight, so equal measurements share a document.
+/// the minute and the weight, so equal measurements share a document. Each
+/// copy lists the devices (install ids) whose Health store holds it, so a
+/// deletion in one Health store removes the copy only once no device holds
+/// it.
 class HealthWeightSampleRepository {
   /// Creates the repository for the signed-in user.
-  new({required this._firestore, required this._dataCipher});
+  new({
+    required this._firestore,
+    required this._dataCipher,
+    required this._preferences,
+  });
 
   final FirebaseFirestore? _firestore;
   final UserDataCipher? _dataCipher;
+  final AppPreferences _preferences;
 
-  /// Stores those of [samples] that are not stored yet.
-  ///
-  /// Samples at the same minute with the same weight to 0.01 kg are one
-  /// measurement, whatever their source, so devices that read the same
-  /// scale store it once. Throws [StateError] without a signed-in user.
-  Future<void> addSamples(List<HealthWeightSample> samples) async {
-    final collection = _collection();
-    if (collection == null) {
-      throw StateError('Health weight samples need a signed-in user.');
-    }
-    if (samples.isEmpty) {
-      return;
-    }
-    final cipher = _dataCipher!.cipher;
-    // From the cache, which the readers' watch keeps, so a weighing also
-    // counts offline. A sample the cache misses is written again with the
-    // same content.
-    // shortcut: reads every stored id per sync; query by time once a
-    // readable time field or a sync cursor exists.
-    final stored = {
-      for (final document in (await readQueryLocalFirst(collection)).docs)
-        document.id,
-    };
+  /// Mirrors the Health store of this device: [loadHealth] returns all it
+  /// holds from [mirrorSince] on, or more. It runs after the stored copies
+  /// are read, so a weight saved meanwhile is never taken as deleted. A
+  /// copy from [mirrorSince] on that this device no longer holds loses it
+  /// and the devices outside [activeDevices], and is deleted once no device
+  /// holds it. Throws [StateError] without a signed-in user.
+  Future<void> syncDevice({
+    required Future<List<HealthWeightSample>> Function() loadHealth,
+    required DateTime mirrorSince,
+    required Set<String> activeDevices,
+  }) async {
+    final (:collection, :cipher, :deviceId) = await _session();
+    // From the server, so a fresh cache does not drop the devices of a
+    // copy; from the cache offline, so a weighing also counts there.
+    final stored = await _readStored(collection.get(), cipher);
+    final samples = await loadHealth();
     final ids = await Future.wait(
       samples.map((sample) => _idOf(sample, cipher)),
     );
-    final newSamples = <String, HealthWeightSample>{
-      for (final (index, id) in ids.indexed)
-        if (!stored.contains(id)) id: samples[index],
-    };
-    for (final chunk in FirestoreBatchChunker.chunk(
-      operations: newSamples.entries.toList(),
-      maxChunkSize: _maxBatchWrites,
-    )) {
-      final batch = collection.firestore.batch();
-      for (final MapEntry(key: id, value: sample) in chunk) {
-        await _set(batch, collection.doc(id), sample, cipher);
-      }
-      commitBatchInBackground(
-        batch,
-        failureMessage: 'Failed to store Health weight samples.',
-        logName: _logName,
-      );
-    }
+    final plan = healthWeightDeviceSync(
+      deviceId: deviceId,
+      stored: stored,
+      inHealth: {for (final (index, id) in ids.indexed) id: samples[index]},
+      mirrorSince: mirrorSince,
+      activeDevices: activeDevices,
+    );
+    await _commit(collection, cipher, plan);
   }
 
-  /// Watches all stored samples, the local cache first. Each snapshot
-  /// decrypts only the documents that changed.
-  ///
-  /// Without a signed-in user the list is empty. A failed read is delivered
-  /// as an error.
+  /// Watches all stored samples, the local cache first, decrypting only the
+  /// changed documents. Empty without a user; a failed read is an error.
   Stream<List<HealthWeightSample>> watchSamples() {
     final collection = _collection();
     if (collection == null) {
@@ -99,7 +96,7 @@ class HealthWeightSampleRepository {
     final cipher = _dataCipher!.cipher;
     return Stream<List<HealthWeightSample>>.multi((controller) {
       // Decoded samples by document id; null marks a malformed document.
-      final decoded = <String, HealthWeightSample?>{};
+      final decoded = <String, DeviceHealthWeightSample?>{};
       Future<List<HealthWeightSample>> decodeChanges(
         QuerySnapshot<Map<String, dynamic>> snapshot,
       ) async {
@@ -113,7 +110,7 @@ class HealthWeightSampleRepository {
           }),
         );
         return List<HealthWeightSample>.unmodifiable([
-          for (final document in snapshot.docs) ?decoded[document.id],
+          for (final document in snapshot.docs) ?decoded[document.id]?.sample,
         ]);
       }
 
@@ -132,7 +129,7 @@ class HealthWeightSampleRepository {
   /// Reads all stored samples, from the server when online, so a fresh
   /// cache does not hide the samples of other devices. Without a signed-in
   /// user the list is empty.
-  Future<List<HealthWeightSample>> readSamples() async {
+  Future<List<HealthWeightSample>> loadSamples() async {
     final collection = _collection();
     if (collection == null) {
       return const <HealthWeightSample>[];
@@ -143,66 +140,108 @@ class HealthWeightSampleRepository {
         (document) => _decodeOrNull(document, cipher),
       ),
     );
-    return List<HealthWeightSample>.unmodifiable(decoded.nonNulls);
+    return List<HealthWeightSample>.unmodifiable([
+      for (final copy in decoded.nonNulls) copy.sample,
+    ]);
   }
 
-  /// Stores [weightKg] at [recordedAt] as the weight this app wrote to
-  /// Health that day, replacing its earlier one of that day, as Health
-  /// does. It does not wait for the server, so it also works offline.
-  /// Throws [StateError] without a signed-in user.
+  /// Stores [weightKg] at [recordedAt] as the weight this app wrote to the
+  /// Health store of this device that day, replacing its earlier one of
+  /// that day, as Health does. It does not wait for the server, so it also
+  /// works offline. Throws [StateError] without a signed-in user.
   Future<void> saveAppWeight({
     required DateTime recordedAt,
     required double weightKg,
   }) async {
-    final collection = _collection();
-    if (collection == null) {
-      throw StateError('Health weight samples need a signed-in user.');
-    }
-    final cipher = _dataCipher!.cipher;
+    final (:collection, :cipher, :deviceId) = await _session();
     final sample = HealthWeightSample(
       recordedAt: recordedAt,
       weightKg: weightKg,
       isFromThisApp: true,
     );
-    final reference = collection.doc(await _idOf(sample, cipher));
-    // shortcut: decrypts every stored sample per save; keep the ids of the
-    // app weights by day once saves get slow.
-    final stored = await readQueryLocalFirst(collection);
-    final decoded = await Future.wait(
-      stored.docs.map((document) => _decodeOrNull(document, cipher)),
+    final id = await _idOf(sample, cipher);
+    final plan = healthWeightAppWeightSave(
+      deviceId: deviceId,
+      // From the cache, so a save never waits for the network; the
+      // readers' watch keeps it current.
+      stored: await _readStored(readQueryLocalFirst(collection), cipher),
+      id: id,
+      sample: sample,
     );
-    final batch = collection.firestore.batch();
-    for (final (index, earlier) in decoded.indexed) {
-      final document = stored.docs[index];
-      if (earlier != null &&
-          earlier.isFromThisApp &&
-          document.id != reference.id &&
-          isSameLocalDay(earlier.recordedAt, recordedAt)) {
-        batch.delete(document.reference);
-      }
-    }
-    await _set(batch, reference, sample, cipher);
-    commitBatchInBackground(
-      batch,
-      failureMessage: 'Failed to store a Health weight sample.',
-      logName: _logName,
-    );
+    await _commit(collection, cipher, plan);
   }
 
-  /// Removes the stored measurement that [sample] stands for. Throws
-  /// [StateError] without a signed-in user.
+  /// Deletes the copy of [sample], which the user deleted in this app.
   Future<void> deleteSample(HealthWeightSample sample) async {
-    final collection = _collection();
-    if (collection == null) {
-      throw StateError('Health weight samples need a signed-in user.');
-    }
-    final id = await _idOf(sample, _dataCipher!.cipher);
-    final batch = collection.firestore.batch()..delete(collection.doc(id));
+    final (:collection, :cipher, deviceId: _) = await _session();
+    final batch = collection.firestore.batch()
+      ..delete(collection.doc(await _idOf(sample, cipher)));
     commitBatchInBackground(
       batch,
       failureMessage: 'Failed to delete a Health weight sample.',
       logName: _logName,
     );
+  }
+
+  Future<_Session> _session() async {
+    final collection = _collection();
+    if (collection == null) {
+      throw StateError('Health weight samples need a signed-in user.');
+    }
+    return (
+      collection: collection,
+      cipher: _dataCipher!.cipher,
+      deviceId: await readInstallId(_preferences),
+    );
+  }
+
+  // shortcut: decrypts every stored copy; keep an index once it gets slow.
+  Future<Map<String, DeviceHealthWeightSample>> _readStored(
+    Future<QuerySnapshot<Map<String, dynamic>>> read,
+    PayloadCipher cipher,
+  ) async {
+    final documents = (await read).docs;
+    final decoded = await Future.wait(
+      documents.map((document) => _decodeOrNull(document, cipher)),
+    );
+    return {
+      for (final (index, copy) in decoded.indexed) documents[index].id: ?copy,
+    };
+  }
+
+  /// Writes and deletes the copies of [plan] without waiting for the server.
+  Future<void> _commit(
+    CollectionReference<Map<String, dynamic>> collection,
+    PayloadCipher cipher,
+    HealthWeightSamplePlan plan,
+  ) async {
+    for (final chunk in FirestoreBatchChunker.chunk(
+      operations: [
+        ...plan.writes.entries.map((write) => (write.key, write.value)),
+        ...plan.deletes.map((id) => (id, null)),
+      ],
+      maxChunkSize: _maxBatchWrites,
+    )) {
+      final batch = collection.firestore.batch();
+      for (final (id, copy) in chunk) {
+        final reference = collection.doc(id);
+        if (copy == null) {
+          batch.delete(reference);
+        } else {
+          batch.set(reference, <String, Object?>{
+            encryptedPayloadField: await cipher.encryptJson({
+              ...copy.sample.toJson(),
+              'devices': copy.devices.toList(),
+            }, aad: reference.path),
+          });
+        }
+      }
+      commitBatchInBackground(
+        batch,
+        failureMessage: 'Failed to store Health weight samples.',
+        logName: _logName,
+      );
+    }
   }
 
   CollectionReference<Map<String, dynamic>>? _collection() {
@@ -226,23 +265,9 @@ class HealthWeightSampleRepository {
     );
   }
 
-  Future<void> _set(
-    WriteBatch batch,
-    DocumentReference<Map<String, dynamic>> reference,
-    HealthWeightSample sample,
-    PayloadCipher cipher,
-  ) async {
-    batch.set(reference, <String, Object?>{
-      encryptedPayloadField: await cipher.encryptJson(
-        sample.toJson(),
-        aad: reference.path,
-      ),
-    });
-  }
-
   /// The sample of [document], or `null`, logged, when it is malformed, as
   /// the diary entries do.
-  Future<HealthWeightSample?> _decodeOrNull(
+  Future<DeviceHealthWeightSample?> _decodeOrNull(
     DocumentSnapshot<Map<String, dynamic>> document,
     PayloadCipher cipher,
   ) async {
@@ -251,8 +276,15 @@ class HealthWeightSampleRepository {
       if (payload is! String) {
         throw FormatException('Sample ${document.id} has no payload.');
       }
-      return HealthWeightSample.fromJson(
-        await cipher.decryptJson(payload, aad: document.reference.path),
+      final json = await cipher.decryptJson(
+        payload,
+        aad: document.reference.path,
+      );
+      return (
+        sample: HealthWeightSample.fromJson(json),
+        // Strict: no released app (v3.7.0 and older) wrote this
+        // collection, so every copy has its devices and fromThisApp.
+        devices: {...(json['devices'] as List<dynamic>).cast<String>()},
       );
     } on Object catch (error, stackTrace) {
       log(

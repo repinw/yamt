@@ -13,7 +13,15 @@ photos. From the platform it reads only weight.
 - Health weight samples synced to the cloud (`health_weight_samples`,
   encrypted with the data key): every measurement once, keyed by a hash of
   its minute and weight that only the data key can produce, so devices that
-  read the same scale store it once. Every weight reader reads these
+  read the same scale store it once. Each copy lists, encrypted, the devices
+  (install ids) whose Health store holds it. A sync mirrors deletions of the
+  last 30 days: a copy loses the device whose Health no longer has it, and
+  is deleted once no device holds it. Installs that recorded no app version
+  in 30 days (`users/{uid}/clients`) no longer hold copies, so a reinstall
+  does not keep old weights. A weight deleted in the app loses its copy at
+  once. Older copies stay, because Health may
+  not return older samples. The sync starts the day before the first goal,
+  so without a goal (onboarding always sets one) only manual weights count. Every weight reader reads these
   samples, not the local Health store, through `weightSeriesProvider`: all
   manual weights and samples of a day count as their median. A failed read
   is an error, which the readers show.

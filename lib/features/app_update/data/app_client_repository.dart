@@ -2,13 +2,12 @@ import 'dart:io' show Platform;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/preferences/install_id.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 
 part 'app_client_repository.g.dart';
 
-const _installIdKey = 'app_install_id_v1';
 const _recordedKeyPrefix = 'app_client_recorded_v1';
 const _recordAgainAfter = Duration(days: 1);
 
@@ -40,7 +39,7 @@ class AppClientRepository {
     if (recorded != null && !_isDue(recorded, appVersion, now)) {
       return;
     }
-    final installId = await _installId();
+    final installId = await readInstallId(_preferences);
     await firestore.doc('users/$uid/clients/$installId').set({
       'app_version': appVersion,
       'platform': Platform.operatingSystem,
@@ -50,6 +49,24 @@ class AppClientRepository {
       recordedKey,
       '$appVersion|${now.toUtc().toIso8601String()}',
     );
+  }
+
+  /// The install ids of [uid] that recorded a version since [since], the
+  /// devices still in use. Throws when Firestore is gone or the read fails.
+  Future<Set<String>> loadActiveInstallIds({
+    required String uid,
+    required DateTime since,
+  }) async {
+    final firestore =
+        _firestore ?? (throw StateError('Firestore is shutting down.'));
+    final clients = await firestore
+        .collection('users/$uid/clients')
+        .where(
+          'last_seen_at',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(since),
+        )
+        .get();
+    return {for (final client in clients.docs) client.id};
   }
 
   bool _isDue(String recorded, String appVersion, DateTime now) {
@@ -62,18 +79,6 @@ class AppClientRepository {
     return version != appVersion ||
         at == null ||
         now.difference(at) >= _recordAgainAfter;
-  }
-
-  Future<String> _installId() async {
-    final stored = await _preferences.getString(_installIdKey);
-    if (stored != null) {
-      return stored;
-    }
-    final created = const Uuid().v4();
-    if (!await _preferences.setString(_installIdKey, created)) {
-      throw StateError('The install id was not saved.');
-    }
-    return created;
   }
 }
 

@@ -66,4 +66,4 @@ final class HealthWeightCloudSyncProvider
 }
 
 String _$healthWeightCloudSyncHash() =>
-    r'd91306974ba0817da5a480f500a5ec18d1be4900';
+    r'36482754e1690b6a002d8be307020e09e858b3de';

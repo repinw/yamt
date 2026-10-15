@@ -1618,7 +1618,7 @@ class _StoredSamples extends Fake implements HealthWeightSampleRepository {
   final List<HealthWeightSample> samples;
 
   @override
-  Future<List<HealthWeightSample>> readSamples() async => samples;
+  Future<List<HealthWeightSample>> loadSamples() async => samples;
 }
 
 class _CountingHealthWeightService extends FakeHealthWeightService {

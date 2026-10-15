@@ -6,6 +6,10 @@ import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
+import '../../../helpers/memory_app_preferences.dart';
+
+final _longAgo = DateTime(2000);
+
 void main() {
   late UserDataCipher signedIn;
 
@@ -30,16 +34,24 @@ void main() {
     final repository = HealthWeightSampleRepository(
       firestore: firestore,
       dataCipher: signedIn,
+      preferences: MemoryAppPreferences(),
     );
 
-    await repository.addSamples([
-      HealthWeightSample(
-        recordedAt: DateTime(2026, 3, 21, 7, 5),
-        weightKg: 80.4,
-        sourcePackageName: 'com.scale',
-      ),
-      HealthWeightSample(recordedAt: DateTime(2026, 3, 20, 7), weightKg: 80.9),
-    ]);
+    await repository.syncDevice(
+      loadHealth: () async => [
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 3, 21, 7, 5),
+          weightKg: 80.4,
+          sourcePackageName: 'com.scale',
+        ),
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 3, 20, 7),
+          weightKg: 80.9,
+        ),
+      ],
+      mirrorSince: _longAgo,
+      activeDevices: const {},
+    );
     await pumpEventQueue();
 
     final stored = await storedDocuments(firestore);
@@ -59,6 +71,7 @@ void main() {
       final repository = HealthWeightSampleRepository(
         firestore: firestore,
         dataCipher: signedIn,
+        preferences: MemoryAppPreferences(),
       );
       final measurement = HealthWeightSample(
         recordedAt: DateTime(2026, 3, 20, 7, 0, 12),
@@ -66,16 +79,24 @@ void main() {
         sourcePackageName: 'com.android.scale',
       );
 
-      await repository.addSamples([
-        measurement,
-        HealthWeightSample(
-          recordedAt: DateTime(2026, 3, 20, 7, 0, 48),
-          weightKg: 80.9,
-          sourcePackageName: 'com.apple.scale',
-        ),
-      ]);
+      await repository.syncDevice(
+        loadHealth: () async => [
+          measurement,
+          HealthWeightSample(
+            recordedAt: DateTime(2026, 3, 20, 7, 0, 48),
+            weightKg: 80.9,
+            sourcePackageName: 'com.apple.scale',
+          ),
+        ],
+        mirrorSince: _longAgo,
+        activeDevices: const {},
+      );
       await pumpEventQueue();
-      await repository.addSamples([measurement]);
+      await repository.syncDevice(
+        loadHealth: () async => [measurement],
+        mirrorSince: _longAgo,
+        activeDevices: const {},
+      );
       await pumpEventQueue();
 
       expect(await storedDocuments(firestore), hasLength(1));
@@ -86,12 +107,17 @@ void main() {
     final repository = HealthWeightSampleRepository(
       firestore: FakeFirebaseFirestore(),
       dataCipher: null,
+      preferences: MemoryAppPreferences(),
     );
 
     await expectLater(
-      repository.addSamples([
-        HealthWeightSample(recordedAt: DateTime(2026, 3, 20), weightKg: 80),
-      ]),
+      repository.syncDevice(
+        loadHealth: () async => [
+          HealthWeightSample(recordedAt: DateTime(2026, 3, 20), weightKg: 80),
+        ],
+        mirrorSince: _longAgo,
+        activeDevices: const {},
+      ),
       throwsStateError,
     );
   });
@@ -102,16 +128,21 @@ void main() {
       final repository = HealthWeightSampleRepository(
         firestore: firestore,
         dataCipher: signedIn,
+        preferences: MemoryAppPreferences(),
       );
       final samples = repository.watchSamples();
 
-      await repository.addSamples([
-        HealthWeightSample(
-          recordedAt: DateTime(2026, 3, 21, 7, 5),
-          weightKg: 80.4,
-          sourcePackageName: 'com.scale',
-        ),
-      ]);
+      await repository.syncDevice(
+        loadHealth: () async => [
+          HealthWeightSample(
+            recordedAt: DateTime(2026, 3, 21, 7, 5),
+            weightKg: 80.4,
+            sourcePackageName: 'com.scale',
+          ),
+        ],
+        mirrorSince: _longAgo,
+        activeDevices: const {},
+      );
       await repository.saveAppWeight(
         recordedAt: DateTime(2026, 3, 22, 7),
         weightKg: 80,
@@ -130,6 +161,7 @@ void main() {
       final repository = HealthWeightSampleRepository(
         firestore: firestore,
         dataCipher: signedIn,
+        preferences: MemoryAppPreferences(),
       );
       final sample = HealthWeightSample(
         recordedAt: DateTime(2026, 3, 21, 7, 5, 30),
@@ -161,6 +193,7 @@ void main() {
       final repository = HealthWeightSampleRepository(
         firestore: _DeniedFirestore(),
         dataCipher: signedIn,
+        preferences: MemoryAppPreferences(),
       );
 
       await expectLater(
@@ -173,6 +206,7 @@ void main() {
       final repository = HealthWeightSampleRepository(
         firestore: FakeFirebaseFirestore(),
         dataCipher: null,
+        preferences: MemoryAppPreferences(),
       );
 
       expect(await repository.watchSamples().first, isEmpty);
@@ -184,6 +218,7 @@ void main() {
     final repository = HealthWeightSampleRepository(
       firestore: firestore,
       dataCipher: signedIn,
+      preferences: MemoryAppPreferences(),
     );
     final sample = HealthWeightSample(
       recordedAt: DateTime(2026, 3, 21, 12),
@@ -195,7 +230,11 @@ void main() {
       weightKg: sample.weightKg,
     );
     await pumpEventQueue();
-    await repository.addSamples([sample]);
+    await repository.syncDevice(
+      loadHealth: () async => [sample],
+      mirrorSince: _longAgo,
+      activeDevices: const {},
+    );
     await pumpEventQueue();
 
     expect(await storedDocuments(firestore), hasLength(1));
@@ -206,10 +245,18 @@ void main() {
     final repository = HealthWeightSampleRepository(
       firestore: firestore,
       dataCipher: signedIn,
+      preferences: MemoryAppPreferences(),
     );
-    await repository.addSamples([
-      HealthWeightSample(recordedAt: DateTime(2026, 3, 20, 7), weightKg: 80.9),
-    ]);
+    await repository.syncDevice(
+      loadHealth: () async => [
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 3, 20, 7),
+          weightKg: 80.9,
+        ),
+      ],
+      mirrorSince: _longAgo,
+      activeDevices: const {},
+    );
     await repository.saveAppWeight(
       recordedAt: DateTime(2026, 3, 20, 12),
       weightKg: 80,
@@ -223,10 +270,145 @@ void main() {
     await pumpEventQueue();
 
     final weights = [
-      for (final sample in await repository.readSamples()) sample.weightKg,
+      for (final sample in await repository.loadSamples()) sample.weightKg,
     ]..sort();
     // The scale weight of that day stays.
     expect(weights, [80.9, 81]);
+  });
+
+  group('mirrors Health deletions', () {
+    final scale = HealthWeightSample(
+      recordedAt: DateTime(2026, 3, 20, 7),
+      weightKg: 80.9,
+    );
+    // A later weighing that stays, so the Health read is not empty.
+    final kept = HealthWeightSample(
+      recordedAt: DateTime(2026, 3, 25, 7),
+      weightKg: 80.2,
+    );
+    late FakeFirebaseFirestore firestore;
+    late HealthWeightSampleRepository phone;
+    late HealthWeightSampleRepository tablet;
+
+    setUp(() {
+      firestore = FakeFirebaseFirestore();
+      phone = _device(firestore, signedIn, 'phone');
+      tablet = _device(firestore, signedIn, 'tablet');
+    });
+
+    Future<void> sync(
+      HealthWeightSampleRepository device,
+      List<HealthWeightSample> samples, {
+      DateTime? mirrorSince,
+      Set<String> activeDevices = const {'phone', 'tablet'},
+    }) async {
+      await device.syncDevice(
+        loadHealth: () async => samples,
+        mirrorSince: mirrorSince ?? DateTime(2026, 3),
+        activeDevices: activeDevices,
+      );
+      await pumpEventQueue();
+    }
+
+    Future<List<double>> weights() async =>
+        [for (final sample in await phone.loadSamples()) sample.weightKg]
+          ..sort();
+
+    test('deletes a sample once no device holds it', () async {
+      await sync(phone, [scale, kept]);
+      await sync(tablet, [scale, kept]);
+
+      await sync(phone, [kept]);
+      expect(await weights(), [80.2, 80.9]);
+
+      await sync(tablet, [kept]);
+      expect(await weights(), [80.2]);
+    });
+
+    test('keeps samples from before the mirrored days', () async {
+      await sync(phone, [scale, kept]);
+
+      await sync(phone, [kept], mirrorSince: DateTime(2026, 3, 21));
+
+      expect(await weights(), [80.2, 80.9]);
+    });
+
+    test('mirrors nothing when Health returns no recent weight', () async {
+      await sync(phone, [scale, kept]);
+
+      // As after a lost read access, not a deletion of every weighing.
+      await sync(phone, []);
+
+      expect(await weights(), [80.2, 80.9]);
+    });
+
+    test('a weight saved while the sync loads Health stays', () async {
+      await sync(phone, [kept]);
+
+      await phone.syncDevice(
+        loadHealth: () async {
+          // Saved after the sync read the copies, before Health answered.
+          await phone.saveAppWeight(
+            recordedAt: DateTime(2026, 3, 26, 12),
+            weightKg: 79.9,
+          );
+          await pumpEventQueue();
+          return [kept];
+        },
+        mirrorSince: DateTime(2026, 3),
+        activeDevices: const {'phone'},
+      );
+      await pumpEventQueue();
+
+      expect(await weights(), [79.9, 80.2]);
+    });
+
+    test('a weight deleted in the app is gone at once', () async {
+      await sync(phone, [scale, kept]);
+      await sync(tablet, [scale, kept]);
+
+      await phone.deleteSample(scale);
+      await pumpEventQueue();
+
+      expect(await weights(), [80.2]);
+    });
+
+    test(
+      'a reinstalled device deletes what only its old install held',
+      () async {
+        final oldInstall = _device(firestore, signedIn, 'old-phone');
+        await sync(oldInstall, [scale, kept]);
+        await sync(phone, [scale, kept]);
+
+        // The old install no longer records its version, so it is inactive.
+        await sync(phone, [kept], activeDevices: const {'phone'});
+
+        expect(await weights(), [80.2]);
+      },
+    );
+
+    test('an app weight replaces only the earlier one of its device', () async {
+      await phone.saveAppWeight(
+        recordedAt: DateTime(2026, 3, 20, 12),
+        weightKg: 80,
+      );
+      await tablet.saveAppWeight(
+        recordedAt: DateTime(2026, 3, 20, 12, 1),
+        weightKg: 79.5,
+      );
+      await pumpEventQueue();
+
+      await phone.saveAppWeight(
+        recordedAt: DateTime(2026, 3, 20, 12),
+        weightKg: 81,
+      );
+      await pumpEventQueue();
+
+      final weights = [
+        for (final sample in await phone.loadSamples()) sample.weightKg,
+      ]..sort();
+      expect(weights, [79.5, 81]);
+    });
   });
 }
 
@@ -259,4 +441,18 @@ class _DeniedDocument extends Fake
   @override
   CollectionReference<Map<String, dynamic>> collection(String path) =>
       _DeniedCollection();
+}
+
+HealthWeightSampleRepository _device(
+  FakeFirebaseFirestore firestore,
+  UserDataCipher signedIn,
+  String installId,
+) {
+  return HealthWeightSampleRepository(
+    firestore: firestore,
+    dataCipher: signedIn,
+    preferences: MemoryAppPreferences(
+      initialStrings: {'app_install_id_v1': installId},
+    ),
+  );
 }

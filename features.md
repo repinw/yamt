@@ -421,7 +421,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Imported weight data. A device with Health access copies its weighings
   since the first goal into the cloud, so every device of the user computes
   the trend, the TDEE, and the check-in from the same weights, also one
-  without Health access.
+  without Health access. A weighing deleted in Health within the last 30
+  days is deleted in the cloud on the next sync, once no other device still
+  has it in its Health.
 - Manual weights. All weights of a day, manual and from Health, count as
   their median.
 - Weight, trend, and TDEE start at the first goal; earlier weighings do not

@@ -26,7 +26,7 @@ Future<void> seedCalculatorWeightIfMissing({
     // From the server, so a fresh cache does not hide a scale weight.
     healthSamples = await ref
         .read(healthWeightSampleRepositoryProvider)
-        .readSamples();
+        .loadSamples();
   } on Object catch (error, stackTrace) {
     // Without the samples a seed could double a scale weight; the goal is
     // saved, so only the seed is skipped.

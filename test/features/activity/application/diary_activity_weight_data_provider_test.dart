@@ -5,6 +5,7 @@ import 'package:yamt/features/activity/application/diary_activity_weight_data_pr
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
@@ -18,7 +19,7 @@ import '../../calories/support/fake_calories_repositories.dart';
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
-  test('combines Health and manual weights without activity data', () async {
+  test('shows the weights of all devices without activity data', () async {
     final previousDay = selectedDay.subtract(const Duration(days: 1));
     final container = ProviderContainer(
       overrides: [
@@ -46,6 +47,14 @@ void main() {
             ),
           ]),
         ),
+        healthWeightSamplesProvider.overrideWith(
+          (ref) => Stream.value([
+            HealthWeightSample(
+              recordedAt: selectedDay.add(const Duration(hours: 7)),
+              weightKg: 77.1,
+            ),
+          ]),
+        ),
         manualHealthWeightRepositoryProvider.overrideWith(
           (ref) => FakeManualHealthWeightRepository([
             ManualHealthWeightEntry(day: selectedDay, weightKg: 76.8),
@@ -56,15 +65,16 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final data = await container.read(
-      diaryActivityWeightDataProvider(selectedDay).future,
-    );
+    final data = await container
+        .listen(diaryActivityWeightDataProvider(selectedDay).future, (_, _) {})
+        .read();
 
     expect(data.profileWeightKg, 80);
-    expect(data.selectedWeightKg, 76.8);
+    // The median of the manual weight and the cloud sample of that day.
+    expect(data.selectedWeightKg, closeTo(76.95, 1e-9));
     expect(data.hasSelectedDayWeight, isTrue);
     expect(data.weightTrend[5], 77.4);
-    expect(data.weightTrend.last, 76.8);
+    expect(data.weightTrend.last, closeTo(76.95, 1e-9));
     expect(data.weightDays.last.canDeleteWeight, isTrue);
   });
 }

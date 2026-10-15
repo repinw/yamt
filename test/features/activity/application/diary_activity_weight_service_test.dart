@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_service.dart';
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -19,6 +20,10 @@ void main() {
       manualEntries: [
         ManualHealthWeightEntry(day: previousDay, weightKg: 77.4),
       ],
+      weightByDay: {
+        diaryDayKey(previousDay): 77.4,
+        diaryDayKey(selectedDay): 76.8,
+      },
       healthWeightService: _FakeHealthWeightService([
         HealthWeightSample(
           recordedAt: selectedDay.add(const Duration(hours: 7)),
@@ -38,7 +43,8 @@ void main() {
     expect(data.weightDays.last.canDeleteWeight, isTrue);
   });
 
-  test('manual weight overrides Health weight for the same day', () async {
+  test('shows the weight of all devices and keeps the Health sample to '
+      'delete', () async {
     final data = await service.load(
       day: selectedDay,
       profile: const DiaryActivityWeightProfile(weightKg: 80),
@@ -46,6 +52,8 @@ void main() {
       manualEntries: [
         ManualHealthWeightEntry(day: selectedDay, weightKg: 76.8),
       ],
+      // The median of the manual weight and the Health sample.
+      weightByDay: {diaryDayKey(selectedDay): 76.95},
       healthWeightService: _FakeHealthWeightService([
         HealthWeightSample(
           recordedAt: selectedDay,
@@ -57,7 +65,7 @@ void main() {
       ]),
     );
 
-    expect(data.selectedWeightKg, 76.8);
+    expect(data.selectedWeightKg, 76.95);
     expect(data.weightDays.last.hasManualWeight, isTrue);
     expect(data.weightDays.last.healthSample?.weightKg, 77.1);
   });
@@ -68,6 +76,7 @@ void main() {
       profile: const DiaryActivityWeightProfile(weightKg: 80),
       healthStatus: _readyStatus,
       manualEntries: const [],
+      weightByDay: const {},
       healthWeightService: _FakeHealthWeightService(const []),
     );
 
@@ -83,6 +92,7 @@ void main() {
       profile: null,
       healthStatus: _deniedStatus,
       manualEntries: const [],
+      weightByDay: const {},
       healthWeightService: healthService,
     );
 
