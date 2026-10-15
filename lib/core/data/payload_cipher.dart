@@ -18,6 +18,10 @@ class PayloadCipher {
   static final _algorithm = AesGcm.with256bits();
   static final _mac = Hmac.sha256();
   static final _macKeyDerivation = Hkdf(hmac: Hmac.sha256(), outputLength: 32);
+  // RFC 5869's default salt of HashLen zeros, spelled out: the platform HMAC
+  // on Android rejects the empty key that HKDF would otherwise extract with.
+  // It gives the same keys as an empty salt.
+  static final _macKeySalt = List<int>.unmodifiable(List<int>.filled(32, 0));
 
   final SecretKey _dataKey;
 
@@ -42,6 +46,7 @@ class PayloadCipher {
     // A key of its own, so the encryption key never serves as a MAC key.
     final macKey = await _macKeyDerivation.deriveKey(
       secretKey: _dataKey,
+      nonce: _macKeySalt,
       info: utf8.encode('yamt keyed id'),
     );
     final mac = await _mac.calculateMac(utf8.encode(value), secretKey: macKey);
