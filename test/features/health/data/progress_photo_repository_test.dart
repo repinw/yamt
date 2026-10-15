@@ -177,6 +177,58 @@ void main() {
     );
   });
 
+  test(
+    'saves and replaces a photo next to a document that does not open',
+    () async {
+      await firestore.doc('users/u1/progress_photos/broken').set(
+        <String, dynamic>{'payload': 'not a sealed payload'},
+      );
+      final old = await repository.savePhoto(
+        day: DateTime(2026, 10, 15),
+        pose: ProgressPhotoPose.front,
+        imageBytes: jpeg,
+      );
+
+      final replacement = await repository.savePhoto(
+        day: DateTime(2026, 10, 15),
+        pose: ProgressPhotoPose.front,
+        imageBytes: jpeg,
+      );
+
+      final ids = (await firestore.collection('users/u1/progress_photos').get())
+          .docs
+          .map((document) => document.id);
+      expect(ids, unorderedEquals(['broken', replacement.id]));
+      expect(ids, isNot(contains(old.id)));
+    },
+  );
+
+  test('a save fails when the photos were sealed with another key', () async {
+    final otherKey = ProgressPhotoRepository(
+      firestore: firestore,
+      storage: storage,
+      dataCipher: (
+        uid: 'u1',
+        cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+      ),
+      imagePicker: ImagePicker(),
+    );
+    await otherKey.savePhoto(
+      day: DateTime(2026, 10, 15),
+      pose: ProgressPhotoPose.front,
+      imageBytes: jpeg,
+    );
+
+    await expectLater(
+      repository.savePhoto(
+        day: DateTime(2026, 10, 15),
+        pose: ProgressPhotoPose.front,
+        imageBytes: jpeg,
+      ),
+      throwsA(isA<SecretBoxAuthenticationError>()),
+    );
+  });
+
   test('lists photos oldest day first', () async {
     await repository.savePhoto(
       day: DateTime(2026, 10, 15),

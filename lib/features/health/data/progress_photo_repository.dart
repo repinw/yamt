@@ -107,8 +107,7 @@ class ProgressPhotoRepository {
       pose: pose,
       weightKg: weightKg,
     );
-    final replaced = _decode(await photos.openAll(await photos.reference.get()))
-        .where((old) => old.day == photo.day && old.pose == pose);
+    final replaced = await _photosOn(photos, photo.day, pose);
 
     final photoKey = await PayloadCipher.newDataKey();
     final file = storage.ref(_filePath(uid, photo.id));
@@ -148,6 +147,32 @@ class ProgressPhotoRepository {
     // a file that fails to delete can no longer be read.
     await photos.reference.doc(photoId).delete();
     await storage.ref(_filePath(uid, photoId)).delete();
+  }
+
+  /// The photos of [pose] on [day]. A photo whose content does not parse,
+  /// such as a pose of a newer app version, is skipped, so it does not block
+  /// every later save. A wrong data key still throws.
+  Future<List<ProgressPhoto>> _photosOn(
+    SealedCollection photos,
+    DateTime day,
+    ProgressPhotoPose pose,
+  ) async {
+    final opened = await Future.wait(
+      (await photos.reference.get()).docs.map((document) async {
+        try {
+          final data = (await photos.open(document))!;
+          return _decode([(id: document.id, data: data)]).single;
+        } on SecretBoxAuthenticationError {
+          rethrow;
+        } on Object catch (error, stackTrace) {
+          _log('Skipped an unreadable progress photo.', error, stackTrace);
+          return null;
+        }
+      }),
+    );
+    return opened.nonNulls
+        .where((photo) => photo.day == day && photo.pose == pose)
+        .toList();
   }
 
   Future<void> _deleteOrphanFile(Reference file) async {
