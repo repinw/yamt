@@ -258,6 +258,55 @@ void main() {
     expect(firstEntryDate, DateTime(2026, 2, 25, 6));
   });
 
+  test('watchEntriesFrom returns every entry from the start on and follows '
+      'changes', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieLogRepository(
+      dataCipher: signedIn,
+      firestore: firestore,
+    );
+    await repository.saveEntry(_entry('old', loggedAt: DateTime(2026, 2, 20)));
+    await repository.saveEntry(_entry('b', loggedAt: DateTime(2026, 3, 2, 9)));
+    await repository.saveEntry(_entry('a', loggedAt: DateTime(2026, 2, 25, 8)));
+
+    final emitted = <List<CalorieEntry>>[];
+    final subscription = repository
+        .watchEntriesFrom(DateTime(2026, 2, 25))
+        .listen(emitted.add);
+    addTearDown(() {
+      unawaited(subscription.cancel());
+    });
+    await _until(() => emitted.isNotEmpty);
+
+    expect(emitted.last.map((entry) => entry.id), ['a', 'b']);
+
+    await repository.saveEntry(_entry('c', loggedAt: DateTime(2026, 4, 1, 7)));
+    await _until(() => emitted.last.length == 3);
+
+    expect(emitted.last.map((entry) => entry.id), ['a', 'b', 'c']);
+
+    await repository.saveEntry(
+      _entry('b', loggedAt: DateTime(2026, 3, 2, 9), name: 'Quark'),
+    );
+    await repository.deleteEntry('a');
+    await _until(() => emitted.last.length == 2);
+
+    expect(emitted.last.map((entry) => entry.id), ['b', 'c']);
+    expect(emitted.last.first.name, 'Quark');
+  });
+
+  test('watchEntriesFrom is empty when no user is signed in', () async {
+    final repository = FirestoreCalorieLogRepository(
+      dataCipher: null,
+      firestore: FakeFirebaseFirestore(),
+    );
+
+    expect(
+      await repository.watchEntriesFrom(DateTime(2026, 2, 25)).first,
+      isEmpty,
+    );
+  });
+
   test('watchEntriesForDay streams realtime updates', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
@@ -322,4 +371,11 @@ void main() {
     await writer.deleteEntry('entry-1');
     expect(writer.cachedById('entry-1'), isNull);
   });
+}
+
+/// Waits until [done] holds; decryption runs outside the microtask queue.
+Future<void> _until(bool Function() done) async {
+  for (var attempt = 0; attempt < 200 && !done(); attempt++) {
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
 }
