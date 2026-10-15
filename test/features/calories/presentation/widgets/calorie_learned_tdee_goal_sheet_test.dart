@@ -418,6 +418,71 @@ void main() {
     expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
   });
 
+  testWidgets('a double tap on save asks once and saves once (#703)', (
+    tester,
+  ) async {
+    _useTallView(tester);
+    final today = normalizeDiaryDay(DateTime.now());
+    final initialSettings = _learnedTdeeSettings(
+      goalStartDate: today.subtract(const Duration(days: 6)),
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    final logRepository = FakeCalorieLogRepository();
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        initialSettings: initialSettings,
+        overrides: <Override>[
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lose'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      '60',
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+    await tester.pumpAndSettle();
+    final reading = Completer<void>();
+    logRepository.onReadEntriesForDay = (_) async {
+      await reading.future;
+      return const [];
+    };
+
+    var saves = 0;
+    settingsRepository.onSaveSettings = (_) async => saves++;
+
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.pump();
+    reading.complete();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
+    await tester.pumpAndSettle();
+    expect(saves, 1);
+  });
+
   testWidgets('shows failure snackbar when learned TDEE save fails', (
     tester,
   ) async {

@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/utils/exclusive_runner.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
@@ -111,6 +114,10 @@ class _CalorieLearnedTdeeGoalSheetState
   late String _lastNonMaintainGoalSpeedText;
   var _didUserPickGoalStart = false;
   var _isSaving = false;
+
+  /// Saves once, also on a double tap while the food-tracking question
+  /// loads (#703).
+  final _saveRunner = ExclusiveRunner();
 
   double get _learnedTdeeKcal {
     return widget.initialSettings.latestLearnedTdeeKcal ?? 0;
@@ -331,7 +338,9 @@ class _CalorieLearnedTdeeGoalSheetState
                         ),
                       FilledButton(
                         key: CalorieLearnedTdeeSheetKeys.saveButton,
-                        onPressed: _canSave ? _save : null,
+                        onPressed: _canSave
+                            ? () => unawaited(_saveRunner.run(_save))
+                            : null,
                         child: Text(l10n.caloriesCalculatorSaveAction),
                       ),
                     ],

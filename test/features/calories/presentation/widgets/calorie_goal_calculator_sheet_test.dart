@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -29,10 +30,13 @@ import '../../support/fake_calories_repositories.dart';
 Widget _buildHarness({
   required FakeCalorieSettingsRepository settingsRepository,
   CalorieGoalSettings initialSettings = const CalorieGoalSettings.empty(),
+  FakeCalorieLogRepository? logRepository,
 }) {
   final container = ProviderContainer(
     overrides: [
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      if (logRepository != null)
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
     ],
   );
   addTearDown(container.dispose);
@@ -471,6 +475,49 @@ void main() {
     final settings = await repository.readSettings();
     expect(settings.calculatorProfile, isNotNull);
     expect(settings.dailyKcalGoal, 2136);
+  });
+
+  testWidgets('a double tap on save asks once and saves once (#703)', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final reading = Completer<void>();
+    final logRepository = FakeCalorieLogRepository()
+      ..onReadEntriesForDay = (_) async {
+        await reading.future;
+        return const [];
+      };
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        logRepository: logRepository,
+      ),
+    );
+    await _openSheet(tester);
+    await _goToResultsWithDefaults(tester);
+    await _ensureSaveButtonVisible(tester);
+
+    var saves = 0;
+    repository.onSaveSettings = (_) async => saves++;
+
+    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
+    await tester.pump();
+    reading.complete();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
+    await tester.pumpAndSettle();
+    expect(saves, 1);
   });
 
   testWidgets('save failure keeps the sheet open and shows feedback', (
