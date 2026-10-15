@@ -114,13 +114,14 @@ RecipeIngredientLine _line({
 }) {
   final conversion =
       recipe.recipeIngredientAmountConversions[ingredient.trim()];
-  final candidates = ingredientStockCandidates(
+  final (:matches, :others) = ingredientStockCandidates(
     text: ingredient,
     requirement: requirement,
     items: items,
     localeCode: localeCode,
     amountConversion: conversion,
   );
+  final candidates = [...matches, ...others];
   List<InventoryItem> pickable(Iterable<String?> ids) => [
     for (final id in ids) ?candidates.firstWhereOrNull((i) => i.id == id),
   ];
@@ -131,14 +132,7 @@ RecipeIngredientLine _line({
     final savedItems = pickable(
       recipe.recipeIngredientAssignments[ingredient] ?? const <String>[],
     );
-    final best = bestIngredientStockMatch(
-      text: ingredient,
-      requirement: requirement,
-      items: items,
-      localeCode: localeCode,
-      amountConversion: conversion,
-    );
-    stock = savedItems.isNotEmpty ? savedItems : [?best];
+    stock = savedItems.isNotEmpty ? savedItems : [?matches.firstOrNull];
   }
   final shortfall = ingredientShortfall(
     requirement: requirement,
