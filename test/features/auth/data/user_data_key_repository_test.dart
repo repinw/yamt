@@ -13,6 +13,7 @@ void main() {
       'planned_entries',
       'calorie_settings',
       'health_weights',
+      'health_weight_samples',
       'calorie_product_overrides',
     ];
     for (final collection in deleted) {

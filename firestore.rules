@@ -1087,6 +1087,12 @@ service cloud.firestore {
         && isEncryptedDocument(request.resource.data, []);
     }
 
+    match /users/{uid}/health_weight_samples/{sampleId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && isEncryptedDocument(request.resource.data, []);
+    }
+
     match /users/{uid}/calorie_product_overrides/{barcode} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid)

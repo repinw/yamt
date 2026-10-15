@@ -78,4 +78,17 @@ void main() {
       throwsA(isA<JsonUnsupportedObjectError>()),
     );
   });
+
+  test('keyedId is stable per key and reveals nothing', () async {
+    final cipher = PayloadCipher(await PayloadCipher.newDataKey());
+    final otherKey = PayloadCipher(await PayloadCipher.newDataKey());
+
+    final id = await cipher.keyedId('health-weight-sample:a:80.00');
+
+    expect(await cipher.keyedId('health-weight-sample:a:80.00'), id);
+    expect(await cipher.keyedId('health-weight-sample:a:80.01'), isNot(id));
+    expect(await otherKey.keyedId('health-weight-sample:a:80.00'), isNot(id));
+    expect(id, isNot(contains('80')));
+    expect(id, matches(RegExp(r'^[A-Za-z0-9_-]+$')));
+  });
 }

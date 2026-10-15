@@ -15,6 +15,8 @@ class PayloadCipher {
   const new(this._dataKey);
 
   static final _algorithm = AesGcm.with256bits();
+  static final _mac = Hmac.sha256();
+  static final _macKeyDerivation = Hkdf(hmac: Hmac.sha256(), outputLength: 32);
 
   final SecretKey _dataKey;
 
@@ -33,6 +35,21 @@ class PayloadCipher {
       aad: utf8.encode(aad),
     );
     return base64Encode(secretBox.concatenation());
+  }
+
+  /// A stable id for [value] that only this data key can produce.
+  ///
+  /// Equal values get the same id, so they can share a document, while the
+  /// id reveals nothing about the value. Prefix [value] with its purpose, so
+  /// ids of different kinds never meet.
+  Future<String> keyedId(String value) async {
+    // A key of its own, so the encryption key never serves as a MAC key.
+    final macKey = await _macKeyDerivation.deriveKey(
+      secretKey: _dataKey,
+      info: utf8.encode('yamt keyed id'),
+    );
+    final mac = await _mac.calculateMac(utf8.encode(value), secretKey: macKey);
+    return base64UrlEncode(mac.bytes).replaceAll('=', '');
   }
 
   /// Decrypts a payload created by [encryptJson].
