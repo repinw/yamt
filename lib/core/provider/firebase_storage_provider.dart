@@ -51,7 +51,7 @@ void resetFirebaseStorageProviderDebugHooks() {
 }
 
 /// Returns Storage instance unless session shutdown is in progress.
-@riverpod
+@Riverpod(keepAlive: true)
 FirebaseStorage? firebaseStorage(Ref ref) {
   final isSessionShutdownInProgress = ref.watch(
     sessionShutdownControllerProvider,

@@ -30,7 +30,7 @@ final class FirebaseStorageProvider
         argument: null,
         retry: null,
         name: r'firebaseStorageProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -57,4 +57,4 @@ final class FirebaseStorageProvider
   }
 }
 
-String _$firebaseStorageHash() => r'4c7e8396afda799e648b4df6f01860f26bba75e5';
+String _$firebaseStorageHash() => r'74b890544d71df655d4ac07ba7bc3008ee95ea49';
