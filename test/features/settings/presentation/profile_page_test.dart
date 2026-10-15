@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -86,6 +87,17 @@ void main() {
     expect(find.text('180 cm'), findsOneWidget);
     // The goal lives on the Fortschritt tab now.
     expect(find.text('Gewicht halten'), findsNothing);
+
+    // Today has a manual weight, so the weigh-in offers to delete it.
+    await tester.ensureVisible(
+      find.byKey(ProfileWeightCard.addWeightButtonKey),
+    );
+    await tester.tap(find.byKey(ProfileWeightCard.addWeightButtonKey));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(DiaryWeightDialogKeys.weightDialogClearButton),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a height edit shows the new calorie goal before it saves', (

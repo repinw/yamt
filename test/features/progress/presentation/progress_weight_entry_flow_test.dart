@@ -12,6 +12,7 @@ import 'package:yamt/features/health/data/health_connection_service_provider.dar
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
 import 'package:yamt/features/progress/presentation/progress_weight_entry_flow.dart';
@@ -55,6 +56,27 @@ Future<void> _pump(
   await tester.pumpAndSettle();
 }
 
+/// Real weight providers over [weights], without Health.
+List<Override> _manualWeightOverrides({
+  required FakeCalorieSettingsRepository settings,
+  required FakeManualHealthWeightRepository weights,
+}) {
+  return [
+    appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+    calorieSettingsRepositoryProvider.overrideWithValue(settings),
+    clockProvider.overrideWithValue(() => progressNow),
+    healthConnectionServiceProvider.overrideWith(
+      (ref) => FakeHealthConnectionService(
+        const HealthConnectionStatus.unsupported(),
+      ),
+    ),
+    healthWeightServiceProvider.overrideWith(
+      (ref) => FakeHealthWeightService(const []),
+    ),
+    manualHealthWeightRepositoryProvider.overrideWithValue(weights),
+  ];
+}
+
 void main() {
   testWidgets('saves the weight of today while nothing else watches it', (
     tester,
@@ -68,20 +90,7 @@ void main() {
     // controller alive until the save is done.
     await _pump(
       tester,
-      overrides: [
-        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-        calorieSettingsRepositoryProvider.overrideWithValue(settings),
-        clockProvider.overrideWithValue(() => progressNow),
-        healthConnectionServiceProvider.overrideWith(
-          (ref) => FakeHealthConnectionService(
-            const HealthConnectionStatus.unsupported(),
-          ),
-        ),
-        healthWeightServiceProvider.overrideWith(
-          (ref) => FakeHealthWeightService(const []),
-        ),
-        manualHealthWeightRepositoryProvider.overrideWithValue(weights),
-      ],
+      overrides: _manualWeightOverrides(settings: settings, weights: weights),
     );
 
     await tester.tap(find.byKey(_openKey));
@@ -99,6 +108,30 @@ void main() {
       [for (final entry in weights.entries) (entry.day, entry.weightKg)],
       [(DateTime(2026, 9, 24), 80.4)],
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('deletes the manual weight of today', (tester) async {
+    final settings = FakeCalorieSettingsRepository(
+      initialSettings: progressSettings(),
+    );
+    addTearDown(settings.dispose);
+    final today = DateTime(2026, 9, 24);
+    final weights = FakeManualHealthWeightRepository([
+      ManualHealthWeightEntry(day: today, weightKg: 80.4),
+    ]);
+    await _pump(
+      tester,
+      overrides: _manualWeightOverrides(settings: settings, weights: weights),
+    );
+
+    await tester.tap(find.byKey(_openKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryWeightDialogKeys.weightDialogClearButton));
+    await tester.pumpAndSettle();
+
+    expect(weights.deletedDays, [today]);
+    expect(weights.entries, isEmpty);
     expect(tester.takeException(), isNull);
   });
 
