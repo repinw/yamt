@@ -182,7 +182,8 @@ class EatMealNutrition {
 }
 
 /// The meal food for eating [request] of [item], in the unit the request
-/// counts calories in, or null when [item] has no nutrition values.
+/// counts calories in, or null when that unit is unknown. An [item] without
+/// nutrition values lists none, so the meal's totals show it lacks them.
 ///
 /// A request without its own calorie amount eats [item]'s stock unit, so
 /// [item] must count in grams or milliliters then.
@@ -192,12 +193,14 @@ EatMealFood? eatMealFoodOfRequest(
 ) {
   final nutrition = item.nutrition;
   final unit = request.calorieUnit ?? inventoryItemConsumedUnit(item);
-  if (nutrition == null || unit == null) {
+  if (unit == null) {
     return null;
   }
   final amount = request.calorieAmount ?? request.inventoryAmount.toDouble();
   return (
-    eaten: EatNutrition.fromPer100(nutrition, amount).eaten,
+    eaten: nutrition == null
+        ? const NutritionFacts()
+        : EatNutrition.fromPer100(nutrition, amount).eaten,
     amount: amount,
     unit: unit,
   );
