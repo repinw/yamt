@@ -6,11 +6,13 @@
       "Rezepte und Vorlagen für einen Tag planen"
     ],
     "improved": [
+      "Fortschrittsfotos im Vollbild: ersetzen, verschieben oder löschen",
       "Health-Gewichte aller Geräte zählen gemeinsam",
       "Kombinieren über die Auswahl im Vorrat, mit Suche im Katalog",
       "Der Barcode-Scanner liest nur, was im Rahmen liegt"
     ],
     "fixed": [
+      "Health-Gewichte werden auf Android wieder übernommen",
       "Doppeltippen speichert nichts mehr doppelt",
       "Ein fehlgeschlagenes Speichern des Ziels wird angezeigt"
     ]
@@ -22,11 +24,13 @@
       "Plan recipes and templates for a day"
     ],
     "improved": [
+      "Progress photos full size: replace, move, or delete them",
       "Health weights from all your devices count together",
       "Combine foods from the pantry selection, with a catalog search",
       "The barcode scanner reads only what is inside the frame"
     ],
     "fixed": [
+      "Health weights sync on Android again",
       "A double tap no longer saves twice",
       "A failed goal save is now shown"
     ]
