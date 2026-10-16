@@ -200,6 +200,17 @@ void main() {
 
     expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsNothing);
     expect(_todaysWeighIn(tester), 80.4);
+
+    // The weight of today can be deleted from the same dialog.
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ProgressActionKeys.weigh));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryWeightDialogKeys.weightDialogClearButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsNothing);
+    expect(_todaysWeighIn(tester), isNull);
     expect(tester.takeException(), isNull);
   });
 
