@@ -36,7 +36,7 @@ Future<(GoRouter, MemoryAppPreferences)> _pumpApp(
   addTearDown(router.dispose);
   final container = ProviderContainer(
     overrides: [
-      appVersionProvider.overrideWith((ref) async => '3.8.0+70'),
+      appVersionProvider.overrideWith((ref) async => '3.8.1+70'),
       appPreferencesProvider.overrideWithValue(preferences),
       navigatorKeyProvider.overrideWithValue(navigatorKey),
       appRouterProvider.overrideWithValue(router),
@@ -74,8 +74,8 @@ void main() {
     final (_, preferences) = await _pumpApp(tester, location: AppRoutes.home);
 
     expect(find.byKey(WhatsNewListener.noticeKey), findsOneWidget);
-    expect(find.textContaining('New in 3.8.0: Progress'), findsOneWidget);
-    expect(await preferences.getString(_lastSeenKey), '3.8.0');
+    expect(find.textContaining('New in 3.8.1: Progress'), findsOneWidget);
+    expect(await preferences.getString(_lastSeenKey), '3.8.1');
 
     await tester.tap(find.text('See all'));
     await tester.pumpAndSettle();

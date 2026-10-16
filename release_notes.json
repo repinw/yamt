@@ -1,10 +1,10 @@
 [
   {
     "language": "de",
-    "text": "Neu: Fortschrittsfotos mit Vorher-Nachher-Vergleich (verschlüsselt, auch im Wochen-Check-in), täglicher Kalorienbedarf mit Tageszielen, Health-Gewichte auf allen Geräten, Rezepte und Vorlagen planen. Kombinieren über die Auswahl im Vorrat, Barcode-Scanner nur im Rahmen. Bitte vor allem Fotos aufnehmen und vergleichen, den Check-in und Health-Gewichte testen."
+    "text": "Fehlerbehebungen: Health-Gewichte werden auf Android wieder übernommen. Fortschrittsfotos lassen sich im Vollbild ersetzen, verschieben und löschen. Bitte vor allem die Health-Gewichte in Fortschritt prüfen."
   },
   {
     "language": "en-US",
-    "text": "New: progress photos with a before and after comparison (encrypted, also in the weekly check-in), daily calorie needs with daily goals, Health weights on all devices, plan recipes and templates. Combine foods from the pantry selection, the barcode scanner reads only inside the frame. Please test taking and comparing photos, the check-in, and Health weights first."
+    "text": "Bug fixes: Health weights sync on Android again. Progress photos can be replaced, moved, and deleted in a full-screen view. Please check the Health weights on Progress first."
   }
 ]
