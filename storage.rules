@@ -61,6 +61,12 @@ service firebase.storage {
         && isRecipeImage();
     }
 
+    // Storage checks an upload to an existing path as create, so
+    // `allow update: if false` alone does not stop an overwrite (#733).
+    function isNewFile() {
+      return resource == null;
+    }
+
     function isProductImage() {
       return request.resource.size < 2 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
@@ -74,6 +80,7 @@ service firebase.storage {
       allow delete: if isSignedIn() && request.auth.uid == uid;
       allow create: if isSignedIn()
         && request.auth.uid == uid
+        && isNewFile()
         && isProductImage();
       allow update: if false;
     }
@@ -85,6 +92,7 @@ service firebase.storage {
       allow read, delete: if isSignedIn() && request.auth.uid == uid;
       allow create: if isSignedIn()
         && request.auth.uid == uid
+        && isNewFile()
         && request.resource.size < 2 * 1024 * 1024
         && request.resource.contentType == 'application/octet-stream';
       allow update: if false;
@@ -104,6 +112,7 @@ service firebase.storage {
       allow read: if isSignedIn();
       allow create: if isSignedIn()
         && request.auth.uid == uid
+        && isNewFile()
         && isProductImage();
       allow update, delete: if false;
     }
