@@ -54,6 +54,23 @@ const remove = (context: RulesTestContext, path: string) =>
 const list = (context: RulesTestContext, path: string) =>
   context.storage().ref(path).listAll();
 
+/**
+ * Checks that ada can upload to [path] once, and that a second upload there
+ * is refused and leaves the first file as it was.
+ *
+ * [path] must be one that no other case writes: after a seeded file, the
+ * emulator still sees one there once clearStorage ran.
+ */
+async function refusesOverwrite(path: string, contentType = jpeg): Promise<void> {
+  const ada = account(env, 'ada');
+  await assertSucceeds(upload(ada, path, contentType, 4));
+  await assertFails(upload(ada, path, contentType, 8));
+  const stored = await read(ada, path);
+  if (stored.size !== 4) {
+    throw new Error(`${path} changed to ${stored.size} bytes`);
+  }
+}
+
 describe('household images', () => {
   for (const path of [
     'households/h1/kitchen_utensils/u1/images/a.jpg',
@@ -127,6 +144,9 @@ describe('food photos of a user', () => {
     await assertFails(upload(ada, path, 'text/plain'));
     await assertFails(upload(ada, path, jpeg, megabytes(2)));
   });
+
+  it('refuses an upload over an existing photo, even by the owner (#733)', () =>
+    refusesOverwrite('users/ada/food_photos/fresh.jpg'));
 });
 
 describe('progress photos of a user', () => {
@@ -146,6 +166,9 @@ describe('progress photos of a user', () => {
     await assertFails(upload(ada, path, jpeg));
     await assertFails(upload(ada, path, sealed, megabytes(2)));
   });
+
+  it('refuses an upload over an existing photo, even by the owner (#733)', () =>
+    refusesOverwrite('users/ada/progress_photos/fresh', sealed));
 
   it('keeps a co-member and a stranger out', async () => {
     await env.withSecurityRulesDisabled((context) => upload(context, path, sealed));
@@ -178,4 +201,7 @@ describe('product images', () => {
     await assertFails(remove(account(env, 'ada'), path));
     await assertFails(read(env.unauthenticatedContext(), path));
   });
+
+  it('refuses an upload over an existing photo, even by the uploader (#733)', () =>
+    refusesOverwrite('product_images/ada/fresh/front.jpg'));
 });
