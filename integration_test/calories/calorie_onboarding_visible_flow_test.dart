@@ -103,7 +103,18 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Stream<List<CalorieEntry>> watchEntriesFrom(DateTime startInclusive) {
-    return const Stream<List<CalorieEntry>>.empty();
+    // Delivered inside `listen`: Riverpod pauses the stream of a provider
+    // that only covered routes watch, and a provider disposed before its
+    // first value fails everyone who awaits it.
+    late final StreamController<List<CalorieEntry>> controller;
+    controller = StreamController<List<CalorieEntry>>(
+      sync: true,
+      onListen: () => controller.add([
+        for (final entry in _entries)
+          if (!entry.loggedAt.isBefore(startInclusive)) entry,
+      ]),
+    );
+    return controller.stream;
   }
 
   @override
