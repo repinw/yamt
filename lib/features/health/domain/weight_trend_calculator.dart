@@ -88,6 +88,7 @@ abstract final class WeightTrendCalculator {
   /// Builds the series from manual entries and Health samples.
   ///
   /// All weights of one day, manual and Health, count as their median.
+  /// Ignored Health samples do not count.
   static DailyWeightSeries fromSources({
     List<ManualHealthWeightEntry> manualEntries =
         const <ManualHealthWeightEntry>[],
@@ -95,7 +96,8 @@ abstract final class WeightTrendCalculator {
   }) {
     final weightsByDay = <DateTime, List<double>>{};
     for (final (day, weightKg) in [
-      for (final sample in healthSamples) (sample.recordedAt, sample.weightKg),
+      for (final sample in healthSamples)
+        if (!sample.isIgnored) (sample.recordedAt, sample.weightKg),
       for (final entry in manualEntries) (entry.day, entry.weightKg),
     ]) {
       weightsByDay

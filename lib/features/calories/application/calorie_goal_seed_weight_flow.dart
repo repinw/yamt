@@ -41,7 +41,9 @@ Future<void> seedCalculatorWeightIfMissing({
   if (!ref.mounted ||
       manualEntries.any((entry) => isSameDiaryDay(entry.day, normalizedDay)) ||
       healthSamples.any(
-        (sample) => isSameDiaryDay(sample.recordedAt, normalizedDay),
+        (sample) =>
+            !sample.isIgnored &&
+            isSameDiaryDay(sample.recordedAt, normalizedDay),
       )) {
     return;
   }

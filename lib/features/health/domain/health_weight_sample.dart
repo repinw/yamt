@@ -15,6 +15,7 @@ class HealthWeightSample {
     this.uuid,
     this.sourcePackageName,
     this.isFromThisApp = false,
+    this.isIgnored = false,
   });
 
   /// Decodes the payload of a cloud copy.
@@ -39,6 +40,13 @@ class HealthWeightSample {
   /// Whether this sample was written by this app.
   @JsonKey(name: 'fromThisApp', required: true, disallowNullValue: true)
   final bool isFromThisApp;
+
+  /// Whether the user left this weight out of every count, on all devices.
+  ///
+  /// Temporary compatibility, added in 3.9.0: copies of 3.8.1 and older
+  /// lack it.
+  @JsonKey(name: 'ignored', defaultValue: false)
+  final bool isIgnored;
 
   /// Encodes the payload of a cloud copy.
   Map<String, dynamic> toJson() => _$HealthWeightSampleToJson(this);
