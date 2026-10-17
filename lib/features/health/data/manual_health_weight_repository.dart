@@ -5,9 +5,9 @@ abstract interface class ManualHealthWeightRepository {
   /// Read entries.
   Future<List<ManualHealthWeightEntry>> readEntries();
 
-  /// Save entry.
+  /// Saves [entry] under its id, or under its day without one.
   Future<bool> saveEntry(ManualHealthWeightEntry entry);
 
-  /// Delete entry for day.
+  /// Deletes every entry of [day].
   Future<bool> deleteEntryForDay(DateTime day);
 }

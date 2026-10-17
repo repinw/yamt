@@ -13,8 +13,8 @@ const _logName = 'FirestoreManualHealthWeightRepository';
 
 /// Defines firestore manual health weight repository.
 ///
-/// Weights are stored encrypted with the data key of the user. The document
-/// id is the day.
+/// Weights are stored encrypted with the data key of the user. An entry
+/// without an id is stored under its day, as 3.8.1 and older store all.
 class FirestoreManualHealthWeightRepository
     implements ManualHealthWeightRepository {
   /// Creates an instance.
@@ -34,7 +34,7 @@ class FirestoreManualHealthWeightRepository
       final snapshot = await collection.get();
       final decoded = await Future.wait(snapshot.docs.map(_decodeDocument));
       final entries = decoded.nonNulls.toList(growable: false)
-        ..sort((left, right) => left.day.compareTo(right.day));
+        ..sort((left, right) => left.at.compareTo(right.at));
       return List<ManualHealthWeightEntry>.unmodifiable(entries);
     } on Object catch (error, stackTrace) {
       log(
@@ -55,7 +55,7 @@ class FirestoreManualHealthWeightRepository
     }
 
     try {
-      final reference = collection.doc(_documentIdForDay(entry.day));
+      final reference = collection.doc(entry.storageId);
       await reference.set(<String, Object?>{
         encryptedPayloadField: await _dataCipher!.cipher.encryptJson(
           entry.toJson(),
@@ -82,7 +82,19 @@ class FirestoreManualHealthWeightRepository
     }
 
     try {
-      await collection.doc(_documentIdForDay(day)).delete();
+      // From the server, so a weighing of another device goes too.
+      // shortcut: decrypts every entry; keep a day index once it gets slow.
+      final snapshot = await collection.get();
+      final entries = await Future.wait(snapshot.docs.map(_decodeDocument));
+      // The day document goes even when it cannot be decoded, as before.
+      final batch = collection.firestore.batch()
+        ..delete(collection.doc(manualWeightDayId(day)));
+      for (final entry in entries.nonNulls) {
+        if (isSameLocalDay(entry.day, day)) {
+          batch.delete(collection.doc(entry.storageId));
+        }
+      }
+      await batch.commit();
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -108,6 +120,7 @@ class FirestoreManualHealthWeightRepository
           payload,
           aad: document.reference.path,
         ),
+        id: document.id,
       );
     } on Object catch (error, stackTrace) {
       log(
@@ -131,11 +144,4 @@ class FirestoreManualHealthWeightRepository
         .doc(userId)
         .collection(_weightsCollection);
   }
-}
-
-String _documentIdForDay(DateTime day) {
-  final normalizedDay = normalizeLocalDay(day);
-  final month = normalizedDay.month.toString().padLeft(2, '0');
-  final date = normalizedDay.day.toString().padLeft(2, '0');
-  return '${normalizedDay.year}-$month-$date';
 }
