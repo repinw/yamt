@@ -14,8 +14,8 @@ import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
+import 'package:yamt/core/utils/photo_jpeg.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/health/data/progress_photo_image.dart';
 import 'package:yamt/features/health/domain/progress_photo.dart';
 
 part 'progress_photo_repository.g.dart';
@@ -48,11 +48,11 @@ class ProgressPhotoRepository {
   /// user cancels.
   Future<Uint8List?> pickPhoto(ImageSource source) async {
     // The platform scales and re-encodes first, which also turns HEIC
-    // photos into JPEGs that cleanProgressPhoto can read.
+    // photos into JPEGs that cleanPhotoJpeg can read.
     final file = await _imagePicker.pickImage(
       source: source,
-      maxWidth: progressPhotoMaxSide.toDouble(),
-      maxHeight: progressPhotoMaxSide.toDouble(),
+      maxWidth: photoMaxSide.toDouble(),
+      maxHeight: photoMaxSide.toDouble(),
       requestFullMetadata: false,
     );
     return await file?.readAsBytes();
@@ -89,7 +89,7 @@ class ProgressPhotoRepository {
   /// photo of that pose and day.
   ///
   /// The image is stored as a JPEG of at most 1600 pixels a side, without
-  /// its metadata (see [cleanProgressPhoto]).
+  /// its metadata (see [cleanPhotoJpeg]).
   Future<ProgressPhoto> savePhoto({
     required DateTime day,
     required ProgressPhotoPose pose,
@@ -100,7 +100,7 @@ class ProgressPhotoRepository {
       throw ArgumentError.value(weightKg, 'weightKg', 'is out of range');
     }
     final (:photos, :storage, :uid) = _require();
-    final jpegBytes = await compute(cleanProgressPhoto, imageBytes);
+    final jpegBytes = await compute(cleanPhotoJpeg, imageBytes);
     final photo = ProgressPhoto(
       id: photos.reference.doc().id,
       day: normalizeLocalDay(day),
