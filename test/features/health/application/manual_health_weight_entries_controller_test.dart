@@ -151,9 +151,9 @@ class _FakeManualHealthWeightRepository
     }
     entries = [
       for (final existingEntry in entries)
-        if (existingEntry.day != entry.day) existingEntry,
+        if (existingEntry.storageId != entry.storageId) existingEntry,
       entry,
-    ]..sort((left, right) => left.day.compareTo(right.day));
+    ]..sort((left, right) => left.at.compareTo(right.at));
     return true;
   }
 }
@@ -392,6 +392,43 @@ void main() {
       expect(stateEntries, isEmpty);
     },
   );
+
+  test('saveEntry stores the time over the last entry of the day', () async {
+    final repository = _FakeManualHealthWeightRepository(
+      entries: [
+        ManualHealthWeightEntry(
+          day: DateTime(2026, 4, 2),
+          weightKg: 72.1,
+          id: '2026-04-02',
+        ),
+        ManualHealthWeightEntry(
+          day: DateTime(2026, 4, 2, 8),
+          weightKg: 72.4,
+          recordedAt: DateTime(2026, 4, 2, 8),
+          id: 'morning',
+        ),
+      ],
+    );
+    final container = buildContainer(
+      repository: repository,
+      now: () => DateTime(2026, 4, 2, 9, 30),
+    );
+    addTearDown(container.dispose);
+
+    await container.read(manualHealthWeightEntriesControllerProvider.future);
+    await container
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .saveEntry(day: DateTime(2026, 4, 2), weightKg: 71.8);
+
+    final saved = repository.entries.last;
+    expect(repository.entries.map((entry) => entry.storageId), [
+      '2026-04-02',
+      'morning',
+    ]);
+    expect(saved.id, 'morning');
+    expect(saved.recordedAt, DateTime(2026, 4, 2, 9, 29, 59));
+    expect(saved.weightKg, 71.8);
+  });
 
   test('saveEntry reverts state when repository save fails', () async {
     final repository = _FakeManualHealthWeightRepository(

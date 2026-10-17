@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
+import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -52,9 +53,10 @@ class ManualHealthWeightEntriesController
         : await _saveToRepository(
             repository: repository,
             previousEntries: previousEntries,
-            entry: ManualHealthWeightEntry(
-              day: normalizedDay,
-              weightKg: weightKg,
+            entry: _dayEntry(
+              previousEntries,
+              _weightRecordedAtForDay(normalizedDay, now),
+              weightKg,
             ),
           );
     return saved;
@@ -125,10 +127,7 @@ class ManualHealthWeightEntriesController
         return await _saveToRepository(
           repository: repository,
           previousEntries: previousEntries,
-          entry: ManualHealthWeightEntry(
-            day: normalizedDay,
-            weightKg: weightKg,
-          ),
+          entry: _dayEntry(previousEntries, recordedAt, weightKg),
         );
       }
 
@@ -167,7 +166,7 @@ class ManualHealthWeightEntriesController
       return await _saveToRepository(
         repository: repository,
         previousEntries: previousEntries,
-        entry: ManualHealthWeightEntry(day: normalizedDay, weightKg: weightKg),
+        entry: _dayEntry(previousEntries, recordedAt, weightKg),
       );
     }
   }
@@ -177,11 +176,12 @@ class ManualHealthWeightEntriesController
     required List<ManualHealthWeightEntry> previousEntries,
     required ManualHealthWeightEntry entry,
   }) async {
+    // Other weighings of the day are their own documents and stay.
     final nextEntries = [
       for (final existingEntry in previousEntries)
-        if (!isSameLocalDay(existingEntry.day, entry.day)) existingEntry,
+        if (existingEntry.storageId != entry.storageId) existingEntry,
       entry,
-    ]..sort((left, right) => left.day.compareTo(right.day));
+    ]..sort((left, right) => left.at.compareTo(right.at));
     if (ref.mounted) {
       state = AsyncData(
         List<ManualHealthWeightEntry>.unmodifiable(nextEntries),
@@ -219,6 +219,23 @@ class ManualHealthWeightEntriesController
       entries.where((entry) => !isSameLocalDay(entry.day, day)),
     );
   }
+}
+
+/// The weight of the day at [recordedAt], stored over the last entry of
+/// that day.
+ManualHealthWeightEntry _dayEntry(
+  List<ManualHealthWeightEntry> entries,
+  DateTime recordedAt,
+  double weightKg,
+) {
+  return ManualHealthWeightEntry(
+    day: recordedAt,
+    weightKg: weightKg,
+    recordedAt: recordedAt,
+    id: entries
+        .lastWhereOrNull((entry) => isSameLocalDay(entry.day, recordedAt))
+        ?.id,
+  );
 }
 
 DateTime _weightRecordedAtForDay(DateTime day, DateTime now) {

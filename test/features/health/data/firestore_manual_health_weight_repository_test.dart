@@ -39,6 +39,49 @@ void main() {
     expect(stored['payload'], isNot(contains('71.2')));
   });
 
+  test('saveEntry keeps the day in the payload for 3.8.1', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreManualHealthWeightRepository(
+      firestore: firestore,
+      dataCipher: signedIn,
+    );
+    final recordedAt = DateTime(2026, 3, 20, 7, 12);
+
+    await repository.saveEntry(
+      ManualHealthWeightEntry(
+        day: recordedAt,
+        weightKg: 71.2,
+        recordedAt: recordedAt,
+      ),
+    );
+    final reference = firestore.doc('users/user-1/health_weights/2026-03-20');
+    final payload = await signedIn.cipher.decryptJson(
+      (await reference.get()).data()!['payload'] as String,
+      aad: reference.path,
+    );
+    final entry = (await repository.readEntries()).single;
+
+    expect(payload['day'], '2026-03-20');
+    expect(payload['weightKg'], 71.2);
+    expect(entry.recordedAt, recordedAt);
+    expect(entry.id, '2026-03-20');
+  });
+
+  test('reads an entry of 3.8.1 without a time', () async {
+    final repository = FirestoreManualHealthWeightRepository(
+      firestore: FakeFirebaseFirestore(),
+      dataCipher: signedIn,
+    );
+    await repository.saveEntry(
+      ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 71.2),
+    );
+
+    final entry = (await repository.readEntries()).single;
+
+    expect(entry.recordedAt, isNull);
+    expect(entry.day, DateTime(2026, 3, 20));
+  });
+
   test('readEntries skips documents it cannot decrypt', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreManualHealthWeightRepository(
@@ -73,6 +116,44 @@ void main() {
 
     expect(deleted, isTrue);
     expect(entries, isEmpty);
+  });
+
+  test('keeps the day it was stored under in any time zone', () async {
+    final entry = ManualHealthWeightEntry.fromJson({
+      'day': '2026-03-20',
+      'weightKg': 71.2,
+      // Two days off in every zone, so only the stored day can give the 20th.
+      'recordedAt': '2026-03-22T12:00:00.000Z',
+    }, id: 'late')!;
+
+    expect(entry.day, DateTime(2026, 3, 20));
+  });
+
+  test('deleteEntryForDay removes every weighing of the day', () async {
+    final repository = FirestoreManualHealthWeightRepository(
+      firestore: FakeFirebaseFirestore(),
+      dataCipher: signedIn,
+    );
+    final evening = DateTime(2026, 3, 20, 21, 40);
+    await repository.saveEntry(
+      ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 71.2),
+    );
+    await repository.saveEntry(
+      ManualHealthWeightEntry(
+        day: evening,
+        weightKg: 71.9,
+        recordedAt: evening,
+        id: 'evening',
+      ),
+    );
+    await repository.saveEntry(
+      ManualHealthWeightEntry(day: DateTime(2026, 3, 21), weightKg: 70.8),
+    );
+
+    await repository.deleteEntryForDay(DateTime(2026, 3, 20));
+    final entries = await repository.readEntries();
+
+    expect(entries.map((entry) => entry.weightKg), <double>[70.8]);
   });
 
   test('returns safe defaults when firestore or data key missing', () async {
