@@ -85,6 +85,9 @@ List<CalorieDebugDumpRow> calorieDebugDailyWeightRows({
   final manualWeightByDay = <String, double>{};
   final daysByKey = <String, DateTime>{};
   for (final sample in healthWeightSamples) {
+    if (sample.isIgnored) {
+      continue;
+    }
     final day = normalizeDiaryDay(sample.recordedAt);
     final key = diaryDayKey(day);
     daysByKey[key] = day;

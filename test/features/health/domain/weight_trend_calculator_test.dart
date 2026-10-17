@@ -124,5 +124,16 @@ void main() {
       expect(series.rawByDay[localDayKey(start)], 80);
       expect(series.rawByDay[localDayKey(addLocalDays(start, 1))], 81);
     });
+
+    test('leaves ignored Health samples out', () {
+      final series = WeightTrendCalculator.fromSources(
+        healthSamples: [
+          HealthWeightSample(recordedAt: start, weightKg: 80),
+          HealthWeightSample(recordedAt: start, weightKg: 95, isIgnored: true),
+        ],
+      );
+
+      expect(series.rawByDay[localDayKey(start)], 80);
+    });
   });
 }
