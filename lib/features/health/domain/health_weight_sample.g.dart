@@ -19,6 +19,7 @@ HealthWeightSample _$HealthWeightSampleFromJson(Map<String, dynamic> json) {
     weightKg: (json['weightKg'] as num).toDouble(),
     sourcePackageName: json['source'] as String?,
     isFromThisApp: json['fromThisApp'] as bool? ?? false,
+    isIgnored: json['ignored'] as bool? ?? false,
   );
 }
 
@@ -28,4 +29,5 @@ Map<String, dynamic> _$HealthWeightSampleToJson(HealthWeightSample instance) =>
       'weightKg': instance.weightKg,
       'source': ?instance.sourcePackageName,
       'fromThisApp': instance.isFromThisApp,
+      'ignored': instance.isIgnored,
     };
