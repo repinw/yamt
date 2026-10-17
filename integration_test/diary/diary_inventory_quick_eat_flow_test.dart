@@ -131,8 +131,16 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   DateTime? goalStart,
   List<CalorieEntry> calorieEntries = const <CalorieEntry>[],
   List<CalorieEntry> plans = const <CalorieEntry>[],
+  // Without the household, the Vorrat stays loading, and a provider that
+  // waits for it when the test ends fails its teardown.
+  bool householdKnown = true,
 }) {
   final profileController = StreamController<UserProfile?>();
+  if (householdKnown) {
+    profileController.add(
+      const UserProfile(uid: _userId, householdId: _householdId),
+    );
+  }
   final planRepository = FakePlannedEntryRepository(plans: List.of(plans));
   final user = _MockUser();
   when(() => user.uid).thenReturn(_userId);
@@ -373,6 +381,7 @@ Future<_DiaryInventoryQuickEatHarness> _pumpAndOpenInventoryQuickEat(
     preparedMeals: preparedMeals,
     preparedMealSaveShouldFail: preparedMealSaveShouldFail,
     today: today,
+    householdKnown: false,
   );
   await tester.pumpWidget(harness.app);
   await tester.pump();
@@ -946,8 +955,6 @@ void main() {
       plans: [plan('plan-pasta', 'Nudeln'), plan('plan-salad', 'Salat')],
     );
     await tester.pumpWidget(harness.app);
-    // Eating a plan reads the Vorrat, which waits for the household.
-    harness.publishHouseholdProfile();
     final acceptAll = find.byKey(
       DiaryMealsSectionKeys.planAcceptAllButton(MealType.dinner),
     );
@@ -1507,6 +1514,19 @@ class _MemoryMealCommitStore implements PreparedMealCalorieEntryCommitStore {
   );
 }
 
+/// A stream that hands [value] to its listener inside `listen`. Riverpod
+/// pauses the stream of a provider that only covered routes watch; a
+/// `Stream.value` then never arrives, and the provider, disposed while
+/// loading, fails everyone who awaits it.
+Stream<T> _deliveredOnListen<T>(T value) {
+  late final StreamController<T> controller;
+  controller = StreamController<T>(
+    sync: true,
+    onListen: () => controller.add(value),
+  );
+  return controller.stream;
+}
+
 class _OwnerScopedInventoryItemRepository with InventoryItemWholeListWrites {
   const new({required this.ownerId, required this.itemsByOwnerId});
 
@@ -1522,9 +1542,11 @@ class _OwnerScopedInventoryItemRepository with InventoryItemWholeListWrites {
   Stream<List<InventoryItem>> watchAll() {
     final items = _itemsForOwner();
     if (items == null) {
-      return const Stream<List<InventoryItem>>.empty();
+      // Stays loading until the household is known. An empty stream would
+      // end without a value, and Riverpod throws for that on dispose.
+      return StreamController<List<InventoryItem>>().stream;
     }
-    return Stream<List<InventoryItem>>.value(items);
+    return _deliveredOnListen(items);
   }
 
   @override
@@ -1581,9 +1603,11 @@ class _OwnerScopedPreparedMealRepository implements PreparedMealRepository {
   Stream<List<PreparedMeal>> watchAll() {
     final meals = _mealsForOwner();
     if (meals == null) {
-      return const Stream<List<PreparedMeal>>.empty();
+      // Stays loading until the household is known. An empty stream would
+      // end without a value, and Riverpod throws for that on dispose.
+      return StreamController<List<PreparedMeal>>().stream;
     }
-    return Stream<List<PreparedMeal>>.value(meals);
+    return _deliveredOnListen(meals);
   }
 
   @override
