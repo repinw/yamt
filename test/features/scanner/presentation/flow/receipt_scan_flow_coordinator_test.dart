@@ -36,6 +36,33 @@ void main() {
       expect(harness.fakeReceiptAi.parsedPathsHistory, isEmpty);
     });
 
+    testWidgets('startCameraFlow shows a snackbar when the camera fails', (
+      tester,
+    ) async {
+      bool? flowResult;
+      await harness.pump(
+        tester,
+        builder: (context, ref) => ElevatedButton(
+          onPressed: () async {
+            final coordinator = harness.createCoordinator(
+              cameraPicker: () async => throw StateError('camera denied'),
+            );
+            flowResult = await coordinator.startCameraFlow(context);
+          },
+          child: const Text('Camera'),
+        ),
+      );
+
+      await tester.tap(find.text('Camera'));
+      await tester.pumpAndSettle();
+      expect(flowResult, isFalse);
+      expect(harness.fakeReceiptAi.parsedPathsHistory, isEmpty);
+      expect(
+        find.text('Kamera für den Beleg konnte nicht geöffnet werden.'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('startCameraFlow processes image and navigates to review', (
       tester,
     ) async {
@@ -50,7 +77,7 @@ void main() {
         builder: (context, ref) => ElevatedButton(
           onPressed: () async {
             await harness
-                .createCoordinator(cameraPicker: () async => '/tmp/photo.jpg')
+                .createCoordinator(cameraPicker: () async => ['/tmp/photo.jpg'])
                 .startCameraFlow(context);
           },
           child: const Text('Camera'),

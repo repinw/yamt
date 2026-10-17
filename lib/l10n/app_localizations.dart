@@ -8444,6 +8444,12 @@ abstract class AppLocalizations {
   /// **'Could not process the receipt.'**
   String get receiptReviewProcessingFailed;
 
+  /// No description provided for @receiptCameraFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the camera for the receipt.'**
+  String get receiptCameraFailed;
+
   /// No description provided for @receiptReviewNoDate.
   ///
   /// In en, this message translates to:

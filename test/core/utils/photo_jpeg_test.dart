@@ -17,6 +17,16 @@ void main() {
     expect(cleaned.exif.isEmpty, isTrue);
   });
 
+  test('cleanPhotoJpeg keeps a narrow photo wide under a pixel cap', () {
+    final photo = img.Image(width: 1000, height: 5000);
+
+    final cleaned = img.decodeJpg(
+      cleanPhotoJpeg(img.encodeJpg(photo), maxSide: 6000, maxPixels: 4000000),
+    )!;
+
+    expect((cleaned.width, cleaned.height), (894, 4472));
+  });
+
   test('cleanPhotoJpeg rejects bytes that are no image', () {
     expect(
       () => cleanPhotoJpeg(Uint8List.fromList(List<int>.filled(256, 7))),

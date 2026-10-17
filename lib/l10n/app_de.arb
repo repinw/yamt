@@ -2482,6 +2482,7 @@
   "receiptReviewStoreLabel": "Händlername",
   "receiptReviewAnalyzing": "Beleg wird analysiert...",
   "receiptReviewProcessingFailed": "Beleg konnte nicht verarbeitet werden.",
+  "receiptCameraFailed": "Kamera für den Beleg konnte nicht geöffnet werden.",
   "receiptReviewNoDate": "Kein Datum erkannt",
   "receiptReviewUnknownStore": "Unbekannter Händler",
   "receiptReviewPrintedTotal": "Bon-Summe",
