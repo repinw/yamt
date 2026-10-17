@@ -6,13 +6,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/storage_image_cache.dart';
+import 'package:yamt/core/device/document_scanner.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/core/utils/photo_jpeg.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
@@ -28,7 +29,6 @@ part 'product_photo_repository.g.dart';
 const productFrontTemplateId = 'product-front-template';
 
 const _requestTimeout = Duration(seconds: 60);
-const _maxPhotoWidth = 1600.0;
 const _photoQuality = 80;
 const _uuid = Uuid();
 const _logName = 'ProductPhotoRepository';
@@ -100,28 +100,29 @@ class ProductPhotoRepository {
   final ProductBarcodeImageReader _barcodeReader;
   final BaseCacheManager _imageCache;
 
-  /// Takes a photo with the camera. Returns null when the user cancels.
+  /// Scans the package with the document scanner, which crops it to its
+  /// edges. Returns null when the user cancels.
   ///
-  /// Throws [ProductPhotoCameraUnsupportedException] on devices without a
-  /// camera flow.
+  /// The photo becomes a JPEG of at most 1600 pixels a side without its
+  /// metadata, since it may be shared. Throws
+  /// [ProductPhotoCameraUnsupportedException] on devices without a camera
+  /// flow.
   Future<ProductPhoto?> loadCameraPhoto() async {
     if (kIsWeb ||
         (defaultTargetPlatform != TargetPlatform.android &&
             defaultTargetPlatform != TargetPlatform.iOS)) {
       throw const ProductPhotoCameraUnsupportedException();
     }
-    final file = await _imagePicker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: _maxPhotoWidth,
-      imageQuality: _photoQuality,
+    final path = (await scanDocumentPages(
+      maxPages: 1,
+      fallbackPicker: _imagePicker,
+    ))?.firstOrNull;
+    if (path == null) return null;
+    final bytes = await compute(
+      (bytes) => cleanPhotoJpeg(bytes, quality: _photoQuality),
+      await XFile(path).readAsBytes(),
     );
-    if (file == null) return null;
-    final bytes = await file.readAsBytes();
-    return ProductPhoto(
-      path: file.path,
-      bytes: bytes,
-      mimeType: lookupMimeType(file.name, headerBytes: bytes) ?? 'image/jpeg',
-    );
+    return ProductPhoto(path: path, bytes: bytes, mimeType: 'image/jpeg');
   }
 
   /// Returns the product barcode in [photo], or null when the scanner finds
