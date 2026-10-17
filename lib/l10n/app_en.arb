@@ -2817,6 +2817,7 @@
   "receiptReviewStoreLabel": "Store name",
   "receiptReviewAnalyzing": "Analyzing receipt...",
   "receiptReviewProcessingFailed": "Could not process the receipt.",
+  "receiptCameraFailed": "Could not open the camera for the receipt.",
   "receiptReviewNoDate": "No date detected",
   "receiptReviewUnknownStore": "Unknown store",
   "receiptReviewPrintedTotal": "Receipt total",

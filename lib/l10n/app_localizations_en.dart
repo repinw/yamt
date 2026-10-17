@@ -4996,6 +4996,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiptReviewProcessingFailed => 'Could not process the receipt.';
 
   @override
+  String get receiptCameraFailed =>
+      'Could not open the camera for the receipt.';
+
+  @override
   String get receiptReviewNoDate => 'No date detected';
 
   @override

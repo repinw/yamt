@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:developer' show log;
 import 'dart:io';
 
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/utils/photo_jpeg.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 
@@ -18,6 +21,12 @@ const receiptParseTemplateId = 'receipt-parse-template';
 
 const _requestTimeout = Duration(seconds: 60);
 const _uuid = Uuid();
+
+// A pixel cap instead of a side cap, so a long, narrow receipt page keeps
+// its width and the small print stays readable.
+const _maxPhotoPixels = 4000000;
+const _maxPhotoSide = 6000;
+const _shrinkableImageTypes = {'image/jpeg', 'image/png'};
 
 /// Runs [receiptParseTemplateId] with template [inputs] and returns the
 /// response text.
@@ -52,11 +61,7 @@ class ReceiptAiRepository {
   /// that are not food start as [ReceiptItemStatus.ignored].
   Future<ScannedReceipt> parseReceipt(List<String> filePaths) async {
     final files = <Map<String, Object?>>[
-      for (final path in filePaths)
-        {
-          'mimeType': _mimeTypeOf(path),
-          'data': base64Encode(await File(path).readAsBytes()),
-        },
+      for (final path in filePaths) await _fileInput(path),
     ];
 
     final text = await _templateClient({'files': files});
@@ -67,6 +72,36 @@ class ReceiptAiRepository {
       jsonDecode(text) as Map<String, dynamic>,
       sourceFilePaths: filePaths,
     );
+  }
+
+  // Photos shrink one after another, so full-size scans of several pages
+  // overflow neither the AI request nor the memory.
+  Future<Map<String, Object?>> _fileInput(String path) async {
+    final mimeType = _mimeTypeOf(path);
+    final bytes = await File(path).readAsBytes();
+    if (!_shrinkableImageTypes.contains(mimeType)) {
+      return {'mimeType': mimeType, 'data': base64Encode(bytes)};
+    }
+    try {
+      final jpeg = await compute(
+        (bytes) => cleanPhotoJpeg(
+          bytes,
+          maxSide: _maxPhotoSide,
+          maxPixels: _maxPhotoPixels,
+        ),
+        bytes,
+      );
+      return {'mimeType': 'image/jpeg', 'data': base64Encode(jpeg)};
+    } on Object catch (error, stackTrace) {
+      // The AI may still read what the image package cannot decode.
+      log(
+        'Could not shrink a receipt photo; sending it as it is.',
+        name: 'ReceiptAiRepository',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return {'mimeType': mimeType, 'data': base64Encode(bytes)};
+    }
   }
 
   String _mimeTypeOf(String path) {

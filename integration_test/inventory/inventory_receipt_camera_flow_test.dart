@@ -57,7 +57,7 @@ Widget _buildHarness({required FakeReceiptAiRepository fakeReceiptAi}) {
         (ref) => ReceiptScanFlowCoordinator(
           receiptAi: fakeReceiptAi,
           resolver: fakeResolver,
-          cameraPicker: () async => '/tmp/camera_photo.jpg',
+          cameraPicker: () async => ['/tmp/camera_photo.jpg'],
         ),
       ),
     ],

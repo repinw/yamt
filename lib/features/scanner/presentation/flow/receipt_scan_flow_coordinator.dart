@@ -3,10 +3,10 @@ import 'dart:developer' as developer;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/device/document_scanner.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
@@ -19,8 +19,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 part 'receipt_scan_flow_coordinator.g.dart';
 
-/// Signature for camera photo acquisition.
-typedef ReceiptCameraPicker = Future<String?> Function();
+const _maxReceiptPages = 10;
+
+/// Signature for camera photo acquisition: the page paths, or null when
+/// the user cancels.
+typedef ReceiptCameraPicker = Future<List<String>?> Function();
 
 /// Signature for file acquisition (PDF / images).
 typedef ReceiptFilesPicker = Future<List<String>> Function();
@@ -65,14 +68,31 @@ class ReceiptScanFlowCoordinator {
   /// Whether the platform can take a photo of a receipt.
   final bool isCameraSupported;
 
-  /// Starts the camera flow to take a photo of a receipt.
+  /// Starts the camera flow to scan a receipt, a long one in several pages.
   ///
   /// Returns `true` if a receipt was successfully scanned and saved.
   Future<bool> startCameraFlow(BuildContext context) async {
-    final path = await _cameraPicker();
-    if (path == null || path.isEmpty || !context.mounted) return false;
+    final List<String>? paths;
+    try {
+      paths = await _cameraPicker();
+    } on Object catch (error, stackTrace) {
+      developer.log(
+        'Receipt camera failed',
+        name: 'ReceiptScanFlowCoordinator',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showAppSnackBar(
+          AppLocalizations.of(context)!.receiptCameraFailed,
+          tone: AppSnackBarTone.error,
+        );
+      }
+      return false;
+    }
+    if (paths == null || !context.mounted) return false;
 
-    return await processFilePaths(context, [path]);
+    return await processFilePaths(context, paths);
   }
 
   /// Starts the file picker flow for PDF documents or images.
@@ -198,10 +218,8 @@ class ReceiptScanFlowCoordinator {
     return receipt.copyWith(items: updatedItems);
   }
 
-  static Future<String?> _defaultCameraPicker() async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.camera);
-    return file?.path;
+  static Future<List<String>?> _defaultCameraPicker() {
+    return scanDocumentPages(maxPages: _maxReceiptPages);
   }
 
   static Future<List<String>> _defaultFilesPicker() async {

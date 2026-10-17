@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 
@@ -30,13 +31,14 @@ void main() {
     tempDir = Directory.systemTemp.createTempSync('receipt_ai_test');
     photoPath = '${tempDir.path}/receipt.jpg';
     pdfPath = '${tempDir.path}/receipt.pdf';
-    File(photoPath).writeAsBytesSync([1, 2, 3]);
+    File(photoPath)
+        .writeAsBytesSync(img.encodeJpg(img.Image(width: 3000, height: 4000)));
     File(pdfPath).writeAsBytesSync([4, 5]);
   });
 
   tearDown(() => tempDir.deleteSync(recursive: true));
 
-  test('sends every file with its MIME type in receipt order', () async {
+  test('sends every file in receipt order, photos shrunk to JPEG', () async {
     Map<String, Object?>? sentInputs;
     final repository = ReceiptAiRepository(
       templateClient: (inputs) async {
@@ -47,15 +49,33 @@ void main() {
 
     await repository.parseReceipt([photoPath, pdfPath]);
 
+    final files = sentInputs!['files']! as List<Map<String, Object?>>;
+    expect(files.map((file) => file['mimeType']), [
+      'image/jpeg',
+      'application/pdf',
+    ]);
+    final photo = img.decodeJpg(base64Decode(files[0]['data']! as String))!;
+    expect((photo.width, photo.height), (1732, 2309));
+    expect(files[1]['data'], base64Encode([4, 5]));
+  });
+
+  test('sends a photo the image package cannot read as it is', () async {
+    File(photoPath).writeAsBytesSync([1, 2, 3]);
+    Map<String, Object?>? sentInputs;
+    final repository = ReceiptAiRepository(
+      templateClient: (inputs) async {
+        sentInputs = inputs;
+        return _response;
+      },
+    );
+
+    await repository.parseReceipt([photoPath]);
+
     expect(sentInputs, {
       'files': [
         {
           'mimeType': 'image/jpeg',
           'data': base64Encode([1, 2, 3]),
-        },
-        {
-          'mimeType': 'application/pdf',
-          'data': base64Encode([4, 5]),
         },
       ],
     });

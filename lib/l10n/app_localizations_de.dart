@@ -5068,6 +5068,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Beleg konnte nicht verarbeitet werden.';
 
   @override
+  String get receiptCameraFailed =>
+      'Kamera für den Beleg konnte nicht geöffnet werden.';
+
+  @override
   String get receiptReviewNoDate => 'Kein Datum erkannt';
 
   @override
