@@ -162,6 +162,15 @@ Widget _buildHarness() {
   );
 }
 
+/// Taps a quick filter chip after scrolling it into view: on a narrow phone
+/// the chip row is wider than the screen.
+Future<void> _tapChip(WidgetTester tester, InventoryQuickFilter filter) async {
+  final chip = find.byKey(InventoryQuickFilterChips.chipKey(filter));
+  await tester.ensureVisible(chip);
+  await tester.pump();
+  await tester.tap(chip);
+}
+
 Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
   await Future<void>.delayed(const Duration(milliseconds: 400));
@@ -181,6 +190,7 @@ Future<void> _pumpUntilAbsent(WidgetTester tester, Finder finder) async {
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
+  WidgetController.hitTestWarningShouldBeFatal = true;
 
   testWidgets('Vorrat filters by chip, switches to tiles, sorts, opens '
       'a meal and its editor', (tester) async {
@@ -190,9 +200,7 @@ void main() {
     expect(find.byKey(InventoryEntriesSliver.listKey), findsOneWidget);
     expect(find.text('3 LEBENSMITTEL'), findsOneWidget);
 
-    await tester.tap(
-      find.byKey(InventoryQuickFilterChips.chipKey(InventoryQuickFilter.low)),
-    );
+    await _tapChip(tester, InventoryQuickFilter.low);
     await _settle(tester);
     expect(find.byKey(const ValueKey('inventory_entry_row_quark')), findsOne);
     expect(
@@ -200,11 +208,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(
-      find.byKey(
-        InventoryQuickFilterChips.chipKey(InventoryQuickFilter.planned),
-      ),
-    );
+    await _tapChip(tester, InventoryQuickFilter.planned);
     await _settle(tester);
     expect(find.byKey(const ValueKey('inventory_entry_row_skyr')), findsOne);
     expect(
@@ -213,9 +217,8 @@ void main() {
     );
     expect(find.byKey(const ValueKey('inventory_entry_row_chili')), findsOne);
 
-    await tester.tap(
-      find.byKey(InventoryQuickFilterChips.chipKey(InventoryQuickFilter.all)),
-    );
+    await _tapChip(tester, InventoryQuickFilter.all);
+    await tester.pump();
     await tester.tap(find.byKey(const Key('inventory_list_view_mode_button')));
     await _settle(tester);
     expect(find.byKey(InventoryEntriesSliver.tilesKey), findsOneWidget);
