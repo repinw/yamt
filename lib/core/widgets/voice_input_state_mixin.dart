@@ -22,12 +22,16 @@ mixin VoiceInputStateMixin<T extends StatefulWidget> on State<T> {
   }) {
     return service.startListening(
       onResult: onResult,
-      onListeningStateChanged: _handleListeningChanged,
-      onError: _handleError,
+      onListeningStateChanged: (isListening) =>
+          handleVoiceListeningChanged(isListening: isListening),
+      onError: handleVoiceError,
     );
   }
 
-  void _handleListeningChanged(bool isListening) {
+  /// Keeps the flags in sync when listening starts or ends.
+  @protected
+  @mustCallSuper
+  void handleVoiceListeningChanged({required bool isListening}) {
     if (isDisposingVoiceInput || !mounted) {
       return;
     }
@@ -44,7 +48,10 @@ mixin VoiceInputStateMixin<T extends StatefulWidget> on State<T> {
     });
   }
 
-  void _handleError(VoiceSearchFailure failure) {
+  /// Clears the flags and shows [failure].
+  @protected
+  @mustCallSuper
+  void handleVoiceError(VoiceSearchFailure failure) {
     if (isDisposingVoiceInput || !mounted) {
       return;
     }

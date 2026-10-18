@@ -26,6 +26,8 @@ void main() {
     addTearDown(tester.view.reset);
     final guide = await _guide(tester);
 
+    final pending = ValueNotifier<String?>('und dann noch ' * 10);
+    addTearDown(pending.dispose);
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('de'),
@@ -41,7 +43,7 @@ void main() {
                 sentence: 0,
                 isCooking: false,
                 isListening: true,
-                pendingSpeech: 'und dann noch ' * 10,
+                pendingSpeech: pending,
                 onBack: () {},
                 onSentence: (_) {},
                 onDone: () {},

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cooking_guide_view.dart';
@@ -26,7 +27,7 @@ class CookingGuideBody extends StatelessWidget {
     required this.onVoice,
     required this.onType,
     required this.onUndo,
-    this.pendingSpeech,
+    required this.pendingSpeech,
     super.key,
   });
 
@@ -61,7 +62,7 @@ class CookingGuideBody extends StatelessWidget {
   final bool isListening;
 
   /// What the microphone hears before it is final.
-  final String? pendingSpeech;
+  final ValueListenable<String?> pendingSpeech;
 
   /// Goes one sentence back, or back to the recipe.
   final VoidCallback onBack;
@@ -133,10 +134,14 @@ class CookingGuideBody extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.end,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            CookingGuideJustAdded(
-                              justAdded: guide.justAdded,
-                              pending: pendingSpeech,
-                              onUndo: isCooking ? null : onUndo,
+                            ValueListenableBuilder(
+                              valueListenable: pendingSpeech,
+                              builder: (context, pending, _) =>
+                                  CookingGuideJustAdded(
+                                    justAdded: guide.justAdded,
+                                    pending: pending,
+                                    onUndo: isCooking ? null : onUndo,
+                                  ),
                             ),
                             CookingVoiceZone(
                               key: voiceKey,

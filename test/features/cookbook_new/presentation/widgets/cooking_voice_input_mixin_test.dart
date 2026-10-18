@@ -13,12 +13,12 @@ void main() {
 
     await page.toggleListening();
     await tester.pump();
-    expect(page.pendingSpeech, '200 ml');
+    expect(page.pendingSpeech.value, '200 ml');
 
     await page.stopListening();
     await tester.pump();
     expect(page.heard, ['200 ml Sahne']);
-    expect(page.pendingSpeech, isNull);
+    expect(page.pendingSpeech.value, isNull);
   });
 
   testWidgets('a stop without a final result leaves no half-heard text', (
@@ -32,7 +32,7 @@ void main() {
     await tester.pump();
 
     expect(page.heard, isEmpty);
-    expect(page.pendingSpeech, isNull);
+    expect(page.pendingSpeech.value, isNull);
     expect(page.isListening, isFalse);
   });
 
@@ -46,7 +46,19 @@ void main() {
     await tester.pump();
 
     expect(page.heard, ['200 ml']);
-    expect(page.pendingSpeech, isNull);
+    expect(page.pendingSpeech.value, isNull);
+  });
+
+  testWidgets('a "not listening" report while starting starts no second '
+      'session', (tester) async {
+    final voice = _FakeVoice(reportsStartAs: false);
+    final page = await _pump(tester, voice);
+
+    await page.toggleListening();
+    await tester.pump();
+
+    expect(voice.starts, 1);
+    expect(page.isListening, isTrue);
   });
 }
 
@@ -85,9 +97,15 @@ class _PageState extends State<_Page>
 /// result, like the plugin, or nothing when it is `null`; cancelling sends
 /// nothing.
 class _FakeVoice implements VoiceSearchService {
-  new({this.finalText});
+  new({this.finalText, this.reportsStartAs = true});
 
   final String? finalText;
+
+  /// What the service reports while it starts, before it returns.
+  final bool reportsStartAs;
+
+  /// How often listening started.
+  int starts = 0;
   ValueChanged<VoiceSearchRecognition>? _onResult;
   ValueChanged<bool>? _onListening;
 
@@ -100,10 +118,11 @@ class _FakeVoice implements VoiceSearchService {
     required ValueChanged<bool> onListeningStateChanged,
     required ValueChanged<VoiceSearchFailure> onError,
   }) async {
+    starts++;
     isListening = true;
     _onResult = onResult;
     _onListening = onListeningStateChanged;
-    onListeningStateChanged(true);
+    onListeningStateChanged(reportsStartAs);
     scheduleMicrotask(
       () => onResult(
         const VoiceSearchRecognition(transcript: '200 ml', isFinal: false),
