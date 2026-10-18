@@ -353,7 +353,10 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
 - **System back with an open keyboard:** `KeyboardBackScope`
   (`lib/core/widgets/`) in the builder of `MaterialApp.router` lets the first
   system back close the keyboard; the next one leaves. Every page, sheet, and
-  dialog gets this. NEVER add a `PopScope` for it.
+  dialog gets this. NEVER add a `PopScope` for it. A field that unfocuses on
+  a tap outside uses `onTapUpOutside`, NEVER `onTapOutside`: the back
+  gesture's pointer-down reaches the app first, so `onTapOutside` would drop
+  the focus and the page would close with the keyboard.
 
 ## 9. UI: Theme, Text, Accessibility
 

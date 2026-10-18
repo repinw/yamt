@@ -90,7 +90,8 @@ class PreparedMealEditHeader extends StatelessWidget {
             style: style,
             maxLines: null,
             textCapitalization: TextCapitalization.sentences,
-            onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            onTapUpOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             decoration: InputDecoration(
               isDense: true,
               hintText: l10n.preparedMealNameLabel,

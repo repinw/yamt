@@ -147,7 +147,7 @@ class ManualProductPhotoSection extends StatelessWidget {
                   color: colors.ink,
                 ),
                 onChanged: onBarcodeChanged,
-                onTapOutside: (_) =>
+                onTapUpOutside: (_) =>
                     FocusManager.instance.primaryFocus?.unfocus(),
                 decoration: InputDecoration(
                   isDense: true,

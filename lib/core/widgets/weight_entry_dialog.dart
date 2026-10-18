@@ -152,7 +152,7 @@ class _WeightEntryDialogContentState extends State<_WeightEntryDialogContent> {
         autocorrect: false,
         enableSuggestions: false,
         onSubmitted: (_) => _save(),
-        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        onTapUpOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         decoration: InputDecoration(
           labelText: labels.fieldLabel,
           errorText: _errorText,
