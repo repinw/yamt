@@ -205,9 +205,15 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
   void _handleError(SpeechRecognitionError error) {
     _onListeningStateChanged?.call(false);
 
-    if (!_isInitialized ||
-        !error.permanent ||
-        _isNoSpeechError(error.errorMsg)) {
+    if (!_isInitialized || !error.permanent) {
+      return;
+    }
+    if (_isNoSpeechError(error.errorMsg)) {
+      log(
+        'Speech recognition ended without speech.',
+        name: _voiceSearchServiceLogName,
+        error: error,
+      );
       return;
     }
 
@@ -230,10 +236,18 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
 
   /// Whether [message] means the user said nothing, which ends listening
   /// without a failure.
+  ///
+  /// Besides the timeout and no match, some Android recognizers end a silent
+  /// session with `error_client`, the likely code behind #486. iOS reports
+  /// silence as `error_retry` and a stopped request as
+  /// `error_request_cancelled`.
   bool _isNoSpeechError(String message) {
     final normalized = message.toLowerCase();
     return normalized.contains('speech_timeout') ||
-        normalized.contains('no_match');
+        normalized.contains('no_match') ||
+        normalized.contains('error_client') ||
+        normalized.contains('error_retry') ||
+        normalized.contains('request_cancelled');
   }
 
   VoiceSearchFailure _mapPlatformFailure(PlatformException error) {
