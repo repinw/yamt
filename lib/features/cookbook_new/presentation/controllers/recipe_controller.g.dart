@@ -61,7 +61,7 @@ final class RecipeControllerProvider
   }
 }
 
-String _$recipeControllerHash() => r'cdd6977f8c136abf7ce56aed46025b88d61c517d';
+String _$recipeControllerHash() => r'9643289363b1b2aebfa8b627dd6f799850b640f2';
 
 /// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
 

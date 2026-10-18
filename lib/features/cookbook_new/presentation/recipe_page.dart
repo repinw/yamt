@@ -128,7 +128,7 @@ class _RecipeBody extends ConsumerWidget {
                         ),
                       ),
               ),
-              if (activeCount > 0)
+              if (activeCount > 0 && !view.isVorlage)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.xl,

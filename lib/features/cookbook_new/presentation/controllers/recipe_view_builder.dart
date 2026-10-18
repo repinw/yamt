@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cookbook_new/application/ingredient_stock_match.dart';
 import 'package:yamt/features/cookbook_new/domain/free_cooking_row.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/vorlage_as_recipe.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -45,7 +46,10 @@ AsyncValue<RecipeView?> buildRecipeView({
   if (stored == null) {
     return const AsyncData(null);
   }
-  final (:recipe, :keys) = _applyEdits(stored, edits);
+  final (:recipe, :keys) = _applyEdits(
+    stored.recipeIngredients.isEmpty ? vorlageAsRecipe(stored, parser) : stored,
+    edits,
+  );
   // A recipe needs at least one portion to scale from.
   final basePortions = max(1, recipe.totalPortions);
   final chosen = portions ?? basePortions;

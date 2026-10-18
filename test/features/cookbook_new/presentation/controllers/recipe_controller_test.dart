@@ -21,6 +21,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 InventoryItem _item(String id, String name, {int amount = 2000}) =>
     InventoryItem.create(
@@ -461,13 +462,112 @@ void main() {
     final container = _container(recipe: vorlage);
     final view = (await _view(container))!;
 
-    final plan = await _controller(
-      container,
-    ).plan(view, DateTime(2026, 10, 11));
+    final plan = await _controller(container)
+        .plan(view, DateTime(2026, 10, 11));
 
     expect(plan!.totalKcal, 400);
     expect(plan.bundleSourceTemplateId, 'stew');
   });
+
+  test(
+    'a Vorlage shows one line per food from its items and cooks them',
+    () async {
+      PreparedMealComponent component(
+        String itemId,
+        String name,
+        int amount, {
+        InventoryAmountUnit unit = InventoryAmountUnit.gram,
+        InventoryItem? snapshot,
+      }) => PreparedMealComponent(
+        inventoryItemId: itemId,
+        name: name,
+        brand: null,
+        imageUrl: null,
+        usedAmount: amount,
+        usedUnit: unit,
+        totalKcal: 0,
+        totalProtein: 0,
+        totalCarbs: 0,
+        totalFat: 0,
+        sourceItemSnapshot: snapshot ?? _item(itemId, name),
+      );
+      final lemon = _item(
+        'lemon',
+        'Zitrone',
+      ).copyWith(amountUnit: InventoryAmountUnit.piece, amountScale: 1000);
+      final vorlage = _recipe().copyWith(
+        totalPortions: 1,
+        recipeIngredients: const <String>[],
+        ignoredRecipeIngredients: const <String>[],
+        components: [
+          component('mince', 'Hackfleisch', 200),
+          component('mince-2', 'Hackfleisch', 50),
+          component('carrots', 'Karotten', 100),
+          component('eggs', 'Eier', 2, unit: InventoryAmountUnit.piece),
+          // A pack size in the name is no amount.
+          component(
+            'mozzarella',
+            'Mozzarella 125 g',
+            2,
+            unit: InventoryAmountUnit.piece,
+          ),
+          // A third of a lemon still counts as one.
+          component(
+            'lemon',
+            'Zitrone',
+            300,
+            unit: InventoryAmountUnit.piece,
+            snapshot: lemon,
+          ),
+        ],
+      );
+      final service = _FakeCookingService();
+      final container = _container(
+        recipe: vorlage,
+        service: service,
+        items: [
+          _item('mince', 'Hackfleisch'),
+          _item('mince-2', 'Hackfleisch'),
+          _item('carrots', 'Karotten'),
+          _item('eggs', 'Eier').copyWith(amountUnit: InventoryAmountUnit.piece),
+          _item(
+            'mozzarella',
+            'Mozzarella 125 g',
+          ).copyWith(amountUnit: InventoryAmountUnit.piece),
+          lemon,
+        ],
+      );
+      _controller(container).setPortions(2);
+      final view = (await _view(container))!;
+
+      expect(view.isVorlage, isTrue);
+      // Two packs of the same food are one line, sized for two portions, and
+      // pieces go without a unit.
+      expect(view.lines.map((line) => line.label), [
+        '500 g Hackfleisch',
+        '200 g Karotten',
+        '4 Eier',
+        '4 Mozzarella',
+        '2 Zitrone',
+      ]);
+      final mozzarella = view.lines[3].row.requirement!;
+      expect(mozzarella.amount, 4);
+      expect(mozzarella.unit, TemplateIngredientUnit.piece);
+      expect(view.lines.first.items.map((item) => item.id), [
+        'mince',
+        'mince-2',
+      ]);
+
+      await _controller(container).cook(view);
+      expect(service.calls.single.assignments, {
+        '250 g Hackfleisch': ['mince', 'mince-2'],
+        '100 g Karotten': ['carrots'],
+        '2 Eier': ['eggs'],
+        '2 Mozzarella': ['mozzarella'],
+        '1 Zitrone': ['lemon'],
+      });
+    },
+  );
 
   test('unplan deletes the plan again', () async {
     final dayLog = _FakeDayLog();

@@ -170,7 +170,10 @@ class RecipeController extends _$RecipeController {
     try {
       final now = ref.read(clockProvider);
       final plan = buildTemplatePlanEntry(
-        template: view.recipe.copyWith(totalPortions: view.basePortions),
+        // A Vorlage plans with its own values, as meal planning counts it.
+        template: view.isVorlage
+            ? view.saved
+            : view.recipe.copyWith(totalPortions: view.basePortions),
         cookedPortions: view.portions,
         assignments: view.assignments,
         items: ref.read(inventoryQuickEatItemsProvider).value ?? const [],
