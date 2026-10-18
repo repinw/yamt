@@ -71,10 +71,6 @@ abstract final class AppRoutes {
   static const homeInventoryTemplateImportReview =
       '/home/inventory/templates/import-review';
 
-  /// Inventory template detail route with template id parameter.
-  static const homeInventoryTemplateDetail =
-      '/home/inventory/templates/:templateId';
-
   /// A saved recipe from the Kochbuch, with recipe id parameter.
   static const homeRecipe = '/home/recipe/:recipeId';
 
@@ -205,11 +201,6 @@ abstract final class AppRoutes {
   /// Builds product-search child flow path for concrete flow segment.
   static String productSearchChildFlowPath(String flow) {
     return '/product-search/child-flow/$flow';
-  }
-
-  /// Builds inventory template detail path for concrete template id.
-  static String homeInventoryTemplateDetailPath(String templateId) {
-    return '/home/inventory/templates/$templateId';
   }
 
   /// Builds the path of the recipe page for [recipeId].

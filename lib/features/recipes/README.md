@@ -43,8 +43,6 @@ Current accepted cross-feature use:
 - `inventory` may parse recipe ingredients and map recipe units to inventory
   amount units at the inventory boundary.
 - `meal_templates` may parse and display ingredient requirements.
-- `cooking_flow` may parse recipe requirements for cooking instructions,
-  inventory checks, and summary labels.
 
 Recipes must not depend on `inventory`; this keeps the shared parser usable
 without a feature dependency cycle.
