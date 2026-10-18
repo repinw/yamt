@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
+import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_shopping.dart';
@@ -39,7 +40,7 @@ AsyncValue<List<ShoppingSuggestion>> inventoryShoppingSuggestions(Ref ref) =>
 /// and meal, without the foods already on the shopping list.
 // ponytail: plans of found foods are left out like in the demand; add them
 // when the demand counts them. Short cooked meal plans need cooking, not
-// shopping, so they stay out.
+// shopping, so they stay out; recipe plans list their missing ingredients.
 @riverpod
 Future<List<ShoppingPlanNeedGroup>> inventoryShoppingPlanNeedGroups(
   Ref ref,
@@ -47,8 +48,9 @@ Future<List<ShoppingPlanNeedGroup>> inventoryShoppingPlanNeedGroups(
   final listed = ref.watch(activeShoppingListItemKeysProvider);
   final plans = await ref.watch(openPlansProvider.future);
   final demand = await ref.watch(openPlanDemandProvider.future);
+  final items = await ref.watch(inventoryQuickEatItemsProvider.future);
   return groupShoppingPlanNeeds(
-    inventoryShoppingPlanNeeds(plans, demand.missingShareByPlanId),
+    inventoryShoppingPlanNeeds(plans, demand, items),
     listed,
   );
 }

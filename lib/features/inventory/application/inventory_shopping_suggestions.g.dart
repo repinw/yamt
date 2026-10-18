@@ -114,7 +114,7 @@ String _$inventoryShoppingSuggestionsHash() =>
 /// and meal, without the foods already on the shopping list.
 // ponytail: plans of found foods are left out like in the demand; add them
 // when the demand counts them. Short cooked meal plans need cooking, not
-// shopping, so they stay out.
+// shopping, so they stay out; recipe plans list their missing ingredients.
 
 @ProviderFor(inventoryShoppingPlanNeedGroups)
 final inventoryShoppingPlanNeedGroupsProvider =
@@ -124,7 +124,7 @@ final inventoryShoppingPlanNeedGroupsProvider =
 /// and meal, without the foods already on the shopping list.
 // ponytail: plans of found foods are left out like in the demand; add them
 // when the demand counts them. Short cooked meal plans need cooking, not
-// shopping, so they stay out.
+// shopping, so they stay out; recipe plans list their missing ingredients.
 
 final class InventoryShoppingPlanNeedGroupsProvider
     extends
@@ -140,7 +140,7 @@ final class InventoryShoppingPlanNeedGroupsProvider
   /// and meal, without the foods already on the shopping list.
   // ponytail: plans of found foods are left out like in the demand; add them
   // when the demand counts them. Short cooked meal plans need cooking, not
-  // shopping, so they stay out.
+  // shopping, so they stay out; recipe plans list their missing ingredients.
   InventoryShoppingPlanNeedGroupsProvider._()
     : super(
         from: null,
@@ -168,4 +168,4 @@ final class InventoryShoppingPlanNeedGroupsProvider
 }
 
 String _$inventoryShoppingPlanNeedGroupsHash() =>
-    r'7b6ae1ee7c08c553a5545c0154ddff07dd7bf13e';
+    r'a83f14405acc26c754d779cdc071a90b7a161b5e';

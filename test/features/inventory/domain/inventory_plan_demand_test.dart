@@ -225,4 +225,26 @@ void main() {
     expect(demand.plannedPortionsByMealId, isEmpty);
     expect(demand.missingShareByPlanId, {'gone': 1});
   });
+
+  test('a recipe plan takes its ingredients from their packs', () {
+    final first = _plan('recipe-1', day: 10, grams: 300, itemId: null);
+    final second = _plan('recipe-2', day: 11, grams: 300, itemId: null);
+
+    final demand = inventoryPlanDemand(
+      [second, first],
+      [_pack('oats', currentAmount: 300), _pack('milk', currentAmount: 0)],
+      const [],
+      ingredientNeedsByPlanId: {
+        'recipe-1': {'oats': 200},
+        'recipe-2': {'oats': 200, 'milk': 100},
+      },
+    );
+
+    expect(demand.plannedByItemId, {'oats': 300});
+    expect(demand.missingByItemId, {'oats': 100, 'milk': 100});
+    expect(demand.missingShareByPlanId, {'recipe-2': 1.0});
+    expect(demand.missingIngredientsByPlanId, {
+      'recipe-2': {'oats': 100, 'milk': 100},
+    });
+  });
 }

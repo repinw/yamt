@@ -119,3 +119,28 @@ double? _pieceAmount(InventoryItem item, ConsumedUnit unit) {
   };
   return matches ? serving.amount : null;
 }
+
+/// The grams or milliliters that [amount] of [item]'s stock holds, in the
+/// item's stored unit, the way back from [inventoryAmountForPlan]. Null
+/// when they cannot be told, for a pack counted in whole packs or pieces
+/// without a serving size.
+({double amount, ConsumedUnit unit})? inventoryStockInConsumedUnit(
+  InventoryItem item,
+  int amount,
+) {
+  final scale = item.usesAmountProgress ? item.amountScale : 1;
+  if (inventoryItemConsumedUnit(item) case final unit?) {
+    return item.usesAmountProgress
+        ? (amount: amount / item.amountScale, unit: unit)
+        : null;
+  }
+  if (item.amountUnit != InventoryAmountUnit.piece) {
+    return null;
+  }
+  for (final unit in ConsumedUnit.values) {
+    if (_pieceAmount(item, unit) case final pieceAmount?) {
+      return (amount: amount / scale * pieceAmount, unit: unit);
+    }
+  }
+  return null;
+}

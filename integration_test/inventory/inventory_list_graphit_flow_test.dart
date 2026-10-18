@@ -146,6 +146,7 @@ Widget _buildHarness() {
           missingByItemId: const <String, int>{},
           plannedPortionsByMealId: const {'chili': 1.0},
           missingShareByPlanId: const <String, double>{},
+          missingIngredientsByPlanId: const <String, Map<String, int>>{},
         ),
       ),
     ],

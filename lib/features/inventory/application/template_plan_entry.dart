@@ -9,6 +9,7 @@ import 'package:yamt/features/inventory/application/prepared_meal_from_template.
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
@@ -44,7 +45,7 @@ CalorieEntry? buildTemplatePlanEntry({
           items: items,
           parser: parser,
           now: now(),
-        );
+        )?.preparedMeal;
   if (meal == null) {
     return null;
   }
@@ -87,7 +88,65 @@ Map<String, List<String>> templatePlanAssignments(
   };
 }
 
-PreparedMeal? _cookedOnPaper(
+/// The stock [plan] of the Kochbuch [template] takes from each Vorrat item
+/// in [items], by item id, in the item's stored unit: the recipe cooked on
+/// paper from its assignments for the plan's cooked portions, or the
+/// Vorlage's components, scaled to the portions the plan eats. Ingredients
+/// without an item take nothing.
+Map<String, int> templatePlanIngredientNeeds({
+  required CalorieEntry plan,
+  required PreparedMeal template,
+  required List<InventoryItem> items,
+  required TemplateIngredientParser parser,
+  required DateTime now,
+}) {
+  final cookedPortions = plan.bundleTotalPortions ?? template.totalPortions;
+  final share = (plan.bundleConsumedPortions ?? 1) / max(1, cookedPortions);
+  final whole = <String, int>{};
+  if (template.recipeIngredients.isEmpty) {
+    final ids = {for (final item in items) item.id};
+    for (final component in template.components) {
+      if (ids.contains(component.inventoryItemId)) {
+        whole.update(
+          component.inventoryItemId,
+          (sum) => sum + component.usedAmount,
+          ifAbsent: () => component.usedAmount,
+        );
+      }
+    }
+  } else {
+    final cooked = _cookedOnPaper(
+      template,
+      cookedPortions: cookedPortions,
+      assignments: templatePlanAssignments(template, items),
+      items: items,
+      parser: parser,
+      now: now,
+    );
+    final before = {for (final item in _fullPacks(items)) item.id: item};
+    for (final next in cooked?.nextItems ?? const <InventoryItem>[]) {
+      final taken = before[next.id]!.availableAmount - next.availableAmount;
+      if (taken > 0) {
+        whole[next.id] = taken;
+      }
+    }
+  }
+  return {
+    for (final MapEntry(key: id, value: amount) in whole.entries)
+      if ((amount * share).ceil() case final needed when needed > 0) id: needed,
+  };
+}
+
+// A plan takes no stock, so each item counts as a full pack.
+List<InventoryItem> _fullPacks(List<InventoryItem> items) => [
+  for (final item in items)
+    item.copyWith(
+      quantity: max(item.quantity, item.initialQuantity),
+      currentAmount: max(item.currentAmount, item.initialAmount),
+    ),
+];
+
+PreparedMealBuildResult? _cookedOnPaper(
   PreparedMeal recipe, {
   required int cookedPortions,
   required Map<String, List<String>> assignments,
@@ -97,13 +156,7 @@ PreparedMeal? _cookedOnPaper(
 }) {
   try {
     return buildPreparedMealCreationFromTemplateResult(
-      currentItems: [
-        for (final item in items)
-          item.copyWith(
-            quantity: max(item.quantity, item.initialQuantity),
-            currentAmount: max(item.currentAmount, item.initialAmount),
-          ),
-      ],
+      currentItems: _fullPacks(items),
       preparedMealId: recipe.id,
       now: now,
       template: recipe.copyWith(totalPortions: max(1, recipe.totalPortions)),
@@ -112,7 +165,7 @@ PreparedMeal? _cookedOnPaper(
       recipeIngredientAmountConversions:
           recipe.recipeIngredientAmountConversions,
       ingredientParser: parser,
-    ).preparedMeal;
+    );
   } on PreparedMealBuildException {
     // Every ingredient is ignored, so there is nothing to eat.
     return null;

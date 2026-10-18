@@ -57,6 +57,52 @@ final class OpenPlansProvider
 
 String _$openPlansHash() => r'd03adcf8048e946347f1e28c8472321b8e00a198';
 
+/// The Kochbuch recipes and Vorlagen that recipe plans come from.
+
+@ProviderFor(planTemplates)
+final planTemplatesProvider = PlanTemplatesProvider._();
+
+/// The Kochbuch recipes and Vorlagen that recipe plans come from.
+
+final class PlanTemplatesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<PreparedMeal>>,
+          List<PreparedMeal>,
+          Stream<List<PreparedMeal>>
+        >
+    with
+        $FutureModifier<List<PreparedMeal>>,
+        $StreamProvider<List<PreparedMeal>> {
+  /// The Kochbuch recipes and Vorlagen that recipe plans come from.
+  PlanTemplatesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'planTemplatesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$planTemplatesHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<List<PreparedMeal>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<PreparedMeal>> create(Ref ref) {
+    return planTemplates(ref);
+  }
+}
+
+String _$planTemplatesHash() => r'3562b13ff637859650b5e8be77431fa1af8739ff';
+
 /// What the open plans take from the Vorrat, foods and cooked meals:
 /// "verplant" on Vorrat rows and "fehlt" on plan rows.
 
@@ -104,4 +150,4 @@ final class OpenPlanDemandProvider
   }
 }
 
-String _$openPlanDemandHash() => r'8020517e7f26d603434b83229ba2f59310b2007e';
+String _$openPlanDemandHash() => r'977c3df9872be657aeb17e69dada46a280f091d1';
