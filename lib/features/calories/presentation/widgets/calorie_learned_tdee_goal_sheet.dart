@@ -226,123 +226,127 @@ class _CalorieLearnedTdeeGoalSheetState
           borderRadius: BorderRadius.circular(AppRadius.xl),
           clipBehavior: Clip.antiAlias,
           child: SingleChildScrollView(
-            child: Padding(
-              padding: AppInsets.card,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  CalorieGoalSheetTitle(
-                    title: l10n.caloriesLearnedTdeeSheetTitle,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    showBackButton: widget.showBackButton,
-                    enabled: !_isSaving,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(l10n.caloriesLearnedTdeeSheetSubtitle),
-                  const SizedBox(height: AppSpacing.lg),
-                  _LearnedTdeeRow(
-                    label: l10n.caloriesLearnedTdeeLabel,
-                    value:
-                        '${numberFormat.format(_learnedTdeeKcal.round())} '
-                        '${l10n.caloriesUnitKcal}',
-                  ),
-                  if (widget.initialSettings.calculatorProfile
-                      case final profile?) ...<Widget>[
+            // Locked while the save reads and asks (#721).
+            child: IgnorePointer(
+              ignoring: _isSaving,
+              child: Padding(
+                padding: AppInsets.card,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    CalorieGoalSheetTitle(
+                      title: l10n.caloriesLearnedTdeeSheetTitle,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                      showBackButton: widget.showBackButton,
+                      enabled: !_isSaving,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(l10n.caloriesLearnedTdeeSheetSubtitle),
                     const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      l10n.caloriesGoalBodyStepTitle,
-                      style: Theme.of(context).textTheme.titleMedium,
+                    _LearnedTdeeRow(
+                      label: l10n.caloriesLearnedTdeeLabel,
+                      value:
+                          '${numberFormat.format(_learnedTdeeKcal.round())} '
+                          '${l10n.caloriesUnitKcal}',
                     ),
-                    CalorieGoalBodySummary(
-                      profile: profile,
-                      today: DateTime.now(),
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  if (widget.startsNewGoal)
-                    CalorieTargetWeightSelector(
-                      currentWeightKg: _currentWeightKg,
-                      targetWeightKg: _targetWeightKg ?? _currentWeightKg,
-                      goalMode: _goalMode,
-                      onChanged: _updateTargetFromSlider,
-                    )
-                  else ...<Widget>[
-                    Text(
-                      l10n.caloriesCalculatorGoalModeLabel,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    CalorieGoalCalculatorGoalModeSegmentedControl(
-                      selectedGoalMode: _goalMode,
-                      onSelected: _updateGoalMode,
-                    ),
-                  ],
-                  if (!widget.startsNewGoal &&
-                      _goalMode != CalorieGoalMode.maintain) ...<Widget>[
-                    const SizedBox(height: AppSpacing.lg),
-                    CalorieGoalCalculatorNumberField(
-                      fieldKey:
-                          CalorieGoalCalculatorSheetKeys.targetWeightField,
-                      controller: _targetWeightController,
-                      label: l10n.caloriesCalculatorTargetWeightLabel,
-                      errorText: _targetWeightErrorText(l10n),
-                      onChanged: _updateTargetWeight,
-                    ),
-                  ],
-                  if (_goalMode != CalorieGoalMode.maintain) ...<Widget>[
-                    const SizedBox(height: AppSpacing.md),
-                    CalorieGoalCalculatorNumberField(
-                      fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
-                      controller: _goalSpeedController,
-                      label: l10n.caloriesCalculatorGoalSpeedLabel,
-                      hintText: l10n.caloriesCalculatorGoalSpeedHint,
-                      onChanged: _updateGoalSpeed,
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  _LearnedTdeeRow(
-                    label: l10n.caloriesLearnedTdeeResultLabel,
-                    value:
-                        '${numberFormat.format(_resolvedGoalKcal.round())} '
-                        '${l10n.caloriesUnitKcal}',
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  CalorieGoalCalculatorGoalStartCard(
-                    goalStartDate: _goalStartDate,
-                    onChangeRequested: _pickGoalStart,
-                    enabled: !_isSaving,
-                  ),
-                  if (_goalMode == CalorieGoalMode.maintain) ...<Widget>[
-                    const SizedBox(height: AppSpacing.md),
-                    CalorieGoalMaintainUntilTile(
-                      maintainUntil: _maintainUntil,
-                      onChoose: _pickMaintainUntil,
-                      onClear: () => setState(() => _maintainUntil = null),
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.sm,
-                    children: <Widget>[
-                      if (!widget.startsNewGoal)
-                        TextButton(
-                          key: CalorieLearnedTdeeSheetKeys.fullResetButton,
-                          onPressed: _isSaving ? null : _openFullReset,
-                          child: Text(
-                            l10n.caloriesLearnedTdeeUseProfileResetAction,
-                          ),
-                        ),
-                      FilledButton(
-                        key: CalorieLearnedTdeeSheetKeys.saveButton,
-                        onPressed: _canSave
-                            ? () => unawaited(_saveRunner.run(_save))
-                            : null,
-                        child: Text(l10n.caloriesCalculatorSaveAction),
+                    if (widget.initialSettings.calculatorProfile
+                        case final profile?) ...<Widget>[
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        l10n.caloriesGoalBodyStepTitle,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      CalorieGoalBodySummary(
+                        profile: profile,
+                        today: DateTime.now(),
                       ),
                     ],
-                  ),
-                ],
+                    const SizedBox(height: AppSpacing.lg),
+                    if (widget.startsNewGoal)
+                      CalorieTargetWeightSelector(
+                        currentWeightKg: _currentWeightKg,
+                        targetWeightKg: _targetWeightKg ?? _currentWeightKg,
+                        goalMode: _goalMode,
+                        onChanged: _updateTargetFromSlider,
+                      )
+                    else ...<Widget>[
+                      Text(
+                        l10n.caloriesCalculatorGoalModeLabel,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      CalorieGoalCalculatorGoalModeSegmentedControl(
+                        selectedGoalMode: _goalMode,
+                        onSelected: _updateGoalMode,
+                      ),
+                    ],
+                    if (!widget.startsNewGoal &&
+                        _goalMode != CalorieGoalMode.maintain) ...<Widget>[
+                      const SizedBox(height: AppSpacing.lg),
+                      CalorieGoalCalculatorNumberField(
+                        fieldKey:
+                            CalorieGoalCalculatorSheetKeys.targetWeightField,
+                        controller: _targetWeightController,
+                        label: l10n.caloriesCalculatorTargetWeightLabel,
+                        errorText: _targetWeightErrorText(l10n),
+                        onChanged: _updateTargetWeight,
+                      ),
+                    ],
+                    if (_goalMode != CalorieGoalMode.maintain) ...<Widget>[
+                      const SizedBox(height: AppSpacing.md),
+                      CalorieGoalCalculatorNumberField(
+                        fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
+                        controller: _goalSpeedController,
+                        label: l10n.caloriesCalculatorGoalSpeedLabel,
+                        hintText: l10n.caloriesCalculatorGoalSpeedHint,
+                        onChanged: _updateGoalSpeed,
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.lg),
+                    _LearnedTdeeRow(
+                      label: l10n.caloriesLearnedTdeeResultLabel,
+                      value:
+                          '${numberFormat.format(_resolvedGoalKcal.round())} '
+                          '${l10n.caloriesUnitKcal}',
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    CalorieGoalCalculatorGoalStartCard(
+                      goalStartDate: _goalStartDate,
+                      onChangeRequested: _pickGoalStart,
+                      enabled: !_isSaving,
+                    ),
+                    if (_goalMode == CalorieGoalMode.maintain) ...<Widget>[
+                      const SizedBox(height: AppSpacing.md),
+                      CalorieGoalMaintainUntilTile(
+                        maintainUntil: _maintainUntil,
+                        onChoose: _pickMaintainUntil,
+                        onClear: () => setState(() => _maintainUntil = null),
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.lg),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: <Widget>[
+                        if (!widget.startsNewGoal)
+                          TextButton(
+                            key: CalorieLearnedTdeeSheetKeys.fullResetButton,
+                            onPressed: _isSaving ? null : _openFullReset,
+                            child: Text(
+                              l10n.caloriesLearnedTdeeUseProfileResetAction,
+                            ),
+                          ),
+                        FilledButton(
+                          key: CalorieLearnedTdeeSheetKeys.saveButton,
+                          onPressed: _canSave
+                              ? () => unawaited(_saveRunner.run(_save))
+                              : null,
+                          child: Text(l10n.caloriesCalculatorSaveAction),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -428,17 +432,15 @@ class _CalorieLearnedTdeeGoalSheetState
 
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
+    // Locked before the read, so the answer fits the saved values (#721).
+    setState(() => _isSaving = true);
     final startDay = await askGoalStartDayForLearning(
       context,
       goalStartDate: _goalStartDate,
       failedMessage: l10n.caloriesLearnedTdeeSaveFailed,
     );
-    if (!mounted || startDay == null) {
-      return;
-    }
-    setState(() {
-      _isSaving = true;
-    });
+    if (!mounted) return;
+    if (startDay == null) return setState(() => _isSaving = false);
 
     final container = ProviderScope.containerOf(context, listen: false);
     // Keeps the auto-dispose goal controller alive until the save completes.
@@ -469,10 +471,7 @@ class _CalorieLearnedTdeeGoalSheetState
     } finally {
       goalSubscription.close();
     }
-
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
     if (saveResult.saved) {
       final restarted =
           !saveResult.goalChanged ||

@@ -473,6 +473,22 @@ void main() {
     await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
     await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
     await tester.pump();
+    // The whole form is locked while it reads today (#721).
+    expect(
+      tester
+          .widget<IgnorePointer>(
+            find
+                .ancestor(
+                  of: find.byKey(
+                    CalorieGoalCalculatorSheetKeys.targetWeightField,
+                  ),
+                  matching: find.byType(IgnorePointer),
+                )
+                .first,
+          )
+          .ignoring,
+      isTrue,
+    );
     reading.complete();
     await tester.pumpAndSettle();
 

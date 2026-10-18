@@ -140,6 +140,11 @@ class CalorieGoalCalculatorFormController
     state = state.copyWith(trainingDayKcalOffset: offset);
   }
 
+  /// Locks the form while the save asks about the start day, or unlocks it
+  /// after a cancel (#721).
+  void setSaving({required bool isSaving}) =>
+      state = state.copyWith(isSaving: isSaving);
+
   /// Save.
   Future<bool> save({
     required DateTime goalStartDate,
