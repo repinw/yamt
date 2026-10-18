@@ -804,7 +804,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   spoken it shows faded. Each row shows a filled square and the amount left
   when the Vorrat holds the food in a fitting unit and the row has an amount,
   or "fehlt"; the title counts "2 von 3 da".
-  A swipe removes a row.
+  A swipe removes a row. "nein" at the start of what was said takes the rows
+  added last out again, and "nein, 200 g Sahne" swaps them for the
+  correction, as in the Kochhelfer.
 - "Kochen" saves one Vorrat meal with one portion: rows in stock take their
   amount from the best Vorrat match, which is used up in the Vorrat; the
   other rows stay open on the meal. The meal is "Im Topf" until it is marked
@@ -917,7 +919,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   - Below each sentence, "Im Topf" lists the ingredients. The voice zone and
     "Schreiben" add more for this time, said for the chosen portions; "Gerade
     dazu" shows the last ones with "Rückgängig", and saying "nein" takes them
-    back too. Listening goes on across sentences until the next tap.
+    back too ("no" only before a sentence mark, a number, or the end, so
+    "No-Name Senf" stays an ingredient). Listening goes on across sentences
+    until the next tap.
   - "Fertig gekocht" puts the meal in the pot like "Kochen" and goes on to
     "Gekocht". Leaving the Kochhelfer before that cooks nothing.
 - A long press on a Vorlage or recipe opens a small menu with "Planen"

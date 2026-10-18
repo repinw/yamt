@@ -59,8 +59,11 @@ String? afterUndoWords(String transcript) {
   return match == null ? null : transcript.substring(match.end).trim();
 }
 
+// "no" counts only before a sentence mark that no letter follows, a number,
+// or the end, so foods such as "No Name Ketchup" and "No-Name" stay a row.
 final _leadingUndo = RegExp(
-  r'^\s*(?:(?:nein|no|rückgängig|undo)(?![\p{L}\d])[\s\p{P}]*)+'
+  r'^\s*(?:(?:(?:nein|rückgängig|undo)(?![\p{L}\d])|no(?=\s*(?:[,.;:!?](?!\p{L})|\d|$)))'
+  r'[\s\p{P}]*)+'
   r'(?:(?:doch|nicht|danke)(?![\p{L}\d])[\s\p{P}]*)*',
   caseSensitive: false,
   unicode: true,

@@ -18,7 +18,11 @@ part 'free_cooking_controller.g.dart';
 @immutable
 class FreeCookingDraft {
   /// Creates a draft with [rows].
-  const new({this.rows = const <String>[], this.isCooking = false});
+  const new({
+    this.rows = const <String>[],
+    this.isCooking = false,
+    this.addedLast = 0,
+  });
 
   /// The rows as spoken or typed.
   final List<String> rows;
@@ -26,11 +30,20 @@ class FreeCookingDraft {
   /// Whether "Kochen" is saving the meal.
   final bool isCooking;
 
+  /// How many of the last [rows] the last text added, which an undo word
+  /// takes out again.
+  final int addedLast;
+
   /// Copy with.
-  FreeCookingDraft copyWith({List<String>? rows, bool? isCooking}) {
+  FreeCookingDraft copyWith({
+    List<String>? rows,
+    bool? isCooking,
+    int? addedLast,
+  }) {
     return FreeCookingDraft(
       rows: rows ?? this.rows,
       isCooking: isCooking ?? this.isCooking,
+      addedLast: addedLast ?? this.addedLast,
     );
   }
 }
@@ -42,13 +55,19 @@ class FreeCookingController extends _$FreeCookingController {
   @override
   FreeCookingDraft build() => const FreeCookingDraft();
 
-  /// Adds the rows found in spoken or typed [text].
+  /// Adds the rows found in spoken or typed [text]. An undo word such as
+  /// "nein" at its start takes the rows added last out again first, so
+  /// "nein, 200 g Sahne" swaps them for the correction.
   void addText(String text) {
-    final rows = splitFreeCookingTranscript(text);
-    if (rows.isEmpty) {
+    final correction = afterUndoWords(text);
+    final rows = splitFreeCookingTranscript(correction ?? text);
+    if (rows.isEmpty && (correction == null || state.addedLast == 0)) {
       return;
     }
-    state = state.copyWith(rows: [...state.rows, ...rows]);
+    final kept = correction == null
+        ? state.rows
+        : state.rows.sublist(0, state.rows.length - state.addedLast);
+    state = state.copyWith(rows: [...kept, ...rows], addedLast: rows.length);
   }
 
   /// Loads the Vorrat again after it failed.
@@ -56,7 +75,13 @@ class FreeCookingController extends _$FreeCookingController {
 
   /// Removes the row at [index].
   void removeRow(int index) {
-    state = state.copyWith(rows: [...state.rows]..removeAt(index));
+    final firstAddedLast = state.rows.length - state.addedLast;
+    state = state.copyWith(
+      rows: [...state.rows]..removeAt(index),
+      addedLast: index >= firstAddedLast
+          ? state.addedLast - 1
+          : state.addedLast,
+    );
   }
 
   /// Saves the meal [name] with [rows] in the Vorrat. Rows in stock take their
