@@ -1,0 +1,65 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'local_notifications.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// Notifications of the current platform. Kept alive, so the tap stream
+/// and the plugin are set up once.
+
+@ProviderFor(localNotifications)
+final localNotificationsProvider = LocalNotificationsProvider._();
+
+/// Notifications of the current platform. Kept alive, so the tap stream
+/// and the plugin are set up once.
+
+final class LocalNotificationsProvider
+    extends
+        $FunctionalProvider<
+          LocalNotifications,
+          LocalNotifications,
+          LocalNotifications
+        >
+    with $Provider<LocalNotifications> {
+  /// Notifications of the current platform. Kept alive, so the tap stream
+  /// and the plugin are set up once.
+  LocalNotificationsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'localNotificationsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$localNotificationsHash();
+
+  @$internal
+  @override
+  $ProviderElement<LocalNotifications> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  LocalNotifications create(Ref ref) {
+    return localNotifications(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LocalNotifications value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LocalNotifications>(value),
+    );
+  }
+}
+
+String _$localNotificationsHash() =>
+    r'db8b1ef22cc1e5aed99b85c5102366ae77a73665';
