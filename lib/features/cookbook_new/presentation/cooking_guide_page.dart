@@ -7,15 +7,13 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/core/widgets/voice_input_state_mixin.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cooking_guide_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_cook_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cooking_guide_body.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cooking_voice_input_mixin.dart';
-import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_async_view.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The Kochhelfer of a recipe, opened over its recipe page: all
@@ -135,30 +133,21 @@ class _CookingGuidePageState extends ConsumerState<CookingGuidePage>
       child: Scaffold(
         backgroundColor: FoodLabelColors.of(context).paper,
         body: SafeArea(
-          child: guideAsync.when(
-            data: (guide) => guide == null
-                ? Center(child: Text(l10n.recipeNotFound))
-                : CookingGuideBody(
-                    guide: guide,
-                    sentence: sentence,
-                    isCooking: isCooking,
-                    isListening: isListening,
-                    pendingSpeech: pendingSpeech,
-                    onBack: () => _back(sentence),
-                    onSentence: (index) => setState(() => _sentence = index),
-                    onDone: () => unawaited(_done()),
-                    onVoice: () => unawaited(toggleListening()),
-                    onType: () => unawaited(typeText()),
-                    onUndo: () => ref.read(_recipe.notifier).undoAdded(),
-                  ),
-            error: (_, _) => AppErrorRetryView(
-              message: l10n.recipeLoadFailed,
-              retryLabel: l10n.inventoryRetryAction,
-              onRetry: () => ref
-                ..invalidate(cookbookTemplatesProvider)
-                ..invalidate(inventoryQuickEatItemsProvider),
+          child: RecipeAsyncView(
+            value: guideAsync,
+            data: (guide) => CookingGuideBody(
+              guide: guide,
+              sentence: sentence,
+              isCooking: isCooking,
+              isListening: isListening,
+              pendingSpeech: pendingSpeech,
+              onBack: () => _back(sentence),
+              onSentence: (index) => setState(() => _sentence = index),
+              onDone: () => unawaited(_done()),
+              onVoice: () => unawaited(toggleListening()),
+              onType: () => unawaited(typeText()),
+              onUndo: () => ref.read(_recipe.notifier).undoAdded(),
             ),
-            loading: () => const AppLoadingView(),
           ),
         ),
       ),
