@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
@@ -11,6 +9,7 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/preferences/install_id.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/health/data/health_weight_sample_dto.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/health_weight_sample_devices.dart';
 
@@ -74,7 +73,7 @@ class HealthWeightSampleRepository {
     final stored = await _readStored(collection.get(), cipher);
     final samples = await loadHealth();
     final ids = await Future.wait(
-      samples.map((sample) => _idOf(sample, cipher)),
+      samples.map((sample) => healthWeightSampleId(sample, cipher)),
     );
     final plan = healthWeightDeviceSync(
       deviceId: deviceId,
@@ -105,7 +104,10 @@ class HealthWeightSampleRepository {
             if (change.type == DocumentChangeType.removed) {
               decoded.remove(change.doc.id);
             } else {
-              decoded[change.doc.id] = await _decodeOrNull(change.doc, cipher);
+              decoded[change.doc.id] = await decodeHealthWeightCopy(
+                change.doc,
+                cipher,
+              );
             }
           }),
         );
@@ -137,7 +139,7 @@ class HealthWeightSampleRepository {
     final cipher = _dataCipher!.cipher;
     final decoded = await Future.wait(
       (await collection.get()).docs.map(
-        (document) => _decodeOrNull(document, cipher),
+        (document) => decodeHealthWeightCopy(document, cipher),
       ),
     );
     return List<HealthWeightSample>.unmodifiable([
@@ -159,7 +161,7 @@ class HealthWeightSampleRepository {
       weightKg: weightKg,
       isFromThisApp: true,
     );
-    final id = await _idOf(sample, cipher);
+    final id = await healthWeightSampleId(sample, cipher);
     final plan = healthWeightAppWeightSave(
       deviceId: deviceId,
       // From the cache, so a save never waits for the network; the
@@ -175,7 +177,7 @@ class HealthWeightSampleRepository {
   Future<void> deleteSample(HealthWeightSample sample) async {
     final (:collection, :cipher, deviceId: _) = await _session();
     final batch = collection.firestore.batch()
-      ..delete(collection.doc(await _idOf(sample, cipher)));
+      ..delete(collection.doc(await healthWeightSampleId(sample, cipher)));
     commitBatchInBackground(
       batch,
       failureMessage: 'Failed to delete a Health weight sample.',
@@ -202,7 +204,7 @@ class HealthWeightSampleRepository {
   ) async {
     final documents = (await read).docs;
     final decoded = await Future.wait(
-      documents.map((document) => _decodeOrNull(document, cipher)),
+      documents.map((document) => decodeHealthWeightCopy(document, cipher)),
     );
     return {
       for (final (index, copy) in decoded.indexed) documents[index].id: ?copy,
@@ -228,12 +230,10 @@ class HealthWeightSampleRepository {
         if (copy == null) {
           batch.delete(reference);
         } else {
-          batch.set(reference, <String, Object?>{
-            encryptedPayloadField: await cipher.encryptJson({
-              ...copy.sample.toJson(),
-              'devices': copy.devices.toList(),
-            }, aad: reference.path),
-          });
+          batch.set(
+            reference,
+            await encodeHealthWeightCopy(copy, cipher, reference.path),
+          );
         }
       }
       commitBatchInBackground(
@@ -254,46 +254,5 @@ class HealthWeightSampleRepository {
         .collection(_usersCollection)
         .doc(userId)
         .collection(_samplesCollection);
-  }
-
-  /// The id of the measurement [sample] stands for: its minute in UTC and
-  /// its weight to 0.01 kg.
-  Future<String> _idOf(HealthWeightSample sample, PayloadCipher cipher) {
-    final minute = sample.recordedAt.toUtc().toIso8601String().substring(0, 16);
-    return cipher.keyedId(
-      'health-weight-sample:$minute:${sample.weightKg.toStringAsFixed(2)}',
-    );
-  }
-
-  /// The sample of [document], or `null`, logged, when it is malformed, as
-  /// the diary entries do.
-  Future<DeviceHealthWeightSample?> _decodeOrNull(
-    DocumentSnapshot<Map<String, dynamic>> document,
-    PayloadCipher cipher,
-  ) async {
-    try {
-      final payload = document.data()?[encryptedPayloadField];
-      if (payload is! String) {
-        throw FormatException('Sample ${document.id} has no payload.');
-      }
-      final json = await cipher.decryptJson(
-        payload,
-        aad: document.reference.path,
-      );
-      return (
-        sample: HealthWeightSample.fromJson(json),
-        // Strict: no released app (v3.7.0 and older) wrote this
-        // collection, so every copy has its devices and fromThisApp.
-        devices: {...(json['devices'] as List<dynamic>).cast<String>()},
-      );
-    } on Object catch (error, stackTrace) {
-      log(
-        'Skipping malformed Health weight sample ${document.id}.',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
-    }
   }
 }
