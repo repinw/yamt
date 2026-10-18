@@ -65,6 +65,16 @@ Future<InventoryPlanDemand> openPlanDemand(Ref ref) async {
             now: now,
           ),
     },
+    unstockedIngredientsByPlanId: {
+      for (final plan in open)
+        if (templatesById[plan.bundleSourceTemplateId] case final template?)
+          plan.id: templatePlanUnstockedIngredients(
+            plan: plan,
+            template: template,
+            items: stock,
+            parser: parser,
+          ),
+    },
   );
 }
 

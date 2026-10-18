@@ -6,7 +6,8 @@ import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
 
 /// What to buy for [plans]: one need for each plan the [demand] finds short,
 /// with the part of its amount that no stock covers, in plan order. A recipe
-/// plan needs each missing ingredient instead. A short plan of a cooked meal
+/// plan needs each missing ingredient instead, also those without a Vorrat
+/// item. A short plan of a cooked meal
 /// needs cooking, not shopping, so it is left out.
 // shortcut: an ingredient counted in whole packs, or in pieces without a
 // serving size, has no grams and is left out; show packs when users miss it.
@@ -18,9 +19,24 @@ List<ShoppingPlanNeed> inventoryShoppingPlanNeeds(
   final itemsById = {for (final item in items) item.id: item};
   return [
     for (final plan in plans)
-      if (demand.missingIngredientsByPlanId[plan.id] case final ingredients?)
-        ..._ingredientNeeds(plan, ingredients, itemsById)
-      else if (plan.bundleSourcePreparedMealId == null)
+      if (plan.bundleSourceTemplateId != null) ...[
+        ..._ingredientNeeds(
+          plan,
+          demand.missingIngredientsByPlanId[plan.id] ?? const {},
+          itemsById,
+        ),
+        for (final ingredient
+            in demand.unstockedIngredientsByPlanId[plan.id] ??
+                const <PlanUnstockedIngredient>[])
+          ShoppingPlanNeed(
+            name: ingredient.name,
+            day: plan.loggedAt,
+            mealType: plan.mealType,
+            amount: ingredient.amount,
+            inMilliliters: ingredient.inMilliliters,
+            isPartial: false,
+          ),
+      ] else if (plan.bundleSourcePreparedMealId == null)
         if (demand.missingShareByPlanId[plan.id] case final share?)
           ShoppingPlanNeed(
             name: plan.name,

@@ -26,8 +26,9 @@ class ShoppingPlanNeed {
   /// The planned meal.
   final MealType mealType;
 
-  /// The amount to buy, in grams or, with [inMilliliters], milliliters.
-  final double amount;
+  /// The amount to buy, in grams or, with [inMilliliters], milliliters;
+  /// null when the plan names none, like "Salz".
+  final double? amount;
 
   /// Whether [amount] counts milliliters.
   final bool inMilliliters;

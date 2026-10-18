@@ -50,9 +50,14 @@ class _ShoppingPlanNeedsDialogState extends State<ShoppingPlanNeedsDialog> {
                   () => ticked! ? _ticked.add(need) : _ticked.remove(need),
                 ),
                 title: Text(need.name),
-                subtitle: Text(
-                  shoppingPlanNeedSubtitle(need, l10n, l10n.localeName),
-                ),
+                subtitle: switch (shoppingPlanNeedSubtitle(
+                  need,
+                  l10n,
+                  l10n.localeName,
+                )) {
+                  '' => null,
+                  final text => Text(text),
+                },
               ),
           ],
         ),
