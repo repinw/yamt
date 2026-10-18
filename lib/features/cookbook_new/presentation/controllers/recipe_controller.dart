@@ -59,13 +59,21 @@ class RecipeController extends _$RecipeController {
       edits = edits.withAdded(recipeAddedText(parser, view, row));
     }
     if (keys.isNotEmpty) {
-      state = state.copyWith(edits: edits, justAdded: keys);
+      state = state.copyWith(
+        edits: edits,
+        justAdded: keys,
+        fromGuide: [...state.fromGuide, ...keys],
+      );
     }
   }
 
   /// Takes the ingredients added last out again.
-  void undoAdded() {
-    final remove = state.justAdded.toSet();
+  void undoAdded() => _dropAdded(state.justAdded.toSet());
+
+  /// Takes every ingredient the Kochhelfer added out again.
+  void undoGuideAdded() => _dropAdded(state.fromGuide.toSet());
+
+  void _dropAdded(Set<String> remove) {
     if (remove.isEmpty) {
       return;
     }
@@ -77,7 +85,15 @@ class RecipeController extends _$RecipeController {
             if (!remove.contains(key)) key: value,
         },
       ),
+      picks: {
+        for (final MapEntry(:key, :value) in state.picks.entries)
+          if (!remove.contains(key)) key: value,
+      },
       justAdded: const <String>[],
+      fromGuide: [
+        for (final key in state.fromGuide)
+          if (!remove.contains(key)) key,
+      ],
     );
   }
 
@@ -88,7 +104,17 @@ class RecipeController extends _$RecipeController {
 
   /// Cooks the recipe with [edits] this time.
   void setEdits(RecipeEdits edits) {
-    state = state.copyWith(edits: edits, justAdded: const <String>[]);
+    state = state.copyWith(
+      edits: edits,
+      justAdded: const <String>[],
+      // A line changed by hand is the cook's own now, not the Kochhelfer's.
+      fromGuide: [
+        for (final key in state.fromGuide)
+          if (edits.added[key] case final text?
+              when text == state.edits.added[key])
+            key,
+      ],
+    );
   }
 
   /// Drops the picks for the lines [keys], so the items the recipe saved

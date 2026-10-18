@@ -3755,6 +3755,14 @@
       }
     }
   },
+  "recipeGuideAdded": "{count, plural, =1{1 addition from the cooking helper} other{{count} additions from the cooking helper}}",
+  "@recipeGuideAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "cookingGuideJustAdded": "Just added",
   "cookingGuideVoiceHint": "“50 g cream” · “no” takes it back",
   "cookingGuideNext": "Next sentence",

@@ -23,6 +23,7 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooking_guide_just_added.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_text_sheet.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_guide_added_hint.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'recipe_hero.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -212,6 +213,64 @@ void main() {
     // Closing "Gekocht" goes back to where the recipe was opened.
     expect(find.byType(RecipePage, skipOffstage: false), findsNothing);
     expect(find.byType(CookingGuidePage, skipOffstage: false), findsNothing);
+  });
+
+  testWidgets('keeps what the Kochhelfer added until it is taken back', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(RecipeGuideAddedHint.textKey), findsNothing);
+
+    await tester.tap(find.byKey(RecipePage.cookKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookingGuideBody.startKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookingGuideBody.typeKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(FreeCookingTextSheet.fieldKey),
+      '50 g Feta',
+    );
+    await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
+    await tester.pumpAndSettle();
+    // Back to the overview, then out to the recipe without cooking.
+    await tester.tap(find.byKey(CookingGuideBody.backKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookingGuideBody.backKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RecipePage), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(RecipeGuideAddedHint.undoKey),
+      100,
+      scrollable: find
+          .descendant(
+            of: find.byType(RecipePage),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(find.byKey(RecipeGuideAddedHint.textKey), findsOneWidget);
+    // Feta follows the recipe's three ingredients.
+    final feta = find.byKey(
+      RecipeIngredientTile.tileKey(3),
+      skipOffstage: false,
+    );
+    expect(feta, findsOneWidget);
+    await tester.tap(find.byKey(RecipeGuideAddedHint.undoKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(RecipeGuideAddedHint.textKey), findsNothing);
+    expect(feta, findsNothing);
+    expect(meals.saved, isEmpty);
   });
 
   testWidgets('removes the recipe from its page and brings it back', (

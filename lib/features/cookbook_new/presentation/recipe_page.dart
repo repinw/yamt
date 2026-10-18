@@ -17,6 +17,7 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/portion_stepper.
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_async_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_bottom_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_check_card.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_guide_added_hint.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_hero.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_ingredient_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_step_list.dart';
@@ -183,6 +184,10 @@ class _RecipeBody extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: inset,
+                child: RecipeGuideAddedHint(recipeId: recipe.id),
+              ),
               Padding(
                 padding: inset,
                 child: CookbookSectionTitle(

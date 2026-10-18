@@ -10,6 +10,7 @@ class RecipeDraft {
     this.picks = const <String, String?>{},
     this.edits = const RecipeEdits(),
     this.justAdded = const <String>[],
+    this.fromGuide = const <String>[],
     this.withGuide = true,
     this.isCooking = false,
   });
@@ -28,6 +29,10 @@ class RecipeDraft {
   /// "Rückgängig" takes out again.
   final List<String> justAdded;
 
+  /// The line keys of every ingredient the Kochhelfer added that is still
+  /// in [edits]. They stay until the recipe page closes.
+  final List<String> fromGuide;
+
   /// Whether "Kochen" opens the Kochhelfer first, for a recipe with steps.
   final bool withGuide;
 
@@ -40,6 +45,7 @@ class RecipeDraft {
     Map<String, String?>? picks,
     RecipeEdits? edits,
     List<String>? justAdded,
+    List<String>? fromGuide,
     bool? withGuide,
     bool? isCooking,
   }) => RecipeDraft(
@@ -47,6 +53,7 @@ class RecipeDraft {
     picks: picks ?? this.picks,
     edits: edits ?? this.edits,
     justAdded: justAdded ?? this.justAdded,
+    fromGuide: fromGuide ?? this.fromGuide,
     withGuide: withGuide ?? this.withGuide,
     isCooking: isCooking ?? this.isCooking,
   );
