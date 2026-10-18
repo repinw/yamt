@@ -76,4 +76,32 @@ void main() {
     expect(tdee.currentTdeeKcal, 2400);
     expect(tdee.changeSinceYesterdayKcal, isNull);
   });
+
+  test('stops at the end of a past goal', () {
+    final end = addDiaryDays(start, 4);
+    final tdee = ProgressTdee.fromPoints(
+      settings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: start,
+      ),
+      period: ProgressPeriod(
+        start: start,
+        end: end,
+        goalStarts: [(number: 1, day: start)],
+      ),
+      points: [
+        for (var i = 0; i < 10; i++)
+          TdeeAnalyticsPoint(
+            day: addDiaryDays(start, i),
+            learnedBaseTdeeKcal: 2400.0 + i,
+          ),
+      ],
+      today: today,
+    );
+
+    expect(tdee.days.last.day, end);
+    expect(tdee.days.every((day) => !day.day.isAfter(end)), isTrue);
+    expect(tdee.currentTdeeKcal, 2404);
+  });
 }
