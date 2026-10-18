@@ -895,7 +895,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   (the picked names to start with), and the foods with all of their stock
   become a Vorlage, with "Rückgängig". The Vorrat stays as it is; closing
   either step saves nothing.
-  A Vorlage opens its template detail.
+  A Vorlage opens the recipe page too: one ingredient per food (packs of
+  the same food together) with the Vorrat item it was combined from, sized
+  for the chosen portions, then "Planen" and "Kochen" → "Gekocht". It has
+  no steps, no Kochhelfer and no "Zutaten prüfen"; "Planen" keeps the
+  Vorlage's own values for one portion.
+  Known limit: foods counted in pieces are cooked in whole pieces, so a
+  part of a piece counts as one (a third of a lemon takes a whole one).
 - A recipe opens its recipe page: the recipe photo with its source and name
   over it, the portions (stepper, "Original für N"), the ingredients sized
   for those portions, and the steps. Each ingredient shows the Vorrat food

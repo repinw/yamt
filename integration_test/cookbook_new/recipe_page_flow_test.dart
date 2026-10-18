@@ -23,6 +23,7 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooking_guide_just_added.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_text_sheet.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_check_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_guide_added_hint.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'recipe_hero.dart';
@@ -113,6 +114,55 @@ void main() {
       inventory.items.firstWhere((item) => item.id == 'carrots').currentAmount,
       2000,
     );
+  });
+
+  testWidgets('cooks a Vorlage from its foods without the ingredient check', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    final mince = _item('mince', 'Hackfleisch');
+    final vorlage = _recipe.copyWith(
+      totalPortions: 1,
+      recipeIngredients: const <String>[],
+      ignoredRecipeIngredients: const <String>[],
+      recipeInstructions: const <String>[],
+      components: [
+        PreparedMealComponent(
+          inventoryItemId: mince.id,
+          name: mince.name,
+          brand: null,
+          imageUrl: null,
+          usedAmount: 300,
+          usedUnit: InventoryAmountUnit.gram,
+          totalKcal: 0,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+          sourceItemSnapshot: mince,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        inventory: _FakeInventoryRepository([mince]),
+        templates: FakePreparedMealTemplateRepository(templates: [vorlage]),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(RecipeCheckCard.cardKey), findsNothing);
+    expect(find.byKey(RecipeIngredientTile.tileKey(0)), findsOneWidget);
+    await tester.tap(find.byKey(RecipePage.cookKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CookedMealPage), findsOneWidget);
+    final meal = meals.saved.single;
+    expect(meal.isInPot, isTrue);
+    expect(meal.components.single.inventoryItemId, 'mince');
+    expect(meal.components.single.usedAmount, 300);
   });
 
   testWidgets('cooks with the Kochhelfer, one sentence at a time', (

@@ -203,6 +203,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Recipe page'), findsOneWidget);
+
+    // A Vorlage opens the recipe page too.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await Scrollable.ensureVisible(
+      tester.element(find.text('Rice bowl')),
+      alignment: 0.3,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
+    expect(find.text('Recipe page'), findsOneWidget);
   });
 
   testWidgets('removes a recipe and a Vorlage by long press and brings the '

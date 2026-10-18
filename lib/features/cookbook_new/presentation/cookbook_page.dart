@@ -53,11 +53,8 @@ class CookbookPage extends ConsumerWidget {
           onCreateTemplate: () => unawaited(
             InventoryTemplateCreateFlow.create(context: context, ref: ref),
           ),
-          onOpenTemplate: (template) => unawaited(
-            context.push(
-              AppRoutes.homeInventoryTemplateDetailPath(template.id),
-            ),
-          ),
+          onOpenTemplate: (template) =>
+              unawaited(context.push(AppRoutes.homeRecipePath(template.id))),
           onOpenRecipe: (recipe) =>
               unawaited(context.push(AppRoutes.homeRecipePath(recipe.id))),
           onRemove: (template) =>
