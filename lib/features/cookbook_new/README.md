@@ -4,7 +4,7 @@
 
 The Kochbuch tab: meals still in the pot, Vorlagen combined from the Vorrat,
 and recipes with the stock state of their ingredients. It replaces the meal
-templates list and later the cooking flow.
+templates list and the old cooking flow.
 
 ## Owns
 

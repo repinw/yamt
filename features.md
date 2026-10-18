@@ -982,8 +982,6 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - Import recipe templates from recipe links, currently centered on Chefkoch.
 - Review imported recipe before saving.
-- Template detail with recipe image, source, base portions, ingredients, and
-  short instructions.
 - Portion scaling from base recipe portions.
 - Ingredient assignment to inventory items.
 - Ignored ingredient support for items like spices.

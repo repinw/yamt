@@ -14,7 +14,7 @@ requirements that other features can use for matching, cooking, and labels.
 
 - Inventory item storage, consumption, or inventory amount units.
 - Prepared meal persistence or mutation workflows.
-- Cooking-flow session state and inventory conflict resolution.
+- Inventory conflict resolution.
 - Recipe scraping and prepared meal recipe import persistence.
 
 ## Public Edge

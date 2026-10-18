@@ -116,8 +116,6 @@ Other features may consume these public Inventory entry points:
 - `InventoryReceiptCandidatePickerSheet` for scanner/inventory receipt-review
   correction flows.
 - `PreparedMealCover` for features that display prepared-meal thumbnails.
-- `AppInventoryEatActionColors` for the eat action color shared with
-  cookflow.
 
 Callers should not assemble Inventory internal row/card widgets unless they are
 already documented as a reusable presentation surface.
