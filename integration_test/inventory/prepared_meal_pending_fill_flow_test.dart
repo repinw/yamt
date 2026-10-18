@@ -30,10 +30,12 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_fill_sheet.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/features/shoppinglist/support/fake_shopping_list_repository.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/support/prepared_meal_test_data.dart';
 
@@ -110,7 +112,22 @@ class _StaticShoppingListController extends ShoppingListController {
   Future<List<ShoppingListItem>> build() async => const <ShoppingListItem>[];
 }
 
+/// Records the rows it saves on the shopping list in [calls].
+class _RecordingShoppingList extends FakeShoppingListRepository {
+  new(this.calls);
+
+  final List<String> calls;
+
+  @override
+  Future<bool> saveAll(List<ShoppingListItem> items) {
+    calls.add('list ${items.map((item) => item.name).join(',')}');
+    return super.saveAll(items);
+  }
+}
+
 Widget _harness(List<String> calls, {bool inPot = false}) {
+  final shoppingList = _RecordingShoppingList(calls);
+  addTearDown(shoppingList.dispose);
   final container = ProviderContainer(
     overrides: [
       inventoryItemsControllerProvider.overrideWith(
@@ -122,6 +139,7 @@ Widget _harness(List<String> calls, {bool inPot = false}) {
       shoppingListControllerProvider.overrideWith(
         _StaticShoppingListController.new,
       ),
+      shoppingListRepositoryProvider.overrideWithValue(shoppingList),
     ],
   );
   addTearDown(container.dispose);
@@ -327,10 +345,32 @@ void main() {
     await _settle(tester);
     await _openFillSheet(tester);
 
-    await tester.tap(find.byKey(PreparedMealPendingFillSheet.ignoreKey));
+    // The sheet scrolls once its options fill the screen.
+    final ignore = find.byKey(PreparedMealPendingFillSheet.ignoreKey);
+    await tester.ensureVisible(ignore);
+    await tester.tap(ignore);
     await _settle(tester);
 
     expect(calls, ['ignore pan $_row']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an open row goes on the shopping list', (tester) async {
+    final calls = <String>[];
+    await tester.pumpWidget(_harness(calls));
+    await _settle(tester);
+    await _openFillSheet(tester);
+
+    final shoppingList = find.byKey(
+      PreparedMealPendingFillSheet.shoppingListKey,
+    );
+    await tester.ensureVisible(shoppingList);
+    await tester.tap(shoppingList);
+    await _settle(tester);
+
+    expect(calls, ['list $_row']);
+    // The row stays open.
+    expect(find.byKey(const ValueKey('eat_meal_fill_$_row')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

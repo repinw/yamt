@@ -18,9 +18,11 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 
 import '../../../../helpers/inventory_item_whole_list_writes.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
+import '../../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new({required List<InventoryItem> initialItems})
@@ -1261,6 +1263,78 @@ void main() {
         (InventoryActivityEventType.itemUsedInPreparedMeal, 'sauce', 50),
       ],
     );
+  });
+
+  group('putPendingIngredientOnShoppingList', () {
+    Future<
+      ({PreparedMealsController controller, FakeShoppingListRepository list})
+    >
+    start() async {
+      final inventoryRepository = _FakeInventoryItemRepository(
+        initialItems: const <InventoryItem>[],
+      );
+      final preparedMealRepository = _FakePreparedMealRepository(
+        initialMeals: const <PreparedMeal>[],
+      );
+      final list = FakeShoppingListRepository();
+      addTearDown(inventoryRepository.dispose);
+      addTearDown(preparedMealRepository.dispose);
+      addTearDown(list.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            inventoryRepository,
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(
+            preparedMealRepository,
+          ),
+          shoppingListRepositoryProvider.overrideWithValue(list),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+      await container.read(preparedMealsControllerProvider.future);
+      return (
+        controller: container.read(preparedMealsControllerProvider.notifier),
+        list: list,
+      );
+    }
+
+    test('puts the row on the list once', () async {
+      final (:controller, :list) = await start();
+
+      expect(
+        await controller.putPendingIngredientOnShoppingList('Salz'),
+        isTrue,
+      );
+      expect(
+        await controller.putPendingIngredientOnShoppingList('Salz'),
+        isTrue,
+      );
+
+      expect(list.savedItems.map((item) => item.name), ['Salz']);
+    });
+
+    test('returns false when the list cannot be saved', () async {
+      final (:controller, :list) = await start();
+      list.saveAllShouldFail = true;
+
+      expect(
+        await controller.putPendingIngredientOnShoppingList('Salz'),
+        isFalse,
+      );
+    });
+
+    test('returns false when the list write throws', () async {
+      final (:controller, :list) = await start();
+      list.saveAllShouldThrow = true;
+
+      expect(
+        await controller.putPendingIngredientOnShoppingList('Salz'),
+        isFalse,
+      );
+    });
   });
 }
 

@@ -40,6 +40,13 @@ final class PreparedMealPendingFillFind extends PreparedMealPendingFillChoice {
   final PreparedMealFoodSource source;
 }
 
+/// Put the row on the shopping list; the meal keeps it as it is.
+final class PreparedMealPendingFillShoppingList
+    extends PreparedMealPendingFillChoice {
+  /// Creates the choice.
+  const new();
+}
+
 /// Leave the row out of the meal.
 final class PreparedMealPendingFillIgnore
     extends PreparedMealPendingFillChoice {
@@ -49,7 +56,7 @@ final class PreparedMealPendingFillIgnore
 
 /// Bottom sheet that offers the ways to fill the open or ignored row
 /// [ingredient]: the best Vorrat match first, then the Vorrat, search,
-/// barcode, AI, and ignoring an open row.
+/// barcode, AI, the shopping list, and ignoring an open row.
 class PreparedMealPendingFillSheet extends StatelessWidget {
   /// Creates the sheet.
   const new({
@@ -68,6 +75,9 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
 
   /// Key of the Vorrat option.
   static const stockKey = ValueKey<String>('pending-fill-stock');
+
+  /// Key of "Auf die Einkaufsliste".
+  static const shoppingListKey = ValueKey<String>('pending-fill-shopping-list');
 
   /// Key of "Zeile ignorieren".
   static const ignoreKey = ValueKey<String>('pending-fill-ignore');
@@ -184,6 +194,13 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
                   choice: const PreparedMealPendingFillFind(
                     PreparedMealFoodSource.ai,
                   ),
+                ),
+                _Option(
+                  key: shoppingListKey,
+                  icon: const Icon(Icons.add_shopping_cart_rounded),
+                  title: l10n.preparedMealFillShoppingList,
+                  description: l10n.preparedMealFillShoppingListDescription,
+                  choice: const PreparedMealPendingFillShoppingList(),
                 ),
               ],
             ),

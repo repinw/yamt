@@ -6069,6 +6069,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealFillAiDescription => 'Estimate from a photo or text';
 
   @override
+  String get preparedMealFillShoppingList => 'Add to shopping list';
+
+  @override
+  String get preparedMealFillShoppingListFailed =>
+      'Could not put the row on the shopping list.';
+
+  @override
+  String get preparedMealFillShoppingListDescription =>
+      'The row stays as it is';
+
+  @override
   String get preparedMealFillIgnore => 'Ignore row';
 
   @override
