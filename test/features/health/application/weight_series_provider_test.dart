@@ -45,9 +45,9 @@ void main() {
     expect(
       await _latest(
         manual: [
-          _manual(DateTime(2026, 10, 18, 7), 80.0),
+          _manual(DateTime(2026, 10, 18, 7), 80),
           _manual(DateTime(2026, 10, 18, 21), 81.2),
-          _manual(DateTime(2026, 10, 17, 22), 79.0),
+          _manual(DateTime(2026, 10, 17, 22), 79),
         ],
       ),
       81.2,
@@ -57,7 +57,7 @@ void main() {
   test('takes a Health weighing newer than the manual ones', () async {
     expect(
       await _latest(
-        manual: [_manual(DateTime(2026, 10, 18, 7), 80.0)],
+        manual: [_manual(DateTime(2026, 10, 18, 7), 80)],
         health: [_health(DateTime(2026, 10, 18, 8), 80.6)],
       ),
       80.6,
@@ -67,7 +67,7 @@ void main() {
   test('takes a manual weighing newer than the Health ones', () async {
     expect(
       await _latest(
-        manual: [_manual(DateTime(2026, 10, 18, 9), 80.0)],
+        manual: [_manual(DateTime(2026, 10, 18, 9), 80)],
         health: [_health(DateTime(2026, 10, 18, 8), 80.6)],
       ),
       80.0,
@@ -77,7 +77,7 @@ void main() {
   test('skips an ignored Health weighing', () async {
     expect(
       await _latest(
-        manual: [_manual(DateTime(2026, 10, 17, 7), 80.0)],
+        manual: [_manual(DateTime(2026, 10, 17, 7), 80)],
         health: [_health(DateTime(2026, 10, 18, 8), 90, ignored: true)],
       ),
       80.0,

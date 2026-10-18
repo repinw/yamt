@@ -199,7 +199,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsNothing);
-    expect(_todaysWeighIn(tester), 80.4);
+    // A weighing of its own: the day shows the median of 82.0 and 80.4.
+    expect(_todaysWeighIn(tester), closeTo(81.2, 0.001));
     expect(tester.takeException(), isNull);
   });
 

@@ -1,7 +1,7 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -9,11 +9,11 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
+import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -71,12 +71,13 @@ ValueKey<String> progressWeighingRowKey({
 /// controllers and providers run.
 class ProgressWeighingFakes {
   /// Creates the fakes with [samples] in the cloud and the Health store of
-  /// this device holding [onDevice].
-  ProgressWeighingFakes({
+  /// this device holding [onDevice], or [health] in its place.
+  new({
     List<HealthWeightSample> samples = const [],
     List<HealthWeightSample> onDevice = const [],
+    FakeHealthWeightService? health,
   }) : cloud = FakeHealthWeightSampleRepository(samples),
-       health = FakeHealthWeightService(onDevice),
+       health = health ?? FakeHealthWeightService(onDevice),
        manual = FakeManualHealthWeightRepository([
          for (var offset = 2; offset < 20; offset += 2)
            ManualHealthWeightEntry(
@@ -131,8 +132,8 @@ class ProgressWeighingFakes {
 
   /// Releases the fakes.
   Future<void> dispose() async {
-    settings.dispose();
-    calorieLog.dispose();
+    await settings.dispose();
+    await calorieLog.dispose();
     await cloud.dispose();
   }
 }
