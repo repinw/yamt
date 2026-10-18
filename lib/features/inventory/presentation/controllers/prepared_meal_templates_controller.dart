@@ -91,9 +91,6 @@ class PreparedMealTemplatesController
     return _feed.start();
   }
 
-  /// Refresh.
-  Future<void> refresh() => _feed.refresh();
-
   /// Save template from meal.
   Future<PreparedMealTemplateSaveResult> saveTemplateFromMeal(
     PreparedMeal meal,
