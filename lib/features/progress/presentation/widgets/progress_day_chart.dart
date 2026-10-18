@@ -23,6 +23,7 @@ class ProgressDayChart extends StatelessWidget {
     required this.goalStarts,
     required this.minRange,
     this.markedDays = const {},
+    this.hollowDots = const [],
     this.target,
     super.key,
   });
@@ -35,6 +36,10 @@ class ProgressDayChart extends StatelessWidget {
 
   /// Days whose line point gets a square, such as check-ins.
   final Set<DateTime> markedDays;
+
+  /// Values drawn as hollow squares that do not widen the range, such as
+  /// ignored weighings; outside the range they stay at the edge.
+  final List<(DateTime, double)> hollowDots;
 
   /// Smallest value range that the chart spans, so small changes do not look
   /// steep.
@@ -54,6 +59,7 @@ class ProgressDayChart extends StatelessWidget {
           days: days,
           goalStarts: goalStarts,
           markedDays: markedDays,
+          hollowDots: hollowDots,
           minRange: minRange,
           target: target,
           ink: colors.ink,
@@ -71,6 +77,7 @@ class _DayChartPainter extends CustomPainter {
     required this.days,
     required this.goalStarts,
     required this.markedDays,
+    required this.hollowDots,
     required this.minRange,
     required this.target,
     required this.ink,
@@ -82,6 +89,7 @@ class _DayChartPainter extends CustomPainter {
   final List<ProgressChartDay> days;
   final List<(DateTime, String)> goalStarts;
   final Set<DateTime> markedDays;
+  final List<(DateTime, double)> hollowDots;
   final double minRange;
   final (double, String)? target;
   final Color ink;
@@ -134,6 +142,20 @@ class _DayChartPainter extends CustomPainter {
       );
     }
 
+    final hollow = Paint()
+      ..color = muted
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = AppProgress.thinStroke;
+    for (final (day, value) in hollowDots) {
+      final index = days.indexWhere((entry) => entry.day == day);
+      if (index < 0) continue;
+      _paintSquare(
+        canvas,
+        Offset(x(index), y(value).clamp(top, baseY - inset)),
+        hollow,
+        AppProgress.weighInSize,
+      );
+    }
     final dot = Paint()..color = muted;
     final line = Path();
     var started = false;
@@ -251,6 +273,7 @@ class _DayChartPainter extends CustomPainter {
     return !listEquals(oldDelegate.days, days) ||
         !listEquals(oldDelegate.goalStarts, goalStarts) ||
         !setEquals(oldDelegate.markedDays, markedDays) ||
+        !listEquals(oldDelegate.hollowDots, hollowDots) ||
         oldDelegate.minRange != minRange ||
         oldDelegate.target != target ||
         oldDelegate.targetColor != targetColor ||

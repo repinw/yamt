@@ -2411,15 +2411,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryWeightSaveAction => 'Speichern';
 
   @override
-  String get diaryWeightClearAction => 'Überschreibung löschen';
-
-  @override
   String get diaryWeightSaveFailed =>
       'Gewicht konnte nicht gespeichert werden.';
-
-  @override
-  String get diaryWeightClearFailed =>
-      'Manuelles Gewicht konnte nicht gelöscht werden.';
 
   @override
   String get caloriesRemoveEntryAction => 'Eintrag entfernen';
@@ -7009,4 +7002,45 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shoppingPlanNeedsDialogAdd => 'Auf die Liste';
+
+  @override
+  String get progressWeighingEditTitle => 'Gewicht bearbeiten';
+
+  @override
+  String get progressWeighingDayLabel => 'Tag';
+
+  @override
+  String get progressWeighingTimeLabel => 'Uhrzeit';
+
+  @override
+  String get progressWeighingDelete => 'Löschen';
+
+  @override
+  String get progressWeighingIgnore => 'Ignorieren';
+
+  @override
+  String get progressWeighingCount => 'Wieder zählen';
+
+  @override
+  String get progressWeighingOpenHealth => 'In Health öffnen';
+
+  @override
+  String get progressWeighingOtherDevice =>
+      'Auf einem anderen Gerät in Health gespeichert. Ändern kannst du es nur dort.';
+
+  @override
+  String get progressWeighingDeleteFailed =>
+      'Das Gewicht konnte nicht gelöscht werden.';
+
+  @override
+  String get progressWeighingIgnoreFailed =>
+      'Das Gewicht konnte nicht geändert werden.';
+
+  @override
+  String get progressWeighingOpenHealthFailed =>
+      'Health konnte nicht geöffnet werden.';
+
+  @override
+  String get progressWeighingHealthReadFailed =>
+      'Health konnte nicht gelesen werden.';
 }

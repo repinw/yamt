@@ -156,6 +156,9 @@ abstract final class AppOpacities {
   /// Measured weigh-in dots behind the trend line in the weight chart.
   static const double weightChartScaleDot = 0.35;
 
+  /// A weighing that the user left out of every count.
+  static const double ignoredWeighing = 0.4;
+
   /// Tinted background of an icon badge.
   static const double iconBadgeBackground = 0.12;
 

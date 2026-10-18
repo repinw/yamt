@@ -1167,9 +1167,7 @@
     }
   },
   "diaryWeightSaveAction": "Speichern",
-  "diaryWeightClearAction": "Überschreibung löschen",
   "diaryWeightSaveFailed": "Gewicht konnte nicht gespeichert werden.",
-  "diaryWeightClearFailed": "Manuelles Gewicht konnte nicht gelöscht werden.",
   "caloriesRemoveEntryAction": "Eintrag entfernen",
   "caloriesRemoveEntryDialogTitle": "Eintrag entfernen",
   "caloriesRemoveEntryDialogMessage": "Möchtest du das Nahrungsmittel wieder in den Vorrat zurücklegen?",
@@ -3306,5 +3304,17 @@
   "shoppingPlanNeedsDialogTitle": "{count, plural, =1{1 Zutat fehlt} other{{count} Zutaten fehlen}}",
   "shoppingPlanNeedsDialogMessage": "Auf die Einkaufsliste setzen?",
   "shoppingPlanNeedsDialogSkip": "Nicht jetzt",
-  "shoppingPlanNeedsDialogAdd": "Auf die Liste"
+  "shoppingPlanNeedsDialogAdd": "Auf die Liste",
+  "progressWeighingEditTitle": "Gewicht bearbeiten",
+  "progressWeighingDayLabel": "Tag",
+  "progressWeighingTimeLabel": "Uhrzeit",
+  "progressWeighingDelete": "Löschen",
+  "progressWeighingIgnore": "Ignorieren",
+  "progressWeighingCount": "Wieder zählen",
+  "progressWeighingOpenHealth": "In Health öffnen",
+  "progressWeighingOtherDevice": "Auf einem anderen Gerät in Health gespeichert. Ändern kannst du es nur dort.",
+  "progressWeighingDeleteFailed": "Das Gewicht konnte nicht gelöscht werden.",
+  "progressWeighingIgnoreFailed": "Das Gewicht konnte nicht geändert werden.",
+  "progressWeighingOpenHealthFailed": "Health konnte nicht geöffnet werden.",
+  "progressWeighingHealthReadFailed": "Health konnte nicht gelesen werden."
 }

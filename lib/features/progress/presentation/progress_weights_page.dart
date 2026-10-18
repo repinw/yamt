@@ -6,6 +6,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/progress/application/progress_weight_list_provider.dart';
 import 'package:yamt/features/progress/domain/progress_weight_list.dart';
+import 'package:yamt/features/progress/presentation/progress_weighing_flow.dart';
 import 'package:yamt/features/progress/presentation/progress_weight_entry_flow.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_state.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_weight_health_connect.dart';
@@ -76,8 +77,11 @@ class _ProgressWeightsPageState extends ConsumerState<ProgressWeightsPage> {
             ),
             for (final weighing in run.weighings)
               () => ProgressWeighingRow(
+                key: ProgressWeighingRow.rowKey(weighing),
                 weighing: weighing,
                 currentYear: list.trend.days.last.day.year,
+                onTap: () =>
+                    unawaited(openProgressWeighing(context, ref, weighing)),
               ),
           ],
         ],

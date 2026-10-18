@@ -18,6 +18,14 @@ void main() {
     saveButtonKey: saveButtonKey,
   );
 
+  test('parseWeightKg reads a comma or a dot and only positive weights', () {
+    expect(parseWeightKg(' 80,25 '), 80.25);
+    expect(parseWeightKg('80.5'), 80.5);
+    expect(parseWeightKg(''), isNull);
+    expect(parseWeightKg('abc'), isNull);
+    expect(parseWeightKg('0'), isNull);
+  });
+
   testWidgets('shows empty error for blank input', (tester) async {
     await _pumpHarness(tester, labels: labels, keys: keys);
 

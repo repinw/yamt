@@ -2361,13 +2361,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryWeightSaveAction => 'Save';
 
   @override
-  String get diaryWeightClearAction => 'Clear override';
-
-  @override
   String get diaryWeightSaveFailed => 'Could not save weight.';
-
-  @override
-  String get diaryWeightClearFailed => 'Could not clear manual weight.';
 
   @override
   String get caloriesRemoveEntryAction => 'Remove entry';
@@ -6893,4 +6887,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingPlanNeedsDialogAdd => 'Add to list';
+
+  @override
+  String get progressWeighingEditTitle => 'Edit weight';
+
+  @override
+  String get progressWeighingDayLabel => 'Day';
+
+  @override
+  String get progressWeighingTimeLabel => 'Time';
+
+  @override
+  String get progressWeighingDelete => 'Delete';
+
+  @override
+  String get progressWeighingIgnore => 'Ignore';
+
+  @override
+  String get progressWeighingCount => 'Count again';
+
+  @override
+  String get progressWeighingOpenHealth => 'Open in Health';
+
+  @override
+  String get progressWeighingOtherDevice =>
+      'Saved to Health on another device. You can change it only there.';
+
+  @override
+  String get progressWeighingDeleteFailed => 'Could not delete the weight.';
+
+  @override
+  String get progressWeighingIgnoreFailed => 'Could not change the weight.';
+
+  @override
+  String get progressWeighingOpenHealthFailed => 'Could not open Health.';
+
+  @override
+  String get progressWeighingHealthReadFailed => 'Could not read Health.';
 }

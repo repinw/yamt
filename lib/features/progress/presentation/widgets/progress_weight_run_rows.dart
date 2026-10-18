@@ -1,7 +1,9 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/progress/domain/progress_weight_list.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_header.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -69,16 +71,32 @@ class ProgressWeightRunHeader extends StatelessWidget {
   }
 }
 
-/// One weighing: day, time, weight, and where it comes from.
+/// One weighing: day, time, weight, and where it comes from. An ignored
+/// weighing shows greyed out.
 class ProgressWeighingRow extends StatelessWidget {
   /// Creates the row of [weighing], dated against [currentYear].
-  const new({required this.weighing, required this.currentYear, super.key});
+  const new({
+    required this.weighing,
+    required this.currentYear,
+    required this.onTap,
+    super.key,
+  });
+
+  /// Stable key of the row of [weighing].
+  static ValueKey<String> rowKey(ProgressWeighing weighing) => ValueKey<String>(
+    'progress-weighing-${weighing.entry?.storageId ?? ''}'
+    '${weighing.sample?.recordedAt.toUtc().toIso8601String() ?? ''}'
+    '-${weighing.weightKg}',
+  );
 
   /// The weighing.
   final ProgressWeighing weighing;
 
   /// The year of today; other years show in the date.
   final int currentYear;
+
+  /// Opens the sheet of the weighing.
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +105,7 @@ class ProgressWeighingRow extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final muted = FoodLabelColors.of(context).muted;
     final at = weighing.at;
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         spacing: AppSpacing.sm,
@@ -129,6 +147,15 @@ class ProgressWeighingRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+    return AppInkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
+        child: weighing.isIgnored
+            ? Opacity(opacity: AppOpacities.ignoredWeighing, child: row)
+            : row,
       ),
     );
   }
