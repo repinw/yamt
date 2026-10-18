@@ -109,7 +109,7 @@ class _WeightEntryDialogContentState extends State<_WeightEntryDialogContent> {
       content: TextField(
         key: widget.keys.fieldKey,
         controller: _controller,
-        keyboardType: _weightKeyboardType,
+        keyboardType: weightKeyboardType,
         textInputAction: TextInputAction.done,
         autocorrect: false,
         enableSuggestions: false,
@@ -136,27 +136,31 @@ class _WeightEntryDialogContentState extends State<_WeightEntryDialogContent> {
 
   void _save() {
     final labels = widget.labels;
-    final rawWeight = _controller.text.trim().replaceAll(',', '.');
-    if (rawWeight.isEmpty) {
+    final text = _controller.text;
+    final weightKg = parseWeightKg(text);
+    if (weightKg == null) {
       setState(() {
-        _errorText = labels.emptyErrorText;
+        _errorText = text.trim().isEmpty
+            ? labels.emptyErrorText
+            : labels.invalidErrorText;
       });
       return;
     }
 
-    final parsedWeight = double.tryParse(rawWeight);
-    if (parsedWeight == null || parsedWeight <= 0) {
-      setState(() {
-        _errorText = labels.invalidErrorText;
-      });
-      return;
-    }
-
-    Navigator.of(context).pop(parsedWeight);
+    Navigator.of(context).pop(weightKg);
   }
 }
 
-TextInputType get _weightKeyboardType {
+/// The weight typed as [text], with a comma or a dot, or `null` when it is
+/// empty or no positive number.
+double? parseWeightKg(String text) {
+  final weightKg = double.tryParse(text.trim().replaceAll(',', '.'));
+  return weightKg != null && weightKg > 0 ? weightKg : null;
+}
+
+/// The keyboard of a weight field: the text keyboard on iOS, the decimal
+/// one elsewhere.
+TextInputType get weightKeyboardType {
   if (defaultTargetPlatform == TargetPlatform.iOS) {
     return TextInputType.text;
   }

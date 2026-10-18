@@ -30,7 +30,7 @@ enum ProgressWeighingSource {
   scale,
 }
 
-/// One weighing of the list.
+/// One weighing of the list, from a manual [entry] or a Health [sample].
 @immutable
 class ProgressWeighing {
   /// Creates a weighing.
@@ -39,6 +39,8 @@ class ProgressWeighing {
     required this.at,
     required this.weightKg,
     required this.source,
+    this.entry,
+    this.sample,
   });
 
   /// The local day it counts for.
@@ -52,6 +54,15 @@ class ProgressWeighing {
 
   /// Where it comes from.
   final ProgressWeighingSource source;
+
+  /// The manual entry it stands for, or `null` for a Health weighing.
+  final ManualHealthWeightEntry? entry;
+
+  /// The Health sample it stands for, or `null` for a manual entry.
+  final HealthWeightSample? sample;
+
+  /// Whether the user left it out of every count.
+  bool get isIgnored => sample?.isIgnored ?? false;
 }
 
 /// The weighings of one 7-day run, newest first.
@@ -118,6 +129,7 @@ class ProgressWeightList {
                   at: entry.recordedAt,
                   weightKg: entry.weightKg,
                   source: ProgressWeighingSource.manual,
+                  entry: entry,
                 ),
               for (final sample in healthSamples)
                 if (sample.recordedAt.toLocal() case final at)
@@ -128,6 +140,7 @@ class ProgressWeightList {
                     source: sample.isFromThisApp
                         ? ProgressWeighingSource.manual
                         : ProgressWeighingSource.scale,
+                    sample: sample,
                   ),
             ]
             .where((w) => !w.day.isBefore(start) && !w.day.isAfter(today))
@@ -207,6 +220,13 @@ class ProgressWeightList {
 
   /// The runs with weighings, newest first.
   final List<ProgressWeightRun> runs;
+
+  /// The weighings that the user left out of every count.
+  List<ProgressWeighing> get ignoredWeighings => [
+    for (final run in runs)
+      for (final weighing in run.weighings)
+        if (weighing.isIgnored) weighing,
+  ];
 
   /// The change of the trend weight since the first trend day of the range.
   double? get changeKg {

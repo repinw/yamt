@@ -4054,23 +4054,11 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get diaryWeightSaveAction;
 
-  /// No description provided for @diaryWeightClearAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear override'**
-  String get diaryWeightClearAction;
-
   /// No description provided for @diaryWeightSaveFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not save weight.'**
   String get diaryWeightSaveFailed;
-
-  /// No description provided for @diaryWeightClearFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not clear manual weight.'**
-  String get diaryWeightClearFailed;
 
   /// No description provided for @caloriesRemoveEntryAction.
   ///
@@ -11467,6 +11455,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add to list'**
   String get shoppingPlanNeedsDialogAdd;
+
+  /// Edit weight shown in the weights list.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit weight'**
+  String get progressWeighingEditTitle;
+
+  /// Label for the day field in the weight edit sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get progressWeighingDayLabel;
+
+  /// Label for the time field in the weight edit sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get progressWeighingTimeLabel;
+
+  /// Button to delete a weight entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get progressWeighingDelete;
+
+  /// Button to ignore a weight so it no longer counts.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore'**
+  String get progressWeighingIgnore;
+
+  /// Button to count a previously ignored weight again.
+  ///
+  /// In en, this message translates to:
+  /// **'Count again'**
+  String get progressWeighingCount;
+
+  /// Button to open the weight entry in the Health app.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Health'**
+  String get progressWeighingOpenHealth;
+
+  /// Note shown when a weight was saved to Health by another device and can only be changed there.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to Health on another device. You can change it only there.'**
+  String get progressWeighingOtherDevice;
+
+  /// Error shown when deleting a weight fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the weight.'**
+  String get progressWeighingDeleteFailed;
+
+  /// Error shown when ignoring or counting a weight fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the weight.'**
+  String get progressWeighingIgnoreFailed;
+
+  /// Error shown when the Health app cannot be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open Health.'**
+  String get progressWeighingOpenHealthFailed;
+
+  /// Error shown when weights cannot be read from Health.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read Health.'**
+  String get progressWeighingHealthReadFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
+import 'package:yamt/features/progress/domain/progress_weight_list.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_axis_labels.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_day_chart.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -15,6 +16,7 @@ class ProgressWeightChart extends StatelessWidget {
     required this.trend,
     required this.goalStarts,
     this.targetWeightKg,
+    this.ignored = const [],
     super.key,
   });
 
@@ -26,6 +28,9 @@ class ProgressWeightChart extends StatelessWidget {
 
   /// The goal weight, drawn as a dashed line.
   final double? targetWeightKg;
+
+  /// Weighings the user left out of every count, drawn hollow.
+  final List<ProgressWeighing> ignored;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +47,9 @@ class ProgressWeightChart extends StatelessWidget {
               (day: day.day, dot: day.weightKg, line: day.trendWeightKg),
           ],
           minRange: _minRangeKg,
+          hollowDots: [
+            for (final weighing in ignored) (weighing.day, weighing.weightKg),
+          ],
           goalStarts: [
             for (final start in goalStarts)
               (start.day, l10n.progressGoalMarker(start.number)),

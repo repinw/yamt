@@ -1282,9 +1282,7 @@
     }
   },
   "diaryWeightSaveAction": "Save",
-  "diaryWeightClearAction": "Clear override",
   "diaryWeightSaveFailed": "Could not save weight.",
-  "diaryWeightClearFailed": "Could not clear manual weight.",
   "caloriesRemoveEntryAction": "Remove entry",
   "caloriesRemoveEntryDialogTitle": "Remove entry",
   "caloriesRemoveEntryDialogMessage": "Would you like to return this food to the inventory?",
@@ -4242,5 +4240,53 @@
   },
   "shoppingPlanNeedsDialogMessage": "Put them on the shopping list?",
   "shoppingPlanNeedsDialogSkip": "Not now",
-  "shoppingPlanNeedsDialogAdd": "Add to list"
+  "shoppingPlanNeedsDialogAdd": "Add to list",
+  "progressWeighingEditTitle": "Edit weight",
+  "@progressWeighingEditTitle": {
+    "description": "Edit weight shown in the weights list."
+  },
+  "progressWeighingDayLabel": "Day",
+  "@progressWeighingDayLabel": {
+    "description": "Label for the day field in the weight edit sheet."
+  },
+  "progressWeighingTimeLabel": "Time",
+  "@progressWeighingTimeLabel": {
+    "description": "Label for the time field in the weight edit sheet."
+  },
+  "progressWeighingDelete": "Delete",
+  "@progressWeighingDelete": {
+    "description": "Button to delete a weight entry."
+  },
+  "progressWeighingIgnore": "Ignore",
+  "@progressWeighingIgnore": {
+    "description": "Button to ignore a weight so it no longer counts."
+  },
+  "progressWeighingCount": "Count again",
+  "@progressWeighingCount": {
+    "description": "Button to count a previously ignored weight again."
+  },
+  "progressWeighingOpenHealth": "Open in Health",
+  "@progressWeighingOpenHealth": {
+    "description": "Button to open the weight entry in the Health app."
+  },
+  "progressWeighingOtherDevice": "Saved to Health on another device. You can change it only there.",
+  "@progressWeighingOtherDevice": {
+    "description": "Note shown when a weight was saved to Health by another device and can only be changed there."
+  },
+  "progressWeighingDeleteFailed": "Could not delete the weight.",
+  "@progressWeighingDeleteFailed": {
+    "description": "Error shown when deleting a weight fails."
+  },
+  "progressWeighingIgnoreFailed": "Could not change the weight.",
+  "@progressWeighingIgnoreFailed": {
+    "description": "Error shown when ignoring or counting a weight fails."
+  },
+  "progressWeighingOpenHealthFailed": "Could not open Health.",
+  "@progressWeighingOpenHealthFailed": {
+    "description": "Error shown when the Health app cannot be opened."
+  },
+  "progressWeighingHealthReadFailed": "Could not read Health.",
+  "@progressWeighingHealthReadFailed": {
+    "description": "Error shown when weights cannot be read from Health."
+  }
 }

@@ -61,6 +61,7 @@ class ProgressWeightListSummary extends StatelessWidget {
             trend: trend,
             goalStarts: list.goalStarts,
             targetWeightKg: list.targetWeightKg,
+            ignored: list.ignoredWeighings,
           ),
         ],
       ],
