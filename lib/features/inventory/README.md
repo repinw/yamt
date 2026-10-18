@@ -137,6 +137,11 @@ already documented as a reusable presentation surface.
 - `presentation/inventory_combined_eat_flow.dart`: `InventoryCombinedEatFlow.eat`
   logs a stock item together with other stock items as one combined calorie
   entry, written in one batch with every stock change.
+- `presentation/inventory_template_create_flow.dart`:
+  `InventoryTemplateCreateFlow.create` opens the Vorrat in selection mode for
+  "Neue Vorlage" in the Kochbuch, asks for the name, and saves the picked
+  foods with all of their stock as a cookbook template; the Vorrat stays as
+  it is.
 - `presentation/prepared_meal_detail_flow.dart`: `PreparedMealDetailFlow.open`
   opens the detail page of a Vorrat meal with its open and ignored rows, the
   x that takes a food out again, and the meal actions.

@@ -861,7 +861,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   rows are open) and "Weiter" opens the "Gekocht" page; the time becomes the
   day for a pot from an earlier day. A cooked meal with open rows says
   "Im Vorrat · N Zeilen offen" and "Füllen" opens its detail page, where the
-  rows are filled. "Neue Vorlage" opens the Vorrat tab for now.
+  rows are filled. "Neue Vorlage" opens the Vorrat in selection mode (foods
+  with a full label only); after "Übernehmen" a sheet asks for the name
+  (the picked names to start with), and the foods with all of their stock
+  become a Vorlage, with "Rückgängig". The Vorrat stays as it is; closing
+  either step saves nothing.
   A Vorlage opens its template detail.
 - A recipe opens its recipe page: the recipe photo with its source and name
   over it, the portions (stepper, "Original für N"), the ingredients sized

@@ -2518,6 +2518,24 @@ abstract class AppLocalizations {
   /// **'Save as template'**
   String get preparedMealSaveTemplateAction;
 
+  /// No description provided for @preparedMealTemplateNameSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get preparedMealTemplateNameSave;
+
+  /// No description provided for @preparedMealTemplateNoFoods.
+  ///
+  /// In en, this message translates to:
+  /// **'No food in your stock has an amount left and full nutrition values.'**
+  String get preparedMealTemplateNoFoods;
+
+  /// No description provided for @preparedMealTemplateCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the template.'**
+  String get preparedMealTemplateCreateFailed;
+
   /// No description provided for @preparedMealTemplateSavedMessage.
   ///
   /// In en, this message translates to:

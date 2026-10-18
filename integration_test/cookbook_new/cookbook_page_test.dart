@@ -25,14 +25,21 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_combine_pick_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_template_name_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/helpers/fake_prepared_meal_template_repository.dart';
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 import '../../test/support/prepared_meal_test_data.dart';
 
@@ -50,6 +57,7 @@ Widget _app({
   required FakePreparedMealTemplateRepository templates,
   required List<PreparedMeal> meals,
   FakePlannedEntryRepository? plans,
+  _Inventory? inventory,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -94,6 +102,9 @@ Widget _app({
       closedDayRepositoryProvider.overrideWithValue(
         ClosedDayRepository(MemoryAppPreferences(), 'user-1'),
       ),
+      inventoryItemRepositoryProvider.overrideWithValue(
+        inventory ?? _Inventory(const []),
+      ),
       inventoryQuickEatMealsProvider.overrideWith((ref) => Stream.value(meals)),
       inventoryQuickEatItemsProvider.overrideWith(
         (ref) => Stream.value([
@@ -122,6 +133,29 @@ Widget _app({
       routerConfig: router,
     ),
   );
+}
+
+/// The stored Vorrat; counts its writes.
+class _Inventory with InventoryItemWholeListWrites {
+  new(this.items);
+
+  final List<InventoryItem> items;
+  int writes = 0;
+
+  @override
+  Stream<List<InventoryItem>> watchAll() => Stream.value(items);
+
+  @override
+  Future<List<InventoryItem>> readAll() async => items;
+
+  @override
+  Future<bool> replaceItems(List<InventoryItem> items) async {
+    writes += 1;
+    return true;
+  }
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) => replaceItems(items);
 }
 
 void main() {
@@ -259,21 +293,107 @@ void main() {
     expect(pasta.totalKcal, 0);
   });
 
-  testWidgets('sends a new template to the Vorrat', (tester) async {
+  testWidgets('saves foods picked from the Vorrat as a new template and '
+      'leaves the Vorrat as it is', (tester) async {
+    final templates = FakePreparedMealTemplateRepository();
+    final inventory = _Inventory([
+      labeledFoodTestData(
+        id: 'rice',
+        name: 'Rice',
+        grams: 500,
+        label: riceLabelTestData,
+      ),
+      labeledFoodTestData(
+        id: 'sauce',
+        name: 'Sauce',
+        grams: 300,
+        label: sauceLabelTestData,
+      ),
+      labeledFoodTestData(
+        id: 'apple',
+        name: 'Apple',
+        grams: 200,
+        label: const GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+          per100Kcal: 52,
+        ),
+      ),
+    ]);
+    await tester.pumpWidget(
+      _app(templates: templates, meals: [openMeal], inventory: inventory),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CookbookTemplateStrip.createKey));
+    await tester.pumpAndSettle();
+    // A food without a full label cannot be added up into a template.
+    expect(find.byKey(const ValueKey('combine_pick_row_apple')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('combine_pick_row_rice')));
+    await tester.tap(find.byKey(const ValueKey('combine_pick_row_sauce')));
+    await tester.pump();
+    await tester.tap(find.byKey(InventoryCombinePickPage.confirmKey));
+    await tester.pumpAndSettle();
+
+    final field = find.byKey(PreparedMealTemplateNameSheet.fieldKey);
+    expect(tester.widget<TextField>(field).controller?.text, 'Rice, Sauce');
+    await tester.enterText(field, 'Rice bowl');
+    await tester.tap(find.byKey(PreparedMealTemplateNameSheet.saveKey));
+    await tester.pumpAndSettle();
+
+    final saved = templates.templates.single;
+    expect(saved.name, 'Rice bowl');
+    expect(
+      saved.components.map((food) => (food.inventoryItemId, food.usedAmount)),
+      [('rice', 500), ('sauce', 300)],
+    );
+    expect(inventory.writes, 0);
+    expect(find.byType(CookbookPage), findsOneWidget);
+    expect(find.text('Template saved.'), findsOneWidget);
+  });
+
+  testWidgets('without a fitting food the Vorrat says so', (tester) async {
     await tester.pumpWidget(
       _app(templates: FakePreparedMealTemplateRepository(), meals: [openMeal]),
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('No recipes yet. Add one from a link or get an AI idea.'),
-      findsOneWidget,
-    );
-
     await tester.tap(find.byKey(CookbookTemplateStrip.createKey));
     await tester.pumpAndSettle();
 
-    expect(find.text('Vorrat page'), findsOneWidget);
+    final hint = tester.widget<Text>(
+      find.byKey(InventoryCombinePickPage.emptyKey),
+    );
+    expect(
+      hint.data,
+      'No food in your stock has an amount left and full nutrition values.',
+    );
+  });
+
+  testWidgets('closing the Vorrat saves no template', (tester) async {
+    final templates = FakePreparedMealTemplateRepository();
+    await tester.pumpWidget(
+      _app(
+        templates: templates,
+        meals: [openMeal],
+        inventory: _Inventory([
+          labeledFoodTestData(
+            id: 'rice',
+            name: 'Rice',
+            grams: 500,
+            label: riceLabelTestData,
+          ),
+        ]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CookbookTemplateStrip.createKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+
+    expect(templates.templates, isEmpty);
+    expect(find.byType(CookbookPage), findsOneWidget);
   });
 
   testWidgets('continues a meal in the pot on the cooked page', (tester) async {

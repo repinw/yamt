@@ -1488,6 +1488,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealSaveTemplateAction => 'Als Rezept speichern';
 
   @override
+  String get preparedMealTemplateNameSave => 'Speichern';
+
+  @override
+  String get preparedMealTemplateNoFoods =>
+      'Kein Lebensmittel im Vorrat hat Bestand und vollständige Nährwerte.';
+
+  @override
+  String get preparedMealTemplateCreateFailed =>
+      'Das Rezept konnte nicht gespeichert werden.';
+
+  @override
   String get preparedMealTemplateSavedMessage => 'Rezept gespeichert.';
 
   @override

@@ -7,14 +7,19 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the inventory list to pick stock foods for a prepared meal.
 /// Returns the ticked items in list order, or null when the user closes it.
+/// [emptyMessage] replaces the hint shown without [candidates].
 Future<List<InventoryItem>?> showInventoryCombinePickPage(
   BuildContext context, {
   required List<InventoryItem> candidates,
+  String? emptyMessage,
 }) {
   return Navigator.of(context, rootNavigator: true).push<List<InventoryItem>>(
     MaterialPageRoute<List<InventoryItem>>(
       fullscreenDialog: true,
-      builder: (_) => InventoryCombinePickPage(candidates: candidates),
+      builder: (_) => InventoryCombinePickPage(
+        candidates: candidates,
+        emptyMessage: emptyMessage,
+      ),
     ),
   );
 }
@@ -22,7 +27,7 @@ Future<List<InventoryItem>?> showInventoryCombinePickPage(
 /// The inventory list in selection mode, showing only [candidates].
 class InventoryCombinePickPage extends StatefulWidget {
   /// Creates the page.
-  const new({required this.candidates, super.key});
+  const new({required this.candidates, this.emptyMessage, super.key});
 
   /// Key of the button that takes over the selection.
   static const confirmKey = Key('inventory_combine_pick_confirm');
@@ -32,6 +37,9 @@ class InventoryCombinePickPage extends StatefulWidget {
 
   /// Stock items that can be combined.
   final List<InventoryItem> candidates;
+
+  /// The hint shown without [candidates], instead of the meal's one.
+  final String? emptyMessage;
 
   @override
   State<InventoryCombinePickPage> createState() =>
@@ -64,7 +72,7 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: Center(
                 child: Text(
-                  l10n.eatPageCombineNoMoreStock,
+                  widget.emptyMessage ?? l10n.eatPageCombineNoMoreStock,
                   key: InventoryCombinePickPage.emptyKey,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
