@@ -612,7 +612,10 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Receipt Scanner And Review
 
-- Receipt capture from camera.
+- Receipt capture with the document scanner, up to 10 pages; the scanner also
+  offers a gallery photo to crop (Android with Google Play services: button in
+  the scanner; iOS: camera or gallery choice first, the photo shrunk to
+  2048 px). The file entry keeps a photo at full size.
 - Receipt upload from image or PDF.
 - Shared receipt intake from platform share intents.
 - Batch receipt processing with queued, processing, done, failed, and reviewed

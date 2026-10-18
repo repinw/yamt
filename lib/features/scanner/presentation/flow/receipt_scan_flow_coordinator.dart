@@ -254,7 +254,7 @@ class ReceiptScanFlowCoordinator {
   }
 
   static Future<List<String>?> _defaultCameraPicker() {
-    return scanDocumentPages(maxPages: _maxReceiptPages);
+    return scanDocumentPages(maxPages: _maxReceiptPages, allowGallery: true);
   }
 
   static Future<List<String>> _defaultFilesPicker() async {
