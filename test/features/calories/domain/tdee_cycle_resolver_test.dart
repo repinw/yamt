@@ -45,13 +45,12 @@ void main() {
       expect(cycles.length, 3);
       expect(cycles.first.isAllGoals, isTrue);
       expect(cycles[1].goalMode, CalorieGoalMode.maintain);
-      expect(cycles[1].isActive, isTrue);
+      expect(cycles[1].endDate, isNull);
       expect(cycles[2].goalMode, CalorieGoalMode.lose);
-      expect(cycles[2].isActive, isFalse);
       expect(cycles[2].endDate, DateTime(2025, 1, 31));
     });
 
-    test('derives estimates and preserves an explicit same-day end', () {
+    test('preserves an explicit same-day end', () {
       final profile = const CalorieCalculatorProfile.defaults().copyWith(
         weightKg: 80,
         targetWeightKg: 78,
@@ -67,26 +66,9 @@ void main() {
       final cycle = TdeeCycleResolver.resolveGoalCycles(settings)
           .firstWhere((cycle) => !cycle.isAllGoals);
 
-      expect(cycle.estimatedEndDate, DateTime(2026, 6, 29));
       expect(cycle.endDate, DateTime(2026, 6, 4));
       expect(cycle.startWeightKg, 80);
       expect(cycle.endWeightKg, 78.4);
-    });
-
-    test('uses optional maintain end date', () {
-      final profile = const CalorieCalculatorProfile.defaults().copyWith(
-        maintainUntil: DateTime(2026, 12, 31),
-      );
-      final settings = CalorieGoalSettings.single(
-        dailyKcalGoal: 2400,
-        calculatorProfile: profile,
-        effectiveDate: DateTime(2026, 6),
-      );
-
-      final cycle = TdeeCycleResolver.resolveGoalCycles(settings)
-          .firstWhere((cycle) => !cycle.isAllGoals);
-
-      expect(cycle.estimatedEndDate, DateTime(2026, 12, 31));
     });
   });
 }

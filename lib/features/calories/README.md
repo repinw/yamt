@@ -17,6 +17,8 @@ changes.
   the week overview, learned TDEE per day, weekly check-in data and actions,
   the entry mutation stream, and the calorie reactions to weight changes.
   Later features read and change this state.
+- The goal list: every goal with its dates, pace, start and end weight, and
+  reached date. Progress reads it for its goal menu and past goal card.
 - The closed day: today closed early by the signed-in user, saved only on
   this device, so
   tomorrow's week overview counts today as finished and gives tomorrow its
@@ -38,17 +40,14 @@ changes.
 - Health Connect access, permission state, or raw health weight data.
 - Diary page ordering, date navigation, or diary-level composition.
 - Activity card layout or activity-owned action orchestration.
-- Showing past goals: Progress reads `calorieGoalArchiveProvider` for its
-  "Ziel" scope menu; there is no goal archive page.
+- Showing past goals: Progress shows them in its "Ziel" scope menu; there is
+  no goal archive page.
 - Inventory item storage, prepared meal storage, or household scope state.
   Inventory saves, changes, and deletes the entries that took stock, so
   Calories does not depend on Inventory and has no port for it.
 
 ## Public UI
 
-- The TDEE analytics page (`AppRoutes.homeCaloriesAnalytics`) for expenditure,
-  the flux range corridor, and goal anticipation. It can preselect goal cycles
-  through `AppRoutes.homeCaloriesAnalyticsCyclesParam`.
 - `CalorieGoalReachedFlow` checks a recorded weight, shows the one-time
   reached-goal prompt, and optionally opens the new-goal sheet.
 - The new-goal flow opens the calculator sheet that ends the active goal and
@@ -117,8 +116,7 @@ The diary header includes a toggle (`🏋️ Trainingstag`, `🛋️ Ruhetag`, `
 #### Daily TDEE
 
 `DailyTdeeEstimator` (domain) estimates the TDEE every day from the first goal
-on. The TDEE analytics page, the Fortschritt TDEE chart, and the weekly
-check-in read it.
+on. The Fortschritt TDEE chart and the weekly check-in read it.
 
 ```text
 weight level  += 0.25 * (weigh-in - predicted level)    (Holt)

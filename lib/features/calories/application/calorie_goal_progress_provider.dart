@@ -4,7 +4,6 @@ import 'package:yamt/features/calories/application/tdee_analytics_provider.dart'
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 
 part 'calorie_goal_progress_provider.g.dart';
@@ -39,10 +38,7 @@ Future<CalorieGoalProgress?> calorieGoalProgress(
   }
   final analytics = await ref.watch(
     tdeeAnalyticsProvider(
-      TdeeAnalyticsQuery(
-        cycleIds: {cycle.id},
-        timeRange: TdeeAnalyticsTimeRange.all,
-      ),
+      TdeeAnalyticsQuery(cycleIds: {cycle.id}),
     ).future,
   );
 

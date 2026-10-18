@@ -1,5 +1,4 @@
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
@@ -8,9 +7,8 @@ import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 abstract final class TdeeCycleResolver {
   /// Resolves all individual goal cycles plus the combined "all goals" cycle.
   static List<TdeeAnalyticsGoalCycle> resolveGoalCycles(
-    CalorieGoalSettings settings, {
-    String locale = 'de',
-  }) {
+    CalorieGoalSettings settings,
+  ) {
     final rawHistory = settings.sortedGoalHistory;
     final anchorEntries = rawHistory
         .where((entry) => entry.hasGoal && !entry.isWeeklyCheckIn)
@@ -20,14 +18,12 @@ abstract final class TdeeCycleResolver {
       final now = DateTime.now();
       final defaultCycle = TdeeAnalyticsGoalCycle(
         id: 'default',
-        title: 'Aktuelles Ziel',
         startDate: normalizeDiaryDay(settings.updatedAt ?? now),
         goalMode: settings.calculatorProfile?.goalMode,
         startWeightKg: settings.calculatorProfile?.weightKg,
         targetWeightKg: settings.calculatorProfile?.targetWeightKg,
         endWeightKg: settings.calculatorProfile?.targetWeightKg,
         goalSpeedKgPerWeek: settings.calculatorProfile?.goalSpeedKgPerWeek,
-        initialGoalKcal: settings.dailyKcalGoal,
       );
       return [
         defaultCycle,
@@ -48,24 +44,15 @@ abstract final class TdeeCycleResolver {
               ? previousDiaryDay(nextEntry.effectiveCountingStartDate)
               : null);
 
-      final title = _formatCycleTitle(
-        mode: entry.calculatorProfile?.goalMode,
-        startDate: startDate,
-        isLatest: isLatest,
-      );
-
       cycles.add(
         TdeeAnalyticsGoalCycle(
           id: 'cycle_${entry.effectiveChangedAt.microsecondsSinceEpoch}_$i',
-          title: title,
           startDate: startDate,
           endDate: endDate,
           goalMode: entry.calculatorProfile?.goalMode,
           startWeightKg: entry.calculatorProfile?.weightKg,
           targetWeightKg: entry.calculatorProfile?.targetWeightKg,
           goalSpeedKgPerWeek: entry.calculatorProfile?.goalSpeedKgPerWeek,
-          initialGoalKcal: entry.dailyKcalGoal,
-          estimatedEndDate: _estimatedEndDate(entry),
           reachedDate: entry.reachedAt,
           endWeightKg:
               entry.endedWeightKg ??
@@ -82,51 +69,12 @@ abstract final class TdeeCycleResolver {
     return [allGoalsCycle, ...cycles.reversed];
   }
 
-  static DateTime? _estimatedEndDate(CalorieGoalHistoryEntry entry) {
-    final profile = entry.calculatorProfile;
-    if (profile == null) {
-      return null;
-    }
-    if (profile.goalMode == CalorieGoalMode.maintain) {
-      return profile.maintainUntil;
-    }
-    final target = profile.targetWeightKg;
-    final speed = profile.goalSpeedKgPerWeek.abs();
-    if (target == null || speed <= 0) {
-      return null;
-    }
-    final weeks = (target - profile.weightKg).abs() / speed;
-    return addDiaryDays(
-      normalizeDiaryDay(entry.effectiveCountingStartDate),
-      (weeks * DateTime.daysPerWeek).ceil(),
-    );
-  }
-
-  static String _formatCycleTitle({
-    required CalorieGoalMode? mode,
-    required DateTime startDate,
-    required bool isLatest,
-  }) {
-    final modeLabel = switch (mode) {
-      CalorieGoalMode.lose => 'Abnehmen',
-      CalorieGoalMode.gain => 'Zunehmen',
-      CalorieGoalMode.maintain => 'Halten',
-      null => 'Ziel',
-    };
-    final dayStr = startDate.day.toString().padLeft(2, '0');
-    final monthStr = startDate.month.toString().padLeft(2, '0');
-    final dateFormatted = '$dayStr.$monthStr.${startDate.year}';
-    final prefix = isLatest ? 'Aktuell: $modeLabel' : modeLabel;
-    return '$prefix ($dateFormatted)';
-  }
-
   static TdeeAnalyticsGoalCycle _buildAllGoalsCycle(
     List<TdeeAnalyticsGoalCycle> individualCycles,
   ) {
     final earliest = individualCycles.first.startDate;
     return TdeeAnalyticsGoalCycle(
       id: 'all',
-      title: 'Alle Ziele (Gesamt)',
       startDate: earliest,
       isAllGoals: true,
     );

@@ -9,7 +9,6 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/data_key_page.dart';
 import 'package:yamt/features/auth/presentation/recovery_key_page.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
-import 'package:yamt/features/calories/presentation/tdee_analytics_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
@@ -149,16 +148,6 @@ List<RouteBase> buildAppRoutes(Ref ref) {
         child: DiaryEntryDetailsPage(
           entryId: state.pathParameters['entryId'] ?? '',
         ),
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.homeCaloriesAnalytics,
-      builder: (context, state) => TdeeAnalyticsPage(
-        initialCycleIds: state
-            .uri
-            .queryParameters[AppRoutes.homeCaloriesAnalyticsCyclesParam]
-            ?.split(',')
-            .toSet(),
       ),
     ),
     GoRoute(

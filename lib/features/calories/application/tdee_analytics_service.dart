@@ -1,23 +1,17 @@
 import 'package:yamt/features/calories/application/daily_tdee_series.dart';
-import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/daily_tdee_estimator.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
-import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
-import 'package:yamt/features/calories/domain/tdee_anticipation_calculator.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 
-/// Business service that builds TDEE analytics data, trends, and projections.
+/// Business service that builds TDEE analytics data.
 abstract final class TdeeAnalyticsService {
   /// Resolves one continuous window spanning all selected goal cycles.
   static ({DateTime start, DateTime end}) resolveDateWindowForCycles({
     required List<TdeeAnalyticsGoalCycle> cycles,
-    required TdeeAnalyticsTimeRange timeRange,
     required DateTime today,
   }) {
     final normalizedToday = normalizeDiaryDay(today);
@@ -35,13 +29,6 @@ abstract final class TdeeAnalyticsService {
         end = candidateEnd;
       }
     }
-    final dayCount = timeRange.dayCount;
-    if (dayCount != null) {
-      final rangeStart = end.subtract(Duration(days: dayCount - 1));
-      if (rangeStart.isAfter(start)) {
-        start = rangeStart;
-      }
-    }
     return (start: normalizeDiaryDay(start), end: normalizeDiaryDay(end));
   }
 
@@ -51,7 +38,6 @@ abstract final class TdeeAnalyticsService {
     required DateTime endDate,
     required CalorieGoalSettings settings,
     required Map<String, DailyTdeeEstimate> tdeeByDay,
-    required Map<String, List<CalorieEntry>> entriesByDay,
     required DailyWeightSeries weights,
   }) {
     final days = buildCalorieCarryoverDateRange(
@@ -63,11 +49,6 @@ abstract final class TdeeAnalyticsService {
     for (final day in days) {
       final key = diaryDayKey(day);
       final estimate = tdeeByDay[key];
-      final entries = entriesByDay[key] ?? const <CalorieEntry>[];
-      final intake = entries.isEmpty
-          ? null
-          : entries.fold<double>(0, (sum, e) => sum + e.totalKcal);
-      final target = settings.goalKcalForDay(day);
 
       final baseTdee =
           estimate?.tdeeKcal ?? DailyTdeeSeries.startTdeeKcal(settings, day);
@@ -80,8 +61,6 @@ abstract final class TdeeAnalyticsService {
           totalTdeeKcal: measuredTdee != null && measuredTdee > 0
               ? measuredTdee
               : null,
-          targetKcal: target > 0 ? target : null,
-          intakeKcal: intake,
           scaleWeightKg: weights.rawByDay[key],
           trendWeightKg: weights.trendByDay[key],
           isHolding: estimate == null || estimate.isHolding,
@@ -89,132 +68,5 @@ abstract final class TdeeAnalyticsService {
       );
     }
     return List<TdeeAnalyticsPoint>.unmodifiable(points);
-  }
-
-  /// Computes summary metrics across the points.
-  ///
-  /// Weight numbers use the trend weight, not single weigh-ins. The weekly
-  /// rate uses only trend days inside the window, so it matches the chart.
-  static TdeeAnalyticsSummary buildSummary({
-    required List<TdeeAnalyticsPoint> points,
-    required DailyWeightSeries weights,
-  }) {
-    if (points.isEmpty) {
-      return const TdeeAnalyticsSummary(
-        averageTdeeKcal: 0,
-        tdeeDifferenceKcal: 0,
-      );
-    }
-
-    final tdeeValues = points
-        .map((p) => p.learnedBaseTdeeKcal)
-        .whereType<double>()
-        .toList(growable: false);
-
-    final avgTdee = tdeeValues.isEmpty
-        ? 0.0
-        : tdeeValues.reduce((a, b) => a + b) / tdeeValues.length;
-
-    final firstTdee = tdeeValues.firstOrNull ?? avgTdee;
-    final lastTdee = tdeeValues.lastOrNull ?? avgTdee;
-    final diffTdee = lastTdee - firstTdee;
-
-    final delta3 = _calculateDelta(tdeeValues, 3);
-    final delta7 = _calculateDelta(tdeeValues, 7);
-    final delta14 = _calculateDelta(tdeeValues, 14);
-
-    final intakeValues = points
-        .map((p) => p.intakeKcal)
-        .whereType<double>()
-        .toList(growable: false);
-    final avgIntake = intakeValues.isEmpty
-        ? null
-        : intakeValues.reduce((a, b) => a + b) / intakeValues.length;
-
-    final trendPoints = points
-        .where((p) => p.trendWeightKg != null)
-        .toList(growable: false);
-    final currentWeight = trendPoints.lastOrNull?.trendWeightKg;
-    final firstWeight = trendPoints.firstOrNull?.trendWeightKg;
-    // A change needs at least two days of trend weight.
-    final weightChange = trendPoints.length >= 2
-        ? currentWeight! - firstWeight!
-        : null;
-    final slope = trendPoints.isEmpty
-        ? null
-        : weights.slopeKgPerDay(
-            endDay: trendPoints.last.day,
-            notBefore: points.first.day,
-          );
-
-    return TdeeAnalyticsSummary(
-      averageTdeeKcal: avgTdee,
-      tdeeDifferenceKcal: diffTdee,
-      threeDayDeltaKcal: delta3,
-      sevenDayDeltaKcal: delta7,
-      fourteenDayDeltaKcal: delta14,
-      averageIntakeKcal: avgIntake,
-      currentWeightKg: currentWeight,
-      weightChangeKg: weightChange,
-      weeklyRateKg: slope == null ? null : slope * DateTime.daysPerWeek,
-    );
-  }
-
-  /// Computes anticipation projection from the recent trend weight.
-  static TdeeAnticipationProjection? buildAnticipation({
-    required TdeeAnalyticsGoalCycle cycle,
-    required DailyWeightSeries weights,
-    required DateTime windowStart,
-    required DateTime windowEnd,
-  }) {
-    final lastDay = weights.lastDay;
-    if (!cycle.isActive || cycle.targetWeightKg == null || lastDay == null) {
-      return null;
-    }
-
-    final endDay = lastDay.isAfter(windowEnd) ? windowEnd : lastDay;
-    final currentWeight = weights.trendFor(endDay);
-    final recentTrendPerDay = weights.slopeKgPerDay(
-      endDay: endDay,
-      notBefore: windowStart,
-    );
-    if (currentWeight == null || recentTrendPerDay == null) {
-      return null;
-    }
-
-    final projection = TdeeAnticipationCalculator.calculate(
-      currentWeightKg: currentWeight,
-      targetWeightKg: cycle.targetWeightKg,
-      goalMode: cycle.goalMode,
-      recentWeightTrendKgPerDay: recentTrendPerDay,
-      startDate: endDay,
-      plannedSpeedKgPerWeek: cycle.goalSpeedKgPerWeek,
-    );
-    final plannedSpeed = cycle.goalSpeedKgPerWeek;
-    if (projection?.isMovingAway != true ||
-        plannedSpeed == null ||
-        plannedSpeed <= 0) {
-      return projection;
-    }
-    final plannedDailyRate = plannedSpeed / DateTime.daysPerWeek;
-    return TdeeAnticipationCalculator.calculate(
-      currentWeightKg: currentWeight,
-      targetWeightKg: cycle.targetWeightKg,
-      goalMode: cycle.goalMode,
-      recentWeightTrendKgPerDay: cycle.goalMode == CalorieGoalMode.lose
-          ? -plannedDailyRate
-          : plannedDailyRate,
-      startDate: endDay,
-      plannedSpeedKgPerWeek: plannedSpeed,
-    );
-  }
-
-  static double? _calculateDelta(List<double> values, int daysBack) {
-    if (values.length <= daysBack) {
-      return null;
-    }
-    final latest = values.last;
-    final past = values[values.length - 1 - daysBack];
-    return latest - past;
   }
 }
