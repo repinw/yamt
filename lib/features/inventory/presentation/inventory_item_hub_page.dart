@@ -181,10 +181,14 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
           // The item card starts a meal; then its foods show here.
           if (picks.isNotEmpty &&
               InventoryCombinedEatService.canCombine(widget.item))
-            EatCombineSection(
-              hubItem: widget.item,
-              includesHubItem: includesHub,
-              onRemoveHubItem: () => setState(() => _hubRemoved = true),
+            // A running action blocks the add link, which closes the hub.
+            IgnorePointer(
+              ignoring: _isRunning,
+              child: EatCombineSection(
+                hubItem: widget.item,
+                includesHubItem: includesHub,
+                onRemoveHubItem: () => setState(() => _hubRemoved = true),
+              ),
             ),
           // Portions are set in the meal's "Gekocht" step.
           if (meal != null) EatMealTable(meal: meal),
@@ -254,7 +258,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     if (_isRunning || hubContext == null) {
       return;
     }
-    _isRunning = true;
+    setState(() => _isRunning = true);
     try {
       final changed = await widget.onAction(hubContext, action);
       if (!changed ||
@@ -264,7 +268,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       }
       Navigator.of(context).pop();
     } finally {
-      _isRunning = false;
+      if (mounted) setState(() => _isRunning = false);
     }
   }
 }

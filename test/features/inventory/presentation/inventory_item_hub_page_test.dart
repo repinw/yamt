@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -23,9 +25,9 @@ const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
 const _usedUpButtonKey = Key('inventory_item_hub_shopping_list_button');
 
 /// Chicken legs in grams: their bones are an inedible part.
-InventoryItem _chicken({int currentAmount = 1000}) {
+InventoryItem _chicken({int currentAmount = 1000, String id = 'item-chicken'}) {
   return InventoryItem.create(
-    id: 'item-chicken',
+    id: id,
     name: 'Chicken legs',
     entryDate: DateTime.utc(2026, 10, 2),
     storeName: 'Store',
@@ -64,6 +66,8 @@ final InventoryItem _eggs = InventoryItem.create(
 Widget _buildHarness({
   required InventoryItem item,
   ValueChanged<InventoryItemHubResult?>? onResult,
+  List<InventoryItem> initialPicks = const <InventoryItem>[],
+  Future<bool> Function()? onAction,
 }) {
   // Signed out: the hub's shopping list, stock and serving reads stay empty.
   final container = ProviderContainer(
@@ -94,7 +98,9 @@ Widget _buildHarness({
                         fullscreenDialog: true,
                         builder: (_) => InventoryItemHubPage(
                           item: item,
-                          onAction: (_, _) async => false,
+                          initialPicks: initialPicks,
+                          onAction: (_, _) =>
+                              onAction?.call() ?? Future.value(false),
                         ),
                       ),
                     );
@@ -113,8 +119,17 @@ Future<void> _openHub(
   WidgetTester tester,
   InventoryItem item, {
   ValueChanged<InventoryItemHubResult?>? onResult,
+  List<InventoryItem> initialPicks = const <InventoryItem>[],
+  Future<bool> Function()? onAction,
 }) async {
-  await tester.pumpWidget(_buildHarness(item: item, onResult: onResult));
+  await tester.pumpWidget(
+    _buildHarness(
+      item: item,
+      onResult: onResult,
+      initialPicks: initialPicks,
+      onAction: onAction,
+    ),
+  );
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(_openKey));
   await tester.pumpAndSettle();
@@ -198,6 +213,35 @@ void main() {
           .having((r) => r.includesItem, 'includesItem', isTrue)
           .having((r) => r.picks, 'picks', isEmpty),
     );
+  });
+
+  testWidgets('a running action blocks the add link of the meal (#313)', (
+    tester,
+  ) async {
+    InventoryItemHubResult? result;
+    final action = Completer<bool>();
+    await _openHub(
+      tester,
+      _chicken(),
+      initialPicks: [_chicken(id: 'item-chicken-2')],
+      onAction: () => action.future,
+      onResult: (value) => result = value,
+    );
+    expect(find.byKey(EatCombineSection.addKey), findsOneWidget);
+
+    await _tapKey(tester, const Key('eat_item_action_shopping_list'));
+    await tester.ensureVisible(find.byKey(EatCombineSection.addKey));
+    await tester.tap(find.byKey(EatCombineSection.addKey), warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InventoryItemHubPage), findsOneWidget);
+    expect(result, isNull);
+
+    action.complete(false);
+    await tester.pumpAndSettle();
+    await _tapKey(tester, EatCombineSection.addKey);
+
+    expect(result, isA<InventoryItemHubCombine>());
   });
 
   testWidgets('a food counted in pieces offers no inedible part', (
