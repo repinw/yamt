@@ -396,9 +396,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   - training days against rest days up to yesterday: days of each,
     and average kcal, protein, carbs, and fat.
 - The round button of the bar ("Erfassen") opens the Fortschritt actions:
-  - "Wiegen" opens the weight entry for today, filled with the last weigh-in
-    of the weight chart. Saving updates the weight trend and the goal right
-    away.
+  - "Wiegen" opens the weight entry for today, filled with the newest single
+    weighing (not the chart's last weigh-in). It adds a weighing; saving
+    updates the weight trend and the goal right away.
   - "Foto" opens a sheet for a progress photo: a pose (vorne, seitlich,
     hinten), a day (today or any earlier day, for photos from before the
     app), an optional weight, and "Kamera" or "Aus Galerie". The photo is
@@ -419,6 +419,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   today. Without a Health connection, a card "Waage automatisch übernehmen"
   offers "Health verbinden"; once dismissed, a heart icon in the header does
   the same.
+  A tap on a weighing opens its sheet. A weighing of your own (by hand, or
+  saved from the app to Health on this device) opens the edit sheet: weight,
+  day, time, and delete. Other weighings open an info sheet with "Ignorieren"
+  or "Wieder zählen" and, for other apps, "In Health öffnen". A weight the app
+  saved to Health on another device is view-only, with a hint. An ignored
+  weighing is greyed out in the list, shown as a hollow point in the chart,
+  and no longer counts for the trend, on all devices.
 - Progress photos are end-to-end encrypted with a key of their own, stored
   under a random name, never shared with the household, and deleted with a
   fresh start of the data key. Their location, device, and time metadata is
@@ -427,7 +434,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Activity And Weight
 
 - Activity and weight section used by the diary.
-- Manual and imported weight data.
+- Manual and imported weight data. The weight dialog only adds a weighing;
+  changing or deleting one happens in the weight list.
 - Weight prompt when today has no weight, on today's diary page. Dismissing it
   hides it for that day.
 - Health connection actions from diary-owned surfaces.
@@ -442,8 +450,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   without Health access. A weighing deleted in Health within the last 30
   days is deleted in the cloud on the next sync, once no other device still
   has it in its Health.
-- Manual weights. All weights of a day, manual and from Health, count as
-  their median.
+- Manual weights. Every weighing is its own entry; several a day are fine.
+  All weights of a day, manual and from Health, count as their median.
+  Saving to Health does not remove the manual entries of the day.
 - Weight, trend, and TDEE start at the first goal; earlier weighings do not
   settle the trend in advance.
 - Platform stubs for unsupported targets.
