@@ -3581,13 +3581,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsDiaryGoalSetGoalFirst => 'Zuerst Ziel setzen';
 
   @override
-  String get settingsNotificationsTitle => 'Benachrichtigungen';
-
-  @override
-  String get settingsNotificationsSubtitle =>
-      'Erinnerungen und Hinweise verwalten';
-
-  @override
   String get settingsPrivacyTitle => 'Datenschutz';
 
   @override
@@ -3998,6 +3991,17 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsHomeWidgetVerboseModeSubtitle =>
       'Mahlzeiten und Makros zeigen, nicht nur verbleibende kcal';
+
+  @override
+  String get settingsPlanShortageReminderTitle =>
+      'Erinnerung für fehlende Zutaten';
+
+  @override
+  String get settingsPlanShortageReminderSubtitle =>
+      'Am Vortag, wenn für geplantes Essen etwas fehlt';
+
+  @override
+  String get settingsPlanShortageReminderTimeTitle => 'Uhrzeit';
 
   @override
   String get commonOr => 'Oder';
@@ -7021,6 +7025,33 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shoppingPlanNeedsDialogAdd => 'Auf die Liste';
+
+  @override
+  String get shoppingPlanNeedsDialogNeverAsk => 'Nicht mehr fragen';
+
+  @override
+  String get planShortageReminderChannelName => 'Fehlende Zutaten';
+
+  @override
+  String planShortageReminderTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Für morgen fehlen $count Zutaten',
+      one: 'Für morgen fehlt 1 Zutat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get planShortageReminderBody => 'Auf die Einkaufsliste setzen?';
+
+  @override
+  String get planShortageReminderCheckFailed =>
+      'Die fehlenden Zutaten ließen sich nicht prüfen.';
+
+  @override
+  String get planShortageReminderAllThere => 'Für den Plan ist alles da.';
 
   @override
   String get progressWeighingEditTitle => 'Gewicht bearbeiten';

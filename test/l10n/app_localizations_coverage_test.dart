@@ -307,8 +307,6 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.caloriesBundlePortions('0.5', 2),
     l10n.homeSettingsActionContextPlaceholder,
     l10n.settingsLanguageTitle,
-    l10n.settingsNotificationsTitle,
-    l10n.settingsNotificationsSubtitle,
     l10n.settingsAccountTitle,
     l10n.accountPageNoSession,
     l10n.accountPageGuestTitle,

@@ -62,3 +62,12 @@ String localDayKey(DateTime day) {
       '${normalizedDay.month}-'
       '${normalizedDay.day}';
 }
+
+/// The day a [localDayKey] names; null when [key] is not one.
+DateTime? parseLocalDayKey(String key) {
+  final parts = key.split('-').map(int.tryParse).toList();
+  return switch (parts) {
+    [final year?, final month?, final day?] => DateTime(year, month, day),
+    _ => null,
+  };
+}
