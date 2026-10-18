@@ -20,7 +20,7 @@ enum IngredientCheckChoice {
 
 /// The cook's choices in the ingredient check.
 @immutable
-class IngredientCheckDraft {
+class IngredientCheckState {
   /// Creates the draft.
   const new({
     this.choices = const <String, IngredientCheckChoice>{},
@@ -73,7 +73,7 @@ class IngredientCheckDraft {
       restChoices[line.key] ?? IngredientCheckChoice.cart;
 
   /// Returns a copy with the given values.
-  IngredientCheckDraft copyWith({
+  IngredientCheckState copyWith({
     Map<String, IngredientCheckChoice>? choices,
     Map<String, IngredientCheckChoice>? restChoices,
     Map<String, String>? haveItems,
@@ -82,7 +82,7 @@ class IngredientCheckDraft {
     RecipeEdits? edits,
     bool? saveEdits,
     bool? isSaving,
-  }) => IngredientCheckDraft(
+  }) => IngredientCheckState(
     choices: choices ?? this.choices,
     restChoices: restChoices ?? this.restChoices,
     haveItems: haveItems ?? this.haveItems,

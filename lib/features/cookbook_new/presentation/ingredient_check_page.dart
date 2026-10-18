@@ -9,7 +9,7 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_controller.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_draft.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_state.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_edit_list.dart';

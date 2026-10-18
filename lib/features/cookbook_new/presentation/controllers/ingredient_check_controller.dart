@@ -2,16 +2,14 @@ import 'dart:developer' show log;
 import 'dart:math' show max;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_draft.dart';
+import 'package:yamt/features/cookbook_new/application/ingredient_check_save_service.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_state.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_ingredient_texts.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_list_names_service.dart';
 
 part 'ingredient_check_controller.g.dart';
 
@@ -35,7 +33,7 @@ enum IngredientCheckFinish {
 @riverpod
 class IngredientCheckController extends _$IngredientCheckController {
   @override
-  IngredientCheckDraft build(String recipeId) => const IngredientCheckDraft();
+  IngredientCheckState build(String recipeId) => const IngredientCheckState();
 
   /// Sets what happens with the ingredient of the line [key], or with its
   /// missing part when [rest] is set.
@@ -160,7 +158,7 @@ class IngredientCheckController extends _$IngredientCheckController {
   /// Saves the Vorrat items and the ignored ingredients of [check] on the
   /// recipe, so the next check starts from them, and then puts what it
   /// lacks on the shopping list. The cook's changes go into the recipe when
-  /// [IngredientCheckDraft.saveEdits] is set, else the recipe page cooks
+  /// [IngredientCheckState.saveEdits] is set, else the recipe page cooks
   /// with them this time and takes the choices for added ingredients as
   /// its picks. An ingredient that does not come from the Vorrat this time
   /// gets no Vorrat item on the recipe page. After
@@ -171,9 +169,10 @@ class IngredientCheckController extends _$IngredientCheckController {
     if (state.isSaving) {
       return IngredientCheckFinish.busy;
     }
-    final templates = ref.read(preparedMealTemplateRepositoryProvider);
-    final shopping = ref.read(shoppingListNamesServiceProvider);
     final link = ref.keepAlive();
+    // Held for both writes, so the workflow and its stores stay alive.
+    final workflow = ref.listen(ingredientCheckSaveServiceProvider, (_, _) {});
+    final service = workflow.read();
     state = state.copyWith(isSaving: true);
     final draft = check.draft;
     final view = check.view;
@@ -226,49 +225,45 @@ class IngredientCheckController extends _$IngredientCheckController {
           }
       }
     }
-    var result = IngredientCheckFinish.recipeFailed;
     try {
-      final saved = await templates.save(
-        recipe.copyWith(
-          recipeIngredientAssignments: assignments,
-          ignoredRecipeIngredients: ignored,
-          updatedAt: ref.read(clockProvider)(),
-        ),
+      await service.save(
+        recipe: recipe,
+        assignments: assignments,
+        ignored: ignored,
+        onList: check.onList,
+        onRecipeSaved: () {
+          if (!ref.mounted) {
+            return;
+          }
+          // The saved recipe holds the changes now. Keys of added
+          // ingredients do not come back, so no pick finds another one.
+          final rest = keepEdits ? edits : RecipeEdits(nextId: edits.nextId);
+          state = state.copyWith(edits: rest);
+          final recipeController =
+              ref.read(recipeControllerProvider(recipe.id).notifier)
+                ..setEdits(rest)
+                ..forgetPicks(fromStock);
+          for (final MapEntry(:key, :value) in picks.entries) {
+            recipeController.pick(key, value);
+          }
+        },
       );
-      if (!saved) {
-        return result;
-      }
-      if (ref.mounted) {
-        // The saved recipe holds the changes now. Keys of added ingredients
-        // do not come back, so no pick finds another ingredient.
-        final rest = keepEdits ? edits : RecipeEdits(nextId: edits.nextId);
-        state = state.copyWith(edits: rest);
-        final recipeController =
-            ref.read(recipeControllerProvider(recipe.id).notifier)
-              ..setEdits(rest)
-              ..forgetPicks(fromStock);
-        for (final MapEntry(:key, :value) in picks.entries) {
-          recipeController.pick(key, value);
-        }
-      }
-      result = IngredientCheckFinish.listFailed;
-      final onList = check.onList;
-      if (onList.isNotEmpty) {
-        await shopping.addMissing(onList);
-      }
       return IngredientCheckFinish.done;
-    } on Object catch (error, stackTrace) {
+    } on IngredientCheckSaveFailure catch (failure, stackTrace) {
       log(
         'Failed to save the ingredient check.',
         name: 'IngredientCheckController',
-        error: error,
+        error: failure,
         stackTrace: stackTrace,
       );
-      return result;
+      return failure.recipeSaved
+          ? IngredientCheckFinish.listFailed
+          : IngredientCheckFinish.recipeFailed;
     } finally {
       if (ref.mounted) {
         state = state.copyWith(isSaving: false);
       }
+      workflow.close();
       link.close();
     }
   }

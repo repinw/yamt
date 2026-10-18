@@ -51,6 +51,7 @@ class IngredientCheckEditList extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final view = check.view;
     final lines = view.activeLines.toList();
+    final seen = <String, int>{};
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -58,13 +59,14 @@ class IngredientCheckEditList extends StatelessWidget {
           kicker: l10n.recipeCheckEditKicker,
           title: l10n.recipeCheckEditTitle,
         ),
-        for (final (index, line) in lines.indexed)
+        for (final line in lines)
           _EditRow(
             // A recipe can name the same ingredient twice.
-            occurrence: lines
-                .take(index)
-                .where((other) => other.key == line.key)
-                .length,
+            occurrence: seen.update(
+              line.key,
+              (count) => count + 1,
+              ifAbsent: () => 0,
+            ),
             line: line,
             onAmount: (amount) => onAmount(line, amount),
             onRemove: view.canRemove ? () => onRemove(line) : null,
