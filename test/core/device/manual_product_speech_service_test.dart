@@ -165,7 +165,13 @@ void main() {
     expect(failures, <VoiceSearchFailure>[VoiceSearchFailure.permissionDenied]);
   });
 
-  for (final message in <String>['error_speech_timeout', 'error_no_match']) {
+  for (final message in <String>[
+    'error_speech_timeout',
+    'error_no_match',
+    'error_client',
+    'error_retry',
+    'error_request_cancelled',
+  ]) {
     test('$message stops listening without a failure', () async {
       final speechToText = _FakeSpeechToText();
       final service = SpeechToTextVoiceSearchService(
@@ -188,19 +194,27 @@ void main() {
     });
   }
 
-  test('maps other permanent recognition errors to error', () async {
-    final speechToText = _FakeSpeechToText();
-    final service = SpeechToTextVoiceSearchService(speechToText: speechToText);
-    final failures = <VoiceSearchFailure>[];
+  for (final message in <String>[
+    'error_network',
+    'error_server',
+    'error_audio_error',
+  ]) {
+    test('maps $message to error', () async {
+      final speechToText = _FakeSpeechToText();
+      final service = SpeechToTextVoiceSearchService(
+        speechToText: speechToText,
+      );
+      final failures = <VoiceSearchFailure>[];
 
-    await service.startListening(
-      onResult: (_) {},
-      onListeningStateChanged: (_) {},
-      onError: failures.add,
-    );
+      await service.startListening(
+        onResult: (_) {},
+        onListeningStateChanged: (_) {},
+        onError: failures.add,
+      );
 
-    speechToText.emitError('error_audio');
+      speechToText.emitError(message);
 
-    expect(failures, <VoiceSearchFailure>[VoiceSearchFailure.error]);
-  });
+      expect(failures, <VoiceSearchFailure>[VoiceSearchFailure.error]);
+    });
+  }
 }
