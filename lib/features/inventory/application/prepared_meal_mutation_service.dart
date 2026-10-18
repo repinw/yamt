@@ -109,32 +109,6 @@ class PreparedMealMutationService {
             ),
   );
 
-  /// Creates meals from one template, split into storage containers.
-  Future<PreparedMealCreationResult> createPreparedMealsFromTemplateContainers({
-    required PreparedMeal template,
-    required int totalPortions,
-    required Map<String, List<String>> recipeIngredientAssignments,
-    required Map<String, RecipeIngredientAmountConversion>
-    recipeIngredientAmountConversions,
-    required List<PreparedMealContainerInput> containers,
-    required Map<String, String> sourceKeysByIngredient,
-    List<PreparedMealItemInput> additionalItems =
-        const <PreparedMealItemInput>[],
-  }) => _create(
-    (inventory) => PreparedMealCreation(writer: _writer)
-        .createPreparedMealsFromTemplateContainers(
-          template: template,
-          totalPortions: totalPortions,
-          recipeIngredientAssignments: recipeIngredientAssignments,
-          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-          inventoryRepository: inventory,
-          ingredientParser: _ingredientParser,
-          containers: containers,
-          sourceKeysByIngredient: sourceKeysByIngredient,
-          additionalItems: additionalItems,
-        ),
-  );
-
   /// Changes a meal's name, image, portions or ingredients. A food that
   /// [items] leaves out opens its row again; [deletedRows] leave the meal.
   Future<bool> updatePreparedMealDetails({

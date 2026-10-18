@@ -1,6 +1,4 @@
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_containers.dart';
-import 'package:yamt/features/inventory/application/'
     'prepared_meal_from_items.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_from_template.dart';
@@ -68,10 +66,6 @@ class PreparedMealCreation {
     recipeIngredientAmountConversions,
     required InventoryItemRepository inventoryRepository,
     required TemplateIngredientParser ingredientParser,
-    List<PreparedMealItemInput> additionalItems =
-        const <PreparedMealItemInput>[],
-    int? finalNetWeight,
-    Map<String, String> sourceKeysByIngredient = const <String, String>{},
   }) async {
     if (totalPortions < 1 || template.name.trim().isEmpty) {
       return const PreparedMealCreationResult.failure(
@@ -83,98 +77,20 @@ class PreparedMealCreation {
     final currentItems = await inventoryRepository.readAllForChange();
 
     try {
-      final creationResult = _templateMeal(
-        currentItems: currentItems,
-        template: template,
-        totalPortions: totalPortions,
-        recipeIngredientAssignments: recipeIngredientAssignments,
-        recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-        ingredientParser: ingredientParser,
-        sourceKeysByIngredient: sourceKeysByIngredient,
-        additionalItems: additionalItems,
-      );
-      final preparedMeal = finalNetWeight == null || finalNetWeight < 1
-          ? creationResult.preparedMeal
-          : creationResult.preparedMeal.copyWith(
-              finalNetWeight: finalNetWeight,
-            );
       return await _persistCreatedMeal(
         inventoryRepository: inventoryRepository,
         currentMeals: currentMeals,
         currentItems: currentItems,
-        creationResult: PreparedMealBuildResult(
-          nextItems: creationResult.nextItems,
-          preparedMeal: preparedMeal,
+        creationResult: buildPreparedMealCreationFromTemplateResult(
+          currentItems: currentItems,
+          preparedMealId: _writer.buildId(),
+          now: _writer.buildNow(),
+          template: template,
+          totalPortions: totalPortions,
+          recipeIngredientAssignments: recipeIngredientAssignments,
+          recipeIngredientAmountConversions: recipeIngredientAmountConversions,
+          ingredientParser: ingredientParser,
         ),
-      );
-    } on PreparedMealBuildException catch (error) {
-      return PreparedMealCreationResult.failure(error.reason);
-    }
-  }
-
-  /// Creates multiple prepared meals from one saved recipe template.
-  Future<PreparedMealCreationResult> createPreparedMealsFromTemplateContainers({
-    required PreparedMeal template,
-    required int totalPortions,
-    required Map<String, List<String>> recipeIngredientAssignments,
-    required Map<String, RecipeIngredientAmountConversion>
-    recipeIngredientAmountConversions,
-    required InventoryItemRepository inventoryRepository,
-    required TemplateIngredientParser ingredientParser,
-    required List<PreparedMealContainerInput> containers,
-    required Map<String, String> sourceKeysByIngredient,
-    List<PreparedMealItemInput> additionalItems =
-        const <PreparedMealItemInput>[],
-  }) async {
-    if (totalPortions < 1 ||
-        template.name.trim().isEmpty ||
-        containers.isEmpty) {
-      return const PreparedMealCreationResult.failure(
-        PreparedMealCreationFailureReason.invalidInput,
-      );
-    }
-    if (containers.any(hasInvalidContainerInput)) {
-      return const PreparedMealCreationResult.failure(
-        PreparedMealCreationFailureReason.invalidInput,
-      );
-    }
-
-    final currentMeals = await _writer.loadMeals();
-    final currentItems = await inventoryRepository.readAllForChange();
-
-    try {
-      final creationResult = _templateMeal(
-        currentItems: currentItems,
-        template: template,
-        totalPortions: totalPortions,
-        recipeIngredientAssignments: recipeIngredientAssignments,
-        recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-        ingredientParser: ingredientParser,
-        sourceKeysByIngredient: sourceKeysByIngredient,
-        additionalItems: additionalItems,
-      );
-
-      final preparedMeals = splitTemplateMealIntoContainers(
-        buildId: _writer.buildId,
-        creationResult: creationResult,
-        template: template,
-        recipeIngredientAssignments: recipeIngredientAssignments,
-        recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-        sourceKeysByIngredient: sourceKeysByIngredient,
-        containers: containers,
-      );
-      if (preparedMeals.isEmpty) {
-        return const PreparedMealCreationResult.failure(
-          PreparedMealCreationFailureReason.invalidInput,
-        );
-      }
-
-      return await _persistCreatedMeals(
-        inventoryRepository: inventoryRepository,
-        currentMeals: currentMeals,
-        currentItems: currentItems,
-        nextItems: creationResult.nextItems,
-        preparedMeals: preparedMeals,
       );
     } on PreparedMealBuildException catch (error) {
       return PreparedMealCreationResult.failure(error.reason);
@@ -187,28 +103,8 @@ class PreparedMealCreation {
     required List<InventoryItem> currentItems,
     required PreparedMealBuildResult creationResult,
   }) async {
-    return await _persistCreatedMeals(
-      inventoryRepository: inventoryRepository,
-      currentMeals: currentMeals,
-      currentItems: currentItems,
-      nextItems: creationResult.nextItems,
-      preparedMeals: <PreparedMeal>[creationResult.preparedMeal],
-    );
-  }
-
-  Future<PreparedMealCreationResult> _persistCreatedMeals({
-    required InventoryItemRepository inventoryRepository,
-    required List<PreparedMeal> currentMeals,
-    required List<InventoryItem> currentItems,
-    required List<InventoryItem> nextItems,
-    required List<PreparedMeal> preparedMeals,
-  }) async {
-    if (preparedMeals.isEmpty) {
-      return const PreparedMealCreationResult.failure(
-        PreparedMealCreationFailureReason.invalidInput,
-      );
-    }
-
+    final nextItems = creationResult.nextItems;
+    final preparedMeal = creationResult.preparedMeal;
     final inventorySaved = await inventoryRepository.saveChanges(
       previous: currentItems,
       next: nextItems,
@@ -219,16 +115,13 @@ class PreparedMealCreation {
       );
     }
 
-    final nextMeals = List<PreparedMeal>.from(currentMeals)
-      ..addAll(preparedMeals);
+    final nextMeals = [...currentMeals, preparedMeal];
     final mealsSaved = await _writer.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );
     if (mealsSaved) {
-      return PreparedMealCreationResult.successMany(
-        preparedMeals.map((meal) => meal.id).toList(growable: false),
-      );
+      return PreparedMealCreationResult.success(preparedMeal.id);
     }
 
     await _writer.restoreInventory(
@@ -238,43 +131,6 @@ class PreparedMealCreation {
     );
     return const PreparedMealCreationResult.failure(
       PreparedMealCreationFailureReason.mealSaveFailed,
-    );
-  }
-
-  /// Builds the meal of [template] from the Vorrat, with [additionalItems]
-  /// added on top.
-  PreparedMealBuildResult _templateMeal({
-    required List<InventoryItem> currentItems,
-    required PreparedMeal template,
-    required int totalPortions,
-    required Map<String, List<String>> recipeIngredientAssignments,
-    required Map<String, RecipeIngredientAmountConversion>
-    recipeIngredientAmountConversions,
-    required TemplateIngredientParser ingredientParser,
-    required Map<String, String> sourceKeysByIngredient,
-    required List<PreparedMealItemInput> additionalItems,
-  }) {
-    final creationResult = buildPreparedMealCreationFromTemplateResult(
-      currentItems: currentItems,
-      preparedMealId: _writer.buildId(),
-      now: _writer.buildNow(),
-      template: template,
-      totalPortions: totalPortions,
-      recipeIngredientAssignments: recipeIngredientAssignments,
-      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
-      ingredientParser: ingredientParser,
-      sourceKeysByIngredient: sourceKeysByIngredient,
-    );
-    if (additionalItems.isEmpty) {
-      return creationResult;
-    }
-    return appendItemsToTemplateMeal(
-      creationResult: creationResult,
-      additionalItems: additionalItems,
-      now: _writer.buildNow(),
-      buildId: _writer.buildId,
-      template: template,
-      totalPortions: totalPortions,
     );
   }
 }

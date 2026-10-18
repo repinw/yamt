@@ -21,7 +21,6 @@ import 'package:yamt/features/shoppinglist/application/'
 export 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart'
     show
-        PreparedMealContainerInput,
         PreparedMealCreationFailureReason,
         PreparedMealCreationResult,
         PreparedMealItemInput;

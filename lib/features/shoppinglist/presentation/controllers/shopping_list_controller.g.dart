@@ -38,7 +38,7 @@ final class ShoppingListControllerProvider
 }
 
 String _$shoppingListControllerHash() =>
-    r'51543d0d7391de684a78a7738b3bd18a53729144';
+    r'9f6725649370622dd76168ac98983d2c0304b58a';
 
 /// Owns realtime list state and serialized, optimistic mutations.
 

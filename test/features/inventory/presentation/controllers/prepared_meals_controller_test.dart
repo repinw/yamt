@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_reminder_plan_service.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
@@ -1153,117 +1152,6 @@ void main() {
       expect(reminders.mealIds, ['meal-1']);
     },
   );
-
-  test('createPreparedMealsFromTemplateContainers saves split meals', () async {
-    final inventoryRepository = _FakeInventoryItemRepository(
-      initialItems: [
-        _item(
-          id: 'pasta',
-          name: 'Pasta',
-          currentAmount: 200,
-          initialAmount: 200,
-        ),
-        _item(
-          id: 'sauce',
-          name: 'Sauce',
-          currentAmount: 100,
-          initialAmount: 100,
-        ),
-      ],
-    );
-    final preparedMealRepository = _FakePreparedMealRepository(
-      initialMeals: const <PreparedMeal>[],
-    );
-    final calorieLogRepository = FakeCalorieLogRepository();
-    final activityRepository = _FakeInventoryActivityEventRepository();
-    addTearDown(inventoryRepository.dispose);
-    addTearDown(preparedMealRepository.dispose);
-    addTearDown(calorieLogRepository.dispose);
-
-    final template = PreparedMeal(
-      id: 'template-1',
-      name: 'Spaghetti',
-      recipeIngredients: const <String>['100 g pasta', '50 g sauce'],
-      totalPortions: 4,
-      remainingPortions: 4,
-      totalKcal: 0,
-      totalProtein: 0,
-      totalCarbs: 0,
-      totalFat: 0,
-      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
-      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
-      components: const <PreparedMealComponent>[],
-    );
-    final container = ProviderContainer(
-      overrides: [
-        inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
-        preparedMealRepositoryProvider.overrideWithValue(
-          preparedMealRepository,
-        ),
-        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-        inventoryActivityActorProvider.overrideWithValue(_testActor),
-        inventoryActivityEventRepositoryProvider.overrideWithValue(
-          activityRepository,
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    final subscription = _keepControllerAlive(container);
-    addTearDown(subscription.close);
-
-    await container.read(preparedMealsControllerProvider.future);
-    final result = await container
-        .read(preparedMealMutationServiceProvider)
-        .createPreparedMealsFromTemplateContainers(
-          template: template,
-          totalPortions: 4,
-          recipeIngredientAssignments: const <String, List<String>>{
-            '100 g pasta': <String>['pasta'],
-            '50 g sauce': <String>['sauce'],
-          },
-          recipeIngredientAmountConversions:
-              const <String, RecipeIngredientAmountConversion>{},
-          sourceKeysByIngredient: const <String, String>{
-            '100 g pasta': 'row-pasta',
-            '50 g sauce': 'row-sauce',
-          },
-          containers: const <PreparedMealContainerInput>[
-            PreparedMealContainerInput(
-              id: 'container-1',
-              label: 'Pasta',
-              totalPortions: 4,
-              finalNetWeight: 700,
-              sourceKeys: <String>['row-pasta'],
-            ),
-            PreparedMealContainerInput(
-              id: 'container-2',
-              label: 'Sauce',
-              totalPortions: 4,
-              finalNetWeight: 300,
-              sourceKeys: <String>['row-sauce'],
-            ),
-          ],
-        );
-
-    expect(result.isSuccess, isTrue);
-    expect(result.preparedMealIds, hasLength(2));
-    expect(inventoryRepository.savedItems[0].currentAmount, 100);
-    expect(inventoryRepository.savedItems[1].currentAmount, 50);
-    expect(preparedMealRepository.savedMeals, hasLength(2));
-    expect(preparedMealRepository.savedMeals[0].name, 'Spaghetti - Pasta');
-    expect(preparedMealRepository.savedMeals[0].finalNetWeight, 700);
-    expect(preparedMealRepository.savedMeals[1].name, 'Spaghetti - Sauce');
-    expect(preparedMealRepository.savedMeals[1].finalNetWeight, 300);
-    expect(
-      activityRepository.events.map(
-        (event) => (event.type, event.itemId, event.amount),
-      ),
-      <(InventoryActivityEventType, String, int)>[
-        (InventoryActivityEventType.itemUsedInPreparedMeal, 'pasta', 100),
-        (InventoryActivityEventType.itemUsedInPreparedMeal, 'sauce', 50),
-      ],
-    );
-  });
 
   group('putPendingIngredientOnShoppingList', () {
     Future<

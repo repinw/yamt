@@ -79,26 +79,7 @@ class ShoppingListController extends _$ShoppingListController {
     return _mutateWithRevert((items) => _add(items, input));
   }
 
-  /// Adds several names in one persisted mutation and returns the change for
-  /// [revert], or null when no name is valid or the save fails.
-  Future<ShoppingListRevert?> addItemsByNames(Iterable<String> names) {
-    final inputs = names
-        .map(
-          (name) => _addition.parseAddItemInput(
-            name: name,
-            quantity: 1,
-            estimatedUnitPrice: 0,
-          ),
-        )
-        .whereType<ShoppingListAddInput>()
-        .toList();
-    if (inputs.isEmpty) return Future.value();
-    return _mutateWithRevert(
-      (items) => inputs.fold<List<ShoppingListItem>>(items, _add),
-    );
-  }
-
-  /// Undoes a change recorded by [addItemWithRevert] or [addItemsByNames].
+  /// Undoes a change recorded by [addItemWithRevert].
   Future<bool> revert(ShoppingListRevert revert) =>
       _mutate((items) => applyShoppingListRevert(items, revert));
 
@@ -126,26 +107,6 @@ class ShoppingListController extends _$ShoppingListController {
     id,
     (item) => item.copyWith(quantity: (item.quantity - 1).clamp(0, 999999)),
   );
-
-  /// Resolves a set of shopping entries after purchasing or cooking.
-  Future<bool> resolveItemsByIds(Iterable<String> ids) {
-    final selected = ids.map((id) => id.trim()).toSet();
-    return _mutate(
-      (items) => removeShoppingItems(
-        [
-          for (final item in items)
-            if (selected.contains(item.id) && item.quantity > 1)
-              item.copyWith(quantity: item.quantity - 1)
-            else
-              item,
-        ],
-        (item) =>
-            selected.contains(item.id) &&
-            items.firstWhere((original) => original.id == item.id).quantity <=
-                1,
-      ),
-    );
-  }
 
   /// Clears completed entries without deleting saved products.
   Future<bool> clearCrossedOffItems() => _mutate(
