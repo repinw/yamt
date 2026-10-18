@@ -17,6 +17,11 @@ class ShoppingListNamesService {
   static const _addition = ShoppingListAddition();
   static const _uuid = Uuid();
 
+  /// The products on the list now, read fresh, so it works also when no
+  /// page shows the list.
+  Future<Set<ShoppingListItemMatchKey>> listedKeys() async =>
+      computeActiveShoppingListItemKeys(await _repository.readAll());
+
   /// Adds the [names] that are not on the list yet, one of each, in one
   /// write. Throws when the list cannot be read or written, so a failed
   /// read never replaces the list.

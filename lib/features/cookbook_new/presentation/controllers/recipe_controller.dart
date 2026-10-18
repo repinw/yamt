@@ -15,9 +15,11 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_view_
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/application/inventory_shopping_suggestions.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_cooking_service.dart';
 import 'package:yamt/features/inventory/application/template_plan_entry.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
 
 part 'recipe_controller.g.dart';
 
@@ -216,6 +218,25 @@ class RecipeController extends _$RecipeController {
         stackTrace: stackTrace,
       );
       return null;
+    } finally {
+      link.close();
+    }
+  }
+
+  /// The missing ingredients of the saved [plan] that the shopping list does
+  /// not hold yet; none when they cannot be told.
+  Future<List<ShoppingPlanNeed>> missingIngredients(CalorieEntry plan) async {
+    final link = ref.keepAlive();
+    try {
+      return await missingPlanIngredients(ref, plan);
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to find the missing ingredients of the plan.',
+        name: 'RecipeController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const [];
     } finally {
       link.close();
     }

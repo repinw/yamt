@@ -46,9 +46,11 @@ import 'package:yamt/features/kitchen_utensils/data/'
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_plan_needs_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/features/shoppinglist/support/fake_shopping_list_repository.dart';
 import '../../test/helpers/fake_prepared_meal_template_repository.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/helpers/memory_app_preferences.dart';
@@ -290,6 +292,78 @@ void main() {
     expect(plans.plans, isEmpty);
   });
 
+  testWidgets('offers the ingredients the Vorrat lacks for the list', (
+    tester,
+  ) async {
+    final shopping = FakeShoppingListRepository();
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([
+          _item('mince', 'Hackfleisch'),
+          // One portion of two needs 100 g of the carrots.
+          _item('carrots', 'Karotten', currentAmount: 40),
+        ]),
+        shopping: shopping,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(RecipeHero.planKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    // Only the carrots are short.
+    expect(find.byKey(ShoppingPlanNeedsDialog.needKey(0)), findsOneWidget);
+    expect(find.byKey(ShoppingPlanNeedsDialog.needKey(1)), findsNothing);
+    await tester.tap(find.byKey(ShoppingPlanNeedsDialog.addKey));
+    await tester.pumpAndSettle();
+
+    expect(shopping.savedItems.single.name, 'Karotten');
+  });
+
+  testWidgets('does not offer what the closed shopping list holds', (
+    tester,
+  ) async {
+    final shopping = FakeShoppingListRepository(
+      initialItems: const [
+        ShoppingListItem(
+          id: 'carrots',
+          name: 'Karotten',
+          normalizedName: 'karotten',
+          normalizedBrand: '',
+          quantity: 1,
+          estimatedUnitPrice: 0,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([
+          _item('mince', 'Hackfleisch'),
+          _item('carrots', 'Karotten', currentAmount: 40),
+        ]),
+        shopping: shopping,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(RecipeHero.planKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    // The carrots are on the list already, so nothing is asked.
+    expect(find.byType(ShoppingPlanNeedsDialog), findsNothing);
+    expect(shopping.savedItems, isEmpty);
+  });
+
   testWidgets('a recipe that is gone says so', (tester) async {
     await tester.pumpWidget(
       _app(
@@ -307,16 +381,17 @@ void main() {
   });
 }
 
-InventoryItem _item(String id, String name) => InventoryItem.create(
-  id: id,
-  name: name,
-  entryDate: DateTime.utc(2026, 10, 9),
-  storeName: 'Store',
-  quantity: 1,
-  initialAmount: 2000,
-  currentAmount: 2000,
-  amountUnit: InventoryAmountUnit.gram,
-);
+InventoryItem _item(String id, String name, {int currentAmount = 2000}) =>
+    InventoryItem.create(
+      id: id,
+      name: name,
+      entryDate: DateTime.utc(2026, 10, 9),
+      storeName: 'Store',
+      quantity: 1,
+      initialAmount: 2000,
+      currentAmount: currentAmount,
+      amountUnit: InventoryAmountUnit.gram,
+    );
 
 final _recipe = PreparedMeal(
   id: 'stew',
@@ -340,6 +415,7 @@ Widget _app({
   required _FakeInventoryRepository inventory,
   FakePreparedMealTemplateRepository? templates,
   FakePlannedEntryRepository? plans,
+  ShoppingListRepository? shopping,
   List<bool>? screenOn,
   VoiceSearchService? voice,
 }) {
@@ -389,7 +465,7 @@ Widget _app({
       ),
       inventoryActivityActorProvider.overrideWithValue(null),
       shoppingListRepositoryProvider.overrideWithValue(
-        _FakeShoppingListRepository(),
+        shopping ?? _FakeShoppingListRepository(),
       ),
       voiceSearchServiceProvider.overrideWithValue(
         voice ?? _FakeVoiceService(const []),

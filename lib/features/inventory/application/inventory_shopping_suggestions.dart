@@ -1,10 +1,12 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_shopping.dart';
 import 'package:yamt/features/inventory/domain/inventory_replenishment.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_names_service.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_plan_needs.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
@@ -53,4 +55,27 @@ Future<List<ShoppingPlanNeedGroup>> inventoryShoppingPlanNeedGroups(
     inventoryShoppingPlanNeeds(plans, demand, items),
     listed,
   );
+}
+
+/// The missing ingredients of the saved recipe [plan] that the shopping list
+/// does not hold yet, to offer them after planning.
+Future<List<ShoppingPlanNeed>> missingPlanIngredients(
+  Ref ref,
+  CalorieEntry plan,
+) async {
+  final demand = ref.listen(openPlanDemandProvider.future, (_, _) {});
+  final items = ref.listen(inventoryQuickEatItemsProvider.future, (_, _) {});
+  try {
+    return groupShoppingPlanNeeds(
+      inventoryShoppingPlanNeeds(
+        [plan],
+        await demand.read(),
+        await items.read(),
+      ),
+      await ref.read(shoppingListNamesServiceProvider).listedKeys(),
+    ).expand((group) => group.needs).toList(growable: false);
+  } finally {
+    demand.close();
+    items.close();
+  }
 }
