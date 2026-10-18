@@ -126,6 +126,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   the previous or next day. The top bar shows yesterday, today, tomorrow, the
   day after tomorrow, or the weekday in small capitals over the date, and on
   the right the day type as its emoji over a short word.
+- The diary opens with today again (#753): after the user comes back from
+  another tab, and when the app returns after at least 5 minutes in the
+  background or on a new date. A shorter absence, such as a camera photo or a
+  permission prompt, keeps the chosen day, and a plan saved just now still
+  opens its day.
 - Tapping the day type opens the day types the way the "Essen" button opens
   its actions, but from the top right: the page slides aside, and training,
   rest, and pause day hang below the close button, each with one line on

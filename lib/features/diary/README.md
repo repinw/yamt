@@ -52,6 +52,14 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   action panel through `HomeShellMenuScope.openActions` (`core/widgets`),
   which shows them at the top right; a picked type is saved through
   `DiaryDayTypeUpdater`.
+- `presentation/diary_tab_change_flow.dart` (`diaryTabLeft`) is public UI
+  for `features/home`: the home shell tells the diary when the user leaves
+  its tab, and the diary selects today again (#753). A plan saved later in
+  another tab still opens its day. After at least 5 minutes in the
+  background, or on a new date, the diary page also returns to today; a
+  shorter absence, such as a camera photo or a permission prompt, keeps the
+  chosen day. A hidden diary pager jumps instead of sliding, since its muted
+  ticker would hold the slide and undo a newer day later.
 - `presentation/widgets/diary_quick_eat_actions.dart`
   (`diaryQuickEatActions`) is public UI for `features/home`: the quick-eat
   actions for the selected day. The home shell shows them in its action panel

@@ -1,14 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 
 part 'diary_calendar_controller.g.dart';
+
+/// How long the app stays in the background before the diary opens today.
+const _awayBeforeToday = Duration(minutes: 5);
 
 /// Selectable range for the current diary calendar state.
 @riverpod
@@ -79,6 +84,25 @@ class DiaryCalendarController extends _$DiaryCalendarController {
     }
 
     state = state.copyWith(selectedDay: selectedDay);
+  }
+
+  /// Selects today again, as the diary does when it opens anew (#753):
+  /// after a longer absence from the app, and when the user leaves its tab.
+  /// A plan saved later in another tab still selects its own day. A disposed
+  /// controller starts with today anyway.
+  void showToday() {
+    if (ref.mounted) selectDay(state.today);
+  }
+
+  /// Selects today when the app comes back after at least 5 minutes in the
+  /// background since [leftAt], or on a new day (#753). A shorter absence,
+  /// such as a camera photo or a permission prompt, keeps the chosen day.
+  void resumedAfterAbsence(DateTime leftAt) {
+    final away = ref.read(clockProvider)().difference(leftAt);
+    if (away >= _awayBeforeToday ||
+        normalizeDiaryDay(leftAt) != ref.read(diaryTodayProvider)) {
+      showToday();
+    }
   }
 
   /// Selects the day before the current selection.
