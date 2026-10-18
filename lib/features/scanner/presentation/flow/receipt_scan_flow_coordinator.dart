@@ -120,13 +120,16 @@ class ReceiptScanFlowCoordinator {
 
     final l10n = AppLocalizations.of(context)!;
     final navigator = Navigator.of(context, rootNavigator: true);
+    // Set to false before the flow closes the dialog itself; a close while
+    // it is still true comes from the user (cancel button or back).
     var dialogOpen = true;
+    final canceled = Completer<ScannedReceipt?>();
 
     unawaited(
       showDialog<void>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => Center(
+        builder: (dialogContext) => Center(
           child: Card(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -136,21 +139,49 @@ class ReceiptScanFlowCoordinator {
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
                   Text(l10n.receiptReviewAnalyzing),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    key: const Key('receipt_analysis_cancel_button'),
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: Text(
+                      MaterialLocalizations.of(dialogContext).cancelButtonLabel,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
         ),
-      ).whenComplete(() => dialogOpen = false),
+      ).whenComplete(() {
+        if (dialogOpen) canceled.complete(null);
+        dialogOpen = false;
+      }),
     );
 
+    // The AI request cannot be stopped; after a cancel its result or error
+    // is dropped.
+    final analysis = _analyze(validPaths);
+    unawaited(
+      analysis.then<void>(
+        (_) {},
+        onError: (Object error, StackTrace stackTrace) {
+          if (!canceled.isCompleted) return;
+          developer.log(
+            'Receipt analysis failed after cancel',
+            name: 'ReceiptScanFlowCoordinator',
+            error: error,
+            stackTrace: stackTrace,
+          );
+        },
+      ),
+    );
     try {
-      final receipt = await _receiptAi.parseReceipt(validPaths);
-      final enriched = await _preResolveProducts(receipt);
+      final enriched = await Future.any([analysis, canceled.future]);
+      if (enriched == null) return false;
 
       if (dialogOpen && navigator.mounted) {
-        navigator.pop();
         dialogOpen = false;
+        navigator.pop();
       }
 
       if (!context.mounted) return false;
@@ -166,8 +197,8 @@ class ReceiptScanFlowCoordinator {
         stackTrace: stackTrace,
       );
       if (dialogOpen && navigator.mounted) {
-        navigator.pop();
         dialogOpen = false;
+        navigator.pop();
       }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showAppSnackBar(
@@ -177,6 +208,10 @@ class ReceiptScanFlowCoordinator {
       }
       return false;
     }
+  }
+
+  Future<ScannedReceipt> _analyze(List<String> paths) async {
+    return await _preResolveProducts(await _receiptAi.parseReceipt(paths));
   }
 
   Future<ScannedReceipt> _preResolveProducts(ScannedReceipt receipt) async {

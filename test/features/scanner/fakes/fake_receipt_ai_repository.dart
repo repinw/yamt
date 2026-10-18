@@ -13,12 +13,16 @@ class FakeReceiptAiRepository implements ReceiptAiRepository {
   /// If true, calls throw an exception.
   bool shouldFail = false;
 
+  /// When set, [parseReceipt] waits for it before it answers.
+  Future<void>? gate;
+
   /// File paths of every [parseReceipt] call.
   final List<List<String>> parsedPathsHistory = <List<String>>[];
 
   @override
   Future<ScannedReceipt> parseReceipt(List<String> filePaths) async {
     parsedPathsHistory.add(List<String>.unmodifiable(filePaths));
+    await gate;
     if (shouldFail) {
       throw Exception('Parsing failed');
     }

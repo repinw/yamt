@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -171,5 +173,48 @@ void main() {
       );
       expect(find.textContaining('Parsing failed'), findsNothing);
     });
+    for (final fails in [false, true]) {
+      testWidgets(
+        'a canceled analysis drops its later ${fails ? 'error' : 'result'}',
+        (tester) async {
+          final analysis = Completer<void>();
+          harness.fakeReceiptAi
+            ..gate = analysis.future
+            ..shouldFail = fails;
+          bool? flowResult;
+          await harness.pump(
+            tester,
+            builder: (context, ref) => ElevatedButton(
+              onPressed: () async {
+                flowResult = await harness.createCoordinator().processFilePaths(
+                  context,
+                  ['/tmp/receipt.jpg'],
+                );
+              },
+              child: const Text('Scan'),
+            ),
+          );
+
+          await tester.tap(find.text('Scan'));
+          await tester.pump();
+          await tester.tap(
+            find.byKey(const Key('receipt_analysis_cancel_button')),
+          );
+          await tester.pumpAndSettle();
+          expect(
+            find.byKey(const Key('receipt_analysis_cancel_button')),
+            findsNothing,
+          );
+          // The flow ends with the cancel, not with the AI request.
+          expect(flowResult, isFalse);
+
+          analysis.complete();
+          await tester.pumpAndSettle();
+          expect(flowResult, isFalse);
+          expect(find.text('Beleg prüfen'), findsNothing);
+          expect(find.byType(SnackBar), findsNothing);
+        },
+      );
+    }
   });
 }

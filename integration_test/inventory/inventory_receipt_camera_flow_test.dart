@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -110,5 +112,33 @@ void main() {
 
     expect(find.byType(ReceiptReviewPage), findsOneWidget);
     expect(find.text('Milk'), findsOneWidget);
+  });
+
+  testWidgets('a canceled analysis stays in the Vorrat and drops the result', (
+    tester,
+  ) async {
+    final analysis = Completer<void>();
+    final fakeReceiptAi = FakeReceiptAiRepository()..gate = analysis.future;
+
+    await tester.pumpWidget(_buildHarness(fakeReceiptAi: fakeReceiptAi));
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(SheetLauncher.buttonKey));
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+    await tester.tap(find.byKey(InventoryAddActionKeys.receiptPhoto));
+    await _pumpVisibleStep(tester);
+    await tester.tap(find.byKey(const Key('receipt_analysis_cancel_button')));
+    await _pumpVisibleStep(tester);
+
+    analysis.complete();
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+
+    expect(find.byType(ReceiptReviewPage), findsNothing);
+    expect(
+      find.byKey(const Key('receipt_analysis_cancel_button')),
+      findsNothing,
+    );
+    expect(find.byType(SnackBar), findsNothing);
+    expect(find.byKey(SheetLauncher.buttonKey), findsOneWidget);
   });
 }
