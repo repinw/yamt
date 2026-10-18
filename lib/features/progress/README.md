@@ -39,9 +39,8 @@ week, and the longer trends are going, so the diary can stay focused on today.
 - Weight data and the trend weight (Health).
 - Storing, encrypting, and deleting progress photos (Health), the photo
   capture sheet and the photo frame (Diary).
-- The TDEE analytics page (Calories).
-- The goal list data (`calorieGoalArchiveProvider`, Calories); Progress reads it
-  for the "Ziel" menu and the past goal card.
+- The goal list (Calories); Progress reads it for the "Ziel" menu and the past
+  goal card.
 - Home shell navigation chrome.
 - The weight dialog and saving a weight (Activity).
 - Storing, changing, and ignoring weighings (Health); Progress only starts

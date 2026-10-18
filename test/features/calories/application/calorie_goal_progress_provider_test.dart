@@ -9,7 +9,6 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
-import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 
 class _FakeCalorieGoalController extends CalorieGoalController {
   new(this.settings);
@@ -48,9 +47,6 @@ void main() {
         tdeeAnalyticsProvider.overrideWith((ref, query) async {
           queries.add(query);
           return TdeeAnalyticsState(
-            selectedCycles: const [],
-            availableCycles: const [],
-            timeRange: TdeeAnalyticsTimeRange.all,
             points: [
               TdeeAnalyticsPoint(
                 day: DateTime(2025, 1, 10),
@@ -59,16 +55,6 @@ void main() {
               ),
               TdeeAnalyticsPoint(day: DateTime(2025, 1, 25), trendWeightKg: 83),
             ],
-            summary: const TdeeAnalyticsSummary(
-              averageTdeeKcal: 0,
-              tdeeDifferenceKcal: 0,
-              threeDayDeltaKcal: 0,
-              sevenDayDeltaKcal: 0,
-              fourteenDayDeltaKcal: 0,
-              currentWeightKg: 83,
-              weightChangeKg: 0,
-              weeklyRateKg: 0,
-            ),
           );
         }),
       ],
