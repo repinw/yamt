@@ -106,10 +106,8 @@ final class InventoryMealEntry extends InventoryListEntry {
   @override
   DateTime get addedAt => meal.createdAt;
 
-  /// Meals do not record when they were eaten; every portion eaten updates
-  /// the meal.
   @override
-  DateTime? get lastEatenAt => meal.updatedAt;
+  DateTime? get lastEatenAt => meal.lastEatenAt;
 
   @override
   double get remainingShare => meal.remainingRatio.clamp(0.0, 1.0);

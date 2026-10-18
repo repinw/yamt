@@ -92,6 +92,9 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
       : PreparedMealPotWeighing.fromJson(
           json['pot_weighing'] as Map<String, dynamic>,
         ),
+  lastEatenAt: json['last_eaten_at'] == null
+      ? null
+      : DateTime.parse(json['last_eaten_at'] as String),
 );
 
 Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
@@ -125,5 +128,6 @@ Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
       'total_fat': instance.totalFat,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
+      'last_eaten_at': instance.lastEatenAt?.toIso8601String(),
       'components': instance.components.map((e) => e.toJson()).toList(),
     };

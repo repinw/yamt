@@ -92,6 +92,7 @@ class PreparedMeal {
     this.potTareWeight,
     this.servedInPieces,
     this.potWeighing,
+    this.lastEatenAt,
   });
 
   /// Creates a [PreparedMeal] for from json.
@@ -232,6 +233,9 @@ class PreparedMeal {
   @JsonKey(fromJson: _readDateTimeOrNow)
   final DateTime updatedAt;
 
+  /// When a portion was last eaten, or null while every portion is left.
+  final DateTime? lastEatenAt;
+
   /// The components.
   @JsonKey(defaultValue: <PreparedMealComponent>[])
   final List<PreparedMealComponent> components;
@@ -267,6 +271,7 @@ class PreparedMeal {
     double? totalFat,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Object? lastEatenAt = _keepValue,
     List<PreparedMealComponent>? components,
   }) {
     return PreparedMeal(
@@ -314,6 +319,9 @@ class PreparedMeal {
       totalFat: totalFat ?? this.totalFat,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastEatenAt: lastEatenAt == _keepValue
+          ? this.lastEatenAt
+          : lastEatenAt as DateTime?,
       components: components ?? this.components,
     );
   }
@@ -432,6 +440,7 @@ class PreparedMeal {
             other.totalFat == totalFat &&
             other.createdAt == createdAt &&
             other.updatedAt == updatedAt &&
+            other.lastEatenAt == lastEatenAt &&
             const ListEquality<PreparedMealComponent>().equals(
               other.components,
               components,
@@ -467,6 +476,7 @@ class PreparedMeal {
       totalFat,
       createdAt,
       updatedAt,
+      lastEatenAt,
       const ListEquality<PreparedMealComponent>().hash(components),
     ]);
   }

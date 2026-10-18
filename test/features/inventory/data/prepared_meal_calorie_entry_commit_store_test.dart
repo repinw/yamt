@@ -185,8 +185,41 @@ void main() {
       final savedMeal = await _openMeal(firestore);
       expect(savedMeal['remaining_portions'], 2);
       expect(savedMeal['updated_at'], _writtenAt.toIso8601String());
+      expect(
+        savedMeal['last_eaten_at'],
+        DateTime(2026, 3, 27, 13).toIso8601String(),
+      );
     },
   );
+
+  for (final (remaining, lastEatenAt) in <(num, String?)>[
+    (2, null),
+    (1, '2026-03-27T12:00:00.000Z'),
+  ]) {
+    test('deleteEntryAndRestorePreparedMeal with $remaining portions left '
+        'keeps last_eaten_at as $lastEatenAt', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _putMeal(
+        firestore,
+        _meal(remainingPortions: remaining)
+            .copyWith(lastEatenAt: DateTime.parse('2026-03-27T12:00:00Z'))
+            .toJson(),
+      );
+      final store = FirestorePreparedMealCalorieEntryCommitStore(
+        firestore: firestore,
+        diary: _diary(firestore, 'user-1'),
+        householdCipher: _household('household-1'),
+        now: () => _writtenAt,
+      );
+
+      await store.deleteEntryAndRestorePreparedMeal(entry: _entry());
+      await pumpEventQueue();
+
+      final savedMeal = await _openMeal(firestore);
+      expect(savedMeal['remaining_portions'], remaining + 2);
+      expect(savedMeal['last_eaten_at'], lastEatenAt);
+    });
+  }
 
   test(
     'commitEntryAndPreparedMeal persists fractional remaining portions',

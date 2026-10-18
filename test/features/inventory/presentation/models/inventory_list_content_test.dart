@@ -167,6 +167,18 @@ void main() {
     );
   });
 
+  test('a meal sorts by when it was last eaten, not by its last edit', () {
+    final content = _build(
+      items: [_food('food', eatenAt: DateTime(2026, 9, 5))],
+      meals: [
+        _meal('edited', day: 9),
+        _meal('eaten').copyWith(lastEatenAt: DateTime(2026, 9, 7)),
+      ],
+    );
+
+    expect(_ids(content), ['eaten', 'food', 'edited']);
+  });
+
   test('sorts by the share left across foods and meals', () {
     final content = _build(
       items: items,

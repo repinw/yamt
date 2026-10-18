@@ -61,6 +61,29 @@ extension PreparedMealRules on PreparedMeal {
     updatedAt: at,
   );
 
+  /// The meal after [portions] were eaten for [eatenAt], written at [at].
+  /// lastEatenAt moves forward to [eatenAt], never back, like a food's
+  /// lastConsumedAt.
+  PreparedMeal withPortionsEaten(
+    num portions, {
+    required DateTime at,
+    required DateTime eatenAt,
+  }) {
+    final last = lastEatenAt;
+    return withPortionsTaken(portions, at).copyWith(
+      lastEatenAt: last != null && last.isAfter(eatenAt) ? last : eatenAt,
+    );
+  }
+
+  /// The meal after [portions] came back at [at]. A meal with every portion
+  /// left again forgets when it was eaten.
+  PreparedMeal withPortionsReturned(num portions, DateTime at) {
+    final restored = withPortionsTaken(-portions, at);
+    return restored.remainingPortions >= restored.totalPortions
+        ? restored.copyWith(lastEatenAt: null)
+        : restored;
+  }
+
   /// The meal with [grams] of food left at [at], as the pot weighs it on
   /// the eat page: grams per portion and per 100 g count from the weighing,
   /// and the meal's weight from "Gekocht" stays.
