@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -53,10 +55,14 @@ abstract final class PreparedMealPendingFoodFlow {
         return null;
       case InventoryManualProductSaveStatus.saved when item != null:
         final filled = await onFill(item.id, amount);
-        if (!filled) {
-          await container
-              .read(inventoryItemsControllerProvider.notifier)
-              .deleteItem(item.id);
+        if (!filled &&
+            !await container
+                .read(inventoryItemsControllerProvider.notifier)
+                .deleteItem(item.id)) {
+          log(
+            'The food added for a row stayed in the Vorrat.',
+            name: 'PreparedMealPendingFoodFlow',
+          );
         }
         return filled;
       case InventoryManualProductSaveStatus.saved:
