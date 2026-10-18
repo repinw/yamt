@@ -45,7 +45,6 @@ class DiaryWeightMissingPromptSection extends ConsumerWidget {
                             context: context,
                             selectedDay: normalizedDay,
                             day: normalizedDay,
-                            initialWeightKg: data.selectedWeightKg,
                           ),
                     ),
                     onDismiss: () => unawaited(

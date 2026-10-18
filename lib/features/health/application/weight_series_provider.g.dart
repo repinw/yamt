@@ -118,3 +118,44 @@ final class WeightSeriesProvider
 }
 
 String _$weightSeriesHash() => r'822ac7993487720e9ed5d6f0ebe4c03a66d05b4d';
+
+/// The newest single weighing of the user, manual or Health, that counts;
+/// `null` without one.
+
+@ProviderFor(latestWeighingKg)
+final latestWeighingKgProvider = LatestWeighingKgProvider._();
+
+/// The newest single weighing of the user, manual or Health, that counts;
+/// `null` without one.
+
+final class LatestWeighingKgProvider
+    extends $FunctionalProvider<AsyncValue<double?>, double?, FutureOr<double?>>
+    with $FutureModifier<double?>, $FutureProvider<double?> {
+  /// The newest single weighing of the user, manual or Health, that counts;
+  /// `null` without one.
+  LatestWeighingKgProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'latestWeighingKgProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$latestWeighingKgHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<double?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<double?> create(Ref ref) {
+    return latestWeighingKg(ref);
+  }
+}
+
+String _$latestWeighingKgHash() => r'b90f456b87c251496d54e03905499f8ce367b30d';

@@ -10,7 +10,6 @@ class WeightEntryDialogLabels {
     required this.fieldLabel,
     required this.emptyErrorText,
     required this.invalidErrorText,
-    required this.clearActionLabel,
     required this.cancelActionLabel,
     required this.saveActionLabel,
   });
@@ -27,9 +26,6 @@ class WeightEntryDialogLabels {
   /// Error shown when the input is invalid.
   final String invalidErrorText;
 
-  /// Clear action label.
-  final String clearActionLabel;
-
   /// Cancel action label.
   final String cancelActionLabel;
 
@@ -41,62 +37,30 @@ class WeightEntryDialogLabels {
 @immutable
 class WeightEntryDialogKeys {
   /// Creates weight entry dialog keys.
-  const new({this.fieldKey, this.clearButtonKey, this.saveButtonKey});
+  const new({this.fieldKey, this.saveButtonKey});
 
   /// Key for the text field.
   final Key? fieldKey;
-
-  /// Key for the clear button.
-  final Key? clearButtonKey;
 
   /// Key for the save button.
   final Key? saveButtonKey;
 }
 
-/// Action selected in a weight entry dialog.
-enum WeightEntryDialogAction {
-  /// Save the entered weight.
-  save,
-
-  /// Clear the existing weight.
-  clear,
-}
-
-/// Result returned by [showWeightEntryDialog].
-@immutable
-class WeightEntryDialogResult {
-  const new _({required this.action, this.weightKg});
-
-  /// Creates a clear result.
-  const new clear() : this._(action: WeightEntryDialogAction.clear);
-
-  /// Creates a save result.
-  const new save(double weightKg)
-    : this._(action: WeightEntryDialogAction.save, weightKg: weightKg);
-
-  /// Selected action.
-  final WeightEntryDialogAction action;
-
-  /// Entered weight for save actions.
-  final double? weightKg;
-}
-
-/// Shows a reusable weight entry dialog.
-Future<WeightEntryDialogResult?> showWeightEntryDialog({
+/// Shows a reusable weight entry dialog. Returns the entered weight, or
+/// `null` when the user cancels.
+Future<double?> showWeightEntryDialog({
   required BuildContext context,
   required WeightEntryDialogLabels labels,
   required double? initialWeightKg,
-  required bool showClearAction,
   WeightEntryDialogKeys keys = const WeightEntryDialogKeys(),
 }) {
-  return showDialog<WeightEntryDialogResult>(
+  return showDialog<double>(
     context: context,
     builder: (context) {
       return _WeightEntryDialogContent(
         labels: labels,
         keys: keys,
         initialWeightKg: initialWeightKg,
-        showClearAction: showClearAction,
       );
     },
   );
@@ -107,13 +71,11 @@ class _WeightEntryDialogContent extends StatefulWidget {
     required this.labels,
     required this.keys,
     required this.initialWeightKg,
-    required this.showClearAction,
   });
 
   final WeightEntryDialogLabels labels;
   final WeightEntryDialogKeys keys;
   final double? initialWeightKg;
-  final bool showClearAction;
 
   @override
   State<_WeightEntryDialogContent> createState() =>
@@ -159,14 +121,6 @@ class _WeightEntryDialogContentState extends State<_WeightEntryDialogContent> {
         ),
       ),
       actions: <Widget>[
-        if (widget.showClearAction)
-          TextButton(
-            key: widget.keys.clearButtonKey,
-            onPressed: () =>
-                Navigator.of(context)
-                    .pop(const WeightEntryDialogResult.clear()),
-            child: Text(labels.clearActionLabel),
-          ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(labels.cancelActionLabel),
@@ -198,7 +152,7 @@ class _WeightEntryDialogContentState extends State<_WeightEntryDialogContent> {
       return;
     }
 
-    Navigator.of(context).pop(WeightEntryDialogResult.save(parsedWeight));
+    Navigator.of(context).pop(parsedWeight);
   }
 }
 

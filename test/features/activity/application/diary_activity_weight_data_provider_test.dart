@@ -6,10 +6,7 @@ import 'package:yamt/features/calories/application/calorie_goal_controller.dart'
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/health/application/weight_series_provider.dart';
-import 'package:yamt/features/health/data/health_connection_service_provider.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
@@ -32,20 +29,6 @@ void main() {
               effectiveDate: selectedDay,
             ),
           ),
-        ),
-        healthConnectionServiceProvider.overrideWith(
-          (ref) => FakeHealthConnectionService(_readyHealthStatus),
-        ),
-        healthWeightServiceProvider.overrideWith(
-          (ref) => FakeHealthWeightService([
-            HealthWeightSample(
-              recordedAt: selectedDay.add(const Duration(hours: 7)),
-              weightKg: 77.1,
-              uuid: 'selected-health-weight',
-              sourcePackageName: 'de.yamt.app',
-              isFromThisApp: true,
-            ),
-          ]),
         ),
         healthWeightSamplesProvider.overrideWith(
           (ref) => Stream.value([
@@ -70,12 +53,10 @@ void main() {
         .read();
 
     expect(data.profileWeightKg, 80);
-    // The median of the manual weight and the cloud sample of that day.
-    expect(data.selectedWeightKg, closeTo(76.95, 1e-9));
     expect(data.hasSelectedDayWeight, isTrue);
     expect(data.weightTrend[5], 77.4);
+    // The median of the manual weight and the cloud sample of that day.
     expect(data.weightTrend.last, closeTo(76.95, 1e-9));
-    expect(data.weightDays.last.canDeleteWeight, isTrue);
   });
 }
 
@@ -87,10 +68,3 @@ class _FakeCalorieGoalController extends CalorieGoalController {
   @override
   CalorieGoalSettings build() => settings;
 }
-
-const _readyHealthStatus = HealthConnectionStatus(
-  platform: HealthPlatform.android,
-  healthConnectAvailability: HealthConnectAvailability.available,
-  permissionState: HealthPermissionState.granted,
-  historyAccess: HealthHistoryAccess.granted,
-);

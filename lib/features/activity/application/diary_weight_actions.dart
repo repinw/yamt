@@ -1,13 +1,8 @@
-import 'dart:developer' show log;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weight_state_refresh.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
-import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
-import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 part 'diary_weight_actions.g.dart';
 
@@ -20,29 +15,9 @@ DiaryWeightActions diaryWeightActions(Ref ref) {
   final manualWeightEntries = ref.watch(
     manualHealthWeightEntriesControllerProvider.notifier,
   );
-  final healthWeightService = ref.watch(healthWeightServiceProvider);
-  final sampleRepository = ref.watch(healthWeightSampleRepositoryProvider);
 
   return DiaryWeightActions(
     saveManualWeight: manualWeightEntries.saveEntry,
-    deleteManualWeight: manualWeightEntries.deleteEntryForDay,
-    deleteHealthWeightSample: (sample) async {
-      final deleted = await healthWeightService.deleteWeightSample(sample);
-      if (deleted) {
-        // Readers read the cloud copy, so it goes with the Health sample.
-        try {
-          await sampleRepository.deleteSample(sample);
-        } on Object catch (error, stackTrace) {
-          log(
-            'Failed to delete the cloud copy of a Health weight.',
-            name: 'DiaryWeightActions',
-            error: error,
-            stackTrace: stackTrace,
-          );
-        }
-      }
-      return deleted;
-    },
     refreshDependents: ({required selectedDay, day}) async {
       if (!ref.mounted) {
         return;
@@ -59,21 +34,16 @@ DiaryWeightActions diaryWeightActions(Ref ref) {
   );
 }
 
-/// Save/delete behavior for diary weight entries.
+/// Save behavior for diary weight entries.
 class DiaryWeightActions {
   /// Creates diary weight actions.
   const new({
     required this._saveManualWeight,
-    required this._deleteManualWeight,
-    required this._deleteHealthWeightSample,
     required this._refreshDependents,
   });
 
   final Future<bool> Function({required DateTime day, required double weightKg})
   _saveManualWeight;
-  final Future<bool> Function(DateTime day) _deleteManualWeight;
-  final Future<bool> Function(HealthWeightSample sample)
-  _deleteHealthWeightSample;
   final Future<void> Function({required DateTime selectedDay, DateTime? day})
   _refreshDependents;
 
@@ -88,29 +58,5 @@ class DiaryWeightActions {
       await _refreshDependents(selectedDay: selectedDay, day: day);
     }
     return saved;
-  }
-
-  /// Deletes the active weight source and refreshes dependent providers.
-  Future<bool> deleteWeight({
-    required DateTime selectedDay,
-    required DateTime day,
-    required bool hasManualWeight,
-    required HealthWeightSample? healthSample,
-  }) async {
-    final deleted = hasManualWeight
-        ? await _deleteManualWeight(day)
-        : await deleteAppOwnedHealthWeight(healthSample);
-    if (deleted) {
-      await _refreshDependents(selectedDay: selectedDay, day: day);
-    }
-    return deleted;
-  }
-
-  /// Deletes an app-owned Health Connect weight sample.
-  Future<bool> deleteAppOwnedHealthWeight(HealthWeightSample? sample) async {
-    if (sample == null || !sample.isFromThisApp) {
-      return false;
-    }
-    return await _deleteHealthWeightSample(sample);
   }
 }

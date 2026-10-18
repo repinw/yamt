@@ -53,10 +53,8 @@ Future<void> _pumpPrompt(
         diaryActivityWeightDataProvider(day).overrideWith(
           (ref) async => DiaryActivityWeightData(
             profileWeightKg: 78.4,
-            selectedWeightKg: 78.4,
             hasSelectedDayWeight: hasSavedWeight,
             weightTrend: const [],
-            weightDays: const [],
           ),
         ),
       ],

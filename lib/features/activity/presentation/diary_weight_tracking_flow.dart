@@ -3,13 +3,11 @@ import 'dart:developer' show log;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
-import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/'
     'diary_weight_dialog.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/calorie_goal_reached_flow.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 
 part 'diary_weight_tracking_flow.g.dart';
 
@@ -24,7 +22,7 @@ DiaryWeightTrackingFlow diaryWeightTrackingFlow(Ref ref) {
   );
 }
 
-/// Activity-owned flow for adding or editing diary weights.
+/// Activity-owned flow for adding diary weights.
 class DiaryWeightTrackingFlow {
   /// Creates the diary weight tracking flow.
   const new({required this._weightActions, required this._onWeightRecorded});
@@ -40,25 +38,21 @@ class DiaryWeightTrackingFlow {
   // Static, because callers read a new flow for every tap.
   static bool _isOpening = false;
 
-  /// Opens the weight dialog for [day].
-  ///
-  /// The dialog offers to delete the weight when [day] has a manual weight
-  /// or a Health weight that this app wrote, read from the weight data of
-  /// [day]. A second call while that data loads does nothing, so a double
-  /// tap opens one dialog.
+  /// Opens the weight dialog, which adds a weighing of [day], filled with
+  /// the newest weighing. A second call while that weighing loads does
+  /// nothing, so a double tap opens one dialog.
   Future<void> showDialogForDay({
     required BuildContext context,
     required DateTime selectedDay,
     required DateTime day,
-    double? initialWeightKg,
   }) async {
     if (_isOpening) {
       return;
     }
     _isOpening = true;
-    final DiaryWeightDayData? weightDay;
+    final double? initialWeightKg;
     try {
-      weightDay = await _loadWeightDay(context, day);
+      initialWeightKg = await _loadLatestWeighingKg(context);
     } finally {
       _isOpening = false;
     }
@@ -71,36 +65,26 @@ class DiaryWeightTrackingFlow {
       selectedDay: selectedDay,
       day: day,
       initialWeightKg: initialWeightKg,
-      hasManualWeight: weightDay?.hasManualWeight ?? false,
-      canClearWeight: weightDay?.canDeleteWeight ?? false,
-      healthSample: weightDay?.healthSample,
       onWeightSaved: ({required day, required weightKg}) =>
           handleRecordedWeight(context: context, day: day, weightKg: weightKg),
     );
   }
 
-  /// The weight data of [day], or `null` when it has none or fails to
-  /// load; the dialog then only adds a weight.
-  Future<DiaryWeightDayData?> _loadWeightDay(
-    BuildContext context,
-    DateTime day,
-  ) async {
+  /// The newest weighing, or `null` when there is none or it fails to load;
+  /// the field then starts empty.
+  Future<double?> _loadLatestWeighingKg(BuildContext context) async {
     // Through the scope, because callers do not keep this flow's provider
-    // alive; the listener keeps the auto-dispose weight data alive until it
-    // has loaded.
-    final subscription = ProviderScope.containerOf(context, listen: false)
-        .listen(
-          diaryActivityWeightDataProvider(normalizeDiaryDay(day)).future,
-          (_, _) {},
-        );
+    // alive; the listener keeps the auto-dispose weighing alive until it has
+    // loaded.
+    final subscription = ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).listen(latestWeighingKgProvider.future, (_, _) {});
     try {
-      final data = await subscription.read();
-      return data.weightDays
-          .where((weightDay) => isSameDiaryDay(weightDay.day, day))
-          .firstOrNull;
+      return await subscription.read();
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to load the weight of the day; the dialog offers no delete.',
+        'Failed to load the newest weighing; the field starts empty.',
         name: 'DiaryWeightTrackingFlow',
         error: error,
         stackTrace: stackTrace,
