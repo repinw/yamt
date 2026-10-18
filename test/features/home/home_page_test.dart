@@ -860,6 +860,35 @@ void main() {
     expect(ran, 1);
   });
 
+  testWidgets('leaving the diary tab returns it to today (#753)', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        // A day long before today; the harness controller reads its own today.
+        selectedDiaryDay: DateTime(2000),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomePage)),
+    );
+    // The diary page stays mounted in its branch and keeps the calendar.
+    final calendar = container.listen(
+      diaryCalendarControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(calendar.close);
+    GoRouter.of(tester.element(find.byType(HomePage)))
+        .go(AppRoutes.homeProgress);
+    await tester.pumpAndSettle();
+    expect(calendar.read().isSelectedToday, isTrue);
+  });
+
   testWidgets('a tab change closes the actions of a header tool', (
     tester,
   ) async {

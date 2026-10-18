@@ -16,6 +16,7 @@ import 'package:yamt/core/widgets/home_nav_item.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_cook_actions.dart';
+import 'package:yamt/features/diary/presentation/diary_tab_change_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_actions.dart';
 import 'package:yamt/features/home/domain/home_action_ranking.dart';
 import 'package:yamt/features/home/presentation/controllers/home_action_usage_controller.dart';
@@ -85,6 +86,11 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         oldWidget.navigationShell.currentIndex !=
             widget.navigationShell.currentIndex) {
       _isMenuOpen = false;
+    }
+    // Leaving the diary resets its day (#753).
+    if (oldWidget.navigationShell.currentIndex == _diaryBranchIndex &&
+        widget.navigationShell.currentIndex != _diaryBranchIndex) {
+      diaryTabLeft(ref);
     }
   }
 

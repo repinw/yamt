@@ -166,24 +166,36 @@ class _DiaryDayPagerState extends ConsumerState<DiaryDayPager> {
   /// Moves the pages to the selected day once the new page count is laid
   /// out.
   ///
-  /// Never moves them while the user swipes or a page settles, since the
-  /// swipe selects its own day.
+  /// While the diary shows, never moves them while the user swipes or a page
+  /// settles, since the swipe selects its own day.
   void _showSelectedDay({required bool animate}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // A hidden diary (another tab, a page on top) jumps, also during a
+      // slide: its muted ticker would hold the slide until it shows and then
+      // undo a newer day (#753).
+      final isVisible = mounted && TickerMode.valuesOf(context).enabled;
+      final isScrolling =
+          _pageController.hasClients &&
+          _pageController.position.isScrollingNotifier.value;
       if (!mounted ||
           !_pageController.hasClients ||
-          _pageController.position.isScrollingNotifier.value) {
+          (isVisible && isScrolling)) {
         return;
       }
       final bounds = ref.read(diaryCalendarBoundsProvider);
       final target = bounds.indexOf(
         ref.read(diaryCalendarControllerProvider).selectedDay,
       );
-      final current = _pageController.page?.round();
-      if (current == target) {
+      // A hidden slide stops even on the target, or it would go on later.
+      final page = _pageController.page;
+      if (page == target && !isScrolling) {
         return;
       }
-      if (animate && current != null && (current - target).abs() == 1) {
+      final current = page?.round();
+      if (animate &&
+          isVisible &&
+          current != null &&
+          (current - target).abs() == 1) {
         _pageController.animateToPage(
           target,
           duration: AppDurations.diaryDayPageSlide,

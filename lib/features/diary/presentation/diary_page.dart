@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -33,6 +34,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   bool _didQueueProviderWarmup = false;
   Timer? _nextDayTimer;
 
+  /// When the app went to the background, or null while it is in front.
+  DateTime? _leftAt;
+
   /// Kept so a rebuild of this page does not rebuild every day page.
   late final Widget _dayPager = DiaryDayPager(
     showMacroStrip: widget.includeHomeShellChrome,
@@ -55,10 +59,23 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    final now = ref.read(clockProvider)();
+    if (state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.paused) {
+      _leftAt ??= now;
+      return;
+    }
     if (state != AppLifecycleState.resumed || !mounted) {
       return;
     }
+    final leftAt = _leftAt;
+    _leftAt = null;
     _moveToToday();
+    if (leftAt != null) {
+      ref
+          .read(diaryCalendarControllerProvider.notifier)
+          .resumedAfterAbsence(leftAt);
+    }
     ref.invalidate(healthConnectionStatusProvider);
   }
 

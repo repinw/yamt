@@ -156,6 +156,41 @@ void main() {
     expect(copied.isSelectedToday, isFalse);
   });
 
+  test('showToday selects today, and a plan saved later its day (#753)', () {
+    final container = _container(now: () => DateTime(2026, 4, 27, 10));
+    DateTime selected() =>
+        container.read(diaryCalendarControllerProvider).selectedDay;
+    container.read(diaryCalendarControllerProvider.notifier)
+      ..selectDay(DateTime(2026, 4, 26))
+      ..showToday();
+    expect(selected(), DateTime(2026, 4, 27));
+
+    container
+        .read(lastPlannedDayProvider.notifier)
+        .planned(DateTime(2026, 4, 29, 19));
+    expect(selected(), DateTime(2026, 4, 29));
+  });
+
+  test('a longer absence or a new day selects today (#753)', () {
+    var now = DateTime(2026, 4, 27, 10);
+    final container = _container(
+      now: () => now,
+      planStartDay: DateTime(2026, 4, 2),
+    );
+    DateTime selected() =>
+        container.read(diaryCalendarControllerProvider).selectedDay;
+    final calendar = container.read(diaryCalendarControllerProvider.notifier)
+      ..selectDay(DateTime(2026, 4, 26));
+
+    now = DateTime(2026, 4, 27, 10, 4);
+    calendar.resumedAfterAbsence(DateTime(2026, 4, 27, 10));
+    expect(selected(), DateTime(2026, 4, 26));
+
+    now = DateTime(2026, 4, 27, 10, 5);
+    calendar.resumedAfterAbsence(DateTime(2026, 4, 27, 10));
+    expect(selected(), DateTime(2026, 4, 27));
+  });
+
   test('a new plan opens its day, also when it is planned again', () {
     final container = _container(now: () => DateTime(2026, 4, 27, 10));
     final calendar = container.read(diaryCalendarControllerProvider.notifier);

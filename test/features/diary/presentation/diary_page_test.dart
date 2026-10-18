@@ -1088,6 +1088,43 @@ void main() {
     expect(currentDay(), selectedDay);
   });
 
+  testWidgets('a reset while hidden during a slide wins over the slide '
+      '(#753)', (tester) async {
+    final visible = ValueNotifier(true);
+    addTearDown(visible.dispose);
+    final container = await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      body: ValueListenableBuilder<bool>(
+        valueListenable: visible,
+        builder: (_, isVisible, child) =>
+            TickerMode(enabled: isVisible, child: child!),
+        child: const DiaryPage(),
+      ),
+    );
+    final calendar = container.read(diaryCalendarControllerProvider.notifier)
+      ..selectNextDay();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // The user leaves the tab mid-slide; the diary goes back to today after
+    // that frame, as `diaryTabLeft` does.
+    visible.value = false;
+    await tester.pump();
+    calendar.showToday();
+    await _pumpFrames(tester, count: 3);
+    visible.value = true;
+    await _pumpFrames(tester);
+
+    final bounds = container.read(diaryCalendarBoundsProvider);
+    final pageView = tester.widget<PageView>(find.byType(PageView));
+    expect(
+      container.read(diaryCalendarControllerProvider).isSelectedToday,
+      isTrue,
+    );
+    expect(pageView.controller!.page, bounds.indexOf(selectedDay));
+  });
+
   testWidgets('selecting another day slides the pages to it', (tester) async {
     final container = await _pumpDiaryPage(tester, selectedDay: selectedDay);
 
@@ -1119,6 +1156,46 @@ void main() {
     final state = container.read(diaryCalendarControllerProvider);
     expect(state.today, DateTime(2026, 4, 28));
     expect(state.selectedDay, DateTime(2026, 4, 28));
+  });
+
+  testWidgets('a longer absence opens today, a short one keeps the day '
+      '(#753)', (tester) async {
+    var now = selectedDay.add(const Duration(hours: 10));
+    final container = await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      clock: () => now,
+    );
+    final calendar = container.read(diaryCalendarControllerProvider.notifier);
+    Future<void> leaveFor(Duration away) async {
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      now = now.add(away);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+    }
+
+    calendar.selectPreviousDay();
+    await leaveFor(const Duration(minutes: 1));
+    expect(
+      container.read(diaryCalendarControllerProvider).selectedDay,
+      DateTime(2026, 4, 26),
+      reason: 'a camera photo or a permission prompt keeps the day',
+    );
+
+    await leaveFor(const Duration(minutes: 5));
+    expect(
+      container.read(diaryCalendarControllerProvider).selectedDay,
+      selectedDay,
+    );
+
+    // A short absence over midnight opens the new day.
+    calendar.selectPreviousDay();
+    now = DateTime(2026, 4, 27, 23, 58);
+    await leaveFor(const Duration(minutes: 3));
+    expect(
+      container.read(diaryCalendarControllerProvider).selectedDay,
+      DateTime(2026, 4, 28),
+    );
   });
 
   testWidgets('moves calendar today at midnight while the diary is open', (
