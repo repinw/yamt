@@ -45,8 +45,8 @@ class CookedMealPage extends ConsumerStatefulWidget {
   /// Creates the page for the meal [mealId].
   const new({required this.mealId, super.key});
 
-  /// Key of the save button.
-  static const saveKey = ValueKey<String>('cooked-save');
+  /// Key of the message shown when another device cooked the meal.
+  static const doneElsewhereKey = ValueKey<String>('cooked-done-elsewhere');
 
   /// The meal in the pot.
   final String mealId;
@@ -59,12 +59,10 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   final _grossController = TextEditingController();
   int? _portions;
 
-  /// Pieces or portions as the cook picked them; the meal's own unit, such
-  /// as from its template, until then.
+  /// Pieces or portions as picked; until then the meal's own unit.
   bool? _inPieces;
 
-  /// Whether the cook weighs a combined meal instead of trusting the sum of
-  /// its ingredients.
+  /// Whether the cook weighs a combined meal instead of its ingredients' sum.
   var _weighs = false;
   String? _utensilId;
   var _toCookbook = false;
@@ -78,6 +76,9 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   /// Whether the cook discards a combined meal, so its leaving the Vorrat
   /// does not count as gone.
   var _discarding = false;
+
+  /// Whether this page saves the meal, so its leaving the pot is no news.
+  var _saving = false;
 
   @override
   void initState() {
@@ -105,6 +106,14 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     if (!_discarding) {
       PreparedMealGoneFlow.closeWhenGone(ref, context, widget.mealId);
     }
+    PreparedMealGoneFlow.closeWhenOutOfPot(
+      ref,
+      context,
+      widget.mealId,
+      message: l10n.cookedDoneElsewhere,
+      unless: () => _saving,
+      key: CookedMealPage.doneElsewhereKey,
+    );
     final mealAsync = ref.watch(livePreparedMealProvider(widget.mealId));
     // A combined meal is not cooked yet: leaving it gives its foods back.
     final isCombined = switch (mealAsync.value) {
@@ -266,21 +275,23 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
           ),
         ),
         CookedMealSaveBar(
-          buttonKey: CookedMealPage.saveKey,
           onSave: isSaving || pot.needsUtensil || pot.isTooLight
               ? null
-              : () => unawaited(
-                  CookedMealSaveFlow.save(
-                    context: context,
-                    ref: ref,
-                    meal: meal,
-                    portions: portions,
-                    servedInPieces: inPieces,
-                    toCookbook: _toCookbook,
-                    tareWeight: utensil?.weightGrams,
-                    netWeight: pot.netWeight,
-                  ),
-                ),
+              : () {
+                  _saving = true;
+                  unawaited(
+                    CookedMealSaveFlow.save(
+                      context: context,
+                      ref: ref,
+                      meal: meal,
+                      portions: portions,
+                      servedInPieces: inPieces,
+                      toCookbook: _toCookbook,
+                      tareWeight: utensil?.weightGrams,
+                      netWeight: pot.netWeight,
+                    ).whenComplete(() => _saving = false),
+                  );
+                },
         ),
       ],
     );

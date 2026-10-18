@@ -3983,6 +3983,7 @@
     }
   },
   "recipeNotFromStock": "Not from stock",
+  "cookedDoneElsewhere": "This meal is already cooked and in your stock.",
   "cookedLoadFailed": "Could not load the meal.",
   "preparedMealGone": "Meal is no longer in stock",
   "cookbookInPotSince": "In the pot since {time}",

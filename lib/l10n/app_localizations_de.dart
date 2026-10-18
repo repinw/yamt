@@ -6662,6 +6662,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get recipeNotFromStock => 'Nicht aus dem Vorrat';
 
   @override
+  String get cookedDoneElsewhere =>
+      'Diese Mahlzeit ist schon gekocht und im Vorrat.';
+
+  @override
   String get cookedLoadFailed => 'Die Mahlzeit konnte nicht geladen werden.';
 
   @override

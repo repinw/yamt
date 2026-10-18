@@ -6,12 +6,11 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// The "In Vorrat" button under the "Gekocht" page.
 class CookedMealSaveBar extends StatelessWidget {
-  /// Creates the bar with its button [buttonKey]; [onSave] is `null` while
-  /// the meal cannot be saved.
-  const new({required this.buttonKey, required this.onSave, super.key});
+  /// Creates the bar; [onSave] is `null` while the meal cannot be saved.
+  const new({required this.onSave, super.key});
 
   /// Key of the button.
-  final Key buttonKey;
+  static const saveKey = ValueKey<String>('cooked-save');
 
   /// Saves the meal, or `null` to turn the button off.
   final VoidCallback? onSave;
@@ -22,7 +21,7 @@ class CookedMealSaveBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: FilledButton(
-        key: buttonKey,
+        key: saveKey,
         onPressed: onSave,
         style: FilledButton.styleFrom(
           backgroundColor: colors.accent,

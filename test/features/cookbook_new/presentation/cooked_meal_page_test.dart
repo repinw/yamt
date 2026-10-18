@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('a combined meal cooked elsewhere can be closed again', (
+  testWidgets('a meal cooked on another device closes the page and says so', (
     tester,
   ) async {
     final meals = StreamController<List<PreparedMeal>>();
@@ -24,14 +24,24 @@ void main() {
         overrides: [
           inventoryQuickEatMealsProvider.overrideWith((ref) => meals.stream),
         ],
-        child: const MaterialApp(
-          locale: Locale('en'),
+        child: MaterialApp(
+          locale: const Locale('en'),
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: CookedMealPage(mealId: 'combo'),
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const CookedMealPage(mealId: 'combo'),
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
         ),
       ),
     );
+    await tester.tap(find.text('open'));
     meals.add([_combined(inPot: true)]);
     await tester.pumpAndSettle();
     final route = ModalRoute.of(tester.element(find.byType(CookedMealPage)))!;
@@ -41,8 +51,8 @@ void main() {
     meals.add([_combined(inPot: false)]);
     await tester.pumpAndSettle();
 
-    expect(route.popDisposition, isNot(RoutePopDisposition.doNotPop));
-    expect(_closeButton(tester).onPressed, isNotNull);
+    expect(find.byType(CookedMealPage), findsNothing);
+    expect(find.byKey(CookedMealPage.doneElsewhereKey), findsOneWidget);
   });
 
   testWidgets('a meal that never arrives says so after the wait', (

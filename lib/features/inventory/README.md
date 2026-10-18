@@ -148,7 +148,11 @@ already documented as a reusable presentation surface.
 - `presentation/prepared_meal_gone_flow.dart`:
   `PreparedMealGoneFlow.closeWhenGone` closes a meal page with "Mahlzeit nicht
   mehr im Vorrat" when its meal leaves the Vorrat; every meal page, including
-  the Kochbuch's "Gekocht" page, uses it.
+  the Kochbuch's "Gekocht" page, uses it. `closeWhenOutOfPot` closes a meal
+  page with the caller's message and snack bar key when its meal leaves the
+  pot while the page is open, unless the page saves it itself; the "Gekocht"
+  page uses it for a meal cooked on another device. `close` takes an
+  optional message and key.
 - `presentation/prepared_meal_pending_food_flow.dart`:
   `PreparedMealPendingFoodFlow.fill` finds a food through the food pick
   (`PreparedMealFoodSource` in `presentation/models/`), adds it to the Vorrat

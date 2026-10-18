@@ -6554,6 +6554,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeNotFromStock => 'Not from stock';
 
   @override
+  String get cookedDoneElsewhere =>
+      'This meal is already cooked and in your stock.';
+
+  @override
   String get cookedLoadFailed => 'Could not load the meal.';
 
   @override

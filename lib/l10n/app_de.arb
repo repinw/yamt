@@ -3157,6 +3157,7 @@
     }
   },
   "recipeNotFromStock": "Nicht aus dem Vorrat",
+  "cookedDoneElsewhere": "Diese Mahlzeit ist schon gekocht und im Vorrat.",
   "cookedLoadFailed": "Die Mahlzeit konnte nicht geladen werden.",
   "preparedMealGone": "Mahlzeit nicht mehr im Vorrat",
   "cookbookInPotSince": "Im Topf seit {time}",
