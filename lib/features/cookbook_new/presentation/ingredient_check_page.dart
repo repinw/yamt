@@ -6,8 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/core/widgets/app_state_views.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_state.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_view.dart';
@@ -18,9 +16,9 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_summary.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_title.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_top_bar.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_async_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_bottom_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_stock_picker_sheet.dart';
-import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_food_source.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_pending_food_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -73,19 +71,7 @@ class _IngredientCheckPageState extends ConsumerState<IngredientCheckPage> {
       child: Scaffold(
         backgroundColor: FoodLabelColors.of(context).paper,
         body: SafeArea(
-          child: checkAsync.when(
-            data: (check) => check == null
-                ? Center(child: Text(l10n.recipeNotFound))
-                : _body(check),
-            error: (_, _) => AppErrorRetryView(
-              message: l10n.recipeLoadFailed,
-              retryLabel: l10n.inventoryRetryAction,
-              onRetry: () => ref
-                ..invalidate(cookbookTemplatesProvider)
-                ..invalidate(inventoryQuickEatItemsProvider),
-            ),
-            loading: () => const AppLoadingView(),
-          ),
+          child: RecipeAsyncView(value: checkAsync, data: _body),
         ),
       ),
     );

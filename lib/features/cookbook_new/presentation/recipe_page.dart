@@ -7,8 +7,6 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
-import 'package:yamt/core/widgets/app_state_views.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/cookbook_remove_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
@@ -16,13 +14,13 @@ import 'package:yamt/features/cookbook_new/presentation/recipe_cook_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_plan_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_section_title.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/portion_stepper.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_async_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_bottom_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_check_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_hero.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_ingredient_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_step_list.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_stock_picker_sheet.dart';
-import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// A saved recipe: its photo and name, the portions to cook, the
@@ -67,32 +65,12 @@ class RecipePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: colors.paper,
-      body: viewAsync.when(
-        data: (view) => view == null
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xxl),
-                  child: Text(
-                    l10n.recipeNotFound,
-                    key: notFoundKey,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
-            : _RecipeBody(
-                view: view,
-                isCooking: isCooking,
-                withGuide: withGuide,
-              ),
-        error: (_, _) => AppErrorRetryView(
-          retryButtonKey: retryKey,
-          message: l10n.recipeLoadFailed,
-          retryLabel: l10n.inventoryRetryAction,
-          onRetry: () => ref
-            ..invalidate(cookbookTemplatesProvider)
-            ..invalidate(inventoryQuickEatItemsProvider),
-        ),
-        loading: () => const AppLoadingView(),
+      body: RecipeAsyncView(
+        value: viewAsync,
+        notFoundKey: notFoundKey,
+        retryKey: retryKey,
+        data: (view) =>
+            _RecipeBody(view: view, isCooking: isCooking, withGuide: withGuide),
       ),
     );
   }
