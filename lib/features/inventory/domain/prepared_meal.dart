@@ -389,97 +389,46 @@ class PreparedMeal {
     return 100 / amountBasis;
   }
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        other is PreparedMeal &&
-            other.id == id &&
-            other.name == name &&
-            other.imageAssetId == imageAssetId &&
-            other.imageUrl == imageUrl &&
-            other.recipeUrl == recipeUrl &&
-            const ListEquality<String>().equals(
-              other.recipeIngredients,
-              recipeIngredients,
-            ) &&
-            const ListEquality<String>().equals(
-              other.recipeInstructions,
-              recipeInstructions,
-            ) &&
-            const ListEquality<String>().equals(
-              other.ignoredRecipeIngredients,
-              ignoredRecipeIngredients,
-            ) &&
-            const DeepCollectionEquality().equals(
-              other.recipeIngredientAssignments,
-              recipeIngredientAssignments,
-            ) &&
-            const DeepCollectionEquality().equals(
-              other.recipeIngredientAmountConversions,
-              recipeIngredientAmountConversions,
-            ) &&
-            const ListEquality<String>().equals(
-              other.pendingRecipeIngredients,
-              pendingRecipeIngredients,
-            ) &&
-            const ListEquality<String>().equals(
-              other.ignoredPendingRecipeIngredients,
-              ignoredPendingRecipeIngredients,
-            ) &&
-            other.finalNetWeight == finalNetWeight &&
-            other.inPot == inPot &&
-            other.potTareWeight == potTareWeight &&
-            other.servedInPieces == servedInPieces &&
-            other.potWeighing == potWeighing &&
-            other.remainingNetWeight == remainingNetWeight &&
-            other.totalPortions == totalPortions &&
-            other.remainingPortions == remainingPortions &&
-            other.totalKcal == totalKcal &&
-            other.totalProtein == totalProtein &&
-            other.totalCarbs == totalCarbs &&
-            other.totalFat == totalFat &&
-            other.createdAt == createdAt &&
-            other.updatedAt == updatedAt &&
-            other.lastEatenAt == lastEatenAt &&
-            const ListEquality<PreparedMealComponent>().equals(
-              other.components,
-              components,
-            );
-  }
+  /// Every value that makes two meals equal.
+  List<Object?> get _props => <Object?>[
+    id,
+    name,
+    imageAssetId,
+    imageUrl,
+    recipeUrl,
+    recipeIngredients,
+    recipeInstructions,
+    ignoredRecipeIngredients,
+    recipeIngredientAssignments,
+    recipeIngredientAmountConversions,
+    pendingRecipeIngredients,
+    ignoredPendingRecipeIngredients,
+    finalNetWeight,
+    inPot,
+    potTareWeight,
+    servedInPieces,
+    potWeighing,
+    remainingNetWeight,
+    totalPortions,
+    remainingPortions,
+    totalKcal,
+    totalProtein,
+    totalCarbs,
+    totalFat,
+    createdAt,
+    updatedAt,
+    lastEatenAt,
+    components,
+  ];
 
   @override
-  int get hashCode {
-    return Object.hashAll(<Object?>[
-      id,
-      name,
-      imageAssetId,
-      imageUrl,
-      recipeUrl,
-      const ListEquality<String>().hash(recipeIngredients),
-      const ListEquality<String>().hash(recipeInstructions),
-      const ListEquality<String>().hash(ignoredRecipeIngredients),
-      const DeepCollectionEquality().hash(recipeIngredientAssignments),
-      const DeepCollectionEquality().hash(recipeIngredientAmountConversions),
-      const ListEquality<String>().hash(pendingRecipeIngredients),
-      const ListEquality<String>().hash(ignoredPendingRecipeIngredients),
-      finalNetWeight,
-      inPot,
-      potTareWeight,
-      servedInPieces,
-      potWeighing,
-      remainingNetWeight,
-      totalPortions,
-      remainingPortions,
-      totalKcal,
-      totalProtein,
-      totalCarbs,
-      totalFat,
-      createdAt,
-      updatedAt,
-      lastEatenAt,
-      const ListEquality<PreparedMealComponent>().hash(components),
-    ]);
-  }
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PreparedMeal &&
+          const DeepCollectionEquality().equals(other._props, _props);
+
+  @override
+  int get hashCode => const DeepCollectionEquality().hash(_props);
 }
 
 /// A stored date and time, or now.
