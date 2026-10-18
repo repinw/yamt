@@ -5,6 +5,7 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:health/health.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -33,6 +34,7 @@ const _healthHomeSettingsAction =
 const _legacyHealthConnectSettingsAction =
     'androidx.health.ACTION_HEALTH_CONNECT_SETTINGS';
 const _intentExtraPackageName = 'android.intent.extra.PACKAGE_NAME';
+const _appleHealthUrl = 'x-apple-health://';
 
 /// Create health connection service.
 HealthConnectionService createHealthConnectionService({
@@ -214,6 +216,24 @@ class MobileHealthConnectionService implements HealthConnectionService {
     }
 
     await installHealthConnect();
+  }
+
+  @override
+  Future<void> openHealthApp() async {
+    final opened = _isIOS
+        ? await launchUrl(Uri.parse(_appleHealthUrl))
+        : _isAndroid &&
+              (await _launchAndroidIntent(
+                    const AndroidIntent(action: _healthHomeSettingsAction),
+                  ) ||
+                  await _launchAndroidIntent(
+                    const AndroidIntent(
+                      action: _legacyHealthConnectSettingsAction,
+                    ),
+                  ));
+    if (!opened) {
+      throw StateError('Could not open the Health app.');
+    }
   }
 
   @override

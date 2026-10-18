@@ -1,24 +1,24 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/health/application/health_app_weight_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
-import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
-import 'package:yamt/features/health/data/health_weight_service.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
+import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
 part 'manual_health_weight_entries_controller.g.dart';
 
 const _logName = 'ManualHealthWeightEntriesController';
 
-/// Defines manual health weight entries controller.
+/// The manual weight entries, and the weighings that the user adds, changes,
+/// or deletes: in Health when it is ready, else as manual entries.
 @riverpod
 class ManualHealthWeightEntriesController
     extends _$ManualHealthWeightEntriesController {
@@ -27,126 +27,145 @@ class ManualHealthWeightEntriesController
     return await ref.watch(manualHealthWeightRepositoryProvider).readEntries();
   }
 
-  /// Save entry.
-  Future<bool> saveEntry({
-    required DateTime day,
-    required double weightKg,
-  }) async {
-    final repository = ref.read(manualHealthWeightRepositoryProvider);
-    final healthWeightService = ref.read(healthWeightServiceProvider);
-    final healthConnectionService = ref.read(healthConnectionServiceProvider);
-    final now = ref.read(clockProvider)();
-    final previousEntries = await _loadCurrentEntries(repository);
-    final normalizedDay = normalizeLocalDay(day);
-    final connectionStatus = await healthConnectionService.loadStatus();
-
-    final saved = connectionStatus.accessState == HealthDataAccessState.ready
-        ? await _saveToHealth(
-            repository: repository,
-            healthWeightService: healthWeightService,
-            sampleRepository: ref.read(healthWeightSampleRepositoryProvider),
-            previousEntries: previousEntries,
-            normalizedDay: normalizedDay,
-            now: now,
-            weightKg: weightKg,
-          )
-        : await _saveToRepository(
-            repository: repository,
-            previousEntries: previousEntries,
-            entry: _dayEntry(
-              previousEntries,
-              _weightRecordedAtForDay(normalizedDay, now),
-              weightKg,
-            ),
-          );
-    return saved;
+  /// Adds a weighing of [day]: now for today, midday for another day.
+  Future<bool> saveEntry({required DateTime day, required double weightKg}) {
+    return _add(
+      _weightRecordedAtForDay(
+        normalizeLocalDay(day),
+        ref.read(clockProvider)(),
+      ),
+      weightKg,
+    );
   }
 
-  Future<List<ManualHealthWeightEntry>> _loadCurrentEntries(
-    ManualHealthWeightRepository repository,
-  ) async {
-    final currentEntries = state.asData?.value;
-    if (currentEntries != null) {
-      return currentEntries;
-    }
-    final loadedEntries = await repository.readEntries();
-    return List<ManualHealthWeightEntry>.unmodifiable(loadedEntries);
-  }
-
-  Future<bool> _saveToHealth({
-    required ManualHealthWeightRepository repository,
-    required HealthWeightService healthWeightService,
-    required HealthWeightSampleRepository sampleRepository,
-    required List<ManualHealthWeightEntry> previousEntries,
-    required DateTime normalizedDay,
-    required DateTime now,
+  /// Changes [entry] to [weightKg] at [recordedAt].
+  Future<bool> updateEntry(
+    ManualHealthWeightEntry entry, {
+    required DateTime recordedAt,
     required double weightKg,
   }) async {
-    final nextEntries = _entriesWithoutDay(previousEntries, normalizedDay);
-    final recordedAt = _weightRecordedAtForDay(normalizedDay, now);
-    try {
-      final saved = await healthWeightService.saveWeightSample(
-        recordedAt: recordedAt,
-        weightKg: weightKg,
+    final next = ManualHealthWeightEntry(
+      day: recordedAt,
+      weightKg: weightKg,
+      recordedAt: recordedAt,
+      id: entry.id,
+    );
+    ManualHealthWeightEntry? stored;
+    final updated = await _write(
+      ref.read(manualHealthWeightRepositoryProvider),
+      (repository) async => stored = await repository.updateEntry(entry, next),
+      removed: entry,
+      added: next,
+    );
+    // The repository may store it under a new id.
+    if (updated && ref.mounted && stored?.storageId != next.storageId) {
+      state = AsyncData(
+        List<ManualHealthWeightEntry>.unmodifiable(
+          <ManualHealthWeightEntry>[
+            for (final other in state.requireValue)
+              if (other.storageId != next.storageId) other,
+            ?stored,
+          ]..sort((left, right) => left.at.compareTo(right.at)),
+        ),
       );
-      if (!saved) {
-        return await _saveToRepository(
-          repository: repository,
-          previousEntries: previousEntries,
-          entry: _dayEntry(previousEntries, recordedAt, weightKg),
-        );
-      }
+    }
+    return updated;
+  }
 
-      // Readers read the cloud, so the weight counts before the next sync.
+  /// Deletes exactly [entry].
+  Future<bool> deleteEntry(ManualHealthWeightEntry entry) {
+    return _write(
+      ref.read(manualHealthWeightRepositoryProvider),
+      (repository) => repository.deleteEntry(entry),
+      removed: entry,
+    );
+  }
+
+  /// Replaces the Health weighing [sample] of this device with [weightKg]
+  /// at [recordedAt]. The new weighing comes first, so a failed save loses
+  /// nothing; when the old one then fails to go, both stay visible.
+  Future<bool> updateAppWeight(
+    HealthWeightSample sample, {
+    required DateTime recordedAt,
+    required double weightKg,
+  }) async {
+    final unchanged =
+        _minute(sample.recordedAt) == _minute(recordedAt) &&
+        sample.weightKg.toStringAsFixed(2) == weightKg.toStringAsFixed(2);
+    if (unchanged) return true;
+    if (!await _add(recordedAt, weightKg)) return false;
+    // deleteAppWeight logs a failure; the old weighing then stays listed.
+    await deleteAppWeight(sample);
+    return true;
+  }
+
+  /// Deletes the Health weighing [sample] of this device.
+  Future<bool> deleteAppWeight(HealthWeightSample sample) async {
+    try {
+      await ref.read(healthAppWeightServiceProvider).delete(sample);
+      return true;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to delete a Health weight.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  /// Writes the weighing to Health when it is ready, else, or when Health
+  /// refuses, as a manual entry of its own.
+  Future<bool> _add(DateTime recordedAt, double weightKg) async {
+    // Read first, so the weighing is still stored when this controller is
+    // disposed meanwhile.
+    final repository = ref.read(manualHealthWeightRepositoryProvider);
+    final status = await ref.read(healthConnectionServiceProvider).loadStatus();
+    if (status.accessState == HealthDataAccessState.ready && ref.mounted) {
       try {
-        await sampleRepository.saveAppWeight(
-          recordedAt: recordedAt,
-          weightKg: weightKg,
-        );
+        if (await ref
+            .read(healthAppWeightServiceProvider)
+            .add(recordedAt: recordedAt, weightKg: weightKg)) {
+          return true;
+        }
       } on Object catch (error, stackTrace) {
         log(
-          'Failed to store the weight in the cloud; the sync retries.',
+          'Failed to save weight entry to health platform.',
           name: _logName,
           error: error,
           stackTrace: stackTrace,
         );
       }
-      if (ref.mounted) {
-        state = AsyncData(nextEntries);
-      }
-      final deleted = await repository.deleteEntryForDay(normalizedDay);
-      if (!deleted) {
-        log(
-          'Failed to clear fallback weight entry after health save.',
-          name: _logName,
-        );
-      }
-      return true;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to save weight entry to health platform.',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return await _saveToRepository(
-        repository: repository,
-        previousEntries: previousEntries,
-        entry: _dayEntry(previousEntries, recordedAt, weightKg),
-      );
     }
+    final entry = ManualHealthWeightEntry(
+      day: recordedAt,
+      weightKg: weightKg,
+      recordedAt: recordedAt,
+      id: const Uuid().v4(),
+    );
+    return await _write(repository, (repository) async {
+      if (!await repository.saveEntry(entry)) {
+        throw StateError('The weight was not saved.');
+      }
+    }, added: entry);
   }
 
-  Future<bool> _saveToRepository({
-    required ManualHealthWeightRepository repository,
-    required List<ManualHealthWeightEntry> previousEntries,
-    required ManualHealthWeightEntry entry,
+  /// Shows the entries without [removed] and with [added] at once, and
+  /// restores them when [write] fails.
+  Future<bool> _write(
+    ManualHealthWeightRepository repository,
+    Future<void> Function(ManualHealthWeightRepository repository) write, {
+    ManualHealthWeightEntry? removed,
+    ManualHealthWeightEntry? added,
   }) async {
-    // Other weighings of the day are their own documents and stay.
+    final previousEntries = await _loadCurrentEntries(repository);
     final nextEntries = [
-      for (final existingEntry in previousEntries)
-        if (existingEntry.storageId != entry.storageId) existingEntry,
-      entry,
+      for (final entry in previousEntries)
+        if (entry.storageId != removed?.storageId &&
+            entry.storageId != added?.storageId)
+          entry,
+      ?added,
     ]..sort((left, right) => left.at.compareTo(right.at));
     if (ref.mounted) {
       state = AsyncData(
@@ -155,17 +174,11 @@ class ManualHealthWeightEntriesController
     }
 
     try {
-      final saved = await repository.saveEntry(entry);
-      if (!saved && ref.mounted) {
-        state = AsyncData(previousEntries);
-      }
-      if (!saved) {
-        return false;
-      }
+      await write(repository);
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to save fallback weight entry.',
+        'Failed to write a manual weight entry.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
@@ -177,40 +190,27 @@ class ManualHealthWeightEntriesController
     }
   }
 
-  List<ManualHealthWeightEntry> _entriesWithoutDay(
-    List<ManualHealthWeightEntry> entries,
-    DateTime day,
-  ) {
-    return List<ManualHealthWeightEntry>.unmodifiable(
-      entries.where((entry) => !isSameLocalDay(entry.day, day)),
-    );
+  Future<List<ManualHealthWeightEntry>> _loadCurrentEntries(
+    ManualHealthWeightRepository repository,
+  ) async {
+    final currentEntries = ref.mounted ? state.asData?.value : null;
+    if (currentEntries != null) {
+      return currentEntries;
+    }
+    final loadedEntries = await repository.readEntries();
+    return List<ManualHealthWeightEntry>.unmodifiable(loadedEntries);
   }
 }
 
-/// The weight of the day at [recordedAt], stored over the last entry of
-/// that day.
-ManualHealthWeightEntry _dayEntry(
-  List<ManualHealthWeightEntry> entries,
-  DateTime recordedAt,
-  double weightKg,
-) {
-  return ManualHealthWeightEntry(
-    day: recordedAt,
-    weightKg: weightKg,
-    recordedAt: recordedAt,
-    id: entries
-        .lastWhereOrNull((entry) => isSameLocalDay(entry.day, recordedAt))
-        ?.id,
-  );
-}
+/// The minute of [at], as the cloud copy keys a weighing.
+int _minute(DateTime at) =>
+    at.millisecondsSinceEpoch ~/ Duration.millisecondsPerMinute;
 
+/// Now for today, midday for another day.
 DateTime _weightRecordedAtForDay(DateTime day, DateTime now) {
-  // Stable midday timestamp avoids creating near-duplicate manual samples
-  // for same day when user edits weight multiple times.
   final dayStart = DateTime(day.year, day.month, day.day);
-  final midday = DateTime(day.year, day.month, day.day, 12);
-  if (!isSameLocalDay(day, now) || !midday.isAfter(now)) {
-    return midday;
+  if (!isSameLocalDay(day, now)) {
+    return DateTime(day.year, day.month, day.day, 12);
   }
 
   final visibleNow = now.subtract(const Duration(seconds: 1));

@@ -17,6 +17,10 @@ abstract interface class HealthConnectionService {
   /// Open health permission settings.
   Future<void> openHealthPermissionSettings();
 
+  /// Opens the Health app of the platform, where the user can delete
+  /// weights of other apps. Throws when it cannot open it.
+  Future<void> openHealthApp();
+
   /// Open app permission settings.
   Future<void> openAppPermissionSettings();
 

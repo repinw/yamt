@@ -21,6 +21,11 @@ typedef _Session = ({
   String deviceId,
 });
 
+typedef _CopyChange = DeviceHealthWeightSample Function(
+  DeviceHealthWeightSample? copy,
+  String deviceId,
+);
+
 const _usersCollection = 'users';
 const _samplesCollection = 'health_weight_samples';
 const _logName = 'HealthWeightSampleRepository';
@@ -136,53 +141,48 @@ class HealthWeightSampleRepository {
     if (collection == null) {
       return const <HealthWeightSample>[];
     }
-    final cipher = _dataCipher!.cipher;
-    final decoded = await Future.wait(
-      (await collection.get()).docs.map(
-        (document) => decodeHealthWeightCopy(document, cipher),
-      ),
-    );
+    final stored = await _readStored(collection.get(), _dataCipher!.cipher);
     return List<HealthWeightSample>.unmodifiable([
-      for (final copy in decoded.nonNulls) copy.sample,
+      for (final copy in stored.values) copy.sample,
     ]);
   }
 
-  /// Stores [weightKg] at [recordedAt] as the weight this app wrote to the
-  /// Health store of this device that day, replacing its earlier one of
-  /// that day, as Health does. It does not wait for the server, so it also
-  /// works offline. Throws [StateError] without a signed-in user.
+  /// Stores [weightKg] at [recordedAt] as a weighing this app wrote to the
+  /// Health store of this device. It does not wait for the server, so it
+  /// also works offline. Throws [StateError] without a signed-in user.
   Future<void> saveAppWeight({
     required DateTime recordedAt,
     required double weightKg,
-  }) async {
-    final (:collection, :cipher, :deviceId) = await _session();
+  }) {
     final sample = HealthWeightSample(
       recordedAt: recordedAt,
       weightKg: weightKg,
       isFromThisApp: true,
     );
-    final id = await healthWeightSampleId(sample, cipher);
-    final plan = healthWeightAppWeightSave(
-      deviceId: deviceId,
-      // From the cache, so a save never waits for the network; the
-      // readers' watch keeps it current.
-      stored: await _readStored(readQueryLocalFirst(collection), cipher),
-      id: id,
-      sample: sample,
+    return _rewrite(
+      sample,
+      (copy, deviceId) =>
+          (sample: sample, devices: {...?copy?.devices, deviceId}),
     );
-    await _commit(collection, cipher, plan);
+  }
+
+  /// Leaves the copy of [sample] out of every count, or counts it again, on
+  /// all devices. The copy keeps its devices. It does not wait for the
+  /// server. Throws [StateError] without a signed-in user or a copy.
+  Future<void> setIgnored(HealthWeightSample sample, {required bool ignored}) {
+    return _rewrite(
+      sample,
+      (copy, _) => healthWeightIgnoredCopy(copy, ignored: ignored),
+    );
   }
 
   /// Deletes the copy of [sample], which the user deleted in this app.
   Future<void> deleteSample(HealthWeightSample sample) async {
     final (:collection, :cipher, deviceId: _) = await _session();
-    final batch = collection.firestore.batch()
-      ..delete(collection.doc(await healthWeightSampleId(sample, cipher)));
-    commitBatchInBackground(
-      batch,
-      failureMessage: 'Failed to delete a Health weight sample.',
-      logName: _logName,
-    );
+    await _commit(collection, cipher, (
+      writes: const {},
+      deletes: {await healthWeightSampleId(sample, cipher)},
+    ));
   }
 
   Future<_Session> _session() async {
@@ -195,6 +195,24 @@ class HealthWeightSampleRepository {
       cipher: _dataCipher!.cipher,
       deviceId: await readInstallId(_preferences),
     );
+  }
+
+  /// Writes the copy of [sample] that [change] makes of the stored one.
+  Future<void> _rewrite(HealthWeightSample sample, _CopyChange change) async {
+    final (:collection, :cipher, :deviceId) = await _session();
+    final id = await healthWeightSampleId(sample, cipher);
+    // From the cache, so a change never waits for the network; the readers'
+    // watch keeps it current.
+    final stored = await _readStored(
+      readQueryLocalFirst(
+        collection.where(FieldPath.documentId, isEqualTo: id),
+      ),
+      cipher,
+    );
+    await _commit(collection, cipher, (
+      writes: {id: change(stored[id], deviceId)},
+      deletes: const <String>{},
+    ));
   }
 
   // shortcut: decrypts every stored copy; keep an index once it gets slow.

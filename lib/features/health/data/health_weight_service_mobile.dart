@@ -128,7 +128,7 @@ class MobileHealthWeightService implements HealthWeightService {
       value: weightKg,
       type: HealthDataType.WEIGHT,
       startTime: recordedAt,
-      clientRecordId: _weightClientRecordId(recordedAt),
+      clientRecordId: _weightClientRecordId(recordedAt, weightKg),
       clientRecordVersion: _weightClientRecordVersion(),
       recordingMethod: RecordingMethod.manual,
     );
@@ -220,11 +220,12 @@ class MobileHealthWeightService implements HealthWeightService {
   }
 }
 
-String _weightClientRecordId(DateTime recordedAt) {
-  final day = DateTime(recordedAt.year, recordedAt.month, recordedAt.day);
-  final month = day.month.toString().padLeft(2, '0');
-  final date = day.day.toString().padLeft(2, '0');
-  return '$_appWeightClientRecordPrefix-${day.year}-$month-$date';
+/// One id per weighing, so a second weighing never replaces the first in
+/// Health: its time to the second and its weight.
+String _weightClientRecordId(DateTime recordedAt, double weightKg) {
+  final second = recordedAt.toUtc().toIso8601String().substring(0, 19);
+  return '$_appWeightClientRecordPrefix-$second-'
+      '${weightKg.toStringAsFixed(2)}';
 }
 
 double _weightClientRecordVersion() {

@@ -27,6 +27,11 @@ class _UnsupportedHealthConnectionService implements HealthConnectionService {
   Future<void> openAppPermissionSettings() async {}
 
   @override
+  Future<void> openHealthApp() async {
+    throw UnsupportedError('No Health app on this platform.');
+  }
+
+  @override
   Future<HealthConnectionStatus> loadStatus() async {
     return const HealthConnectionStatus.unsupported();
   }

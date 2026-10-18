@@ -100,7 +100,8 @@ void main() {
     expect(entries.map((entry) => entry.weightKg), <double>[71.2]);
   });
 
-  test('deleteEntryForDay removes persisted day document', () async {
+  test('updateEntry stores the entry under a new id and drops the day '
+      'document', () async {
     final repository = FirestoreManualHealthWeightRepository(
       firestore: FakeFirebaseFirestore(),
       dataCipher: signedIn,
@@ -108,14 +109,23 @@ void main() {
     await repository.saveEntry(
       ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 71.2),
     );
+    final legacy = (await repository.readEntries()).single;
+    final morning = DateTime(2026, 3, 20, 7);
 
-    final deleted = await repository.deleteEntryForDay(
-      DateTime(2026, 3, 20, 9),
+    await repository.updateEntry(
+      legacy,
+      ManualHealthWeightEntry(
+        day: morning,
+        weightKg: 71,
+        recordedAt: morning,
+        id: 'morning',
+      ),
     );
     final entries = await repository.readEntries();
 
-    expect(deleted, isTrue);
-    expect(entries, isEmpty);
+    expect(entries.map((entry) => (entry.id, entry.weightKg)), [
+      ('morning', 71.0),
+    ]);
   });
 
   test('keeps the day it was stored under in any time zone', () async {
@@ -129,31 +139,27 @@ void main() {
     expect(entry.day, DateTime(2026, 3, 20));
   });
 
-  test('deleteEntryForDay removes every weighing of the day', () async {
+  test('deleteEntry deletes only that weighing', () async {
     final repository = FirestoreManualHealthWeightRepository(
       firestore: FakeFirebaseFirestore(),
       dataCipher: signedIn,
     );
     final evening = DateTime(2026, 3, 20, 21, 40);
+    final eveningEntry = ManualHealthWeightEntry(
+      day: evening,
+      weightKg: 71.9,
+      recordedAt: evening,
+      id: 'evening',
+    );
     await repository.saveEntry(
       ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 71.2),
     );
-    await repository.saveEntry(
-      ManualHealthWeightEntry(
-        day: evening,
-        weightKg: 71.9,
-        recordedAt: evening,
-        id: 'evening',
-      ),
-    );
-    await repository.saveEntry(
-      ManualHealthWeightEntry(day: DateTime(2026, 3, 21), weightKg: 70.8),
-    );
+    await repository.saveEntry(eveningEntry);
 
-    await repository.deleteEntryForDay(DateTime(2026, 3, 20));
+    await repository.deleteEntry(eveningEntry);
     final entries = await repository.readEntries();
 
-    expect(entries.map((entry) => entry.weightKg), <double>[70.8]);
+    expect(entries.map((entry) => entry.weightKg), <double>[71.2]);
   });
 
   test('returns safe defaults when firestore or data key missing', () async {
@@ -173,15 +179,15 @@ void main() {
     expect(await noFirestoreRepository.readEntries(), isEmpty);
     expect(await noFirestoreRepository.saveEntry(entry), isFalse);
     expect(
-      await noFirestoreRepository.deleteEntryForDay(DateTime(2026, 3, 20)),
-      isFalse,
+      () => noFirestoreRepository.deleteEntry(entry),
+      throwsA(isA<StateError>()),
     );
 
     expect(await noKeyRepository.readEntries(), isEmpty);
     expect(await noKeyRepository.saveEntry(entry), isFalse);
     expect(
-      await noKeyRepository.deleteEntryForDay(DateTime(2026, 3, 20)),
-      isFalse,
+      () => noKeyRepository.deleteEntry(entry),
+      throwsA(isA<StateError>()),
     );
   });
 }

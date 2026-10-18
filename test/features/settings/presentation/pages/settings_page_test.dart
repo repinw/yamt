@@ -80,6 +80,9 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   }
 
   @override
+  Future<void> openHealthApp() async {}
+
+  @override
   Future<void> openAppPermissionSettings() async {
     openAppPermissionSettingsCallCount += 1;
   }

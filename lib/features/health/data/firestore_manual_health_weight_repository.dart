@@ -1,8 +1,8 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/encrypted_payload.dart';
-import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -75,36 +75,39 @@ class FirestoreManualHealthWeightRepository
   }
 
   @override
-  Future<bool> deleteEntryForDay(DateTime day) async {
-    final collection = _collection();
-    if (collection == null) {
-      return false;
+  Future<ManualHealthWeightEntry> updateEntry(
+    ManualHealthWeightEntry previous,
+    ManualHealthWeightEntry next,
+  ) async {
+    final collection = _requireCollection();
+    // Temporary compatibility, added in 3.9.0: an entry stored under its day
+    // gets an id of its own, so its day can change.
+    final stored = previous.storageId == manualWeightDayId(previous.day)
+        ? ManualHealthWeightEntry(
+            day: next.day,
+            weightKg: next.weightKg,
+            recordedAt: next.recordedAt,
+            id: const Uuid().v4(),
+          )
+        : next;
+    final reference = collection.doc(stored.storageId);
+    final batch = collection.firestore.batch()
+      ..set(reference, <String, Object?>{
+        encryptedPayloadField: await _dataCipher!.cipher.encryptJson(
+          stored.toJson(),
+          aad: reference.path,
+        ),
+      });
+    if (previous.storageId != stored.storageId) {
+      batch.delete(collection.doc(previous.storageId));
     }
+    await batch.commit();
+    return stored;
+  }
 
-    try {
-      // From the server, so a weighing of another device goes too.
-      // shortcut: decrypts every entry; keep a day index once it gets slow.
-      final snapshot = await collection.get();
-      final entries = await Future.wait(snapshot.docs.map(_decodeDocument));
-      // The day document goes even when it cannot be decoded, as before.
-      final batch = collection.firestore.batch()
-        ..delete(collection.doc(manualWeightDayId(day)));
-      for (final entry in entries.nonNulls) {
-        if (isSameLocalDay(entry.day, day)) {
-          batch.delete(collection.doc(entry.storageId));
-        }
-      }
-      await batch.commit();
-      return true;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to delete fallback weight entry.',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
+  @override
+  Future<void> deleteEntry(ManualHealthWeightEntry entry) async {
+    await _requireCollection().doc(entry.storageId).delete();
   }
 
   Future<ManualHealthWeightEntry?> _decodeDocument(
@@ -131,6 +134,14 @@ class FirestoreManualHealthWeightRepository
       );
       return null;
     }
+  }
+
+  CollectionReference<Map<String, dynamic>> _requireCollection() {
+    final collection = _collection();
+    if (collection == null) {
+      throw StateError('Manual weights need a signed-in user.');
+    }
+    return collection;
   }
 
   CollectionReference<Map<String, dynamic>>? _collection() {

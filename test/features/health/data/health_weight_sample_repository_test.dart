@@ -240,7 +240,7 @@ void main() {
     expect(await storedDocuments(firestore), hasLength(1));
   });
 
-  test('a corrected app weight replaces the earlier one of that day', () async {
+  test('a second app weight of a day keeps the first', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = HealthWeightSampleRepository(
       firestore: firestore,
@@ -272,8 +272,39 @@ void main() {
     final weights = [
       for (final sample in await repository.loadSamples()) sample.weightKg,
     ]..sort();
-    // The scale weight of that day stays.
-    expect(weights, [80.9, 81]);
+    expect(weights, [80, 80.9, 81]);
+  });
+
+  test('an ignored weight stays ignored and keeps its devices', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = HealthWeightSampleRepository(
+      firestore: firestore,
+      dataCipher: signedIn,
+      preferences: MemoryAppPreferences(),
+    );
+    final scale = HealthWeightSample(
+      recordedAt: DateTime(2026, 3, 20, 7),
+      weightKg: 80.9,
+    );
+    await repository.syncDevice(
+      loadHealth: () async => [scale],
+      mirrorSince: _longAgo,
+      activeDevices: const {},
+    );
+    await pumpEventQueue();
+
+    await repository.setIgnored(scale, ignored: true);
+    await pumpEventQueue();
+    // A later sync of the same device keeps the copy and its flag.
+    await repository.syncDevice(
+      loadHealth: () async => [scale],
+      mirrorSince: _longAgo,
+      activeDevices: const {},
+    );
+    await pumpEventQueue();
+
+    final stored = await repository.loadSamples();
+    expect(stored.single.isIgnored, isTrue);
   });
 
   group('mirrors Health deletions', () {
@@ -386,29 +417,6 @@ void main() {
         expect(await weights(), [80.2]);
       },
     );
-
-    test('an app weight replaces only the earlier one of its device', () async {
-      await phone.saveAppWeight(
-        recordedAt: DateTime(2026, 3, 20, 12),
-        weightKg: 80,
-      );
-      await tablet.saveAppWeight(
-        recordedAt: DateTime(2026, 3, 20, 12, 1),
-        weightKg: 79.5,
-      );
-      await pumpEventQueue();
-
-      await phone.saveAppWeight(
-        recordedAt: DateTime(2026, 3, 20, 12),
-        weightKg: 81,
-      );
-      await pumpEventQueue();
-
-      final weights = [
-        for (final sample in await phone.loadSamples()) sample.weightKg,
-      ]..sort();
-      expect(weights, [79.5, 81]);
-    });
   });
 }
 
