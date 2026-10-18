@@ -71,7 +71,7 @@ final class ProgressWeightProvider
   }
 }
 
-String _$progressWeightHash() => r'54805edb290b05ab77b6831ada65b798c5551cdf';
+String _$progressWeightHash() => r'd99929cb84e164d094a83bc954cea3db1cb402f5';
 
 /// Weight trend of the period of [scope] with the goal starts and the
 /// forecast for the goal weight.

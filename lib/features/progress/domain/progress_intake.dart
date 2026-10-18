@@ -15,12 +15,14 @@ class ProgressIntake {
   });
 
   /// Splits [days] into the run from [weekStart] to [weekEnd] and the
-  /// comparison of the days from [comparisonStart] to the day before [today].
+  /// comparison of the days from [comparisonStart] to [comparisonEnd], at
+  /// the latest the day before [today].
   factory fromDays({
     required List<ProgressDay> days,
     required DateTime weekStart,
     required DateTime weekEnd,
     required DateTime comparisonStart,
+    required DateTime comparisonEnd,
     required DateTime today,
     required int? runNumber,
   }) {
@@ -30,7 +32,10 @@ class ProgressIntake {
         )
         .toList(growable: false);
     final comparisonDays = days.where(
-      (day) => !day.day.isBefore(comparisonStart) && day.day.isBefore(today),
+      (day) =>
+          !day.day.isBefore(comparisonStart) &&
+          !day.day.isAfter(comparisonEnd) &&
+          day.day.isBefore(today),
     );
     return ProgressIntake(
       weekDays: weekDays,

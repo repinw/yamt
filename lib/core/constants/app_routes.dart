@@ -117,9 +117,6 @@ abstract final class AppRoutes {
   /// Query parameter that lists goal cycle ids preselected in analytics.
   static const homeCaloriesAnalyticsCyclesParam = 'cycles';
 
-  /// Current and archived calorie goals.
-  static const homeSettingsGoalArchive = '/home/settings/goals';
-
   /// Progress home route.
   static const homeProgress = '/home/progress';
 

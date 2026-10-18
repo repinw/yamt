@@ -39,8 +39,10 @@ class ProgressDayTypeSection extends ConsumerWidget {
           data: (intake) => _DayTypeContent(
             key: sectionKey,
             kicker: switch (scope) {
-              ProgressScope.goal => l10n.progressDayTypeKickerGoal,
-              ProgressScope.all => l10n.progressDayTypeKickerAll,
+              ProgressGoalScope() => l10n.progressDayTypeKickerGoal,
+              ProgressAllScope() => l10n.progressDayTypeKickerAll,
+              ProgressPastGoalScope(:final number) =>
+                l10n.progressDayTypeKickerPastGoal(number),
             },
             training: intake.training,
             rest: intake.rest,

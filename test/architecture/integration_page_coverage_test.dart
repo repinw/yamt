@@ -10,7 +10,6 @@ const _legacyPagesWithoutIntegrationTest = <String>{
   'lib/features/auth/presentation/data_key_page.dart',
   'lib/features/auth/presentation/recovery_key_page.dart',
   'lib/features/auth/presentation/welcome_page.dart',
-  'lib/features/calories/presentation/calorie_goal_archive_page.dart',
   'lib/features/calories/presentation/tdee_analytics_page.dart',
   'lib/features/kitchen_utensils/presentation/kitchen_utensils_page.dart',
   'lib/features/onboarding/presentation/calorie_goal_onboarding_page.dart',

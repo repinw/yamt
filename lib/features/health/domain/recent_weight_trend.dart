@@ -32,13 +32,21 @@ class RecentWeightTrend {
   });
 
   /// Builds the trend of the [dayCount] days up to [today] from [series].
+  ///
+  /// The slope leaves out the days before [notBefore].
   factory fromSeries(
     DailyWeightSeries series, {
     required DateTime today,
     int dayCount = chartDayCount,
+    DateTime? notBefore,
   }) {
     final lastDay = series.lastDay;
-    final slope = series.slopeKgPerDay();
+    // A trend that ends before the last weigh-in, such as a past goal's,
+    // takes the slope up to its own last day.
+    final slope = series.slopeKgPerDay(
+      endDay: lastDay != null && lastDay.isAfter(today) ? today : null,
+      notBefore: notBefore,
+    );
     return RecentWeightTrend(
       days: List<RecentWeightDay>.unmodifiable([
         for (var offset = dayCount - 1; offset >= 0; offset--)

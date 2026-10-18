@@ -960,30 +960,6 @@
   "caloriesCalculatorGoalSpeedHint": "Zum Beispiel 0,25, 0,5 oder 0,75",
   "caloriesCalculatorGoalSpeedEmpty": "Bitte gib eine Zielgeschwindigkeit ein.",
   "caloriesCalculatorGoalSpeedInvalid": "Bitte gib eine gültige Zielgeschwindigkeit ein.",
-  "settingsGoalArchiveTitle": "Zielarchiv",
-  "settingsGoalArchiveSubtitle": "Laufendes Ziel und frühere Ziele anzeigen",
-  "goalArchiveTitle": "Zielarchiv",
-  "goalArchiveLoadFailed": "Die Ziele konnten nicht geladen werden.",
-  "goalArchiveRetryAction": "Erneut versuchen",
-  "goalArchiveActive": "Laufend",
-  "goalArchiveCompleted": "Abgeschlossen",
-  "goalArchiveGoalLabel": "Ziel",
-  "goalArchiveSpeedLabel": "Geschwindigkeit",
-  "goalArchiveSpeedValue": "{speed} kg/Woche",
-  "@goalArchiveSpeedValue": {
-    "placeholders": {
-      "speed": {"type": "String"}
-    }
-  },
-  "goalArchiveStartLabel": "Start",
-  "goalArchiveStartWeightLabel": "Startgewicht",
-  "goalArchiveEndWeightLabel": "Endgewicht",
-  "goalArchiveEstimatedEndLabel": "Voraussichtliches Ende",
-  "goalArchiveEndLabel": "Ende",
-  "goalArchiveReachedLabel": "Erreicht",
-  "goalArchiveUnlimited": "Unbegrenzt",
-  "goalArchiveSelectHint": "Wähle ein oder mehrere Ziele für den gemeinsamen Verlauf.",
-  "goalArchiveOpenAnalytics": "Verlauf öffnen",
   "tdeeChartEstimateMarker": "Schätzung",
   "tdeeAnalyticsTitle": "TDEE & Verbrauch",
   "tdeeAnalyticsLoadFailed": "Die Analyse konnte nicht geladen werden.",
@@ -1399,6 +1375,7 @@
   "progressAveragePerDay": "Schnitt pro Tag",
   "progressScopeGoal": "Aktuelles Ziel",
   "progressScopeAll": "Gesamt",
+  "progressScopePastGoal": "Ziel",
   "progressRunKicker": "Run {run} · Tag {day} von {total}",
   "@progressRunKicker": {
     "placeholders": {
@@ -1414,6 +1391,14 @@
     }
   },
   "progressDayTypeKickerGoal": "Seit Zielstart · Schnitt",
+  "progressDayTypeKickerPastGoal": "Ziel {number} · Schnitt",
+  "@progressDayTypeKickerPastGoal": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "progressDayTypeKickerAll": "Alle Ziele · Schnitt",
   "progressGoalMarker": "Ziel {number}",
   "@progressGoalMarker": {
@@ -1423,6 +1408,55 @@
       }
     }
   },
+  "progressGoalMenuRunning": "Ziel {number} · läuft",
+  "@progressGoalMenuRunning": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "progressGoalMenuSince": "seit {date}",
+  "@progressGoalMenuSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalMenuRange": "{start} – {end}",
+  "@progressGoalMenuRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalWeightValue": "{weight} kg",
+  "@progressGoalWeightValue": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalSpeedLabel": "Geschwindigkeit",
+  "progressGoalSpeedValue": "{speed} kg/Woche",
+  "@progressGoalSpeedValue": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalStartLabel": "Start",
+  "progressGoalStartWeightLabel": "Startgewicht",
+  "progressGoalEndWeightLabel": "Endgewicht",
+  "progressGoalEndLabel": "Ende",
+  "progressGoalReachedLabel": "Erreicht",
   "progressWeekKicker": "{start} – {end}",
   "@progressWeekKicker": {
     "placeholders": {
@@ -3037,6 +3071,7 @@
   "diaryCheckInPhotoAdd": "Foto",
   "progressPhotosKicker": "Fotos · Vorher / Nachher",
   "progressPhotosEmpty": "Noch keine Fotos. Füg eins hinzu oder mach es im nächsten Check-in.",
+  "progressPhotosEmptyPastGoal": "Keine Fotos aus diesem Ziel.",
   "progressPhotosAdd": "Foto hinzufügen",
   "progressPhotosAll": "Alle Fotos",
   "progressPhotosCompare": "Vergleichen",

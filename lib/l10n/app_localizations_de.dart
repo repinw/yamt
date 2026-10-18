@@ -1939,67 +1939,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Bitte gib eine gültige Zielgeschwindigkeit ein.';
 
   @override
-  String get settingsGoalArchiveTitle => 'Zielarchiv';
-
-  @override
-  String get settingsGoalArchiveSubtitle =>
-      'Laufendes Ziel und frühere Ziele anzeigen';
-
-  @override
-  String get goalArchiveTitle => 'Zielarchiv';
-
-  @override
-  String get goalArchiveLoadFailed => 'Die Ziele konnten nicht geladen werden.';
-
-  @override
-  String get goalArchiveRetryAction => 'Erneut versuchen';
-
-  @override
-  String get goalArchiveActive => 'Laufend';
-
-  @override
-  String get goalArchiveCompleted => 'Abgeschlossen';
-
-  @override
-  String get goalArchiveGoalLabel => 'Ziel';
-
-  @override
-  String get goalArchiveSpeedLabel => 'Geschwindigkeit';
-
-  @override
-  String goalArchiveSpeedValue(String speed) {
-    return '$speed kg/Woche';
-  }
-
-  @override
-  String get goalArchiveStartLabel => 'Start';
-
-  @override
-  String get goalArchiveStartWeightLabel => 'Startgewicht';
-
-  @override
-  String get goalArchiveEndWeightLabel => 'Endgewicht';
-
-  @override
-  String get goalArchiveEstimatedEndLabel => 'Voraussichtliches Ende';
-
-  @override
-  String get goalArchiveEndLabel => 'Ende';
-
-  @override
-  String get goalArchiveReachedLabel => 'Erreicht';
-
-  @override
-  String get goalArchiveUnlimited => 'Unbegrenzt';
-
-  @override
-  String get goalArchiveSelectHint =>
-      'Wähle ein oder mehrere Ziele für den gemeinsamen Verlauf.';
-
-  @override
-  String get goalArchiveOpenAnalytics => 'Verlauf öffnen';
-
-  @override
   String get tdeeChartEstimateMarker => 'Schätzung';
 
   @override
@@ -3032,6 +2971,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get progressScopeAll => 'Gesamt';
 
   @override
+  String get progressScopePastGoal => 'Ziel';
+
+  @override
   String progressRunKicker(int run, int day, int total) {
     return 'Run $run · Tag $day von $total';
   }
@@ -3040,12 +2982,60 @@ class AppLocalizationsDe extends AppLocalizations {
   String get progressDayTypeKickerGoal => 'Seit Zielstart · Schnitt';
 
   @override
+  String progressDayTypeKickerPastGoal(int number) {
+    return 'Ziel $number · Schnitt';
+  }
+
+  @override
   String get progressDayTypeKickerAll => 'Alle Ziele · Schnitt';
 
   @override
   String progressGoalMarker(int number) {
     return 'Ziel $number';
   }
+
+  @override
+  String progressGoalMenuRunning(int number) {
+    return 'Ziel $number · läuft';
+  }
+
+  @override
+  String progressGoalMenuSince(String date) {
+    return 'seit $date';
+  }
+
+  @override
+  String progressGoalMenuRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String progressGoalWeightValue(String weight) {
+    return '$weight kg';
+  }
+
+  @override
+  String get progressGoalSpeedLabel => 'Geschwindigkeit';
+
+  @override
+  String progressGoalSpeedValue(String speed) {
+    return '$speed kg/Woche';
+  }
+
+  @override
+  String get progressGoalStartLabel => 'Start';
+
+  @override
+  String get progressGoalStartWeightLabel => 'Startgewicht';
+
+  @override
+  String get progressGoalEndWeightLabel => 'Endgewicht';
+
+  @override
+  String get progressGoalEndLabel => 'Ende';
+
+  @override
+  String get progressGoalReachedLabel => 'Erreicht';
 
   @override
   String progressWeekKicker(String start, String end) {
@@ -6436,6 +6426,9 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get progressPhotosEmpty =>
       'Noch keine Fotos. Füg eins hinzu oder mach es im nächsten Check-in.';
+
+  @override
+  String get progressPhotosEmptyPastGoal => 'Keine Fotos aus diesem Ziel.';
 
   @override
   String get progressPhotosAdd => 'Foto hinzufügen';

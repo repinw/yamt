@@ -9,7 +9,6 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/data_key_page.dart';
 import 'package:yamt/features/auth/presentation/recovery_key_page.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
-import 'package:yamt/features/calories/presentation/calorie_goal_archive_page.dart';
 import 'package:yamt/features/calories/presentation/tdee_analytics_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart';
@@ -161,10 +160,6 @@ List<RouteBase> buildAppRoutes(Ref ref) {
             ?.split(',')
             .toSet(),
       ),
-    ),
-    GoRoute(
-      path: AppRoutes.homeSettingsGoalArchive,
-      builder: (context, state) => const CalorieGoalArchivePage(),
     ),
     GoRoute(
       path: AppRoutes.homeProgressPhotos,

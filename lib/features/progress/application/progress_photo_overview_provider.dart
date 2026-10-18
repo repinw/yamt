@@ -9,8 +9,8 @@ import 'package:yamt/features/progress/domain/progress_photo_overview.dart';
 
 part 'progress_photo_overview_provider.g.dart';
 
-/// The progress photos of [scope]: the current goal from its start on, or
-/// all photos, also those from before the first goal.
+/// The progress photos of [scope]: those of the current or of one past goal,
+/// or all photos, also those from before the first goal.
 @riverpod
 Future<ProgressPhotoOverview> progressPhotoOverview(
   Ref ref,
@@ -26,9 +26,15 @@ Future<ProgressPhotoOverview> progressPhotoOverview(
     today: today,
   );
   final photos = switch (scope) {
-    ProgressScope.goal =>
-      allPhotos.where((photo) => !photo.day.isBefore(period.start)).toList(),
-    ProgressScope.all => allPhotos,
+    ProgressAllScope() => allPhotos,
+    ProgressGoalScope() || ProgressPastGoalScope() =>
+      allPhotos
+          .where(
+            (photo) =>
+                !photo.day.isBefore(period.start) &&
+                !photo.day.isAfter(period.end),
+          )
+          .toList(),
   };
   final oldest = photos.firstOrNull?.day ?? today;
   final dayCount = diaryDaysBetween(oldest, today) + 1;

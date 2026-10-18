@@ -5,7 +5,7 @@ import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 
 part 'calorie_goal_archive_provider.g.dart';
 
-/// Goal cycles displayed by the Calories goal archive.
+/// Every goal cycle, newest first, without the combined one.
 @riverpod
 Future<List<TdeeAnalyticsGoalCycle>> calorieGoalArchive(Ref ref) async {
   final settings = await ref.watch(calorieGoalControllerProvider.future);

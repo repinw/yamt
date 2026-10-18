@@ -181,9 +181,9 @@ class TdeeWeightChartBuilder {
           fontWeight: FontWeight.bold,
         ),
         labelResolver: (_) => cycle.endDate != null
-            ? l10n.goalArchiveEndLabel
+            ? l10n.progressGoalEndLabel
             : cycle.reachedDate != null
-            ? l10n.goalArchiveReachedLabel
+            ? l10n.progressGoalReachedLabel
             : l10n.tdeeChartEstimateMarker,
       ),
     );

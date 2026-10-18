@@ -38,6 +38,8 @@ changes.
 - Health Connect access, permission state, or raw health weight data.
 - Diary page ordering, date navigation, or diary-level composition.
 - Activity card layout or activity-owned action orchestration.
+- Showing past goals: Progress reads `calorieGoalArchiveProvider` for its
+  "Ziel" scope menu; there is no goal archive page.
 - Inventory item storage, prepared meal storage, or household scope state.
   Inventory saves, changes, and deletes the entries that took stock, so
   Calories does not depend on Inventory and has no port for it.
@@ -47,8 +49,6 @@ changes.
 - The TDEE analytics page (`AppRoutes.homeCaloriesAnalytics`) for expenditure,
   the flux range corridor, and goal anticipation. It can preselect goal cycles
   through `AppRoutes.homeCaloriesAnalyticsCyclesParam`.
-- The goal archive page (`AppRoutes.homeSettingsGoalArchive`) lists the
-  current and archived goals and opens analytics for selected goal cycles.
 - `CalorieGoalReachedFlow` checks a recorded weight, shows the one-time
   reached-goal prompt, and optionally opens the new-goal sheet.
 - The new-goal flow opens the calculator sheet that ends the active goal and

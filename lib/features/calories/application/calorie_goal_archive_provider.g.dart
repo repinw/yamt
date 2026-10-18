@@ -8,12 +8,12 @@ part of 'calorie_goal_archive_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Goal cycles displayed by the Calories goal archive.
+/// Every goal cycle, newest first, without the combined one.
 
 @ProviderFor(calorieGoalArchive)
 final calorieGoalArchiveProvider = CalorieGoalArchiveProvider._();
 
-/// Goal cycles displayed by the Calories goal archive.
+/// Every goal cycle, newest first, without the combined one.
 
 final class CalorieGoalArchiveProvider
     extends
@@ -25,7 +25,7 @@ final class CalorieGoalArchiveProvider
     with
         $FutureModifier<List<TdeeAnalyticsGoalCycle>>,
         $FutureProvider<List<TdeeAnalyticsGoalCycle>> {
-  /// Goal cycles displayed by the Calories goal archive.
+  /// Every goal cycle, newest first, without the combined one.
   CalorieGoalArchiveProvider._()
     : super(
         from: null,
