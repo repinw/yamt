@@ -124,6 +124,16 @@ already documented as a reusable presentation surface.
 
 ## Public UI
 
+- `presentation/widgets/plan_shortage_reminder_settings_builder.dart`
+  (`PlanShortageReminderSettingsBuilder`) gives another feature's surface the
+  day-before reminder's on/off and time with their setters. Settings uses it
+  for its rows.
+- `presentation/widgets/plan_shortage_reminder_listener.dart`
+  (`PlanShortageReminderListener`) wraps the app in `lib/app.dart`: it keeps
+  the day-before reminders for missing plan ingredients scheduled through
+  `core/device/local_notifications.dart` and, on a tap, offers the missing
+  ingredients through `ShoppingPlanNeedsFlow.offer`. Reminder ids are
+  `100000000 + yyyymmdd` of the plan day (`domain/plan_shortage_reminders.dart`).
 - `presentation/inventory_manual_product_save_flow.dart`:
   `saveManualProductResultToInventory` saves a product picked in the product
   search hub to the Vorrat.

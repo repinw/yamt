@@ -35,7 +35,9 @@ saved favorites, and products that come back on a schedule.
   foods that are already on the list.
 - `ShoppingPlanNeedsFlow.offer` asks whether a plan's missing foods go on
   the list, each one tickable, and adds the ticked ones; cookbook calls it
-  after planning a recipe.
+  after planning a recipe. With `offerNeverAsk` it adds a "Nicht mehr fragen"
+  button and returns whether the user picked it; inventory's day-before
+  reminder turns itself off then.
 
 ## Rules
 

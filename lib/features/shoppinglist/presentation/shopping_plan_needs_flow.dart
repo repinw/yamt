@@ -11,23 +11,28 @@ import 'package:yamt/l10n/app_localizations.dart';
 abstract final class ShoppingPlanNeedsFlow {
   /// Shows the question for [needs]; does nothing when they are empty.
   /// Adds nothing once [isCancelled] says the plan behind them is gone.
-  static Future<void> offer(
+  /// With [offerNeverAsk], the question offers "Nicht mehr fragen"; returns
+  /// whether the user picked it.
+  static Future<bool> offer(
     BuildContext context,
     List<ShoppingPlanNeed> needs, {
     required bool Function() isCancelled,
+    bool offerNeverAsk = false,
   }) async {
     if (needs.isEmpty) {
-      return;
+      return false;
     }
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context)!;
     final container = ProviderScope.containerOf(context, listen: false);
-    final picked = await showDialog<List<ShoppingPlanNeed>>(
+    final answer = await showDialog<ShoppingPlanNeedsAnswer>(
       context: context,
-      builder: (_) => ShoppingPlanNeedsDialog(needs: needs),
+      builder: (_) =>
+          ShoppingPlanNeedsDialog(needs: needs, offerNeverAsk: offerNeverAsk),
     );
-    if (picked == null || picked.isEmpty || isCancelled()) {
-      return;
+    final picked = answer?.picked ?? const [];
+    if (picked.isEmpty || isCancelled()) {
+      return answer?.neverAsk ?? false;
     }
     // Keeps the list alive while the adds run, also when no page shows it.
     final list = container.listen(shoppingListControllerProvider, (_, _) {});
@@ -47,5 +52,6 @@ abstract final class ShoppingPlanNeedsFlow {
         tone: AppSnackBarTone.error,
       );
     }
+    return false;
   }
 }

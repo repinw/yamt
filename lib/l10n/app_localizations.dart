@@ -5891,18 +5891,6 @@ abstract class AppLocalizations {
   /// **'Set a goal first'**
   String get settingsDiaryGoalSetGoalFirst;
 
-  /// No description provided for @settingsNotificationsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Notifications'**
-  String get settingsNotificationsTitle;
-
-  /// No description provided for @settingsNotificationsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage reminders and alerts'**
-  String get settingsNotificationsSubtitle;
-
   /// No description provided for @settingsPrivacyTitle.
   ///
   /// In en, this message translates to:
@@ -6610,6 +6598,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show meals and macros, not just kcal left'**
   String get settingsHomeWidgetVerboseModeSubtitle;
+
+  /// No description provided for @settingsPlanShortageReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder for missing ingredients'**
+  String get settingsPlanShortageReminderTitle;
+
+  /// No description provided for @settingsPlanShortageReminderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The day before, when planned food lacks something'**
+  String get settingsPlanShortageReminderSubtitle;
+
+  /// No description provided for @settingsPlanShortageReminderTimeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get settingsPlanShortageReminderTimeTitle;
 
   /// No description provided for @commonOr.
   ///
@@ -11473,6 +11479,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add to list'**
   String get shoppingPlanNeedsDialogAdd;
+
+  /// Button in the missing-ingredients question opened from the day-before reminder; turns the reminder off.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t ask again'**
+  String get shoppingPlanNeedsDialogNeverAsk;
+
+  /// Android notification channel of the day-before reminder for missing plan ingredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing ingredients'**
+  String get planShortageReminderChannelName;
+
+  /// Title of the day-before notification when planned food lacks ingredients.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ingredient missing for tomorrow} other{{count} ingredients missing for tomorrow}}'**
+  String planShortageReminderTitle(int count);
+
+  /// No description provided for @planShortageReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Put them on the shopping list?'**
+  String get planShortageReminderBody;
+
+  /// Snackbar after tapping the day-before reminder when the plans or the stock could not be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check the missing ingredients.'**
+  String get planShortageReminderCheckFailed;
+
+  /// Snackbar after tapping the day-before reminder when nothing is missing any more.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything for the plan is there.'**
+  String get planShortageReminderAllThere;
 
   /// Edit weight shown in the weights list.
   ///

@@ -1028,6 +1028,16 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Cross-off behavior and clear-crossed-off action.
 - Firestore-backed list repository.
 - Public operations used by inventory, templates, and cooking flow.
+- Reminder the day before planned food that misses ingredients: a phone
+  notification "Für morgen fehlen N Zutaten", at 17:00 by default. Foods
+  already on the list do not count, and a day with nothing missing gets
+  none. Tapping it checks again and asks "N Zutaten fehlen. Auf die
+  Einkaufsliste setzen?" with each ingredient tickable; when nothing is
+  missing any more it says "Für den Plan ist alles da." Once answered, the
+  plan day stays quiet. "Nicht mehr fragen" turns the reminder off. The app
+  asks for the notification permission once, with the first reminder. The
+  text is counted when the app last ran, so a purchase by another household
+  member while the app is closed shows only after the tap.
 
 ## Household
 
@@ -1083,7 +1093,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   value and bar. Macro, weight, activity, and onboarding chapter colors stay
   the same.
 - Language display.
-- Notifications and privacy placeholders.
+- "Erinnerung für fehlende Zutaten" switch (on by default) and its time
+  ("Uhrzeit", 17:00 by default) in the App section; the time row is greyed
+  out while the switch is off. Saved on the device only.
+- Privacy placeholder.
 - About/app version tile.
 
 ## Recipes Support

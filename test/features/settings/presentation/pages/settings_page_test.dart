@@ -250,10 +250,14 @@ void main() {
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('English'), findsOneWidget);
 
-    await _scrollToText(tester, 'Notifications');
+    await _scrollToText(tester, 'Reminder for missing ingredients');
     expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
-    expect(find.text('Notifications'), findsOneWidget);
-    expect(find.text('Manage reminders and alerts'), findsOneWidget);
+    expect(
+      find.text('The day before, when planned food lacks something'),
+      findsOneWidget,
+    );
+    expect(find.text('Time'), findsOneWidget);
+    expect(find.text('5:00 PM'), findsOneWidget);
 
     await _scrollToText(tester, 'Detailed home screen widget');
     expect(find.byIcon(Icons.widgets_outlined), findsOneWidget);
@@ -279,6 +283,37 @@ void main() {
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and information'), findsOneWidget);
     expect(find.text('1.1.0+2'), findsOneWidget);
+  });
+
+  testWidgets('reminder switch turns the reminder off and its time with it', (
+    tester,
+  ) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Reminder for missing ingredients');
+    await tester.tap(_settingsTile(SettingsPageKeys.planShortageReminderTile));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Switch>(
+            find.descendant(
+              of: _settingsTile(SettingsPageKeys.planShortageReminderTile),
+              matching: find.byType(Switch),
+            ),
+          )
+          .value,
+      isFalse,
+    );
+    await tester.tap(
+      _settingsTile(SettingsPageKeys.planShortageReminderTimeTile),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(TimePickerDialog), findsNothing);
   });
 
   testWidgets('home widget verbose-mode tile toggles and saves the choice', (
@@ -965,11 +1000,6 @@ void main() {
 
     await _scrollToText(tester, 'Language');
     await tester.tap(_settingsTile(SettingsPageKeys.languageTile));
-    await tester.pumpAndSettle();
-    expect(find.text('Not implemented yet'), findsOneWidget);
-
-    await _scrollToText(tester, 'Notifications');
-    await tester.tap(_settingsTile(SettingsPageKeys.notificationsTile));
     await tester.pumpAndSettle();
     expect(find.text('Not implemented yet'), findsOneWidget);
 

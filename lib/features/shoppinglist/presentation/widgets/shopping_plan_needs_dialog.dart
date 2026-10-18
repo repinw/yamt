@@ -4,11 +4,19 @@ import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_plan_needs.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// The answer of [ShoppingPlanNeedsDialog]: the ticked needs, and whether
+/// the user wants no more such questions.
+typedef ShoppingPlanNeedsAnswer = ({
+  List<ShoppingPlanNeed> picked,
+  bool neverAsk,
+});
+
 /// The question whether the needs go on the shopping list, each one
-/// tickable; pops with the ticked ones.
+/// tickable; pops with the ticked ones, or with `neverAsk` set when the user
+/// wants no more such questions.
 class ShoppingPlanNeedsDialog extends StatefulWidget {
   /// Creates the question for [needs].
-  const new({required this.needs, super.key});
+  const new({required this.needs, this.offerNeverAsk = false, super.key});
 
   /// Key of the button that adds the ticked needs.
   static const addKey = Key('shopping-plan-needs-dialog-add');
@@ -16,11 +24,17 @@ class ShoppingPlanNeedsDialog extends StatefulWidget {
   /// Key of the button that closes the question.
   static const skipKey = Key('shopping-plan-needs-dialog-skip');
 
+  /// Key of the button that stops these questions.
+  static const neverAskKey = Key('shopping-plan-needs-dialog-never-ask');
+
   /// Key of the tick box of the need at [index].
   static Key needKey(int index) => Key('shopping-plan-needs-dialog-$index');
 
   /// The needs to offer.
   final List<ShoppingPlanNeed> needs;
+
+  /// Whether the question offers "Nicht mehr fragen".
+  final bool offerNeverAsk;
 
   @override
   State<ShoppingPlanNeedsDialog> createState() =>
@@ -63,6 +77,14 @@ class _ShoppingPlanNeedsDialogState extends State<ShoppingPlanNeedsDialog> {
         ),
       ),
       actions: [
+        if (widget.offerNeverAsk)
+          TextButton(
+            key: ShoppingPlanNeedsDialog.neverAskKey,
+            onPressed: () => Navigator.of(
+              context,
+            ).pop<ShoppingPlanNeedsAnswer>((picked: const [], neverAsk: true)),
+            child: Text(l10n.shoppingPlanNeedsDialogNeverAsk),
+          ),
         TextButton(
           key: ShoppingPlanNeedsDialog.skipKey,
           onPressed: () => Navigator.of(context).pop(),
@@ -72,10 +94,13 @@ class _ShoppingPlanNeedsDialogState extends State<ShoppingPlanNeedsDialog> {
           key: ShoppingPlanNeedsDialog.addKey,
           onPressed: _ticked.isEmpty
               ? null
-              : () => Navigator.of(context).pop([
-                  for (final need in widget.needs)
-                    if (_ticked.contains(need)) need,
-                ]),
+              : () => Navigator.of(context).pop<ShoppingPlanNeedsAnswer>((
+                  picked: [
+                    for (final need in widget.needs)
+                      if (_ticked.contains(need)) need,
+                  ],
+                  neverAsk: false,
+                )),
           child: Text(l10n.shoppingPlanNeedsDialogAdd),
         ),
       ],

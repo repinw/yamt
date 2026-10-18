@@ -21,6 +21,7 @@ import 'package:yamt/features/settings/presentation/widgets/settings_appearance_
 import 'package:yamt/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_home_widget_tile/settings_home_widget_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_plan_shortage_reminder_tile/settings_plan_shortage_reminder_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_profile_card/settings_profile_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -80,16 +81,8 @@ class SettingsPage extends ConsumerWidget {
                         SettingsSection(
                           title: l10n.settingsAppSectionTitle,
                           children: [
-                            SettingsTile(
-                              key: SettingsPageKeys.notificationsTile,
-                              icon: Icons.notifications_none_rounded,
-                              title: l10n.settingsNotificationsTitle,
-                              subtitle: l10n.settingsNotificationsSubtitle,
-                              onTap: () => _showNotImplementedSnackBar(
-                                context,
-                                l10n.commonNotImplementedYet,
-                              ),
-                            ),
+                            const SettingsPlanShortageReminderTile(),
+                            const SettingsPlanShortageReminderTimeTile(),
                             SettingsTile(
                               key: SettingsPageKeys.privacyTile,
                               icon: Icons.lock_outline_rounded,

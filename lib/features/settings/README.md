@@ -73,6 +73,9 @@ Current providers:
 - `features/home_widget` for the home-screen widget's silent/verbose choice,
   rendered in the App section through its public
   `HomeWidgetVerboseModeBuilder`.
+- `features/inventory` for the day-before reminder's switch and time,
+  rendered in the App section through its public
+  `PlanShortageReminderSettingsBuilder`.
 - `core/widgets` for shared layout helpers.
 - `features/shared` for shared credential form widgets.
 

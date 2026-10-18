@@ -3522,12 +3522,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDiaryGoalSetGoalFirst => 'Set a goal first';
 
   @override
-  String get settingsNotificationsTitle => 'Notifications';
-
-  @override
-  String get settingsNotificationsSubtitle => 'Manage reminders and alerts';
-
-  @override
   String get settingsPrivacyTitle => 'Privacy';
 
   @override
@@ -3937,6 +3931,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsHomeWidgetVerboseModeSubtitle =>
       'Show meals and macros, not just kcal left';
+
+  @override
+  String get settingsPlanShortageReminderTitle =>
+      'Reminder for missing ingredients';
+
+  @override
+  String get settingsPlanShortageReminderSubtitle =>
+      'The day before, when planned food lacks something';
+
+  @override
+  String get settingsPlanShortageReminderTimeTitle => 'Time';
 
   @override
   String get commonOr => 'Or';
@@ -6906,6 +6911,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingPlanNeedsDialogAdd => 'Add to list';
+
+  @override
+  String get shoppingPlanNeedsDialogNeverAsk => 'Don\'t ask again';
+
+  @override
+  String get planShortageReminderChannelName => 'Missing ingredients';
+
+  @override
+  String planShortageReminderTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ingredients missing for tomorrow',
+      one: '1 ingredient missing for tomorrow',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get planShortageReminderBody => 'Put them on the shopping list?';
+
+  @override
+  String get planShortageReminderCheckFailed =>
+      'Could not check the missing ingredients.';
+
+  @override
+  String get planShortageReminderAllThere =>
+      'Everything for the plan is there.';
 
   @override
   String get progressWeighingEditTitle => 'Edit weight';
