@@ -124,7 +124,10 @@ class _ShoppingListPlanNeedsState extends ConsumerState<ShoppingListPlanNeeds> {
         ListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(need.name),
-          subtitle: Text(shoppingPlanNeedSubtitle(need, l10n, localeName)),
+          subtitle: switch (shoppingPlanNeedSubtitle(need, l10n, localeName)) {
+            '' => null,
+            final text => Text(text),
+          },
           trailing: IconButton.outlined(
             key: ShoppingListPlanNeeds.addKey(need),
             tooltip: l10n.shoppingListAddAction,
@@ -136,15 +139,21 @@ class _ShoppingListPlanNeedsState extends ConsumerState<ShoppingListPlanNeeds> {
   }
 }
 
-/// The amount line of [need]: what is missing, with the brand.
+/// The amount line of [need]: what is missing, with the brand; only the
+/// brand, maybe empty, when the need has no amount.
 String shoppingPlanNeedSubtitle(
   ShoppingPlanNeed need,
   AppLocalizations l10n,
   String localeName,
 ) {
+  final brand = need.brand?.trim() ?? '';
+  final value = need.amount;
+  if (value == null) {
+    return brand;
+  }
   final number = (NumberFormat.decimalPattern(
     localeName,
-  )..maximumFractionDigits = 0).format(need.amount.ceil());
+  )..maximumFractionDigits = 0).format(value.ceil());
   final amount = l10n.shoppingListPlanNeedAmount(
     number,
     need.inMilliliters ? l10n.caloriesUnitMilliliter : l10n.caloriesUnitGram,
@@ -152,6 +161,5 @@ String shoppingPlanNeedSubtitle(
   final text = need.isPartial
       ? l10n.shoppingListPlanNeedMissing(amount)
       : amount;
-  final brand = need.brand?.trim() ?? '';
   return brand.isEmpty ? text : l10n.shoppingListPlanNeedBrand(brand, text);
 }

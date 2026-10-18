@@ -8,6 +8,14 @@ import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
+/// A recipe ingredient without a Vorrat item: its name and, when the recipe
+/// gives it in grams or milliliters, the amount a plan needs.
+typedef PlanUnstockedIngredient = ({
+  String name,
+  double? amount,
+  bool inMilliliters,
+});
+
 /// What open plans take from the Vorrat.
 typedef InventoryPlanDemand = ({
   /// Stock each pack keeps for plans, by item id, in the pack's stored unit
@@ -28,6 +36,10 @@ typedef InventoryPlanDemand = ({
   /// Stock each recipe plan lacks per ingredient, by plan id, then by item
   /// id, in the item's stored unit.
   Map<String, Map<String, int>> missingIngredientsByPlanId,
+
+  /// The ingredients of each recipe plan that no Vorrat item stands for, by
+  /// plan id; they are missing in full.
+  Map<String, List<PlanUnstockedIngredient>> unstockedIngredientsByPlanId,
 });
 
 /// Walks [plans] by their day and takes each one's stock from [items] the
@@ -38,7 +50,8 @@ typedef InventoryPlanDemand = ({
 /// A plan of a cooked meal takes its portions from [meals] the same way.
 /// A plan of a Kochbuch recipe takes the amounts in
 /// [ingredientNeedsByPlanId] (item id to amount) from those items; an
-/// ingredient without an item names no stock.
+/// ingredient without an item, from [unstockedIngredientsByPlanId], names
+/// no stock and leaves the plan missing in full.
 ///
 /// A plan of a found food names no stock.
 InventoryPlanDemand inventoryPlanDemand(
@@ -46,6 +59,8 @@ InventoryPlanDemand inventoryPlanDemand(
   List<InventoryItem> items,
   List<PreparedMeal> meals, {
   Map<String, Map<String, int>> ingredientNeedsByPlanId = const {},
+  Map<String, List<PlanUnstockedIngredient>> unstockedIngredientsByPlanId =
+      const {},
 }) {
   final left = {
     for (final item in items) item.id: consumableInventoryAmount(item) ?? 0,
@@ -79,8 +94,13 @@ InventoryPlanDemand inventoryPlanDemand(
           );
         }
       }
-      if (short.isNotEmpty) {
+      if (unstockedIngredientsByPlanId[plan.id]?.isNotEmpty ?? false) {
+        share = 1;
+      }
+      if (share > 0) {
         missing[plan.id] = share;
+      }
+      if (short.isNotEmpty) {
         missingIngredients[plan.id] = short;
       }
       continue;
@@ -147,5 +167,11 @@ InventoryPlanDemand inventoryPlanDemand(
     plannedPortionsByMealId: plannedPortions,
     missingShareByPlanId: missing,
     missingIngredientsByPlanId: missingIngredients,
+    unstockedIngredientsByPlanId: {
+      for (final plan in plans)
+        if (unstockedIngredientsByPlanId[plan.id] case final unstocked?
+            when unstocked.isNotEmpty)
+          plan.id: unstocked,
+    },
   );
 }

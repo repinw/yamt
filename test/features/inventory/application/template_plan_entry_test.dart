@@ -111,4 +111,24 @@ void main() {
 
     expect(needs, {'flour': 150});
   });
+
+  test('a recipe plan names its ingredients without a Vorrat item', () {
+    final unstocked = templatePlanUnstockedIngredients(
+      plan: _plan(),
+      template: _template(
+        ingredients: const ['200 g Mehl', '300 ml Milch', '2 Eier'],
+        assignments: const {
+          '200 g Mehl': ['flour'],
+        },
+      ),
+      items: [_item('flour', currentAmount: 50)],
+      parser: const TemplateIngredientParser(),
+    );
+
+    expect(unstocked, hasLength(2));
+    expect(unstocked.first.name, 'Milch');
+    expect(unstocked.first.amount, 150);
+    expect(unstocked.first.inMilliliters, isTrue);
+    expect(unstocked.last.amount, isNull);
+  });
 }

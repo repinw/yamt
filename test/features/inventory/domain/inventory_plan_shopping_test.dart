@@ -9,12 +9,15 @@ import 'package:yamt/features/inventory/domain/inventory_plan_shopping.dart';
 InventoryPlanDemand _demand(
   Map<String, double> missingShareByPlanId, {
   Map<String, Map<String, int>> missingIngredientsByPlanId = const {},
+  Map<String, List<PlanUnstockedIngredient>> unstockedIngredientsByPlanId =
+      const {},
 }) => (
   plannedByItemId: const {},
   missingByItemId: const {},
   plannedPortionsByMealId: const {},
   missingShareByPlanId: missingShareByPlanId,
   missingIngredientsByPlanId: missingIngredientsByPlanId,
+  unstockedIngredientsByPlanId: unstockedIngredientsByPlanId,
 );
 
 CalorieEntry _plan(String id, {ConsumedUnit unit = ConsumedUnit.grams}) {
@@ -35,6 +38,30 @@ CalorieEntry _plan(String id, {ConsumedUnit unit = ConsumedUnit.grams}) {
     loggedAt: day,
     createdAt: day,
     updatedAt: day,
+  );
+}
+
+CalorieEntry _recipePlan() {
+  final day = DateTime(2026, 10, 8, 8);
+  return CalorieEntry.bundle(
+    id: 'recipe',
+    userId: 'user-1',
+    name: 'Pancakes',
+    mealType: MealType.breakfast,
+    totalKcal: 0,
+    totalProtein: 0,
+    totalCarbs: 0,
+    totalFat: 0,
+    bundleSourcePreparedMealId: 'pancakes',
+    bundleConsumedPortions: 1,
+    bundleTotalPortions: 2,
+    bundleComponents: const [],
+    loggedAt: day,
+    createdAt: day,
+    updatedAt: day,
+  ).copyWith(
+    bundleSourcePreparedMealId: null,
+    bundleSourceTemplateId: 'pancakes',
   );
 }
 
@@ -107,7 +134,7 @@ void main() {
         );
 
     final needs = inventoryShoppingPlanNeeds(
-      [_plan('recipe')],
+      [_recipePlan()],
       _demand(
         {'recipe': 0.5},
         missingIngredientsByPlanId: {
@@ -124,5 +151,28 @@ void main() {
     expect(needs.map((need) => need.amount), [150, 200]);
     expect(needs.map((need) => need.inMilliliters), [false, true]);
     expect(needs.every((need) => need.isPartial), isTrue);
+  });
+
+  test('a recipe plan needs its ingredients without a Vorrat item', () {
+    final plan = _recipePlan();
+
+    final needs = inventoryShoppingPlanNeeds(
+      [plan],
+      _demand(
+        {'recipe': 1},
+        unstockedIngredientsByPlanId: {
+          'recipe': [
+            (name: 'Milch', amount: 150, inMilliliters: true),
+            (name: 'Eier', amount: null, inMilliliters: false),
+          ],
+        },
+      ),
+      const [],
+    );
+
+    expect(needs.map((need) => need.name), ['Milch', 'Eier']);
+    expect(needs.map((need) => need.amount), [150, null]);
+    expect(needs.first.inMilliliters, isTrue);
+    expect(needs.any((need) => need.isPartial), isFalse);
   });
 }

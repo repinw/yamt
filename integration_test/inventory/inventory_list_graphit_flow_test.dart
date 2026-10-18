@@ -10,6 +10,7 @@ import 'package:yamt/core/widgets/graphit_stock_bar.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -147,6 +148,8 @@ Widget _buildHarness() {
           plannedPortionsByMealId: const {'chili': 1.0},
           missingShareByPlanId: const <String, double>{},
           missingIngredientsByPlanId: const <String, Map<String, int>>{},
+          unstockedIngredientsByPlanId:
+              const <String, List<PlanUnstockedIngredient>>{},
         ),
       ),
     ],

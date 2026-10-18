@@ -26,6 +26,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.d
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
@@ -1223,5 +1224,7 @@ Override _planDemand({Set<String> shortPlanIds = const {}}) =>
         plannedPortionsByMealId: <String, double>{},
         missingShareByPlanId: {for (final id in shortPlanIds) id: 1.0},
         missingIngredientsByPlanId: const <String, Map<String, int>>{},
+        unstockedIngredientsByPlanId:
+            const <String, List<PlanUnstockedIngredient>>{},
       ),
     );

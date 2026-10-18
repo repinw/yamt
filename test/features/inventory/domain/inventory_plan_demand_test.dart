@@ -247,4 +247,28 @@ void main() {
       'recipe-2': {'oats': 100, 'milk': 100},
     });
   });
+
+  test('a recipe ingredient without a Vorrat item leaves the plan short', () {
+    final plan = _plan('recipe', day: 10, grams: 300, itemId: null);
+    const eggs = (name: 'Eier', amount: null, inMilliliters: false);
+
+    final demand = inventoryPlanDemand(
+      [plan],
+      [_pack('oats')],
+      const [],
+      ingredientNeedsByPlanId: {
+        'recipe': {'oats': 100},
+      },
+      unstockedIngredientsByPlanId: {
+        'recipe': [eggs],
+      },
+    );
+
+    expect(demand.plannedByItemId, {'oats': 100});
+    expect(demand.missingShareByPlanId, {'recipe': 1.0});
+    expect(demand.missingIngredientsByPlanId, isEmpty);
+    expect(demand.unstockedIngredientsByPlanId, {
+      'recipe': [eggs],
+    });
+  });
 }

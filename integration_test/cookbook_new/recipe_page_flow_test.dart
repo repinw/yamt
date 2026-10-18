@@ -325,6 +325,35 @@ void main() {
     expect(shopping.savedItems.single.name, 'Karotten');
   });
 
+  testWidgets('offers an ingredient that no Vorrat item stands for', (
+    tester,
+  ) async {
+    final shopping = FakeShoppingListRepository();
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        // No carrots in the Vorrat at all.
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        shopping: shopping,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(RecipeHero.planKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(ShoppingPlanNeedsDialog.needKey(0)), findsOneWidget);
+    expect(find.byKey(ShoppingPlanNeedsDialog.needKey(1)), findsNothing);
+    await tester.tap(find.byKey(ShoppingPlanNeedsDialog.addKey));
+    await tester.pumpAndSettle();
+
+    expect(shopping.savedItems.single.name, 'Karotten');
+  });
+
   testWidgets('does not offer what the closed shopping list holds', (
     tester,
   ) async {
