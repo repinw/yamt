@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
@@ -21,6 +20,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_save_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_summary.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
@@ -264,31 +265,22 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: FilledButton(
-            key: CookedMealPage.saveKey,
-            onPressed: isSaving || pot.needsUtensil || pot.isTooLight
-                ? null
-                : () => unawaited(
-                    CookedMealSaveFlow.save(
-                      context: context,
-                      ref: ref,
-                      meal: meal,
-                      portions: portions,
-                      servedInPieces: inPieces,
-                      toCookbook: _toCookbook,
-                      tareWeight: utensil?.weightGrams,
-                      netWeight: pot.netWeight,
-                    ),
+        CookedMealSaveBar(
+          buttonKey: CookedMealPage.saveKey,
+          onSave: isSaving || pot.needsUtensil || pot.isTooLight
+              ? null
+              : () => unawaited(
+                  CookedMealSaveFlow.save(
+                    context: context,
+                    ref: ref,
+                    meal: meal,
+                    portions: portions,
+                    servedInPieces: inPieces,
+                    toCookbook: _toCookbook,
+                    tareWeight: utensil?.weightGrams,
+                    netWeight: pot.netWeight,
                   ),
-            style: FilledButton.styleFrom(
-              backgroundColor: colors.accent,
-              foregroundColor: colors.onAccent,
-              minimumSize: const Size.fromHeight(AppGraphit.buttonHeight),
-            ),
-            child: Text(l10n.cookedSave),
-          ),
+                ),
         ),
       ],
     );
