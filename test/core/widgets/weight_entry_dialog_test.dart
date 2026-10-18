@@ -4,20 +4,17 @@ import 'package:yamt/core/widgets/weight_entry_dialog.dart';
 
 void main() {
   const fieldKey = Key('weight-field');
-  const clearButtonKey = Key('weight-clear');
   const saveButtonKey = Key('weight-save');
   const labels = WeightEntryDialogLabels(
     title: 'Weight',
     fieldLabel: 'Weight kg',
     emptyErrorText: 'Please enter a weight',
     invalidErrorText: 'Please enter a valid weight',
-    clearActionLabel: 'Clear',
     cancelActionLabel: 'Cancel',
     saveActionLabel: 'Save',
   );
   const keys = WeightEntryDialogKeys(
     fieldKey: fieldKey,
-    clearButtonKey: clearButtonKey,
     saveButtonKey: saveButtonKey,
   );
 
@@ -50,10 +47,10 @@ void main() {
     expect(find.text(labels.invalidErrorText), findsOneWidget);
   });
 
-  testWidgets('parses comma decimal input and returns save result', (
+  testWidgets('parses comma decimal input and returns the weight', (
     tester,
   ) async {
-    WeightEntryDialogResult? result;
+    double? result;
     await _pumpHarness(
       tester,
       labels: labels,
@@ -65,26 +62,7 @@ void main() {
     await tester.tap(find.byKey(saveButtonKey));
     await tester.pumpAndSettle();
 
-    expect(result?.action, WeightEntryDialogAction.save);
-    expect(result?.weightKg, 75.5);
-  });
-
-  testWidgets('clear action returns clear result', (tester) async {
-    WeightEntryDialogResult? result;
-    await _pumpHarness(
-      tester,
-      labels: labels,
-      keys: keys,
-      initialWeightKg: 82.3,
-      showClearAction: true,
-      onResult: (value) => result = value,
-    );
-
-    await tester.tap(find.byKey(clearButtonKey));
-    await tester.pumpAndSettle();
-
-    expect(result?.action, WeightEntryDialogAction.clear);
-    expect(result?.weightKg, isNull);
+    expect(result, 75.5);
   });
 }
 
@@ -93,8 +71,7 @@ Future<void> _pumpHarness(
   required WeightEntryDialogLabels labels,
   required WeightEntryDialogKeys keys,
   double? initialWeightKg,
-  bool showClearAction = false,
-  void Function(WeightEntryDialogResult? result)? onResult,
+  void Function(double? result)? onResult,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -107,7 +84,6 @@ Future<void> _pumpHarness(
                   context: context,
                   labels: labels,
                   initialWeightKg: initialWeightKg,
-                  showClearAction: showClearAction,
                   keys: keys,
                 );
                 onResult?.call(result);

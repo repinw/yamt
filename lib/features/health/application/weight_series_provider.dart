@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
@@ -29,4 +30,19 @@ Future<DailyWeightSeries> weightSeries(Ref ref) async {
     manualEntries: manualEntries,
     healthSamples: healthSamples,
   );
+}
+
+/// The newest single weighing of the user, manual or Health, that counts;
+/// `null` without one.
+@riverpod
+Future<double?> latestWeighingKg(Ref ref) async {
+  final (manualEntries, healthSamples) = await (
+    ref.watch(manualHealthWeightEntriesControllerProvider.future),
+    ref.watch(healthWeightSamplesProvider.future),
+  ).wait;
+  return maxBy([
+    for (final entry in manualEntries) (at: entry.at, kg: entry.weightKg),
+    for (final sample in healthSamples)
+      if (!sample.isIgnored) (at: sample.recordedAt, kg: sample.weightKg),
+  ], (weighing) => weighing.at)?.kg;
 }

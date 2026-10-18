@@ -62,40 +62,6 @@ class ManualHealthWeightEntriesController
     return saved;
   }
 
-  /// Delete entry for day.
-  Future<bool> deleteEntryForDay(DateTime day) async {
-    final repository = ref.read(manualHealthWeightRepositoryProvider);
-    final previousEntries = await _loadCurrentEntries(repository);
-    final normalizedDay = normalizeLocalDay(day);
-    final nextEntries = previousEntries
-        .where((entry) => !isSameLocalDay(entry.day, normalizedDay))
-        .toList(growable: false);
-    if (ref.mounted) {
-      state = AsyncData(
-        List<ManualHealthWeightEntry>.unmodifiable(nextEntries),
-      );
-    }
-
-    try {
-      final deleted = await repository.deleteEntryForDay(normalizedDay);
-      if (!deleted && ref.mounted) {
-        state = AsyncData(previousEntries);
-      }
-      return deleted;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to delete manual weight entry.',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      if (ref.mounted) {
-        state = AsyncData(previousEntries);
-      }
-      return false;
-    }
-  }
-
   Future<List<ManualHealthWeightEntry>> _loadCurrentEntries(
     ManualHealthWeightRepository repository,
   ) async {

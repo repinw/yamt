@@ -140,7 +140,6 @@ class ProfileWeightCard extends ConsumerWidget {
                       context: context,
                       selectedDay: today,
                       day: today,
-                      initialWeightKg: weight?.latestWeighInKg,
                     ),
               ),
               style: FilledButton.styleFrom(

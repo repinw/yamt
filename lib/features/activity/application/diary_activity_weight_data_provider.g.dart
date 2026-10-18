@@ -8,12 +8,14 @@ part of 'diary_activity_weight_data_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Provides weight data for the selected diary day.
+/// Provides weight data for the seven days that end on [day], from the
+/// weights of all devices.
 
 @ProviderFor(diaryActivityWeightData)
 final diaryActivityWeightDataProvider = DiaryActivityWeightDataFamily._();
 
-/// Provides weight data for the selected diary day.
+/// Provides weight data for the seven days that end on [day], from the
+/// weights of all devices.
 
 final class DiaryActivityWeightDataProvider
     extends
@@ -25,7 +27,8 @@ final class DiaryActivityWeightDataProvider
     with
         $FutureModifier<DiaryActivityWeightData>,
         $FutureProvider<DiaryActivityWeightData> {
-  /// Provides weight data for the selected diary day.
+  /// Provides weight data for the seven days that end on [day], from the
+  /// weights of all devices.
   DiaryActivityWeightDataProvider._({
     required DiaryActivityWeightDataFamily super.from,
     required DateTime super.argument,
@@ -72,9 +75,10 @@ final class DiaryActivityWeightDataProvider
 }
 
 String _$diaryActivityWeightDataHash() =>
-    r'9d05a0ee4660cd7cf016158c937dca4a3de5f084';
+    r'586cc4193b6a54ff6319d6e8065e8d5ea84b28cf';
 
-/// Provides weight data for the selected diary day.
+/// Provides weight data for the seven days that end on [day], from the
+/// weights of all devices.
 
 final class DiaryActivityWeightDataFamily extends $Family
     with
@@ -88,7 +92,8 @@ final class DiaryActivityWeightDataFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Provides weight data for the selected diary day.
+  /// Provides weight data for the seven days that end on [day], from the
+  /// weights of all devices.
 
   DiaryActivityWeightDataProvider call(DateTime day) =>
       DiaryActivityWeightDataProvider._(argument: day, from: this);

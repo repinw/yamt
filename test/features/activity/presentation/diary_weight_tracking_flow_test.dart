@@ -4,13 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
-import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/'
     'diary_weight_dialog_keys.dart';
-import 'package:yamt/features/health/domain/health_weight_sample.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
@@ -66,29 +64,7 @@ void main() {
     expect(recorder.refreshedDay, isNull);
   });
 
-  testWidgets('flow shows snackbar when clear fails', (tester) async {
-    final recorder = _WeightActionRecorder(clearResult: false);
-
-    await _pumpFlowHarness(
-      tester,
-      recorder: recorder,
-      selectedDay: DateTime(2026, 4, 15),
-      day: DateTime(2026, 4, 15),
-      initialWeightKg: 82.4,
-      weightDay: _weightDay(DateTime(2026, 4, 15), hasManualWeight: true),
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(DiaryWeightDialogKeys.weightDialogClearButton));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Could not clear manual weight.'), findsOneWidget);
-    expect(recorder.deletedDay, DateTime(2026, 4, 15));
-    expect(recorder.refreshedDay, isNull);
-  });
-
-  testWidgets('flow offers no delete for a day without own weight', (
+  testWidgets('flow fills the field with the newest weighing', (
     tester,
   ) async {
     final day = DateTime(2026, 4, 15);
@@ -97,20 +73,24 @@ void main() {
       recorder: _WeightActionRecorder(),
       selectedDay: day,
       day: day,
-      initialWeightKg: 82.4,
-      weightDay: _weightDay(day),
+      latestWeighingKg: 82.4,
     );
 
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
     expect(
-      find.byKey(DiaryWeightDialogKeys.weightDialogClearButton),
-      findsNothing,
+      tester
+          .widget<TextField>(
+            find.byKey(DiaryWeightDialogKeys.weightDialogField),
+          )
+          .controller
+          ?.text,
+      '82.4',
     );
   });
 
-  testWidgets('flow still adds a weight when the weight data fails', (
+  testWidgets('flow still adds a weight when the newest weighing fails', (
     tester,
   ) async {
     final day = DateTime(2026, 4, 15);
@@ -125,10 +105,6 @@ void main() {
 
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
-    expect(
-      find.byKey(DiaryWeightDialogKeys.weightDialogClearButton),
-      findsNothing,
-    );
     await tester.enterText(
       find.byKey(DiaryWeightDialogKeys.weightDialogField),
       '82,4',
@@ -147,11 +123,10 @@ void main() {
       recorder: _WeightActionRecorder(),
       selectedDay: day,
       day: day,
-      weightDay: _weightDay(day, hasManualWeight: true),
       loaded: loaded.future,
     );
 
-    // Both taps land while the weight data still loads.
+    // Both taps land while the newest weighing still loads.
     await tester.tap(find.text('Open'));
     await tester.tap(find.text('Open'));
     loaded.complete();
@@ -159,60 +134,14 @@ void main() {
 
     expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsOneWidget);
   });
-
-  testWidgets('flow deletes a Health weight that this app wrote', (
-    tester,
-  ) async {
-    final day = DateTime(2026, 4, 15);
-    final sample = HealthWeightSample(
-      recordedAt: DateTime(2026, 4, 15, 7),
-      weightKg: 82.4,
-      isFromThisApp: true,
-    );
-    final recorder = _WeightActionRecorder();
-    await _pumpFlowHarness(
-      tester,
-      recorder: recorder,
-      selectedDay: day,
-      day: day,
-      initialWeightKg: 82.4,
-      weightDay: _weightDay(day, healthSample: sample),
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(DiaryWeightDialogKeys.weightDialogClearButton));
-    await tester.pumpAndSettle();
-
-    expect(recorder.deletedSample, sample);
-    expect(recorder.deletedDay, isNull);
-    expect(recorder.refreshedDay, day);
-  });
-}
-
-DiaryWeightDayData _weightDay(
-  DateTime day, {
-  bool hasManualWeight = false,
-  HealthWeightSample? healthSample,
-}) {
-  return DiaryWeightDayData(
-    day: day,
-    weightKg: 82.4,
-    hasManualWeight: hasManualWeight,
-    hasAppOwnedHealthWeight: healthSample?.isFromThisApp ?? false,
-    healthSample: healthSample,
-  );
 }
 
 class _WeightActionRecorder {
-  new({this.saveResult = true, this.clearResult = true});
+  new({this.saveResult = true});
 
   final bool saveResult;
-  final bool clearResult;
   DateTime? savedDay;
   double? savedWeightKg;
-  DateTime? deletedDay;
-  HealthWeightSample? deletedSample;
   DateTime? refreshedSelectedDay;
   DateTime? refreshedDay;
 
@@ -222,14 +151,6 @@ class _WeightActionRecorder {
         savedDay = day;
         savedWeightKg = weightKg;
         return saveResult;
-      },
-      deleteManualWeight: (day) async {
-        deletedDay = day;
-        return clearResult;
-      },
-      deleteHealthWeightSample: (sample) async {
-        deletedSample = sample;
-        return clearResult;
       },
       refreshDependents: ({required selectedDay, day}) async {
         refreshedSelectedDay = selectedDay;
@@ -244,8 +165,7 @@ Future<void> _pumpFlowHarness(
   required _WeightActionRecorder recorder,
   required DateTime selectedDay,
   required DateTime day,
-  double? initialWeightKg,
-  DiaryWeightDayData? weightDay,
+  double? latestWeighingKg,
   Error? loadError,
   Future<void>? loaded,
 }) async {
@@ -253,18 +173,12 @@ Future<void> _pumpFlowHarness(
     ProviderScope(
       overrides: [
         diaryWeightActionsProvider.overrideWith((ref) => recorder.toActions()),
-        diaryActivityWeightDataProvider(day).overrideWith((ref) async {
+        latestWeighingKgProvider.overrideWith((ref) async {
           await loaded;
           if (loadError != null) {
             throw loadError;
           }
-          return DiaryActivityWeightData(
-            profileWeightKg: null,
-            selectedWeightKg: weightDay?.weightKg,
-            hasSelectedDayWeight: weightDay?.weightKg != null,
-            weightTrend: const [],
-            weightDays: [?weightDay],
-          );
+          return latestWeighingKg;
         }),
       ],
       child: MaterialApp(
@@ -282,7 +196,6 @@ Future<void> _pumpFlowHarness(
                       context: context,
                       selectedDay: selectedDay,
                       day: day,
-                      initialWeightKg: initialWeightKg,
                     ),
                   );
                 },

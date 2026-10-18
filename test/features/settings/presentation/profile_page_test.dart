@@ -90,15 +90,20 @@ void main() {
     // The goal lives on the Fortschritt tab now.
     expect(find.text('Gewicht halten'), findsNothing);
 
-    // Today has a manual weight, so the weigh-in offers to delete it.
+    // The weigh-in starts from the newest weighing.
     await tester.ensureVisible(
       find.byKey(ProfileWeightCard.addWeightButtonKey),
     );
     await tester.tap(find.byKey(ProfileWeightCard.addWeightButtonKey));
     await tester.pumpAndSettle();
     expect(
-      find.byKey(DiaryWeightDialogKeys.weightDialogClearButton),
-      findsOneWidget,
+      tester
+          .widget<TextField>(
+            find.byKey(DiaryWeightDialogKeys.weightDialogField),
+          )
+          .controller
+          ?.text,
+      '79.4',
     );
   });
 

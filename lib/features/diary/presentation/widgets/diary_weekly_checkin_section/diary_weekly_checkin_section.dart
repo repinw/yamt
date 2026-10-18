@@ -399,28 +399,13 @@ class _DiaryWeeklyCheckInSectionState
     }
 
     ref.read(diaryCalendarControllerProvider.notifier).selectDay(day);
-    final windowDay = _windowDayFor(checkInData, day);
     unawaited(
       weightTrackingFlow.showDialogForDay(
         context: context,
         selectedDay: day,
         day: day,
-        initialWeightKg: windowDay?.weightKg,
       ),
     );
-  }
-
-  CalorieWeeklyCheckInWindowDay? _windowDayFor(
-    CalorieWeeklyCheckInData checkInData,
-    DateTime day,
-  ) {
-    for (final windowDay in checkInData.days) {
-      if (DateUtils.isSameDay(windowDay.day, day)) {
-        return windowDay;
-      }
-    }
-
-    return null;
   }
 
   void _clearStaleHiddenWindow(CalorieWeeklyCheckInData? checkInData) {

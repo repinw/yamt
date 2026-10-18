@@ -12,7 +12,6 @@ import 'package:yamt/features/health/data/health_connection_service_provider.dar
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
 import 'package:yamt/features/progress/presentation/progress_weight_entry_flow.dart';
@@ -111,33 +110,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('deletes the manual weight of today', (tester) async {
-    final settings = FakeCalorieSettingsRepository(
-      initialSettings: progressSettings(),
-    );
-    addTearDown(settings.dispose);
-    final today = DateTime(2026, 9, 24);
-    final weights = FakeManualHealthWeightRepository([
-      ManualHealthWeightEntry(day: today, weightKg: 80.4),
-    ]);
-    await _pump(
-      tester,
-      overrides: _manualWeightOverrides(settings: settings, weights: weights),
-    );
-
-    await tester.tap(find.byKey(_openKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(DiaryWeightDialogKeys.weightDialogClearButton));
-    await tester.pumpAndSettle();
-
-    expect(weights.deletedDays, [today]);
-    expect(weights.entries, isEmpty);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('fills in the last weigh-in of the chart on Gesamt', (
-    tester,
-  ) async {
+  testWidgets('fills in the newest weighing on Gesamt', (tester) async {
     final settings = FakeCalorieSettingsRepository(
       initialSettings: progressSettings(),
     );
@@ -168,7 +141,7 @@ void main() {
     expect(field.controller!.text, '82.0');
   });
 
-  testWidgets('waits for the chart weights when no chart is built', (
+  testWidgets('waits for the newest weighing when no chart is built', (
     tester,
   ) async {
     final settings = FakeCalorieSettingsRepository(
