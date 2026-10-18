@@ -278,8 +278,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Burn Week balance card with the daily progress.
 - Weekly check-in prompts and success/hint cards.
 - Side menu from the diary top bar. The page slides to the right as a
-  shrunken card and the menu shows behind it: the user, then Profile, goal
-  archive, household (You), kitchen utensils, shopping list (Kitchen),
+  shrunken card and the menu shows behind it: the user, then Profile,
+  household (You), kitchen utensils, shopping list (Kitchen),
   settings, appearance, about (App), and "Link account" for guests at the
   bottom. Appearance opens the settings scrolled to the Darstellung section.
   Tapping the card or back closes it.
@@ -372,13 +372,15 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - Fortschritt tab with two chips, "Aktuelles Ziel" and "Gesamt".
   "Aktuelles Ziel" covers the current goal from its start (at least 7 days
-  for the charts); "Gesamt" covers all goals from the first start, hides the
+  for the charts); "Ziel" opens a menu of all goals, and a past goal shows
+  only that goal, from its start to the day before the next goal, without
+  forecast, TDEE change lines, or week section, and its goal card shows speed,
+  start date, start and end weight, end date, and reached date; "Gesamt" covers all goals from the first start, hides the
   goal card and the run, and marks each goal start ("Ziel 2") in the weight
   and TDEE charts. From top to bottom:
   - the goal ("Lose weight to 78 kg"), a four-part bar of the way from the
     start weight to the target by trend weight, the kg to go and the pace,
-    the daily calories with protein, carbs, and fat, and a button to the goal
-    archive;
+    the daily calories with protein, carbs, and fat;
   - the current 7-day run, headed "Run 3 · Tag 2 von 7": the average kcal
     per day as the main number with the goal, the week budget (eaten of the
     run's total, one segment per day, kcal left), and one row per day with

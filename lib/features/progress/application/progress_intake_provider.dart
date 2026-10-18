@@ -38,17 +38,20 @@ Future<ProgressIntake> progressIntake(Ref ref, ProgressScope scope) async {
     day: today,
   );
   final weekEnd = resolveCalorieGoalRunEndDate(settings: settings, day: today);
-  final comparisonStart = ProgressPeriod.of(
+  final comparison = ProgressPeriod.of(
     settings: settings,
     scope: scope,
     today: today,
-  ).start;
-  final start = weekStart.isBefore(comparisonStart)
+  );
+  // A past goal reads only its own days; the run belongs to the current goal.
+  final isPast = comparison.end.isBefore(today);
+  final start = !isPast && weekStart.isBefore(comparison.start)
       ? weekStart
-      : comparisonStart;
+      : comparison.start;
+  final end = nextDiaryDay(isPast ? comparison.end : weekEnd);
   final entries = await repository.readEntriesInRange(
     startInclusive: start,
-    endExclusive: nextDiaryDay(weekEnd),
+    endExclusive: end,
   );
   if (!ref.mounted) {
     throw StateError('Progress intake provider disposed.');
@@ -58,7 +61,7 @@ Future<ProgressIntake> progressIntake(Ref ref, ProgressScope scope) async {
   final days = [
     for (final day in buildCalorieCarryoverDateRange(
       startInclusive: start,
-      endExclusive: nextDiaryDay(weekEnd),
+      endExclusive: end,
     ))
       _progressDay(
         day: day,
@@ -74,7 +77,8 @@ Future<ProgressIntake> progressIntake(Ref ref, ProgressScope scope) async {
     days: days,
     weekStart: weekStart,
     weekEnd: weekEnd,
-    comparisonStart: comparisonStart,
+    comparisonStart: comparison.start,
+    comparisonEnd: comparison.end,
     today: today,
     runNumber: resolveCalorieGoalRunNumber(settings: settings, day: today),
   );

@@ -3292,120 +3292,6 @@ abstract class AppLocalizations {
   /// **'Please enter a valid goal speed.'**
   String get caloriesCalculatorGoalSpeedInvalid;
 
-  /// No description provided for @settingsGoalArchiveTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Goal archive'**
-  String get settingsGoalArchiveTitle;
-
-  /// No description provided for @settingsGoalArchiveSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'View your current and previous goals'**
-  String get settingsGoalArchiveSubtitle;
-
-  /// No description provided for @goalArchiveTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Goal archive'**
-  String get goalArchiveTitle;
-
-  /// No description provided for @goalArchiveLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'The goals could not be loaded.'**
-  String get goalArchiveLoadFailed;
-
-  /// No description provided for @goalArchiveRetryAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Try again'**
-  String get goalArchiveRetryAction;
-
-  /// No description provided for @goalArchiveActive.
-  ///
-  /// In en, this message translates to:
-  /// **'Active'**
-  String get goalArchiveActive;
-
-  /// No description provided for @goalArchiveCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed'**
-  String get goalArchiveCompleted;
-
-  /// No description provided for @goalArchiveGoalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Goal'**
-  String get goalArchiveGoalLabel;
-
-  /// No description provided for @goalArchiveSpeedLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Speed'**
-  String get goalArchiveSpeedLabel;
-
-  /// No description provided for @goalArchiveSpeedValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{speed} kg/week'**
-  String goalArchiveSpeedValue(String speed);
-
-  /// No description provided for @goalArchiveStartLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Start'**
-  String get goalArchiveStartLabel;
-
-  /// No description provided for @goalArchiveStartWeightLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Starting weight'**
-  String get goalArchiveStartWeightLabel;
-
-  /// No description provided for @goalArchiveEndWeightLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Ending weight'**
-  String get goalArchiveEndWeightLabel;
-
-  /// No description provided for @goalArchiveEstimatedEndLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Estimated end'**
-  String get goalArchiveEstimatedEndLabel;
-
-  /// No description provided for @goalArchiveEndLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'End'**
-  String get goalArchiveEndLabel;
-
-  /// No description provided for @goalArchiveReachedLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Reached'**
-  String get goalArchiveReachedLabel;
-
-  /// No description provided for @goalArchiveUnlimited.
-  ///
-  /// In en, this message translates to:
-  /// **'No end date'**
-  String get goalArchiveUnlimited;
-
-  /// No description provided for @goalArchiveSelectHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Select one or more goals for one continuous timeline.'**
-  String get goalArchiveSelectHint;
-
-  /// No description provided for @goalArchiveOpenAnalytics.
-  ///
-  /// In en, this message translates to:
-  /// **'Open timeline'**
-  String get goalArchiveOpenAnalytics;
-
   /// No description provided for @tdeeChartEstimateMarker.
   ///
   /// In en, this message translates to:
@@ -5050,6 +4936,12 @@ abstract class AppLocalizations {
   /// **'Overall'**
   String get progressScopeAll;
 
+  /// No description provided for @progressScopePastGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get progressScopePastGoal;
+
   /// No description provided for @progressRunKicker.
   ///
   /// In en, this message translates to:
@@ -5062,6 +4954,12 @@ abstract class AppLocalizations {
   /// **'Since goal start · average'**
   String get progressDayTypeKickerGoal;
 
+  /// Kicker above the day-type stats when a past goal is selected; the average is over that goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {number} · average'**
+  String progressDayTypeKickerPastGoal(int number);
+
   /// No description provided for @progressDayTypeKickerAll.
   ///
   /// In en, this message translates to:
@@ -5073,6 +4971,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Goal {number}'**
   String progressGoalMarker(int number);
+
+  /// No description provided for @progressGoalMenuRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {number} · running'**
+  String progressGoalMenuRunning(int number);
+
+  /// No description provided for @progressGoalMenuSince.
+  ///
+  /// In en, this message translates to:
+  /// **'since {date}'**
+  String progressGoalMenuSince(String date);
+
+  /// No description provided for @progressGoalMenuRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String progressGoalMenuRange(String start, String end);
+
+  /// No description provided for @progressGoalWeightValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} kg'**
+  String progressGoalWeightValue(String weight);
+
+  /// No description provided for @progressGoalSpeedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed'**
+  String get progressGoalSpeedLabel;
+
+  /// No description provided for @progressGoalSpeedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{speed} kg/week'**
+  String progressGoalSpeedValue(String speed);
+
+  /// No description provided for @progressGoalStartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get progressGoalStartLabel;
+
+  /// No description provided for @progressGoalStartWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting weight'**
+  String get progressGoalStartWeightLabel;
+
+  /// No description provided for @progressGoalEndWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ending weight'**
+  String get progressGoalEndWeightLabel;
+
+  /// No description provided for @progressGoalEndLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get progressGoalEndLabel;
+
+  /// No description provided for @progressGoalReachedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached'**
+  String get progressGoalReachedLabel;
 
   /// No description provided for @progressWeekKicker.
   ///
@@ -10504,6 +10468,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No photos yet. Add one, or take it at the next check-in.'**
   String get progressPhotosEmpty;
+
+  /// Empty state of the photo list when a past goal is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'No photos from this goal.'**
+  String get progressPhotosEmptyPastGoal;
 
   /// No description provided for @progressPhotosAdd.
   ///

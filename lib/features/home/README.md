@@ -10,7 +10,7 @@ Home owns the tab shell, tab navigation, and shell-level composition.
   `home_menu_panel.dart`). Opening it slides the whole shell to the right,
   shrinks it to a rounded card, and shows the menu behind it. Tapping the
   card, the close button, or system back closes it. The menu lists the
-  signed-in user, the app-wide destinations (Profile, goal archive,
+  signed-in user, the app-wide destinations (Profile,
   household, kitchen utensils, shopping list, settings, appearance, about),
   an account entry at the bottom, and in debug builds the Calories debug
   actions. Only the Diary top bar opens the menu, through

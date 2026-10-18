@@ -59,9 +59,7 @@ class _ProgressPhotoComparePageState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final overview = ref.watch(
-      progressPhotoOverviewProvider(
-        ProgressScope.values.asNameMap()[widget.scopeName] ?? ProgressScope.all,
-      ),
+      progressPhotoOverviewProvider(ProgressScope.byName(widget.scopeName)),
     );
     return Scaffold(
       appBar: AppBar(title: Text(l10n.progressPhotoCompareTitle)),

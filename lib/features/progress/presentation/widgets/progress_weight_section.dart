@@ -38,7 +38,11 @@ class ProgressWeightSection extends ConsumerWidget {
     return ref
         .watch(progressWeightProvider(scope))
         .when(
-          data: (weight) => _WeightContent(key: sectionKey, weight: weight),
+          data: (weight) => _WeightContent(
+            key: sectionKey,
+            weight: weight,
+            endsToday: scope is! ProgressPastGoalScope,
+          ),
           loading: () => const ProgressSectionLoading(),
           error: (_, _) => const ProgressSectionError(),
         );
@@ -46,9 +50,10 @@ class ProgressWeightSection extends ConsumerWidget {
 }
 
 class _WeightContent extends StatelessWidget {
-  const new({required this.weight, super.key});
+  const new({required this.weight, required this.endsToday, super.key});
 
   final ProgressWeight weight;
+  final bool endsToday;
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +102,11 @@ class _WeightContent extends StatelessWidget {
           if (trendKg == null)
             ProgressSectionNote(text: l10n.progressWeightEmpty)
           else ...[
-            ProgressWeightChart(trend: trend, goalStarts: weight.goalStarts),
+            ProgressWeightChart(
+              trend: trend,
+              goalStarts: weight.goalStarts,
+              endsToday: endsToday,
+            ),
             const SizedBox(height: AppSpacing.sm),
             ProgressLegend(
               items: [

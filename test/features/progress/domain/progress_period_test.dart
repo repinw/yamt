@@ -49,7 +49,7 @@ void main() {
     expect(period.start, DateTime(2026, 9, 28));
     expect(period.goalStarts, [(number: 2, day: DateTime(2026, 9, 28))]);
     // A goal that just started still gets a week of chart.
-    expect(period.chartStart(_today), DateTime(2026, 9, 23));
+    expect(period.chartStart, DateTime(2026, 9, 23));
   });
 
   test('covers all goals from the first start', () {
@@ -61,7 +61,7 @@ void main() {
 
     expect(period.start, DateTime(2026, 6));
     expect(period.goalStarts.map((start) => start.number), [1, 2]);
-    expect(period.chartStart(_today), DateTime(2026, 6));
+    expect(period.chartStart, DateTime(2026, 6));
   });
 
   test('falls back to four weeks without a goal', () {

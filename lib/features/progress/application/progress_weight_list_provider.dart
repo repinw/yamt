@@ -32,11 +32,12 @@ Future<ProgressWeightList> progressWeightList(
     ),
     ProgressWeightRange.fourWeeks => ProgressPeriod(
       start: addDiaryDays(today, -progressFallbackDays),
+      end: today,
       goalStarts: allGoals.goalStarts,
     ),
     ProgressWeightRange.all => allGoals,
   };
-  final chartStart = period.chartStart(today);
+  final chartStart = period.chartStart;
   // A goal that starts later still lists the weights of the last days.
   final startsLater = period.start.isAfter(today);
   final (trend, manualEntries, healthSamples) = await (
