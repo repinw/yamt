@@ -11,7 +11,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
-    'ingredient_check_draft.dart';
+    'ingredient_check_state.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/ingredient_check_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';

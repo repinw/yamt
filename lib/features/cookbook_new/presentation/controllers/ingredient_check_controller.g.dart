@@ -17,7 +17,7 @@ final ingredientCheckControllerProvider = IngredientCheckControllerFamily._();
 /// Holds the choices of the ingredient check for one recipe and saves them
 /// on the recipe.
 final class IngredientCheckControllerProvider
-    extends $NotifierProvider<IngredientCheckController, IngredientCheckDraft> {
+    extends $NotifierProvider<IngredientCheckController, IngredientCheckState> {
   /// Holds the choices of the ingredient check for one recipe and saves them
   /// on the recipe.
   IngredientCheckControllerProvider._({
@@ -46,10 +46,10 @@ final class IngredientCheckControllerProvider
   IngredientCheckController create() => IngredientCheckController();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(IngredientCheckDraft value) {
+  Override overrideWithValue(IngredientCheckState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<IngredientCheckDraft>(value),
+      providerOverride: $SyncValueProvider<IngredientCheckState>(value),
     );
   }
 
@@ -66,7 +66,7 @@ final class IngredientCheckControllerProvider
 }
 
 String _$ingredientCheckControllerHash() =>
-    r'365fc32fb5c06a0760d75c09031824df52cd3d9e';
+    r'49631aa6d00093dede98b9fd7881a80827e15c4f';
 
 /// Holds the choices of the ingredient check for one recipe and saves them
 /// on the recipe.
@@ -75,9 +75,9 @@ final class IngredientCheckControllerFamily extends $Family
     with
         $ClassFamilyOverride<
           IngredientCheckController,
-          IngredientCheckDraft,
-          IngredientCheckDraft,
-          IngredientCheckDraft,
+          IngredientCheckState,
+          IngredientCheckState,
+          IngredientCheckState,
           String
         > {
   IngredientCheckControllerFamily._()
@@ -103,20 +103,20 @@ final class IngredientCheckControllerFamily extends $Family
 /// on the recipe.
 
 abstract class _$IngredientCheckController
-    extends $Notifier<IngredientCheckDraft> {
+    extends $Notifier<IngredientCheckState> {
   late final _$args = ref.$arg as String;
   String get recipeId => _$args;
 
-  IngredientCheckDraft build(String recipeId);
+  IngredientCheckState build(String recipeId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<IngredientCheckDraft, IngredientCheckDraft>;
+    final ref = this.ref as $Ref<IngredientCheckState, IngredientCheckState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<IngredientCheckDraft, IngredientCheckDraft>,
-              IngredientCheckDraft,
+              AnyNotifier<IngredientCheckState, IngredientCheckState>,
+              IngredientCheckState,
               Object?,
               Object?
             >;

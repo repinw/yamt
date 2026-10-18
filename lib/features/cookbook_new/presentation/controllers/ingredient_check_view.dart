@@ -2,7 +2,7 @@ import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_controller.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_draft.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_state.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_view_builder.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
@@ -30,7 +30,7 @@ class IngredientCheckView {
   final RecipeView view;
 
   /// The cook's choices.
-  final IngredientCheckDraft draft;
+  final IngredientCheckState draft;
 
   /// The ingredients the Vorrat holds.
   final List<RecipeIngredientLine> found;
