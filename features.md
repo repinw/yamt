@@ -999,31 +999,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   which can change without an app release.
 - Generated recipe review before saving as an editable meal template.
 
-## Cooking Flow
-
-- Prepflow route from meal template detail.
-- Inventory check before cooking starts.
-- Ingredient assignment, ignore, edit, and conflict resolution.
-- Unit conversion prompts and weigh-later option.
-- Add missing ingredients to shopping list and continue later.
-- Recipe portion scaler.
-- Preparation phase with tare/container setup and saved utensil picker.
-- Cooking phase with instructions and voice/on-the-fly adjustments.
-- Summary phase for base ingredients and unresolved adjustments.
-- Finalize phase for storage containers, gross weight, net weight, portion
-  split, and ingredient-to-container assignment.
-- Save final meal into inventory and resume saved flow sessions.
-- Leaving from the first step saves the session first. When the save
-  fails, the flow stays open and a dialog offers to try again or to leave
-  without saving.
-
 ## Kitchen Utensils
 
 - Kitchen utensil list.
 - Add, edit, and delete utensils.
 - Name, empty weight, and photo fields.
 - Utensil image capture/pick/upload handling.
-- Saved utensils available during cooking-flow tare setup.
+- Saved utensils available for the pot weight on "Gekocht".
 
 ## Shopping List
 
@@ -1033,7 +1015,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Quantity increase/decrease.
 - Cross-off behavior and clear-crossed-off action.
 - Firestore-backed list repository.
-- Public operations used by inventory, templates, and cooking flow.
+- Public operations used by inventory and templates.
 - Reminder the day before planned food that misses ingredients: a phone
   notification "Für morgen fehlen N Zutaten", at 17:00 by default. Foods
   already on the list do not count, and a day with nothing missing gets
@@ -1110,7 +1092,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Recipe ingredient requirement parsing.
 - Recipe ingredient unit modeling and display codes.
 - Pending ingredient label formatting.
-- Public parser used by inventory, meal templates, and cooking flow.
+- Public parser used by inventory and meal templates.
 
 ## Shared UI Support
 

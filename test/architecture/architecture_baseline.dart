@@ -25,13 +25,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/auth/presentation/widgets/welcome_page_editorial_aside/welcome_page_editorial_aside.dart':
         1,
-    'lib/features/cooking_flow/presentation/controllers/cooking_flow_shopping_controller.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_cooking_page.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_page.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_page.dart': 2,
-    'lib/features/cooking_flow/presentation/cooking_flow_summary_ingredient_source_flow.dart':
-        1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 2,
     'lib/features/home_widget/presentation/controllers/home_widget_sync_controller.dart':
         1,
@@ -125,9 +118,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/domain/calorie_goal_transition_helpers.dart': 1,
     'lib/features/calories/presentation/widgets/calorie_entry_editor_flow_handler.dart':
         1,
-    'lib/features/cooking_flow/application/cooking_flow_amount_utils.dart': 1,
-    'lib/features/cooking_flow/application/cooking_flow_finalize_logic.dart': 1,
-    'lib/features/cooking_flow/data/cooking_flow_session_local_store.dart': 1,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
     'lib/features/home_widget/application/home_widget_action_uri_codec.dart': 1,
@@ -193,7 +183,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/domain/calorie_entry.dart': 5,
     'lib/features/calories/domain/calorie_goal_settings_queries.dart': 1,
     'lib/features/calories/domain/tdee_cycle_resolver.dart': 1,
-    'lib/features/cooking_flow/application/cooking_flow_finalize_logic.dart': 2,
     'lib/features/inventory/application/inventory_calorie_bridge_flow.dart': 2,
     'lib/features/inventory/application/inventory_shopping_suggestions.dart': 1,
     'lib/features/inventory/application/off_product_candidate_source.dart': 1,

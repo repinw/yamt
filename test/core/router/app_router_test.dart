@@ -1128,30 +1128,6 @@ void main() {
     },
   );
 
-  testWidgets('cooking flow route is registered on app router', (tester) async {
-    final container = _createContainerWithAuth(
-      Stream<User?>.value(_authenticatedUser()),
-      completedCalorieGoalOnboardingUserIds: {'uid-123'},
-    );
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await _pumpRouterTransition(tester);
-
-    final routes = container
-        .read(appRouterProvider)
-        .configuration
-        .routes
-        .whereType<GoRoute>()
-        .toList();
-    final cookingFlowRoute = routes.firstWhere(
-      (route) => route.path == AppRoutes.homeInventoryTemplateDetail,
-    );
-
-    expect(cookingFlowRoute.path, AppRoutes.homeInventoryTemplateDetail);
-  });
-
   testWidgets('kitchen utensils route is registered on app router', (
     tester,
   ) async {
