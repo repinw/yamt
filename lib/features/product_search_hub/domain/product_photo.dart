@@ -27,6 +27,9 @@ class ProductFrontDetails {
     this.brand,
     this.quantityLabel,
     this.pieceCount,
+    this.pieceWeight,
+    this.pieceWeightUnit,
+    this.pieceName,
     this.barcode,
   });
 
@@ -41,6 +44,15 @@ class ProductFrontDetails {
 
   /// Number of pieces or portions printed on the pack.
   final int? pieceCount;
+
+  /// Weight or volume of one piece as printed, such as 25 for "6 x 25 g".
+  final double? pieceWeight;
+
+  /// Unit code of [pieceWeight]: "g" or "ml".
+  final String? pieceWeightUnit;
+
+  /// The printed word for one piece, such as "Riegel".
+  final String? pieceName;
 
   /// Barcode digits the AI read, when every digit was certain.
   final String? barcode;

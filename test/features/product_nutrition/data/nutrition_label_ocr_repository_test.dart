@@ -74,6 +74,30 @@ Future<NutritionLabelOcrResult> _scanWith(String? responseText) {
 }
 
 void main() {
+  test('read takes the serving of the per-portion heading', () async {
+    final response = (jsonDecode(_response()) as Map<String, Object?>)
+      ..addAll({
+        'serving_quantity': 25,
+        'serving_unit': 'g',
+        'serving_name': 'Riegel',
+      });
+
+    final draft = (await _scanWith(jsonEncode(response))).draft!;
+
+    expect(draft.servingQuantity, 25);
+    expect(draft.servingUnit, 'g');
+    expect(draft.servingName, 'Riegel');
+  });
+
+  test('read without the serving fields leaves them empty', () async {
+    final draft = (await _scanWith(_response())).draft!;
+
+    expect(draft.servingSizeLabel, '30 g');
+    expect(draft.servingQuantity, isNull);
+    expect(draft.servingUnit, isNull);
+    expect(draft.servingName, isNull);
+  });
+
   test('read sends the photo and parses a complete label', () async {
     final modelClient = _FakeModelClient(responseText: _response());
 

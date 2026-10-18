@@ -32,6 +32,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_photo_section.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form/manual_product_serving_choice.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form_details.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
@@ -56,13 +58,16 @@ const _privateUrl = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
 const _noNetwork = SocketException('Failed host lookup');
 
 class _FakePhotoRepository implements ProductPhotoRepository {
-  new({this.offline = false, this.noPackage = false});
+  new({this.offline = false, this.noPackage = false, this.multipack = false});
 
   /// Without a network the AI cannot read the front and the upload gives up.
   final bool offline;
 
   /// The AI finds no package on the front photo.
   final bool noPackage;
+
+  /// The front shows a multipack of 6 bars of 25 g.
+  final bool multipack;
   var _photoCount = 0;
   final saved = <String>[];
   final savedPrivate = <String>[];
@@ -86,6 +91,17 @@ class _FakePhotoRepository implements ProductPhotoRepository {
     await Future<void>.delayed(const Duration(milliseconds: 200));
     if (offline) throw _noNetwork;
     if (noPackage) throw const ProductFrontNotProductException();
+    if (multipack) {
+      return const ProductFrontDetails(
+        name: 'Müsliriegel',
+        quantityLabel: '6 x 25 g',
+        pieceCount: 6,
+        pieceWeight: 25,
+        pieceWeightUnit: 'g',
+        pieceName: 'Riegel',
+        barcode: '4006381333931',
+      );
+    }
     return const ProductFrontDetails(
       name: 'Haferflocken zart',
       brand: 'REWE Bio',
@@ -125,6 +141,11 @@ class _FakePhotoRepository implements ProductPhotoRepository {
 }
 
 class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
+  new({this.servingQuantity});
+
+  /// Grams per portion that the table's per-portion heading reads.
+  final double? servingQuantity;
+
   @override
   Future<NutritionLabelOcrResult> readNutritionLabel({
     required Uint8List imageBytes,
@@ -143,6 +164,9 @@ class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
         per100Sugar: 0.7,
         per100Protein: 13.5,
         per100Salt: 0.01,
+        servingQuantity: servingQuantity,
+        servingUnit: servingQuantity == null ? null : 'g',
+        servingName: servingQuantity == null ? null : 'Portion',
       ),
     );
   }
@@ -151,6 +175,7 @@ class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
 Widget _buildHarness({
   required _FakePhotoRepository photos,
   required ValueChanged<Object?> onResult,
+  _FakeNutritionOcrRepository? nutrition,
 }) {
   final config = InventoryReceiptManualProductConfig(
     item: InventoryItem.create(
@@ -199,7 +224,7 @@ Widget _buildHarness({
     overrides: [
       productPhotoRepositoryProvider.overrideWithValue(photos),
       nutritionLabelOcrRepositoryProvider.overrideWithValue(
-        _FakeNutritionOcrRepository(),
+        nutrition ?? _FakeNutritionOcrRepository(),
       ),
     ],
   );
@@ -286,6 +311,39 @@ void main() {
     final item = (result! as InventoryReceiptManualProductResult).item;
     expect(item.name, 'Haferflocken zart');
     expect(item.imageUrl, _frontUrl);
+  });
+
+  testWidgets('the photos disagree on the serving and the user picks the '
+      "front's piece (#527)", (tester) async {
+    Object? result;
+    await tester.pumpWidget(
+      _buildHarness(
+        photos: _FakePhotoRepository(multipack: true),
+        nutrition: _FakeNutritionOcrRepository(servingQuantity: 30),
+        onResult: (value) => result = value,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open_editor')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    await tester.pumpAndSettle();
+    expect(_text(tester, ManualProductFormField.weightAmount), '150');
+    await tester.tap(find.byKey(ManualProductPhotoSection.nutritionTableKey));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(ManualProductServingChoice.frontKey));
+    await tester.tap(find.byKey(ManualProductServingChoice.frontKey));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    final item = (result! as InventoryReceiptManualProductResult).item;
+    expect(item.servingSize, '1 Riegel (25 g)');
+    expect(item.servingQuantity, 25);
+    expect(item.servingQuantityUnit, 'g');
   });
 
   testWidgets('offline, the front photo stays silent and the product saves', (

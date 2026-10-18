@@ -21,6 +21,9 @@ class NutritionLabelOcrDraft {
     this.brand,
     this.quantityLabel,
     this.servingSizeLabel,
+    this.servingQuantity,
+    this.servingUnit,
+    this.servingName,
     this.per100PolyunsaturatedFat,
     this.per100Fiber,
   });
@@ -53,6 +56,15 @@ class NutritionLabelOcrDraft {
 
   /// The serving size label.
   final String? servingSizeLabel;
+
+  /// Weight or volume of one serving, from the per-portion heading.
+  final double? servingQuantity;
+
+  /// Unit code of [servingQuantity]: "g" or "ml".
+  final String? servingUnit;
+
+  /// The printed word for one serving, such as "Riegel".
+  final String? servingName;
 
   /// The per100 kJ.
   final double per100Kj;

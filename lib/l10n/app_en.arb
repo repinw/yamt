@@ -124,6 +124,22 @@
     }
   },
   "productPieceWeightLabel": "Grams per piece",
+  "productServingChoiceLabel": "Serving",
+  "@productServingChoiceLabel": {
+    "description": "Label before the choice between the serving the nutrition table read and the piece the package front read."
+  },
+  "productServingAmount": "{amount} {unit}",
+  "@productServingAmount": {
+    "description": "Chip of a serving without a name in the serving choice, such as \"25 g\".",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "productEditorPhotoReadName": "Name",
   "productEditorPhotoReadValues": "{count, plural, =1{1 value} other{{count} values}}",
   "@productEditorPhotoReadValues": {

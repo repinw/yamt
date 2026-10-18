@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_nutrition/domain/'
+    'nutrition_label_ocr_models.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -383,6 +386,77 @@ void main() {
     expect(renamed?.quantity, 2);
     expect(renamed?.initialAmount, 1200);
     expect(renamed?.currentAmount, 1200);
+  });
+
+  test('the package photos give the serving; the table wins until the '
+      'user picks the front', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = inventoryReceiptManualProductControllerProvider(_config());
+    final controller = container.read(provider.notifier)
+      ..applyFrontDetails(
+        const ProductFrontDetails(
+          name: 'Müsliriegel',
+          pieceCount: 6,
+          pieceWeight: 25,
+          pieceWeightUnit: 'g',
+          pieceName: 'Riegel',
+        ),
+      );
+
+    expect(container.read(provider).weightAmount, '150');
+    expect(
+      container.read(provider).selectedWeightUnit,
+      InventoryAmountUnit.gram,
+    );
+    expect(container.read(provider).servings.front?.size, '1 Riegel (25 g)');
+
+    controller.applyNutritionLabelDraft(
+      const NutritionLabelOcrDraft(
+        barcode: '',
+        per100Kj: 1800,
+        per100Kcal: 430,
+        per100Fat: 15,
+        per100SaturatedFat: 5,
+        per100Carbs: 60,
+        per100Sugar: 25,
+        per100Protein: 8,
+        per100Salt: 0.3,
+        servingSizeLabel: 'pro Portion (30 g)',
+      ),
+    );
+
+    final table = controller.buildSavePayload()!.item;
+    expect(container.read(provider).servings.differ, isTrue);
+    expect(table.servingSize, '1 Portion (30 g)');
+    expect(table.servingQuantity, 30);
+    expect(table.servingQuantityUnit, 'g');
+
+    controller.pickFrontServing(front: true);
+
+    final front = controller.buildSavePayload()!.item;
+    expect(front.servingQuantity, 25);
+    expect(front.servingSize, '1 Riegel (25 g)');
+    expect(container.read(provider).pieceWeightText, '25');
+
+    // A retake that reads no piece drops the piece of the photo before.
+    controller.applyFrontDetails(
+      const ProductFrontDetails(name: 'Müsliriegel'),
+    );
+    expect(container.read(provider).pieceWeightText, isEmpty);
+    expect(container.read(provider).servings.front, isNull);
+
+    // A product picked afterwards brings its own serving.
+    controller.applyScannedProduct(
+      const OffProductSearchResult(
+        code: '4311596490202',
+        name: 'Booster Absolute Zero',
+        packageWeight: '330 ml',
+        score: 100,
+      ),
+    );
+
+    expect(container.read(provider).servings.chosen, isNull);
   });
 
   test('buildSavePayload marks entered nutrition complete but unverified', () {
@@ -1164,5 +1238,78 @@ void main() {
     expect(payload?.item.servingQuantity, 55);
     expect(payload?.item.servingQuantityUnit, 'g');
     expect(payload?.item.servingSize, isNull);
+  });
+
+  test('a package counted in pieces keeps its piece over the table and a '
+      'typed weight over the front', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    const selectedProduct = OffProductSearchResult(
+      code: '4000000000017',
+      name: 'Saft',
+      score: 100,
+      packageWeight: '6 Stück',
+      servingSize: '1 Flasche (330 ml)',
+      servingQuantity: 330,
+      servingQuantityUnit: 'ml',
+    );
+    final config = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: selectedProduct,
+    );
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final notifier = container.read(provider.notifier)
+      ..applyScannedProduct(selectedProduct)
+      ..applyNutritionLabelDraft(
+        const NutritionLabelOcrDraft(
+          barcode: '',
+          per100Kj: 180,
+          per100Kcal: 43,
+          per100Fat: 0,
+          per100SaturatedFat: 0,
+          per100Carbs: 10,
+          per100Sugar: 10,
+          per100Protein: 0,
+          per100Salt: 0,
+          servingSizeLabel: 'pro Glas (250 ml)',
+        ),
+      );
+
+    expect(container.read(provider).pieceWeightText, '330');
+    final item = notifier.buildSavePayload()!.item;
+    expect(item.amountUnit, InventoryAmountUnit.piece);
+    expect(item.servingSize, '1 Flasche (330 ml)');
+    expect(item.servingQuantity, 330);
+    expect(item.servingQuantityUnit, 'ml');
+
+    // A front photo replaces the prefilled piece.
+    notifier.applyFrontDetails(
+      const ProductFrontDetails(
+        name: 'Saft',
+        pieceWeight: 250,
+        pieceWeightUnit: 'ml',
+        pieceName: 'Flasche',
+      ),
+    );
+
+    expect(container.read(provider).pieceWeightText, '250');
+    final photographed = notifier.buildSavePayload()!.item;
+    expect(photographed.servingSize, '1 Flasche (250 ml)');
+    expect(photographed.servingQuantity, 250);
+    expect(photographed.servingQuantityUnit, 'ml');
+
+    notifier
+      ..updatePieceWeightText('320')
+      ..applyFrontDetails(
+        const ProductFrontDetails(
+          name: 'Saft',
+          pieceWeight: 330,
+          pieceWeightUnit: 'ml',
+          pieceName: 'Flasche',
+        ),
+      );
+
+    expect(container.read(provider).pieceWeightText, '320');
   });
 }

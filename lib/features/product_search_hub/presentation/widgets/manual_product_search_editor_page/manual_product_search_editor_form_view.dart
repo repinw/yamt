@@ -110,6 +110,7 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
       onTakeFrontPhoto: onTakeFrontPhoto,
       onTakeNutritionTablePhoto: onTakeNutritionTablePhoto,
       onAddOptionalNutrition: controller.showOptionalNutrition,
+      onPickFrontServing: (front) => controller.pickFrontServing(front: front),
       onActionChanged: onActionChanged,
       onSave: onSave,
       confirmLabel: confirmLabel,

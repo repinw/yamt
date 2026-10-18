@@ -488,6 +488,18 @@ abstract class AppLocalizations {
   /// **'Grams per piece'**
   String get productPieceWeightLabel;
 
+  /// Label before the choice between the serving the nutrition table read and the piece the package front read.
+  ///
+  /// In en, this message translates to:
+  /// **'Serving'**
+  String get productServingChoiceLabel;
+
+  /// Chip of a serving without a name in the serving choice, such as "25 g".
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} {unit}'**
+  String productServingAmount(String amount, String unit);
+
   /// No description provided for @productEditorPhotoReadName.
   ///
   /// In en, this message translates to:

@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'manual_product_photo_servings.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_photo_state.dart';
@@ -20,6 +22,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_nutrition_editor.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_photo_section.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form/manual_product_serving_choice.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form_details.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -53,6 +57,7 @@ class _Calls {
   int frontPhotos = 0;
   int tablePhotos = 0;
   int saves = 0;
+  final servingPicks = <bool>[];
 }
 
 Widget _editor(
@@ -85,6 +90,7 @@ Widget _editor(
       onActionChanged: calls.actions.add,
       onSave: () => calls.saves++,
       confirmLabel: confirmLabel,
+      onPickFrontServing: calls.servingPicks.add,
     ),
   );
 }
@@ -385,5 +391,53 @@ void main() {
 
     expect(find.text('Name · 500 g'), findsOneWidget);
     expect(find.text('9 values'), findsOneWidget);
+  });
+
+  testWidgets('offers both servings when the photos disagree', (tester) async {
+    final calls = _Calls();
+    const front = (size: '1 Riegel (25 g)', quantity: 25.0, quantityUnit: 'g');
+    const table = (size: null, quantity: 30.0, quantityUnit: 'g');
+    await tester.pumpWidget(_editor(calls));
+
+    expect(find.byKey(ManualProductServingChoice.frontKey), findsNothing);
+
+    await tester.pumpWidget(
+      _editor(
+        calls,
+        state: _complete.copyWith(
+          servings: const ManualProductPhotoServings(
+            front: front,
+            table: table,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Serving'), findsOneWidget);
+    expect(find.text('30 g'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(ManualProductServingChoice.frontKey));
+    await tester.tap(find.byKey(ManualProductServingChoice.frontKey));
+    await tester.tap(find.byKey(ManualProductServingChoice.tableKey));
+
+    expect(calls.servingPicks, [true, false]);
+
+    await tester.pumpWidget(
+      _editor(
+        calls,
+        state: _complete.copyWith(
+          selectedWeightUnit: InventoryAmountUnit.piece,
+          servings: const ManualProductPhotoServings(
+            front: front,
+            table: table,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(ManualProductServingChoice.frontKey),
+      findsNothing,
+      reason: 'a package counted in pieces takes the front without a choice',
+    );
   });
 }
