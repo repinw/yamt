@@ -1467,6 +1467,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealSaveTemplateAction => 'Save as template';
 
   @override
+  String get preparedMealTemplateNameSave => 'Save';
+
+  @override
+  String get preparedMealTemplateNoFoods =>
+      'No food in your stock has an amount left and full nutrition values.';
+
+  @override
+  String get preparedMealTemplateCreateFailed => 'Could not save the template.';
+
+  @override
   String get preparedMealTemplateSavedMessage => 'Template saved.';
 
   @override

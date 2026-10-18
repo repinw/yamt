@@ -14,6 +14,8 @@ import 'package:yamt/features/cookbook_new/presentation/recipe_plan_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_sections.dart';
 import 'package:yamt/features/inventory/presentation/'
+    'inventory_template_create_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_detail_flow.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensils_button.dart';
@@ -48,7 +50,9 @@ class CookbookPage extends ConsumerWidget {
                     meal: meal,
                   ),
           ),
-          onCreateTemplate: () => context.go(AppRoutes.homeInventory),
+          onCreateTemplate: () => unawaited(
+            InventoryTemplateCreateFlow.create(context: context, ref: ref),
+          ),
           onOpenTemplate: (template) => unawaited(
             context.push(
               AppRoutes.homeInventoryTemplateDetailPath(template.id),
