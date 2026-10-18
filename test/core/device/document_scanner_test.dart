@@ -51,6 +51,21 @@ void main() {
     expect(picker.calls, 0);
   });
 
+  test(
+    'a scan with the gallery asks the scanner for camera and gallery',
+    () async {
+      late MethodCall request;
+      answerScanner((call) async {
+        request = call;
+        return ['/tmp/a.jpg'];
+      });
+
+      await scanDocumentPages(maxPages: 1, allowGallery: true);
+
+      expect((request.arguments as Map)['scannerSource'], 'camera_and_gallery');
+    },
+  );
+
   test('a canceled scan returns null without the camera', () async {
     answerScanner((_) async => null);
     final picker = _FakePicker();

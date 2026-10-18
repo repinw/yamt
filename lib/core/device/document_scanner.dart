@@ -19,8 +19,13 @@ const _scannerChannel = MethodChannel('cunning_document_scanner');
 /// When the scanner fails, for example on a device without it, a plain
 /// camera photo from [fallbackPicker] stands in for it. A denied camera
 /// permission throws the scanner's exception.
+///
+/// With [allowGallery], the scanner also offers a photo from the gallery to
+/// crop: a button in the Android scanner, a camera or gallery choice first on
+/// iOS. The plugin ships the iOS labels.
 Future<List<String>?> scanDocumentPages({
   required int maxPages,
+  bool allowGallery = false,
   ImagePicker? fallbackPicker,
 }) async {
   // The scanner keeps its pages in app storage, not the cache. The pages of
@@ -37,7 +42,7 @@ Future<List<String>?> scanDocumentPages({
   }
   final List<String>? pages;
   try {
-    pages = await _getPictures(maxPages);
+    pages = await _getPictures(maxPages, allowGallery: allowGallery);
   } on Object catch (error, stackTrace) {
     if (error is CunningDocumentScannerException) {
       // A second tap while a scan runs: the running scan answers.
@@ -68,14 +73,21 @@ Future<List<String>?> scanDocumentPages({
 }
 
 /// The plugin's getPictures without its null for an empty result.
-Future<List<String>?> _getPictures(int maxPages) async {
+Future<List<String>?> _getPictures(
+  int maxPages, {
+  required bool allowGallery,
+}) async {
   try {
     final pages = await _scannerChannel.invokeMethod<List<Object?>>(
       'getPictures',
       {
         'noOfPages': maxPages,
-        'isGalleryImportAllowed': false,
-        'scannerSource': ScannerSource.camera.methodChannelValue,
+        'isGalleryImportAllowed': allowGallery,
+        'scannerSource':
+            (allowGallery
+                    ? ScannerSource.cameraAndGallery
+                    : ScannerSource.camera)
+                .methodChannelValue,
         'androidScannerMode': AndroidScannerMode.full.methodChannelValue,
         'asPdf': false,
         // iOS writes PNG by default; JPEG keeps the pages small.
