@@ -112,20 +112,62 @@ void main() {
     final legacy = (await repository.readEntries()).single;
     final morning = DateTime(2026, 3, 20, 7);
 
-    await repository.updateEntry(
+    // The controller keeps the id; the repository moves the day document.
+    final stored = await repository.updateEntry(
       legacy,
       ManualHealthWeightEntry(
         day: morning,
         weightKg: 71,
         recordedAt: morning,
+        id: legacy.id,
+      ),
+    );
+    final entries = await repository.readEntries();
+
+    expect(stored.id, isNot('2026-03-20'));
+    expect(entries.map((entry) => (entry.id, entry.weightKg)), [
+      (stored.id, 71.0),
+    ]);
+  });
+
+  test('updateEntry rewrites the document when the id stays', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreManualHealthWeightRepository(
+      firestore: firestore,
+      dataCipher: signedIn,
+    );
+    final morning = DateTime(2026, 3, 20, 7);
+    final entry = ManualHealthWeightEntry(
+      day: morning,
+      weightKg: 71.2,
+      recordedAt: morning,
+      id: 'morning',
+    );
+    await repository.saveEntry(entry);
+    await repository.saveEntry(
+      ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 70),
+    );
+
+    await repository.updateEntry(
+      entry,
+      ManualHealthWeightEntry(
+        day: morning,
+        weightKg: 71,
+        recordedAt: DateTime(2026, 3, 20, 8),
         id: 'morning',
       ),
     );
     final entries = await repository.readEntries();
 
-    expect(entries.map((entry) => (entry.id, entry.weightKg)), [
+    // The other weighing of the day stays.
+    expect(entries.map((e) => (e.id, e.weightKg)), [
+      ('2026-03-20', 70.0),
       ('morning', 71.0),
     ]);
+    expect(
+      entries.singleWhere((e) => e.id == 'morning').recordedAt,
+      DateTime(2026, 3, 20, 8),
+    );
   });
 
   test('keeps the day it was stored under in any time zone', () async {

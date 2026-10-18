@@ -329,6 +329,25 @@ void main() {
     expect(deleted, isTrue);
     expect(fakeHealth.deleteByUuidCallCount, 1);
   });
+
+  test('writes each weighing under a record id of its own', () async {
+    final fakeHealth = _FakeHealth(healthDataPoints: const []);
+    final service = MobileHealthWeightService(health: fakeHealth);
+    final recordedAt = DateTime.utc(2026, 4, 15, 8, 30, 45, 900);
+
+    await service.saveWeightSample(recordedAt: recordedAt, weightKg: 83.25);
+    await service.saveWeightSample(recordedAt: recordedAt, weightKg: 83.5);
+    await service.saveWeightSample(
+      recordedAt: recordedAt.add(const Duration(seconds: 1)),
+      weightKg: 83.5,
+    );
+
+    expect(fakeHealth.clientRecordIds, [
+      'yamt-weight-2026-04-15T08:30:45-83.25',
+      'yamt-weight-2026-04-15T08:30:45-83.50',
+      'yamt-weight-2026-04-15T08:30:46-83.50',
+    ]);
+  });
 }
 
 class _FakeHealth extends Health {
@@ -344,6 +363,7 @@ class _FakeHealth extends Health {
   final List<DateTime> requestedStartTimes = <DateTime>[];
   final List<DateTime> requestedEndTimes = <DateTime>[];
   int writeCalls = 0;
+  final List<String?> clientRecordIds = <String?>[];
   int deleteByUuidCallCount = 0;
 
   @override
@@ -397,6 +417,7 @@ class _FakeHealth extends Health {
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
     writeCalls += 1;
+    clientRecordIds.add(clientRecordId);
     final error = writeError;
     if (error != null) {
       throw error;
