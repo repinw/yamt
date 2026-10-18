@@ -143,6 +143,31 @@ void main() {
     expect(calorieLog.entries, isEmpty);
   });
 
+  test('save with a plan day stores a plan, also for today', () async {
+    controller().setValueText(DiaryQuickEntryValue.kcal, '650');
+
+    final entry = await controller().save(
+      defaultName: 'Quick entry',
+      planDay: dateOnly(quickEntryNow),
+    );
+
+    expect(plans.plans.single.id, entry!.id);
+    expect(dateOnly(entry.loggedAt), dateOnly(quickEntryNow));
+    expect(calorieLog.entries, isEmpty);
+  });
+
+  test('a plan day before today plans for today', () async {
+    controller().setValueText(DiaryQuickEntryValue.kcal, '650');
+
+    final entry = await controller().save(
+      defaultName: 'Quick entry',
+      planDay: dateOnly(quickEntryNow).subtract(const Duration(days: 1)),
+    );
+
+    expect(plans.plans.single.id, entry!.id);
+    expect(dateOnly(entry.loggedAt), dateOnly(quickEntryNow));
+  });
+
   test('save writes nothing without the calories', () async {
     final entry = await controller().save(defaultName: 'Quick entry');
 

@@ -18,6 +18,8 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_quick_entry_label.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -92,6 +94,46 @@ void main() {
 
     expect(find.byType(DiaryQuickEntryPage), findsNothing);
     expect(plans.plans.single.totalKcal, 700);
+    expect(calorieLog.entries, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the calendar button plans a quick entry for today', (
+    tester,
+  ) async {
+    final calorieLog = FakeCalorieLogRepository();
+    addTearDown(calorieLog.dispose);
+    final plans = FakePlannedEntryRepository();
+    await _openQuickEntry(
+      tester,
+      quickEntryOverrides(calorieLog, plans: plans),
+    );
+
+    await tester.enterText(
+      find.byKey(DiaryQuickEntryLabel.valueKey(DiaryQuickEntryValue.kcal)),
+      '480',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(EatPageScaffold.planButtonKey));
+    await tester.pumpAndSettle();
+    // The day picker starts on today; its confirm button is the last one.
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(DatePickerDialog),
+            matching: find.byType(TextButton),
+          )
+          .last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryQuickEntryPage), findsNothing);
+    final plan = plans.plans.single;
+    expect(plan.totalKcal, 480);
+    expect(
+      DateUtils.dateOnly(plan.loggedAt),
+      DateUtils.dateOnly(quickEntryNow),
+    );
     expect(calorieLog.entries, isEmpty);
     expect(tester.takeException(), isNull);
   });
