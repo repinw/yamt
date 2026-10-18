@@ -93,6 +93,18 @@ void main() {
     );
   });
 
+  test('a receipt scanned late counts from its receipt date', () {
+    final bought = _pack(
+      'bought',
+      entryDate: DateTime(2026, 9, 10),
+    ).copyWith(receiptDate: DateTime(2026, 8));
+
+    expect(
+      pickInventoryItemForPlan(_plan, [_pack('newer'), bought])?.item,
+      bought,
+    );
+  });
+
   test('skips other foods, empty packs, and packs in another unit', () {
     expect(
       pickInventoryItemForPlan(_plan, [

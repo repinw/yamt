@@ -129,6 +129,7 @@ void main() {
         globalFoodItemRepository: globalFoodRepo,
         globalFoodReceiptAliasRepository: aliasRepo,
         idGenerator: () => 'inv_item_id_fixed',
+        now: () => DateTime(2026, 9, 20, 8),
       );
     });
 
@@ -167,6 +168,9 @@ void main() {
 
       expect(invRepo.appendedItems.length, 1);
       final savedItem = invRepo.appendedItems.first;
+      // The Vorrat sorts by when the item was added, not by the receipt.
+      expect(savedItem.receiptDate, DateTime(2026, 9, 13, 14, 30));
+      expect(savedItem.entryDate, DateTime(2026, 9, 20, 8));
       expect(savedItem.id, 'inv_item_id_fixed');
       expect(savedItem.name, 'Ja! Frische Vollmilch 3.8% 1L');
       expect(savedItem.ocrName, 'JA! VOLLM. 1L');

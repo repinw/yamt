@@ -199,4 +199,34 @@ void main() {
       expect(preparedMealPlanMaxPortions(_meal(remaining: 0), 3), 3);
     });
   });
+
+  group('last eaten', () {
+    final noon = DateTime(2026, 10, 8, 12);
+    final evening = DateTime(2026, 10, 8, 19);
+
+    test('eating moves it forward, never back', () {
+      final eaten = _meal().withPortionsEaten(1, at: evening, eatenAt: evening);
+
+      expect(eaten.remainingPortions, 2);
+      expect(eaten.lastEatenAt, evening);
+      expect(
+        eaten.withPortionsEaten(1, at: evening, eatenAt: noon).lastEatenAt,
+        evening,
+      );
+    });
+
+    test('a meal with every portion back forgets it', () {
+      final eaten = _meal(remaining: 4)
+          .withPortionsEaten(1, at: noon, eatenAt: noon);
+
+      expect(eaten.withPortionsReturned(1, evening).lastEatenAt, isNull);
+      expect(
+        eaten
+            .withPortionsEaten(1, at: noon, eatenAt: noon)
+            .withPortionsReturned(1, evening)
+            .lastEatenAt,
+        noon,
+      );
+    });
+  });
 }

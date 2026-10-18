@@ -38,7 +38,10 @@ List<({InventoryItem item, int amount})> inventoryPacksForPlan(
     if (a.item.isFullyAvailable != b.item.isFullyAvailable) {
       return a.item.isFullyAvailable ? 1 : -1;
     }
-    return a.item.entryDate.compareTo(b.item.entryDate);
+    // Bought first, eaten first: a receipt scanned late keeps its date.
+    final aBought = a.item.receiptDate ?? a.item.entryDate;
+    final bBought = b.item.receiptDate ?? b.item.entryDate;
+    return aBought.compareTo(bBought);
   });
 }
 

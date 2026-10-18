@@ -23,19 +23,21 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
     required this._globalFoodItemRepository,
     required this._globalFoodReceiptAliasRepository,
     String Function()? idGenerator,
+    this._now = DateTime.now,
   }) : _idGenerator = idGenerator ?? const Uuid().v4;
 
   final InventoryItemRepository _inventoryItemRepository;
   final GlobalFoodItemRepository _globalFoodItemRepository;
   final GlobalFoodReceiptAliasRepository _globalFoodReceiptAliasRepository;
   final String Function() _idGenerator;
+  final DateTime Function() _now;
 
   @override
   Future<void> saveReceipt({
     required ScannedReceipt receipt,
     required List<ReceiptLineItem> items,
   }) async {
-    final now = DateTime.now();
+    final now = _now();
     final savableItems = items
         .where((i) => i.status == ReceiptItemStatus.confirmed)
         .where((i) => !i.isDeposit && !i.isDiscount)
@@ -70,7 +72,9 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
             id: _idGenerator(),
             name: item.displayName,
             storeName: receipt.storeName ?? '',
-            entryDate: receipt.dateTime ?? now,
+            // When the item was added; the receipt's own date stays in
+            // receiptDate, so the Vorrat sorts a late scan as new.
+            entryDate: now,
             quantity: amount.quantity,
             initialQuantity: amount.quantity,
             unitPrice: unitPrice,

@@ -122,9 +122,10 @@ class FirestorePreparedMealCalorieEntryCommitStore
       // The entry and the meal share one write time. The entry is staged
       // last, so the diary cache changes only when the batch is committed.
       final writtenAt = _now();
-      final nextMeal = currentMeal.withPortionsTaken(
+      final nextMeal = currentMeal.withPortionsEaten(
         consumedPortions,
-        writtenAt,
+        at: writtenAt,
+        eatenAt: entry.loggedAt,
       );
       // The meal is encrypted as a whole, so the batch writes the full
       // document instead of updating single fields.
@@ -198,7 +199,7 @@ class FirestorePreparedMealCalorieEntryCommitStore
       }
       final mealDocument = await mealCollection.seal(mealRef.id, {
         ...stored.storedMeal,
-        ..._portionFields(stored.meal.withPortionsTaken(-portions, _now())),
+        ..._portionFields(stored.meal.withPortionsReturned(portions, _now())),
       });
       final batch = _firestore.batch()..set(mealRef, mealDocument);
       _diary.stageDelete(batch, entry.id);
@@ -248,8 +249,9 @@ class FirestorePreparedMealCalorieEntryCommitStore
 }
 
 /// The stored fields that change when portions leave or come back.
-Map<String, Object> _portionFields(PreparedMeal meal) => {
+Map<String, Object?> _portionFields(PreparedMeal meal) => {
   'remaining_portions': meal.remainingPortions,
   'updated_at': meal.updatedAt.toIso8601String(),
   'remaining_net_weight': ?meal.remainingNetWeight,
+  'last_eaten_at': meal.lastEatenAt?.toIso8601String(),
 };
