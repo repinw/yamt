@@ -43,7 +43,11 @@ void main() {
     final pages = await scanDocumentPages(maxPages: 3, fallbackPicker: picker);
 
     expect(pages, ['/tmp/a.jpg', '/tmp/b.jpg']);
-    expect((request.arguments as Map)['noOfPages'], 3);
+    final arguments = request.arguments as Map;
+    expect(arguments['noOfPages'], 3);
+    expect(arguments['scannerSource'], 'camera');
+    expect(arguments['asPdf'], false);
+    expect(arguments['iosScannerOptions'], containsPair('imageFormat', 'jpg'));
     expect(picker.calls, 0);
   });
 
@@ -57,6 +61,22 @@ void main() {
     );
     expect(picker.calls, 0);
   });
+
+  test(
+    'a scan without a page and without a cancel takes a camera photo',
+    () async {
+      answerScanner((_) async => <String>[]);
+      final picker = _FakePicker();
+
+      final pages = await scanDocumentPages(
+        maxPages: 1,
+        fallbackPicker: picker,
+      );
+
+      expect(pages, ['/tmp/fallback.jpg']);
+      expect(picker.calls, 1);
+    },
+  );
 
   test('a failing scanner falls back to a camera photo', () async {
     answerScanner((_) async => throw PlatformException(code: 'unavailable'));
