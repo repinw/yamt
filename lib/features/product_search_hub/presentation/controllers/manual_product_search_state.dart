@@ -2,6 +2,7 @@ import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/domain/nutrition_label_ocr_models.dart';
+import 'package:yamt/features/product_search_hub/domain/manual_product_photo_servings.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/manual_product_search_models.dart';
 
@@ -18,6 +19,7 @@ class InventoryReceiptManualProductState {
     this.weightAmount = '',
     this.selectedWeightUnit,
     this.pieceWeightText = '',
+    this.pieceWeightTyped = false,
     this.kcalText = '',
     this.saturatedFatText = '',
     this.polyunsaturatedFatText = '',
@@ -31,6 +33,7 @@ class InventoryReceiptManualProductState {
     this.showFiberField = false,
     this.selectedProduct,
     this.ocrDraft,
+    this.servings = const ManualProductPhotoServings(),
     this.barcodeOrigin,
     this.error,
     this.initial,
@@ -56,6 +59,9 @@ class InventoryReceiptManualProductState {
 
   /// Grams of one piece, for a package counted in pieces.
   final String pieceWeightText;
+
+  /// Whether the user typed [pieceWeightText], so no photo replaces it.
+  final bool pieceWeightTyped;
 
   /// The kcal text.
   final String kcalText;
@@ -100,6 +106,9 @@ class InventoryReceiptManualProductState {
   /// the user typed or scanned it.
   final ManualProductBarcodeOrigin? barcodeOrigin;
 
+  /// The servings the package photos read.
+  final ManualProductPhotoServings servings;
+
   /// The error.
   final InventoryReceiptManualProductError? error;
 
@@ -113,55 +122,45 @@ class InventoryReceiptManualProductState {
   /// The selected product, unless the barcode was changed to another one.
   InventoryReceiptManualProductSelection? get matchedProduct {
     final product = selectedProduct;
-    if (product == null) {
-      return null;
-    }
+    if (product == null) return null;
     final normalizedBarcode = normalizeBarcode(barcode);
-    if (normalizedBarcode.isNotEmpty &&
-        normalizedBarcode != normalizeBarcode(product.barcode)) {
-      return null;
-    }
-    return product;
+    return normalizedBarcode.isNotEmpty &&
+            normalizedBarcode != normalizeBarcode(product.barcode)
+        ? null
+        : product;
   }
 
   /// Whether package weight input.
-  bool get hasPackageWeightInput {
-    return parseManualProductDouble(weightAmount) != null;
-  }
+  bool get hasPackageWeightInput =>
+      parseManualProductDouble(weightAmount) != null;
 
   /// Whether the name, the unit, and every value of the EU nutrition label
   /// are filled in.
-  bool get hasRequiredFields {
-    return normalizeManualProductText(nameText) != null &&
-        selectedWeightUnit != null &&
-        hasMandatoryNutrition;
-  }
+  bool get hasRequiredFields =>
+      normalizeManualProductText(nameText) != null &&
+      selectedWeightUnit != null &&
+      hasMandatoryNutrition;
 
   /// Whether the seven values of the EU nutrition label are filled in:
   /// energy, fat, saturates, carbohydrate, sugars, protein, and salt.
-  bool get hasMandatoryNutrition {
-    return [
-      kcalText,
-      fatText,
-      saturatedFatText,
-      carbsText,
-      sugarText,
-      proteinText,
-      saltText,
-    ].every((text) => parseManualProductDouble(text) != null);
-  }
+  bool get hasMandatoryNutrition => [
+    kcalText,
+    fatText,
+    saturatedFatText,
+    carbsText,
+    sugarText,
+    proteinText,
+    saltText,
+  ].every((text) => parseManualProductDouble(text) != null);
 
   /// Whether the barcode is settled: entered, or marked as missing.
   bool get hasBarcodeDecision => hasBarcode || hasNoBarcode;
 
   /// Whether an input differs from the [initial] state: a text, the unit,
-  /// the barcode or its "has none" mark, or the picked product. Texts count
-  /// trimmed and numbers by value, so "2,50" equals "2.5". Without an
-  /// [initial] state the inputs count as changed.
-  bool get isChanged {
-    final initial = this.initial;
-    return initial == null || _inputs != initial._inputs;
-  }
+  /// the barcode or its "has none" mark, the photo servings, or the picked
+  /// product. Texts count trimmed and numbers by value, so "2,50" equals
+  /// "2.5". Without an [initial] state the inputs count as changed.
+  bool get isChanged => initial == null || _inputs != initial!._inputs;
 
   /// The inputs as the save reads them, in a record that compares by value.
   Object get _inputs => (
@@ -181,6 +180,7 @@ class InventoryReceiptManualProductState {
     _valueOf(fiberText),
     _valueOf(proteinText),
     _valueOf(saltText),
+    servings,
     // The same product picked again builds a new selection.
     selectedProduct?.source,
     selectedProduct?.barcode,
@@ -233,6 +233,7 @@ class InventoryReceiptManualProductState {
     String? weightAmount,
     InventoryAmountUnit? selectedWeightUnit,
     String? pieceWeightText,
+    bool? pieceWeightTyped,
     String? kcalText,
     String? saturatedFatText,
     String? polyunsaturatedFatText,
@@ -246,6 +247,7 @@ class InventoryReceiptManualProductState {
     bool? showFiberField,
     Object? selectedProduct = _keepValue,
     Object? ocrDraft = _keepValue,
+    ManualProductPhotoServings? servings,
     Object? barcodeOrigin = _keepValue,
     Object? error = _keepValue,
     InventoryReceiptManualProductState? initial,
@@ -258,6 +260,7 @@ class InventoryReceiptManualProductState {
       weightAmount: weightAmount ?? this.weightAmount,
       selectedWeightUnit: selectedWeightUnit ?? this.selectedWeightUnit,
       pieceWeightText: pieceWeightText ?? this.pieceWeightText,
+      pieceWeightTyped: pieceWeightTyped ?? this.pieceWeightTyped,
       kcalText: kcalText ?? this.kcalText,
       saturatedFatText: saturatedFatText ?? this.saturatedFatText,
       polyunsaturatedFatText:
@@ -277,6 +280,7 @@ class InventoryReceiptManualProductState {
       ocrDraft: ocrDraft == _keepValue
           ? this.ocrDraft
           : ocrDraft as NutritionLabelOcrDraft?,
+      servings: servings ?? this.servings,
       barcodeOrigin: barcodeOrigin == _keepValue
           ? this.barcodeOrigin
           : barcodeOrigin as ManualProductBarcodeOrigin?,

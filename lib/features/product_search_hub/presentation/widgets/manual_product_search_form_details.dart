@@ -20,6 +20,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_nutrition_editor.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_photo_section.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form/manual_product_serving_choice.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Product editor drawn like the eat page: the product head, the nutrition
@@ -43,6 +45,7 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.onAddOptionalNutrition,
     required this.onActionChanged,
     required this.onSave,
+    required this.onPickFrontServing,
     this.confirmLabel,
     super.key,
   });
@@ -52,6 +55,9 @@ class ManualProductDetailsForm extends StatefulWidget {
 
   /// Word of the save button; "Erstellen" when null.
   final String? confirmLabel;
+
+  /// Called with true when the user picks the front's piece as serving.
+  final ValueChanged<bool> onPickFrontServing;
 
   /// The entered product.
   final InventoryReceiptManualProductState state;
@@ -198,6 +204,12 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
               widget.onFieldChanged(ManualProductFormField.barcode, text),
           onScanBarcode: widget.onScanBarcode,
           onNoBarcodeChanged: widget.onNoBarcodeChanged,
+        ),
+        ManualProductServingChoice(
+          servings: state.servings,
+          countedInPieces:
+              state.selectedWeightUnit == InventoryAmountUnit.piece,
+          onPickFront: widget.onPickFrontServing,
         ),
         ManualProductNutritionEditor(
           texts: _texts,

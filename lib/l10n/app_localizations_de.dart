@@ -241,6 +241,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productPieceWeightLabel => 'Gramm pro Stück';
 
   @override
+  String get productServingChoiceLabel => 'Portion';
+
+  @override
+  String productServingAmount(String amount, String unit) {
+    return '$amount $unit';
+  }
+
+  @override
   String get productEditorPhotoReadName => 'Name';
 
   @override

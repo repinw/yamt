@@ -100,6 +100,8 @@
   "productEditorMissingBarcode": "Barcode – scannen oder „Hat keinen“",
   "productMissingValuesHint": "Fehlt: {values} – ergänzen",
   "productPieceWeightLabel": "Gramm pro Stück",
+  "productServingChoiceLabel": "Portion",
+  "productServingAmount": "{amount} {unit}",
   "productEditorPhotoReadName": "Name",
   "productEditorPhotoReadValues": "{count, plural, =1{1 Wert} other{{count} Werte}}",
   "productEditorPhotoRead": "Erkannt",

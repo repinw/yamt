@@ -165,7 +165,10 @@ class ProductPhotoRepository {
       name: name,
       brand: _text(json['brand']),
       quantityLabel: _text(json['quantity_label']),
-      pieceCount: json['piece_count'] as int?,
+      pieceCount: (json['piece_count'] as num?)?.toInt(),
+      pieceWeight: (json['piece_weight'] as num?)?.toDouble(),
+      pieceWeightUnit: _text(json['piece_weight_unit']),
+      pieceName: _text(json['piece_name']),
       barcode: hasValidBarcode ? barcode : null,
     );
   }

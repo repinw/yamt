@@ -12,6 +12,8 @@ import 'package:yamt/features/product_nutrition/domain/'
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_eat_now_nutrition.dart';
 import 'package:yamt/features/product_search_hub/domain/'
+    'manual_product_photo_servings.dart';
+import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_piece_weight.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
@@ -106,7 +108,25 @@ class InventoryReceiptManualProductController
 
   /// Sets the grams of one piece.
   void updatePieceWeightText(String value) {
-    state = state.copyWith(pieceWeightText: value, error: null);
+    state = state.copyWith(
+      pieceWeightText: value,
+      pieceWeightTyped: true,
+      error: null,
+    );
+  }
+
+  /// Picks the front's piece over the table's serving, or back.
+  void pickFrontServing({required bool front}) {
+    state = state.copyWith(servings: state.servings.picking(front: front));
+  }
+
+  /// The "grams per piece" text for the piece a new front photo read. Only
+  /// the front reads one piece; null keeps a weight the user typed. A new
+  /// photo without a piece clears the piece of the photo before.
+  String? _frontPieceWeight(ManualProductServing? front) {
+    if (state.pieceWeightTyped) return null;
+    if (front != null) return manualProductPieceWeightText(front);
+    return state.servings.front == null ? null : '';
   }
 
   /// Update kcal text.
@@ -191,13 +211,28 @@ class InventoryReceiptManualProductController
     );
   }
 
-  /// Fills name, brand, and package size from the front of the package.
+  /// Fills name, brand, and package size from the front of the package, and
+  /// the piece of a multipack as its serving and weight per piece.
   ///
   /// The barcode the AI read counts only while no other barcode is set.
   void applyFrontDetails(ProductFrontDetails details) {
+    final (count, weight, unit) = (
+      details.pieceCount,
+      details.pieceWeight,
+      details.pieceWeightUnit,
+    );
     final weightInput = resolveManualProductOcrWeightInput(
-      details.quantityLabel,
+      details.quantityLabel ??
+          (count != null && weight != null && unit != null
+              ? '${count}x$weight$unit'
+              : null),
       fallbackUnit: state.selectedWeightUnit ?? InventoryAmountUnit.gram,
+    );
+    final front = manualProductFrontServing(
+      weight: weight,
+      unit: details.pieceWeightUnit,
+      name: details.pieceName,
+      quantityLabel: details.quantityLabel,
     );
     final aiBarcode = details.barcode;
     final takesAiBarcode =
@@ -207,6 +242,8 @@ class InventoryReceiptManualProductController
       brandText: details.brand ?? state.brandText,
       weightAmount: weightInput?.amount ?? state.weightAmount,
       selectedWeightUnit: weightInput?.unit ?? state.selectedWeightUnit,
+      servings: state.servings.withFront(front),
+      pieceWeightText: _frontPieceWeight(front),
       barcode: takesAiBarcode ? aiBarcode : null,
       barcodeOrigin: takesAiBarcode
           ? ManualProductBarcodeOrigin.ai
@@ -292,21 +329,28 @@ class InventoryReceiptManualProductController
       selection: matchedProduct,
     );
     final inventoryWeight = resolvedWeightInput.normalizedWeight;
+    final packageUnit =
+        resolvedWeightInput.parsedAmount?.unit ?? state.selectedWeightUnit;
     final serving = resolveManualProductServing(
-      packageUnit:
-          resolvedWeightInput.parsedAmount?.unit ?? state.selectedWeightUnit,
+      packageUnit: packageUnit,
       pieceWeightText: state.pieceWeightText,
-      serving: (
-        size:
-            matchedProduct?.servingSize ??
-            state.ocrDraft?.servingSizeLabel ??
-            config.item.servingSize,
-        quantity:
-            matchedProduct?.servingQuantity ?? config.item.servingQuantity,
-        quantityUnit:
-            matchedProduct?.servingQuantityUnit ??
-            config.item.servingQuantityUnit,
-      ),
+      // What the package photos read wins over older data. A package counted
+      // in pieces takes only the front's piece: a table's portion is no piece.
+      serving:
+          state.servings.savedFor(
+            countedInPieces: packageUnit == InventoryAmountUnit.piece,
+          ) ??
+          (
+            size:
+                matchedProduct?.servingSize ??
+                state.ocrDraft?.servingSizeLabel ??
+                config.item.servingSize,
+            quantity:
+                matchedProduct?.servingQuantity ?? config.item.servingQuantity,
+            quantityUnit:
+                matchedProduct?.servingQuantityUnit ??
+                config.item.servingQuantityUnit,
+          ),
     );
     // The picked food decides: a real product chosen for an AI item is no
     // AI estimate, and an AI food picked from the recent items stays one.
@@ -502,13 +546,15 @@ class InventoryReceiptManualProductController
           selectedProduct: product,
           barcodeOrigin: null,
           ocrDraft: null,
+          servings: const ManualProductPhotoServings(),
+          pieceWeightTyped: false,
           error: null,
         )
         .withNutrition(nutrition);
   }
 
-  /// Fills the nutrition values, and name, brand, and package size when
-  /// printed, from a read nutrition table.
+  /// Fills the nutrition values, and name, brand, package size, and the
+  /// per-portion serving when printed, from a read nutrition table.
   void applyNutritionLabelDraft(NutritionLabelOcrDraft draft) {
     final ocrWeightInput = resolveManualProductOcrWeightInput(
       draft.quantityLabel,
@@ -516,8 +562,15 @@ class InventoryReceiptManualProductController
     );
     final ocrName = normalizeManualProductText(draft.name ?? '');
     final ocrBrand = normalizeManualProductText(draft.brand ?? '');
+    final table = manualProductTableServing(
+      quantity: draft.servingQuantity,
+      unit: draft.servingUnit,
+      name: draft.servingName,
+      label: draft.servingSizeLabel,
+    );
     state = state.copyWith(
       ocrDraft: draft,
+      servings: state.servings.withTable(table),
       nameText: ocrName ?? state.nameText,
       brandText: ocrBrand ?? state.brandText,
       weightAmount: ocrWeightInput?.amount ?? state.weightAmount,

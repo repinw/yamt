@@ -747,6 +747,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   and the product itself still goes into the shared catalog. A new front
   photo with a package is shared again; closing the camera keeps the
   private one.
+- The photos also give the serving (#527): the front one piece of a
+  multipack ("6 x 25 g" becomes a 150 g package with 25 g per piece), the
+  nutrition table its per-portion heading ("pro Riegel (25 g)"). It is saved
+  as "1 Riegel (25 g)", so the eat page offers it as a chip. When the two
+  read different amounts, chips under the photos let the user pick; the
+  table is the default. A package counted in pieces always takes the
+  front's piece, and a weight per piece the user typed stays.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.
 - "Create" opens an empty product form. Name, unit, and the seven EU label

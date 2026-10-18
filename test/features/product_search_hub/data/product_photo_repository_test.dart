@@ -118,7 +118,10 @@ void main() {
         'name': ' Haferflocken zart ',
         'brand': 'REWE Bio',
         'quantity_label': '500 g',
-        'piece_count': 10,
+        'piece_count': 10.0,
+        'piece_weight': 50,
+        'piece_weight_unit': 'g',
+        'piece_name': ' Beutel ',
         'barcode': '4006381333931',
       }),
       onRequest: (inputs) => sent = inputs,
@@ -134,6 +137,9 @@ void main() {
     expect(details.brand, 'REWE Bio');
     expect(details.quantityLabel, '500 g');
     expect(details.pieceCount, 10);
+    expect(details.pieceWeight, 50);
+    expect(details.pieceWeightUnit, 'g');
+    expect(details.pieceName, 'Beutel');
     expect(details.barcode, '4006381333931');
   });
 
