@@ -1222,5 +1222,6 @@ Override _planDemand({Set<String> shortPlanIds = const {}}) =>
         missingByItemId: <String, int>{},
         plannedPortionsByMealId: <String, double>{},
         missingShareByPlanId: {for (final id in shortPlanIds) id: 1.0},
+        missingIngredientsByPlanId: const <String, Map<String, int>>{},
       ),
     );

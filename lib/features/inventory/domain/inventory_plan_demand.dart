@@ -24,6 +24,10 @@ typedef InventoryPlanDemand = ({
   /// Plans the Vorrat cannot cover in full ("fehlt"): the share of each
   /// that no stock covers, from above 0 to 1, by plan id.
   Map<String, double> missingShareByPlanId,
+
+  /// Stock each recipe plan lacks per ingredient, by plan id, then by item
+  /// id, in the item's stored unit.
+  Map<String, Map<String, int>> missingIngredientsByPlanId,
 });
 
 /// Walks [plans] by their day and takes each one's stock from [items] the
@@ -32,12 +36,17 @@ typedef InventoryPlanDemand = ({
 /// cover falls short, since accepting takes from one pack only.
 ///
 /// A plan of a cooked meal takes its portions from [meals] the same way.
+/// A plan of a Kochbuch recipe takes the amounts in
+/// [ingredientNeedsByPlanId] (item id to amount) from those items; an
+/// ingredient without an item names no stock.
+///
 /// A plan of a found food names no stock.
 InventoryPlanDemand inventoryPlanDemand(
   List<CalorieEntry> plans,
   List<InventoryItem> items,
-  List<PreparedMeal> meals,
-) {
+  List<PreparedMeal> meals, {
+  Map<String, Map<String, int>> ingredientNeedsByPlanId = const {},
+}) {
   final left = {
     for (final item in items) item.id: consumableInventoryAmount(item) ?? 0,
   };
@@ -48,7 +57,34 @@ InventoryPlanDemand inventoryPlanDemand(
   final missingStock = <String, int>{};
   final plannedPortions = <String, double>{};
   final missing = <String, double>{};
+  final missingIngredients = <String, Map<String, int>>{};
   for (final plan in plans.sortedBy((plan) => plan.loggedAt)) {
+    if (ingredientNeedsByPlanId[plan.id] case final needs?) {
+      // Items count in different units, so the share is the largest one.
+      var share = 0.0;
+      final short = <String, int>{};
+      for (final MapEntry(key: itemId, value: amount) in needs.entries) {
+        final taken = math.min(amount, left[itemId] ?? 0);
+        if (taken > 0) {
+          left[itemId] = left[itemId]! - taken;
+          planned.update(itemId, (sum) => sum + taken, ifAbsent: () => taken);
+        }
+        if (amount > taken) {
+          share = math.max(share, (amount - taken) / amount);
+          short[itemId] = amount - taken;
+          missingStock.update(
+            itemId,
+            (sum) => sum + amount - taken,
+            ifAbsent: () => amount - taken,
+          );
+        }
+      }
+      if (short.isNotEmpty) {
+        missing[plan.id] = share;
+        missingIngredients[plan.id] = short;
+      }
+      continue;
+    }
     if (plan.bundleSourcePreparedMealId case final mealId?) {
       final meal = meals.firstWhereOrNull((meal) => meal.id == mealId);
       final wanted = meal == null
@@ -110,5 +146,6 @@ InventoryPlanDemand inventoryPlanDemand(
     missingByItemId: missingStock,
     plannedPortionsByMealId: plannedPortions,
     missingShareByPlanId: missing,
+    missingIngredientsByPlanId: missingIngredients,
   );
 }

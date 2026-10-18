@@ -1,7 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_shopping.dart';
+
+InventoryPlanDemand _demand(
+  Map<String, double> missingShareByPlanId, {
+  Map<String, Map<String, int>> missingIngredientsByPlanId = const {},
+}) => (
+  plannedByItemId: const {},
+  missingByItemId: const {},
+  plannedPortionsByMealId: const {},
+  missingShareByPlanId: missingShareByPlanId,
+  missingIngredientsByPlanId: missingIngredientsByPlanId,
+);
 
 CalorieEntry _plan(String id, {ConsumedUnit unit = ConsumedUnit.grams}) {
   final day = DateTime(2026, 10, 8, 8);
@@ -32,7 +46,8 @@ void main() {
         _plan('half'),
         _plan('milk', unit: ConsumedUnit.milliliters),
       ],
-      {'half': 0.5, 'milk': 1},
+      _demand({'half': 0.5, 'milk': 1}),
+      const [],
     );
 
     expect(needs.map((need) => need.name), ['half', 'milk']);
@@ -65,6 +80,49 @@ void main() {
       updatedAt: day,
     );
 
-    expect(inventoryShoppingPlanNeeds([mealPlan], {'chili': 1}), isEmpty);
+    expect(
+      inventoryShoppingPlanNeeds([mealPlan], _demand({'chili': 1}), const []),
+      isEmpty,
+    );
+  });
+
+  test('a short recipe plan needs each missing ingredient in grams', () {
+    InventoryItem item(String id, InventoryAmountUnit unit) =>
+        InventoryItem.create(
+          id: id,
+          name: id,
+          brand: 'Brand',
+          nutrition: const GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 100,
+            per100Protein: 1,
+            per100Carbs: 1,
+            per100Fat: 1,
+          ),
+          entryDate: DateTime(2026, 9),
+          storeName: 'Rewe',
+          quantity: 1,
+          initialAmount: 1000,
+          amountUnit: unit,
+        );
+
+    final needs = inventoryShoppingPlanNeeds(
+      [_plan('recipe')],
+      _demand(
+        {'recipe': 0.5},
+        missingIngredientsByPlanId: {
+          'recipe': {'flour': 150, 'milk': 200, 'gone': 10},
+        },
+      ),
+      [
+        item('flour', InventoryAmountUnit.gram),
+        item('milk', InventoryAmountUnit.milliliter),
+      ],
+    );
+
+    expect(needs.map((need) => need.name), ['flour', 'milk']);
+    expect(needs.map((need) => need.amount), [150, 200]);
+    expect(needs.map((need) => need.inMilliliters), [false, true]);
+    expect(needs.every((need) => need.isPartial), isTrue);
   });
 }
