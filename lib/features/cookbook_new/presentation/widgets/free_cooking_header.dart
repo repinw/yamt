@@ -75,7 +75,7 @@ class FreeCookingHeader extends StatelessWidget {
                   textCapitalization: TextCapitalization.sentences,
                   // Otherwise the name takes the focus back when the typing
                   // sheet closes, and the keyboard opens again.
-                  onTapOutside: (_) =>
+                  onTapUpOutside: (_) =>
                       FocusManager.instance.primaryFocus?.unfocus(),
                   style: textTheme.headlineSmall?.copyWith(
                     color: colors.ink,

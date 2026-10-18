@@ -61,6 +61,30 @@ void main() {
     expect(find.byType(_FormPage), findsNothing);
   });
 
+  testWidgets('the pointer-down of a back gesture at the screen edge does not '
+      'unfocus the field', (tester) async {
+    await _pumpApp(tester, push: _formPath);
+    await _type(tester, 'Kantine');
+
+    // Android delivers the down of an edge swipe, then cancels the pointer
+    // once the system takes the gesture.
+    final edge = await tester.startGesture(const Offset(1, 400));
+    await tester.pump();
+    await startSystemBackGesture(tester);
+    await edge.cancel();
+    await updateSystemBackGesture(tester, 0.5);
+    await endSystemBackGesture(tester);
+
+    expect(find.byType(_FormPage), findsOneWidget);
+    expect(_fieldHasFocus(tester), isFalse);
+    expect(_fieldText(tester), 'Kantine');
+
+    await closeTestKeyboard(tester);
+    await pressSystemBack(tester);
+
+    expect(find.byType(_FormPage), findsNothing);
+  });
+
   testWidgets('a cancelled back gesture keeps the keyboard and lets the page '
       'close later', (tester) async {
     await _pumpApp(tester, push: _formPath);
@@ -293,7 +317,11 @@ class _FormPage extends StatelessWidget {
             onPressed: () => Navigator.of(context).maybePop(),
             icon: const Icon(Icons.close),
           ),
-          const TextField(key: _fieldKey),
+          TextField(
+            key: _fieldKey,
+            onTapUpOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
+          ),
         ],
       ),
     );

@@ -186,7 +186,7 @@ class _HeadInput extends StatelessWidget {
       style: style,
       onChanged: wiring.onChanged,
       onSubmitted: (_) => wiring.onSubmitted(),
-      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+      onTapUpOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       decoration: InputDecoration(
         isDense: true,
         hintText: hint,

@@ -226,6 +226,15 @@ final List<ArchitectureRule> architectureRules = [
     appliesTo: _isAny,
   ),
   _lineRule(
+    id: 'tap-outside-unfocus',
+    rule:
+        '§8 Navigation: unfocus on onTapUpOutside, never onTapOutside. The '
+        'pointer-down of a back gesture would take the focus, and the page '
+        'would close with the keyboard.',
+    pattern: RegExp(r'\bonTapOutside\s*:'),
+    appliesTo: _isAny,
+  ),
+  _lineRule(
     id: 'route-extra-cast',
     rule: '§8 Navigation: read extra only with requireRouteExtra.',
     pattern: RegExp(r'\.extra!?\s+as\b'),

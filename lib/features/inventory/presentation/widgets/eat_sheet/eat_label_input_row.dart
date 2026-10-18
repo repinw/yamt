@@ -113,7 +113,7 @@ class EatLabelInputRow extends StatelessWidget {
                 ),
                 onChanged: onChanged,
                 onSubmitted: (_) => onSubmitted(),
-                onTapOutside: (_) =>
+                onTapUpOutside: (_) =>
                     FocusManager.instance.primaryFocus?.unfocus(),
                 decoration: InputDecoration(
                   isDense: true,
