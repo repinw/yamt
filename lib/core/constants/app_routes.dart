@@ -111,12 +111,6 @@ abstract final class AppRoutes {
   static const homeCaloriesEntryDetails =
       '/home/calories/entry/:entryId/details';
 
-  /// TDEE and weight analytics route.
-  static const homeCaloriesAnalytics = '/home/calories/analytics';
-
-  /// Query parameter that lists goal cycle ids preselected in analytics.
-  static const homeCaloriesAnalyticsCyclesParam = 'cycles';
-
   /// Progress home route.
   static const homeProgress = '/home/progress';
 
@@ -181,14 +175,6 @@ abstract final class AppRoutes {
 
   /// Path of the household invite deep link `yamt://household/join`.
   static const householdJoinLink = '/join';
-
-  /// Builds the analytics path with goal cycles preselected by [cycleIds].
-  static String homeCaloriesAnalyticsPath({required Set<String> cycleIds}) {
-    return Uri(
-      path: homeCaloriesAnalytics,
-      queryParameters: {homeCaloriesAnalyticsCyclesParam: cycleIds.join(',')},
-    ).toString();
-  }
 
   /// Builds calorie entry details path for concrete entry id.
   static String homeCaloriesEntryDetailsPath(String entryId) {

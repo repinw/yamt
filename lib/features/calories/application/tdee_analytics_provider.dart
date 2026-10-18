@@ -10,7 +10,6 @@ import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
-import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 import 'package:yamt/features/health/application/weight_series_provider.dart';
 
@@ -20,24 +19,19 @@ part 'tdee_analytics_provider.g.dart';
 @immutable
 class TdeeAnalyticsQuery {
   /// Creates an analytics query.
-  const new({required this.cycleIds, required this.timeRange});
+  const new({required this.cycleIds});
 
   /// Selected cycle IDs. `all` expands to every individual cycle.
   final Set<String> cycleIds;
 
-  /// Selected time filter.
-  final TdeeAnalyticsTimeRange timeRange;
-
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is TdeeAnalyticsQuery &&
-        setEquals(other.cycleIds, cycleIds) &&
-        other.timeRange == timeRange;
+    return other is TdeeAnalyticsQuery && setEquals(other.cycleIds, cycleIds);
   }
 
   @override
-  int get hashCode => Object.hash(Object.hashAllUnordered(cycleIds), timeRange);
+  int get hashCode => Object.hashAllUnordered(cycleIds);
 }
 
 /// Provides fully resolved TDEE analytics state for charts and insights.
@@ -76,7 +70,6 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
     final now = ref.watch(clockProvider)();
     final window = TdeeAnalyticsService.resolveDateWindowForCycles(
       cycles: effectiveSelectedCycles,
-      timeRange: query.timeRange,
       today: now,
     );
 
@@ -109,34 +102,10 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
         entriesByDay: entriesByDay,
         weights: weights,
       ),
-      entriesByDay: entriesByDay,
       weights: weights,
     );
 
-    final summary = TdeeAnalyticsService.buildSummary(
-      points: points,
-      weights: weights,
-    );
-    final activeSelected = effectiveSelectedCycles
-        .where((cycle) => cycle.isActive)
-        .firstOrNull;
-    final anticipation = activeSelected == null
-        ? null
-        : TdeeAnalyticsService.buildAnticipation(
-            cycle: activeSelected,
-            weights: weights,
-            windowStart: window.start,
-            windowEnd: window.end,
-          );
-
-    return TdeeAnalyticsState(
-      selectedCycles: effectiveSelectedCycles,
-      availableCycles: availableCycles,
-      timeRange: query.timeRange,
-      points: points,
-      summary: summary,
-      anticipation: anticipation,
-    );
+    return TdeeAnalyticsState(points: points);
   } finally {
     keepAliveLink.close();
   }
