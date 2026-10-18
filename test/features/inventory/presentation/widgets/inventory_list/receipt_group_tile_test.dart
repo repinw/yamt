@@ -71,11 +71,13 @@ Widget _buildHarness({
   PageStorageBucket? bucket,
   bool showTile = true,
   bool isSelectionMode = false,
+  ValueChanged<InventoryItem>? onOpenItem,
 }) {
   final tile = ReceiptGroupTile(
     group: group,
     dateFormat: DateFormat.yMMMd(const Locale('en').toLanguageTag()),
     selection: ReceiptGroupSelectionOptions(isSelectionMode: isSelectionMode),
+    onOpenItem: onOpenItem ?? (_) {},
   );
   final body = SingleChildScrollView(
     padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
@@ -269,6 +271,22 @@ void main() {
     await _toggleExpansion(tester);
 
     expect(find.byType(InventoryEntryRow), findsNWidgets(2));
+  });
+
+  testWidgets('a tapped row hands its item to the list (#313)', (tester) async {
+    final opened = <String>[];
+    await tester.pumpWidget(
+      _buildHarness(
+        theme: AppTheme.light(),
+        group: _group(),
+        onOpenItem: (item) => opened.add(item.id),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('receipt_item_row_b')));
+
+    expect(opened, ['b']);
   });
 
   testWidgets('restores expansion state from PageStorage', (tester) async {
