@@ -206,12 +206,10 @@ void main() {
     // A Vorlage opens the recipe page too.
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    await Scrollable.ensureVisible(
-      tester.element(find.text('Rice bowl')),
-      alignment: 0.3,
-    );
+    final vorlage = find.byKey(CookbookTemplateTile.tileKey('bowl'));
+    await Scrollable.ensureVisible(tester.element(vorlage), alignment: 0.3);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Rice bowl'));
+    await tester.tap(vorlage);
     await tester.pumpAndSettle();
     expect(find.text('Recipe page'), findsOneWidget);
   });

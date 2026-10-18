@@ -14,7 +14,7 @@ empty weight and photo) and the page that manages them.
 
 ## Does Not Own
 
-- Cookflow session state and the tare picker of the cooking flow.
+- The pot weight on "Gekocht" that picks a utensil.
 - Prepared-meal and inventory item storage.
 
 ## Public UI
