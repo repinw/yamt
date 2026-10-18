@@ -6,6 +6,8 @@ Activity providers themselves.
 
 ## Owns
 
+- The weight dialog, which only adds weighings; changing and deleting
+  weighings belongs to the weight list (Progress).
 - Weight diary widgets under `presentation/`.
 - Weight value objects under `domain/`.
 - Weight aggregation services under `application/`.
@@ -39,7 +41,6 @@ Activity sub-widgets or Activity providers directly.
 Current application providers:
 
 - `application/diary_activity_weight_data_provider.dart`
-- `application/diary_activity_weight_service.dart`
 - `application/diary_weight_actions.dart`
 
 ## Accepted Dependencies

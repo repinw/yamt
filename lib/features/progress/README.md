@@ -17,13 +17,17 @@ week, and the longer trends are going, so the diary can stay focused on today.
 - The weight list (`ProgressWeightsPage`), opened from the weight section
   and from the profile's weight card: every weighing with day, time, weight,
   and source, grouped by 7-day runs, under the change of the trend and a chart
-  with the goal weight. Chips switch between the current goal, the last four
+  with the goal weight. A tap on a weighing opens the edit sheet (own
+  weighing: weight, day, time, delete) or the info sheet (ignore or count
+  again; open in Health for other apps). An own Health weight saved by another
+  device is view-only with a hint. Ignored weighings show greyed out and as
+  hollow chart points. Chips switch between the current goal, the last four
   weeks, and all goals. Without Health, a card offers to connect it until the
   user dismisses it; then a small header icon does.
 - The read models of these sections in `domain/` and the providers that build
   them from calorie and weight data in `application/`.
-- The weight entry of the tab's action button: today's weight, filled with
-  the last weigh-in of the chart. It saves through the diary weight flow of
+- The weight entry of the tab's action button: adds a weighing for today,
+  filled with the newest single weighing (not the chart's last weigh-in). It saves through the diary weight flow of
   Activity, so every section that depends on the weight refreshes.
 
 ## Does Not Own
@@ -37,6 +41,8 @@ week, and the longer trends are going, so the diary can stay focused on today.
 - The goal archive page and the TDEE analytics page (Calories).
 - Home shell navigation chrome.
 - The weight dialog and saving a weight (Activity).
+- Storing, changing, and ignoring weighings (Health); Progress only starts
+  these actions from the weight list.
 
 ## Public UI
 
