@@ -31,6 +31,25 @@ const _abbreviations = {
 // After these, a number with a full stop is an ordinal, as in "Im 2. Schritt".
 const _ordinalWords = {'am', 'beim', 'dem', 'den', 'der', 'im', 'vom', 'zum'};
 
+// Words that start a sentence and never follow an ordinal, as in "bis zum
+// 3. Dann": the number ends the sentence before them. shortcut: a noun such
+// as "Salz" after "zum 3." still joins; a list of known nouns would do better.
+const _sentenceStarts = {
+  'abschließend',
+  'alles',
+  'anschließend',
+  'danach',
+  'dann',
+  'inzwischen',
+  'jetzt',
+  'nun',
+  'währenddessen',
+  'zuletzt',
+  'zum',
+};
+
+final _firstWord = RegExp(r'^\p{L}+', unicode: true);
+
 final _sentenceEnd = RegExp(r'(?<=[.!?])\s+(?=\p{Lu}|\d)', unicode: true);
 // The last word before the full stop, standing on its own, and the word
 // before it.
@@ -52,9 +71,11 @@ Iterable<String> _split(String step) sync* {
     return;
   }
   var sentence = '';
-  for (final part in step.split(_sentenceEnd)) {
+  final parts = step.split(_sentenceEnd);
+  for (final (index, part) in parts.indexed) {
     sentence = sentence.isEmpty ? part : '$sentence $part';
-    if (!_continues(sentence)) {
+    final next = index + 1 < parts.length ? parts[index + 1] : '';
+    if (!_continues(sentence, next)) {
       yield sentence;
       sentence = '';
     }
@@ -64,8 +85,9 @@ Iterable<String> _split(String step) sync* {
   }
 }
 
-/// Whether the full stop at the end of [sentence] belongs to its last word.
-bool _continues(String sentence) {
+/// Whether the full stop at the end of [sentence] belongs to its last word,
+/// with [next] the text that follows it.
+bool _continues(String sentence, String next) {
   if (_dottedShortForm.hasMatch(sentence)) {
     return true;
   }
@@ -78,7 +100,9 @@ bool _continues(String sentence) {
   if (int.tryParse(word) != null) {
     // ponytail: a number ends the sentence unless it starts the step or
     // follows an ordinal word; a parser of dates and lists would do better.
-    return before == null || _ordinalWords.contains(before);
+    final nextWord = _firstWord.stringMatch(next)?.toLowerCase();
+    return before == null ||
+        (_ordinalWords.contains(before) && !_sentenceStarts.contains(nextWord));
   }
   // A single letter after a number is a unit, as in "175 F.".
   return _abbreviations.contains(word) ||

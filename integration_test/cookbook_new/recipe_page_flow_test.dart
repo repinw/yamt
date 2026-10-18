@@ -139,10 +139,12 @@ void main() {
     await tester.tap(find.byKey(_startKey));
     await tester.pumpAndSettle();
 
-    // Back from the first screen cooks nothing.
+    // Two taps in one frame open the Kochhelfer once, and back from its
+    // first screen cooks nothing.
+    await tester.tap(find.byKey(RecipePage.cookKey));
     await tester.tap(find.byKey(RecipePage.cookKey));
     await tester.pumpAndSettle();
-    expect(find.byType(CookingGuidePage), findsOneWidget);
+    expect(find.byType(CookingGuidePage, skipOffstage: false), findsOneWidget);
     expect(screenOn, [true]);
     await tester.tap(find.byKey(CookingGuideBody.backKey));
     await tester.pumpAndSettle();
