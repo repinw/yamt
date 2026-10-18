@@ -1,5 +1,7 @@
 import 'dart:developer' show log;
 
+import 'package:flutter/foundation.dart' show debugPrint;
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
@@ -47,6 +49,12 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
     final repository = ref.read(productPhotoRepositoryProvider);
     final taken = await _takePhoto(repository);
     final photo = taken.photo;
+    if (photo != null && !ref.mounted) {
+      // Release builds drop developer.log; debugPrint still reaches logcat.
+      debugPrint(
+        '[$_logName] The front photo came after the controller was gone.',
+      );
+    }
     if (photo == null || !ref.mounted) {
       return taken.outcome ?? ManualProductPhotoOutcome.canceled;
     }
