@@ -106,6 +106,8 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
       isPlan: state.isPlan,
       confirmButtonKey: DiaryQuickEntryPage.confirmKey,
       onConfirm: state.canSave ? _save : null,
+      // A later day plans with the main button already.
+      onPlan: state.isPlan || state.isSaving ? null : _plan,
       confirmHint: state.kcal == null ? l10n.diaryQuickEntryKcalMissing : null,
       cancelButtonKey: DiaryQuickEntryPage.closeKey,
       children: [
@@ -137,12 +139,30 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
     _focusNodes[values[value.index + 1]]!.requestFocus();
   }
 
-  Future<void> _save() async {
+  Future<void> _plan() async {
+    final state = ref.read(_provider);
+    if (state.kcal == null) {
+      // Like the disabled main button, the plan needs the calories first.
+      _focusNodes[DiaryQuickEntryValue.kcal]!.requestFocus();
+      return;
+    }
+    if (!state.canSave) return;
+    final day = await showEatPlanDayPicker(
+      context,
+      today: state.today,
+      loggedAt: state.loggedAt,
+    );
+    if (day == null || !mounted) return;
+    await _save(planDay: day);
+  }
+
+  Future<void> _save({DateTime? planDay}) async {
     FocusManager.instance.primaryFocus?.unfocus();
     final l10n = AppLocalizations.of(context)!;
-    final isPlan = ref.read(_provider).isPlan;
+    final isPlan = planDay != null || ref.read(_provider).isPlan;
     final entry = await _controller.save(
       defaultName: l10n.diaryQuickEntryDefaultName,
+      planDay: planDay,
     );
     if (!mounted) {
       return;

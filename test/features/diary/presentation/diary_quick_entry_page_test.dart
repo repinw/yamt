@@ -13,6 +13,8 @@ import 'package:yamt/features/diary/presentation/models/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_quick_entry_label.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -213,6 +215,36 @@ void main() {
       ),
       findsOneWidget,
     );
+    // The main button plans already; no second plan button.
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
+  });
+
+  testWidgets('the plan button plans the entry for a picked day', (
+    tester,
+  ) async {
+    await openPage(tester);
+    // Without the calories, the plan button only asks for them.
+    await tester.tap(find.byKey(EatPageScaffold.planButtonKey));
+    await tester.pumpAndSettle();
+    expect(find.byType(DatePickerDialog), findsNothing);
+    expect(
+      tester
+          .widget<TextField>(valueField(DiaryQuickEntryValue.kcal))
+          .focusNode!
+          .hasFocus,
+      isTrue,
+    );
+
+    await type(tester, DiaryQuickEntryValue.kcal, '650');
+    await tester.tap(find.byKey(EatPageScaffold.planButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    final result = results.single! as DiaryQuickEntrySaved;
+    expect(result.isPlan, isTrue);
+    expect(calorieLog.entries, isEmpty);
+    expect(find.byType(DiaryQuickEntryPage), findsNothing);
   });
 
   testWidgets('names an entry without a name "Quick entry"', (tester) async {

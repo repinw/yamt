@@ -156,22 +156,32 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
   }
 
   /// Saves the typed values as a quick entry named [defaultName] when no
-  /// name was typed, as a plan on a future day. Returns the saved entry, or
-  /// null when saving failed.
-  Future<CalorieEntry?> save({required String defaultName}) async {
+  /// name was typed, as a plan on a future day or on [planDay]. Returns the
+  /// saved entry, or null when saving failed.
+  Future<CalorieEntry?> save({
+    required String defaultName,
+    DateTime? planDay,
+  }) async {
     final kcal = state.kcal;
     final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
     if (kcal == null || state.isSaving || userId == null) {
       return null;
     }
     final name = state.name.trim();
+    final now = ref.read(clockProvider)();
     final entry = buildQuickCalorieEntry(
       id: _uuid.v4(),
       userId: userId,
       name: name.isEmpty ? defaultName : name,
       mealType: state.mealType,
-      loggedAt: state.loggedAt,
-      now: ref.read(clockProvider)(),
+      loggedAt: planDay == null
+          ? state.loggedAt
+          // A picker left open over midnight can hand back yesterday.
+          : loggedAtOnDay(
+              planDay.isBefore(state.today) ? state.today : planDay,
+              now: now,
+            ),
+      now: now,
       kcal: kcal,
       protein: state.valueOf(DiaryQuickEntryValue.protein),
       carbs: state.valueOf(DiaryQuickEntryValue.carbs),
@@ -179,7 +189,7 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
     );
     final saveEntry = ref.read(calorieEntrySaverProvider);
     final dayLog = ref.read(calorieDayLogServiceProvider);
-    final isPlan = state.isPlan;
+    final isPlan = planDay != null || state.isPlan;
     state = state.copyWith(isSaving: true);
     final result = await AsyncValue.guard(() async {
       if (!isPlan) {

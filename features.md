@@ -160,7 +160,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   estimate and opens it for the same day and meal. The entry shows no amount
   in the diary, moves between days and meals like any entry, and its amount
   cannot be edited. On a future day it saves a plan instead, with undo, and
-  the AI hint is hidden.
+  the AI hint is hidden. On today or a past day, the calendar icon next to
+  the main button plans it for a picked day, today included; without the
+  calories, the icon only asks for them. Accepting the plan makes it a normal
+  quick entry; no Vorrat is taken.
 - Daily head in the food label look, without a card frame: the kcal left as a
   big number over a ruler, whose bar has four equal quarters of the target
   that fill in order. It is quiet by default; a tap shows eaten and target,
