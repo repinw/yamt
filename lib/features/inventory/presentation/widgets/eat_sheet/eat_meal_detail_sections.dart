@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -249,8 +250,9 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
       ref.read(inventoryItemsControllerProvider).value ??
       const <InventoryItem>[];
 
-  /// Runs [action] and shows [failureMessage] when it fails. When the page
-  /// has closed in the meantime, the message shows on the page below.
+  /// Runs [action] and shows [failureMessage] when it fails or throws. When
+  /// the page has closed in the meantime, the message shows on the page
+  /// below.
   Future<bool> _run(
     Future<bool> Function() action, {
     String? failureMessage,
@@ -261,7 +263,12 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
     final pageMessenger = ScaffoldMessenger.of(context);
     final belowMessenger = ScaffoldMessenger.of(Navigator.of(context).context);
     setState(() => _isWorking = true);
-    final success = await action();
+    var success = false;
+    try {
+      success = await action();
+    } on Object catch (error, stackTrace) {
+      log('A meal action failed.', error: error, stackTrace: stackTrace);
+    }
     if (mounted) {
       setState(() => _isWorking = false);
     }
