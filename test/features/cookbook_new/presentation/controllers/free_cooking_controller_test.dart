@@ -121,6 +121,46 @@ void main() {
     expect(rows.map((row) => row.isInStock), [false, false]);
   });
 
+  test('an undo word takes the rows added last out again', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(freeCookingControllerProvider.notifier)
+      ..addText('500 g Hähnchen')
+      ..addText('200 g Reis, Salz')
+      ..addText('nein, 200 g Nudeln');
+
+    expect(container.read(freeCookingControllerProvider).rows, [
+      '500 g Hähnchen',
+      '200 g Nudeln',
+    ]);
+
+    controller.addText('Nein!');
+    expect(container.read(freeCookingControllerProvider).rows, [
+      '500 g Hähnchen',
+    ]);
+    // Only the text before it is taken back; nothing was added since.
+    controller.addText('nein');
+    expect(container.read(freeCookingControllerProvider).rows, [
+      '500 g Hähnchen',
+    ]);
+
+    // A swipe on an older row keeps the rows added last; empty text too.
+    controller
+      ..addText('Salz, 200 ml Sahne')
+      ..removeRow(0)
+      ..addText(',')
+      ..addText('nein');
+    expect(container.read(freeCookingControllerProvider).rows, isEmpty);
+
+    controller
+      ..addText('No Name Ketchup')
+      ..addText('No-Name Senf');
+    expect(container.read(freeCookingControllerProvider).rows, [
+      'No Name Ketchup',
+      'No-Name Senf',
+    ]);
+  });
+
   test('removes a row', () {
     final container = _container(_FakeCookingService());
     container.read(freeCookingControllerProvider.notifier)

@@ -45,4 +45,14 @@ void main() {
     expect(afterUndoWords('noch 50 g Sahne'), isNull);
     expect(afterUndoWords('zurück'), isNull);
   });
+
+  test('"no" undoes only before a mark, a number, or the end', () {
+    expect(afterUndoWords('No, 200 g cream'), '200 g cream');
+    expect(afterUndoWords('no 200 g cream'), '200 g cream');
+    expect(afterUndoWords('no'), '');
+    expect(afterUndoWords('No Name Ketchup'), isNull);
+    expect(afterUndoWords('No-Name Ketchup'), isNull);
+    expect(afterUndoWords('no!name'), isNull);
+    expect(afterUndoWords('Nein Sahne'), 'Sahne');
+  });
 }
