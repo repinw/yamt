@@ -31,6 +31,22 @@ class HealthConnectionController extends _$HealthConnectionController {
     });
   }
 
+  /// Takes the step to Health access that the current status needs: installs
+  /// Health Connect, opens the permission settings after a failed request, or
+  /// asks for the permissions.
+  Future<HealthConnectionStatus> requestAccess() async {
+    final current = state.value;
+    if (current?.accessState == HealthDataAccessState.installRequired) {
+      return await installHealthConnect();
+    }
+    if (current?.errorMessage case final error?) {
+      return await (error == healthActivityRecognitionPermissionErrorMessage
+          ? openAppPermissionSettings()
+          : openHealthPermissionSettings());
+    }
+    return await connect();
+  }
+
   /// Request authorization.
   Future<HealthConnectionStatus> requestAuthorization() async {
     return await _runStatusAction(

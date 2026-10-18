@@ -11,8 +11,8 @@ import 'package:yamt/features/progress/presentation/widgets/progress_chart_marke
 typedef ProgressChartDay = ({DateTime day, double? dot, double? line});
 
 /// Daily values as small squares and a smoothed line, one column per day,
-/// with a dashed line at the start of each goal and an ink square on the
-/// line for each marked day.
+/// with a dashed line at the start of each goal, an ink square on the line
+/// for each marked day, and a dashed level line for the goal weight.
 ///
 /// Short periods get a tick per day and a long tick per week; long periods
 /// fewer ticks.
@@ -23,6 +23,7 @@ class ProgressDayChart extends StatelessWidget {
     required this.goalStarts,
     required this.minRange,
     this.markedDays = const {},
+    this.target,
     super.key,
   });
 
@@ -39,6 +40,9 @@ class ProgressDayChart extends StatelessWidget {
   /// steep.
   final double minRange;
 
+  /// A level drawn as a dashed line with its label, such as the goal weight.
+  final (double, String)? target;
+
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
@@ -51,8 +55,10 @@ class ProgressDayChart extends StatelessWidget {
           goalStarts: goalStarts,
           markedDays: markedDays,
           minRange: minRange,
+          target: target,
           ink: colors.ink,
           muted: colors.muted,
+          targetColor: colors.low,
           labelStyle: Theme.of(context).textTheme.labelSmall,
         ),
       ),
@@ -66,8 +72,10 @@ class _DayChartPainter extends CustomPainter {
     required this.goalStarts,
     required this.markedDays,
     required this.minRange,
+    required this.target,
     required this.ink,
     required this.muted,
+    required this.targetColor,
     required this.labelStyle,
   });
 
@@ -75,8 +83,10 @@ class _DayChartPainter extends CustomPainter {
   final List<(DateTime, String)> goalStarts;
   final Set<DateTime> markedDays;
   final double minRange;
+  final (double, String)? target;
   final Color ink;
   final Color muted;
+  final Color targetColor;
   final TextStyle? labelStyle;
 
   @override
@@ -84,6 +94,7 @@ class _DayChartPainter extends CustomPainter {
     final values = [
       for (final day in days) ...[?day.dot, ?day.line],
     ];
+    final target = this.target;
     final baseY = size.height - AppProgress.chartBottomInset;
     const inset = AppProgress.latestPointSize;
     double x(int index) => days.length < 2
@@ -112,6 +123,16 @@ class _DayChartPainter extends CustomPainter {
     final middle = (high + low) / 2;
     double y(double value) =>
         top + (middle + range / 2 - value) / range * (baseY - top - inset);
+
+    // A far goal stays at the edge, so it does not flatten the weights.
+    if (target != null) {
+      _paintTarget(
+        canvas,
+        size,
+        y(target.$1).clamp(top, baseY - inset),
+        target.$2,
+      );
+    }
 
     final dot = Paint()..color = muted;
     final line = Path();
@@ -152,6 +173,36 @@ class _DayChartPainter extends CustomPainter {
     if (latest != null) {
       _paintSquare(canvas, latest, fill, AppProgress.latestPointSize);
     }
+  }
+
+  void _paintTarget(Canvas canvas, Size size, double y, String label) {
+    final paint = Paint()
+      ..color = targetColor
+      ..strokeWidth = AppProgress.thinStroke;
+    for (var x = 0.0; x < size.width; x += AppProgress.dash * 2) {
+      canvas.drawLine(
+        Offset(x, y),
+        Offset(math.min(x + AppProgress.dash, size.width), y),
+        paint,
+      );
+    }
+    final text = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: labelStyle?.copyWith(color: targetColor),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    // Above the line, or below it when the line runs along the top.
+    final above = y - AppProgress.markerLabelGap - text.height;
+    text.paint(
+      canvas,
+      Offset(
+        size.width - text.width,
+        above < 0 ? y + AppProgress.markerLabelGap : above,
+      ),
+    );
   }
 
   void _paintSquare(Canvas canvas, Offset center, Paint paint, double size) {
@@ -201,6 +252,8 @@ class _DayChartPainter extends CustomPainter {
         !listEquals(oldDelegate.goalStarts, goalStarts) ||
         !setEquals(oldDelegate.markedDays, markedDays) ||
         oldDelegate.minRange != minRange ||
+        oldDelegate.target != target ||
+        oldDelegate.targetColor != targetColor ||
         oldDelegate.labelStyle != labelStyle ||
         oldDelegate.ink != ink ||
         oldDelegate.muted != muted;

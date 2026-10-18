@@ -384,7 +384,8 @@ and feature description docs. This is product-facing; architecture rules stay in
     other with a slider between them; both days can be picked. Without
     photos the section offers "Foto hinzufügen";
   - the weight trend: weigh-ins as squares, the trend as a line through gaps,
-    the trend per week, and the day the trend reaches the goal weight;
+    the trend per week, and the day the trend reaches the goal weight.
+    "Alle Gewichte" (or a tap on the section) opens the weight list;
   - the daily TDEE: a line per day from the first goal on, the value that
     the day's intake and weight trend imply as a small grey square, and a
     square on the line for each confirmed check-in; the head shows today's
@@ -401,6 +402,20 @@ and feature description docs. This is product-facing; architecture rules stay in
     saved at once; a day holds one photo per pose, and a new one replaces
     the old. A typed weight stays on the photo and never becomes a weigh-in;
     without it the weight of the day applies.
+- The weight list "Gewichte" opens from the weight section and from the
+  profile's weight card. Chips "Ziel" (default), "4 Wochen", and "Alles"
+  pick the range. At the top: the trend change since the start of the range
+  ("Seit Zielstart 7. Sept."), the trend, the kg still to go to the goal
+  weight (hidden once it is reached or while maintaining), and the pace;
+  below, the weight chart with the goal weight as a dashed orange line.
+  Then every weighing as its own row (day, time, kg, "Von Hand" or
+  "Waage"), newest first, grouped by the 7-day runs of the goal ("Run 3 ·
+  seit Mo., 21.9.") with the trend at the end of the run and its change.
+  Days without a counting goal form 7-day blocks without a number. Dates of
+  another year show the year. The plus button opens the weight entry for
+  today. Without a Health connection, a card "Waage automatisch übernehmen"
+  offers "Health verbinden"; once dismissed, a heart icon in the header does
+  the same.
 - Progress photos are end-to-end encrypted with a key of their own, stored
   under a random name, never shared with the household, and deleted with a
   fresh start of the data key. Their location, device, and time metadata is

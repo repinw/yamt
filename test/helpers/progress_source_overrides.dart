@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/health/data/progress_photo_repository.dart';
+import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
 import '../features/calories/support/fake_calories_repositories.dart';
@@ -28,19 +29,23 @@ const progressProfile = CalorieCalculatorProfile(
 );
 
 /// Backs the Fortschritt tab with a goal, two weeks of meals, weigh-ins
-/// plus [extraWeighIns], and the progress [photos] (none by default).
+/// plus [extraWeighIns], the progress [photos] (none by default), and
+/// [healthStatus] (unsupported by default).
 List<Override> progressSourceOverrides({
   required FakeCalorieSettingsRepository settingsRepository,
   required FakeCalorieLogRepository calorieLog,
   Future<void>? weighInsReady,
   FakeProgressPhotoRepository? photos,
   List<ManualHealthWeightEntry> extraWeighIns = const [],
+  HealthConnectionStatus healthStatus =
+      const HealthConnectionStatus.unsupported(),
 }) {
   return [
     ...profileSummarySourceOverrides(
       settingsRepository: settingsRepository,
       now: progressNow,
       weighInsReady: weighInsReady,
+      healthStatus: healthStatus,
       weighIns: [
         for (var offset = 0; offset < 20; offset += 2)
           ManualHealthWeightEntry(

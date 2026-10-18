@@ -6901,4 +6901,77 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get progressPhotoCompareSlider => 'Vorher und Nachher vergleichen';
+
+  @override
+  String get progressWeightsTitle => 'Gewichte';
+
+  @override
+  String get progressWeightsAll => 'Alle Gewichte';
+
+  @override
+  String get progressWeightsRangeGoal => 'Ziel';
+
+  @override
+  String get progressWeightsRangeFourWeeks => '4 Wochen';
+
+  @override
+  String get progressWeightsRangeAll => 'Alles';
+
+  @override
+  String progressWeightsSinceGoal(String date) {
+    return 'Seit Zielstart $date';
+  }
+
+  @override
+  String progressWeightsSince(String date) {
+    return 'Seit $date';
+  }
+
+  @override
+  String progressWeightsTrend(String kg) {
+    return 'Trend $kg kg';
+  }
+
+  @override
+  String progressWeightsToTarget(String kg) {
+    return 'noch $kg kg bis zum Ziel';
+  }
+
+  @override
+  String progressWeightsTarget(String kg) {
+    return 'Ziel $kg kg';
+  }
+
+  @override
+  String progressWeightsRun(int number, String date) {
+    return 'Run $number · seit $date';
+  }
+
+  @override
+  String progressWeightsRunTrend(String trend, String change) {
+    return 'Trend $trend kg · $change kg';
+  }
+
+  @override
+  String get progressWeightsSourceManual => 'Von Hand';
+
+  @override
+  String get progressWeightsSourceScale => 'Waage';
+
+  @override
+  String get progressWeightsEmpty =>
+      'In diesem Zeitraum gibt es noch keine Gewichte.';
+
+  @override
+  String get progressWeightsHealthTitle => 'Waage automatisch übernehmen';
+
+  @override
+  String get progressWeightsHealthBody =>
+      'Verbinde Health, dann kommen die Gewichte deiner Waage von selbst.';
+
+  @override
+  String get progressWeightsHealthConnect => 'Health verbinden';
+
+  @override
+  String get progressWeightsHealthDismiss => 'Ausblenden';
 }

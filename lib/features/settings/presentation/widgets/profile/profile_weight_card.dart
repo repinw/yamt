@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -20,6 +22,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// The trend weight as the main number, the chart of the last days, the last
 /// weigh-in, the start weight, the weekly trend, and a button to weigh in.
+/// A tap opens the list of all weights.
 class ProfileWeightCard extends ConsumerWidget {
   /// Creates the weight card for [state].
   const new({required this.state, super.key});
@@ -33,6 +36,9 @@ class ProfileWeightCard extends ConsumerWidget {
   /// Stable key of the start weight fact.
   static const startWeightKey = ValueKey<String>('profile-start-weight');
 
+  /// Stable key of the link to all weights.
+  static const allWeightsKey = ValueKey<String>('profile-all-weights');
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -43,90 +49,109 @@ class ProfileWeightCard extends ConsumerWidget {
     final weight = state.weight;
     final trendKg = weight?.trendWeightKg;
 
-    return Container(
-      padding: AppInsets.card,
-      color: label.card,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.md,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    void openAll() => unawaited(context.push(AppRoutes.homeProgressWeights));
+    return AppInkWell(
+      onTap: openAll,
+      // Ink, so the splash of the tap shows on the card.
+      child: Ink(
+        padding: AppInsets.card,
+        color: label.card,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.md,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ProfileKicker(text: l10n.tdeeWeightStatTrend),
+                      Text(
+                        trendKg == null
+                            ? l10n.profileNoValue
+                            : l10n.settingsProfileSummaryWeightValue(
+                                format.decimal(trendKg),
+                              ),
+                        style: theme.textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: label.accentText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    ProfileKicker(text: l10n.tdeeWeightStatTrend),
+                    TextButton(
+                      key: allWeightsKey,
+                      onPressed: openAll,
+                      child: Text(l10n.progressWeightsAll),
+                    ),
                     Text(
-                      trendKg == null
-                          ? l10n.profileNoValue
-                          : l10n.settingsProfileSummaryWeightValue(
-                              format.decimal(trendKg),
-                            ),
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: label.accentText,
+                      l10n.profileWeightChartDays(
+                        RecentWeightTrend.chartDayCount,
+                      ),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: label.muted,
                       ),
                     ),
                   ],
                 ),
-              ),
-              Text(
-                l10n.profileWeightChartDays(RecentWeightTrend.chartDayCount),
-                style: theme.textTheme.bodySmall?.copyWith(color: label.muted),
-              ),
-            ],
-          ),
-          if (weight != null) ProfileWeightChart(days: weight.days),
-          Divider(height: AppSizes.hairline, color: label.rule),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _measuredFact(context, today)),
-              Expanded(
-                child: _WeightFact(
-                  key: startWeightKey,
-                  label: l10n.profileWeightStartLabel,
-                  value: _kg(context, state.profile?.weightKg),
-                  note: l10n.profileWeightStartNote,
-                  onTap: _startWeightEditor(context),
-                ),
-              ),
-              Expanded(
-                child: _WeightFact(
-                  label: l10n.profileWeightTrendLabel,
-                  value: switch (weight?.trendKgPerWeek) {
-                    final perWeek? => l10n.settingsProfileSummaryWeightValue(
-                      format.signedDecimal(perWeek),
-                    ),
-                    null => l10n.profileNoValue,
-                  },
-                  note: l10n.profileWeightPerWeek,
-                ),
-              ),
-            ],
-          ),
-          FilledButton.tonalIcon(
-            key: addWeightButtonKey,
-            onPressed: () => unawaited(
-              ref
-                  .read(diaryWeightTrackingFlowProvider)
-                  .showDialogForDay(
-                    context: context,
-                    selectedDay: today,
-                    day: today,
-                    initialWeightKg: weight?.latestWeighInKg,
+              ],
+            ),
+            if (weight != null) ProfileWeightChart(days: weight.days),
+            Divider(height: AppSizes.hairline, color: label.rule),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _measuredFact(context, today)),
+                Expanded(
+                  child: _WeightFact(
+                    key: startWeightKey,
+                    label: l10n.profileWeightStartLabel,
+                    value: _kg(context, state.profile?.weightKg),
+                    note: l10n.profileWeightStartNote,
+                    onTap: _startWeightEditor(context),
                   ),
+                ),
+                Expanded(
+                  child: _WeightFact(
+                    label: l10n.profileWeightTrendLabel,
+                    value: switch (weight?.trendKgPerWeek) {
+                      final perWeek? => l10n.settingsProfileSummaryWeightValue(
+                        format.signedDecimal(perWeek),
+                      ),
+                      null => l10n.profileNoValue,
+                    },
+                    note: l10n.profileWeightPerWeek,
+                  ),
+                ),
+              ],
             ),
-            style: FilledButton.styleFrom(
-              backgroundColor: label.tile,
-              foregroundColor: label.ink,
+            FilledButton.tonalIcon(
+              key: addWeightButtonKey,
+              onPressed: () => unawaited(
+                ref
+                    .read(diaryWeightTrackingFlowProvider)
+                    .showDialogForDay(
+                      context: context,
+                      selectedDay: today,
+                      day: today,
+                      initialWeightKg: weight?.latestWeighInKg,
+                    ),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: label.tile,
+                foregroundColor: label.ink,
+              ),
+              icon: const Icon(Icons.add_rounded),
+              label: Text(l10n.diaryWeightAddAction),
             ),
-            icon: const Icon(Icons.add_rounded),
-            label: Text(l10n.diaryWeightAddAction),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

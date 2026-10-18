@@ -14,6 +14,12 @@ week, and the longer trends are going, so the diary can stay focused on today.
   move to another day or pose, delete), the 7-day run with its week budget and one bar
   per day, the weight trend with the goal forecast, the TDEE per confirmed weekly check-in, and
   training days against rest days.
+- The weight list (`ProgressWeightsPage`), opened from the weight section
+  and from the profile's weight card: every weighing with day, time, weight,
+  and source, grouped by 7-day runs, under the change of the trend and a chart
+  with the goal weight. Chips switch between the current goal, the last four
+  weeks, and all goals. Without Health, a card offers to connect it until the
+  user dismisses it; then a small header icon does.
 - The read models of these sections in `domain/` and the providers that build
   them from calorie and weight data in `application/`.
 - The weight entry of the tab's action button: today's weight, filled with
