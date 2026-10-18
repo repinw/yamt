@@ -8,10 +8,10 @@ class ProgressAxisLabels extends StatelessWidget {
   const new({required this.labels, super.key});
 
   /// Creates up to five evenly spread date labels for [days], oldest first;
-  /// the last one reads [todayLabel].
+  /// the last one reads [todayLabel] when given.
   factory forDays({
     required List<DateTime> days,
-    required String todayLabel,
+    required String? todayLabel,
     required String locale,
   }) {
     final format = days.length > _daysPerYear
@@ -20,7 +20,7 @@ class ProgressAxisLabels extends StatelessWidget {
     return ProgressAxisLabels(
       labels: [
         for (final index in _labelIndexes(days.length))
-          if (index == days.length - 1)
+          if (index == days.length - 1 && todayLabel != null)
             todayLabel
           else
             format.format(days[index]),

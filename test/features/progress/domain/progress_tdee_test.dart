@@ -18,6 +18,7 @@ void main() {
       ),
       period: ProgressPeriod(
         start: start,
+        end: today,
         goalStarts: [(number: 1, day: start)],
       ),
       points: [
@@ -63,6 +64,7 @@ void main() {
       ),
       period: ProgressPeriod(
         start: today,
+        end: today,
         goalStarts: [(number: 1, day: today)],
       ),
       points: [TdeeAnalyticsPoint(day: today, learnedBaseTdeeKcal: 2400)],

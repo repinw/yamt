@@ -8,15 +8,18 @@ part of 'progress_scope_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Which goals the Fortschritt tab shows: the current one or all.
+/// Which goals the Fortschritt tab shows: the current one, all, or one past
+/// goal.
 
 @ProviderFor(ProgressScopeController)
 final progressScopeControllerProvider = ProgressScopeControllerProvider._();
 
-/// Which goals the Fortschritt tab shows: the current one or all.
+/// Which goals the Fortschritt tab shows: the current one, all, or one past
+/// goal.
 final class ProgressScopeControllerProvider
     extends $NotifierProvider<ProgressScopeController, ProgressScope> {
-  /// Which goals the Fortschritt tab shows: the current one or all.
+  /// Which goals the Fortschritt tab shows: the current one, all, or one past
+  /// goal.
   ProgressScopeControllerProvider._()
     : super(
         from: null,
@@ -45,9 +48,10 @@ final class ProgressScopeControllerProvider
 }
 
 String _$progressScopeControllerHash() =>
-    r'd0b14a0e2550756378ccbe01fed7be324f40537c';
+    r'1de9191933280d011d787ac168a1692f5794b9f4';
 
-/// Which goals the Fortschritt tab shows: the current one or all.
+/// Which goals the Fortschritt tab shows: the current one, all, or one past
+/// goal.
 
 abstract class _$ProgressScopeController extends $Notifier<ProgressScope> {
   ProgressScope build();

@@ -8,14 +8,14 @@ part of 'progress_photo_overview_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The progress photos of [scope]: the current goal from its start on, or
-/// all photos, also those from before the first goal.
+/// The progress photos of [scope]: those of the current or of one past goal,
+/// or all photos, also those from before the first goal.
 
 @ProviderFor(progressPhotoOverview)
 final progressPhotoOverviewProvider = ProgressPhotoOverviewFamily._();
 
-/// The progress photos of [scope]: the current goal from its start on, or
-/// all photos, also those from before the first goal.
+/// The progress photos of [scope]: those of the current or of one past goal,
+/// or all photos, also those from before the first goal.
 
 final class ProgressPhotoOverviewProvider
     extends
@@ -27,8 +27,8 @@ final class ProgressPhotoOverviewProvider
     with
         $FutureModifier<ProgressPhotoOverview>,
         $FutureProvider<ProgressPhotoOverview> {
-  /// The progress photos of [scope]: the current goal from its start on, or
-  /// all photos, also those from before the first goal.
+  /// The progress photos of [scope]: those of the current or of one past goal,
+  /// or all photos, also those from before the first goal.
   ProgressPhotoOverviewProvider._({
     required ProgressPhotoOverviewFamily super.from,
     required ProgressScope super.argument,
@@ -74,10 +74,10 @@ final class ProgressPhotoOverviewProvider
 }
 
 String _$progressPhotoOverviewHash() =>
-    r'dbd05ce6b85f9a309d48304ff678b5ce3a04c345';
+    r'f2e1f209b82b741f3ff1191203b62b3a0385022c';
 
-/// The progress photos of [scope]: the current goal from its start on, or
-/// all photos, also those from before the first goal.
+/// The progress photos of [scope]: those of the current or of one past goal,
+/// or all photos, also those from before the first goal.
 
 final class ProgressPhotoOverviewFamily extends $Family
     with
@@ -94,8 +94,8 @@ final class ProgressPhotoOverviewFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The progress photos of [scope]: the current goal from its start on, or
-  /// all photos, also those from before the first goal.
+  /// The progress photos of [scope]: those of the current or of one past goal,
+  /// or all photos, also those from before the first goal.
 
   ProgressPhotoOverviewProvider call(ProgressScope scope) =>
       ProgressPhotoOverviewProvider._(argument: scope, from: this);

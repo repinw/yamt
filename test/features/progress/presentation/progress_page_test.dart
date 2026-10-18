@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
@@ -46,10 +45,6 @@ Future<FakeCalorieLogRepository> _pumpProgressPage(WidgetTester tester) async {
               path: '/',
               builder: (context, state) => const Scaffold(body: ProgressPage()),
             ),
-            GoRoute(
-              path: AppRoutes.homeSettingsGoalArchive,
-              builder: (context, state) => const Text(_archive),
-            ),
           ],
         ),
       ),
@@ -58,8 +53,6 @@ Future<FakeCalorieLogRepository> _pumpProgressPage(WidgetTester tester) async {
   await tester.pumpAndSettle();
   return calorieLog;
 }
-
-const _archive = 'goal archive';
 
 void main() {
   testWidgets('shows the goal, the week, and the trends', (tester) async {
@@ -97,15 +90,6 @@ void main() {
     expect(fill(1).width, inExclusiveRange(0, segment.width));
     expect(fill(3).width, 0);
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('opens the goal archive from the goal card', (tester) async {
-    await _pumpProgressPage(tester);
-
-    await tester.tap(find.byKey(ProgressGoalCard.archiveButtonKey));
-    await tester.pumpAndSettle();
-
-    expect(find.text(_archive), findsOneWidget);
   });
 
   testWidgets('hides the goal and the week under Gesamt', (tester) async {

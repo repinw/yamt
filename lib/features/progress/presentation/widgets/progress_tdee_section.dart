@@ -30,7 +30,11 @@ class ProgressTdeeSection extends ConsumerWidget {
     return ref
         .watch(progressTdeeProvider(scope))
         .when(
-          data: (tdee) => _TdeeContent(key: sectionKey, tdee: tdee),
+          data: (tdee) => _TdeeContent(
+            key: sectionKey,
+            tdee: tdee,
+            endsToday: scope is! ProgressPastGoalScope,
+          ),
           loading: () => const ProgressSectionLoading(),
           error: (_, _) => const ProgressSectionError(),
         );
@@ -38,9 +42,13 @@ class ProgressTdeeSection extends ConsumerWidget {
 }
 
 class _TdeeContent extends StatelessWidget {
-  const new({required this.tdee, super.key});
+  const new({required this.tdee, required this.endsToday, super.key});
 
   final ProgressTdee tdee;
+
+  /// Whether the chart ends today; the changes and the next check-in are
+  /// shown only then.
+  final bool endsToday;
 
   @override
   Widget build(BuildContext context) {
@@ -60,16 +68,18 @@ class _TdeeContent extends StatelessWidget {
           value: current == null ? '–' : number.format(current.round()),
           unit: l10n.caloriesUnitKcal,
           lines: [
-            if (sinceYesterday != null)
-              l10n.progressTdeeChange(signed.format(sinceYesterday.round())),
-            if (thisWeek != null)
-              l10n.progressTdeeWeekChange(signed.format(thisWeek.round())),
-            if (tdee.isCheckInOpen)
-              l10n.progressTdeeCheckInOpen
-            else
-              l10n.progressTdeeNextCheckIn(
-                DateFormat.MMMd(locale).format(tdee.nextCheckInDay),
-              ),
+            if (endsToday) ...[
+              if (sinceYesterday != null)
+                l10n.progressTdeeChange(signed.format(sinceYesterday.round())),
+              if (thisWeek != null)
+                l10n.progressTdeeWeekChange(signed.format(thisWeek.round())),
+              if (tdee.isCheckInOpen)
+                l10n.progressTdeeCheckInOpen
+              else
+                l10n.progressTdeeNextCheckIn(
+                  DateFormat.MMMd(locale).format(tdee.nextCheckInDay),
+                ),
+            ],
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -91,7 +101,7 @@ class _TdeeContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxs),
           ProgressAxisLabels.forDays(
             days: [for (final day in tdee.days) day.day],
-            todayLabel: l10n.progressToday,
+            todayLabel: endsToday ? l10n.progressToday : null,
             locale: locale,
           ),
           const SizedBox(height: AppSpacing.sm),

@@ -39,6 +39,7 @@ void main() {
     weekStart: weekStart,
     weekEnd: weekEnd,
     comparisonStart: DateTime(2026, 8, 29),
+    comparisonEnd: _today,
     today: _today,
     runNumber: 3,
   );

@@ -36,7 +36,7 @@ class ProgressTdee {
     required List<TdeeAnalyticsPoint> points,
     required DateTime today,
   }) {
-    final chartStart = period.chartStart(today);
+    final chartStart = period.chartStart;
     final pointsByDay = {
       for (final point in points) diaryDayKey(point.day): point,
     };
@@ -46,7 +46,11 @@ class ProgressTdee {
     );
     return ProgressTdee(
       days: [
-        for (var day = chartStart; !day.isAfter(today); day = nextDiaryDay(day))
+        for (
+          var day = chartStart;
+          !day.isAfter(period.end);
+          day = nextDiaryDay(day)
+        )
           if (day.isBefore(period.start))
             (day: day, tdeeKcal: null, measuredKcal: null)
           else
@@ -59,7 +63,7 @@ class ProgressTdee {
       checkInDays: {
         for (final goal in CalorieTdeeHistory.perGoal(settings))
           for (final day in goal.checkInDays)
-            if (!day.isBefore(chartStart)) day,
+            if (!day.isBefore(chartStart) && !day.isAfter(period.end)) day,
       },
       goalStarts: [
         for (final start in period.goalStarts)
@@ -71,7 +75,7 @@ class ProgressTdee {
     );
   }
 
-  /// Days of the chart, oldest first, ending today.
+  /// Days of the chart, oldest first, ending on the last day of the period.
   final List<ProgressTdeeDay> days;
 
   /// Days on which a confirmed check-in took effect.
@@ -89,7 +93,7 @@ class ProgressTdee {
   /// Whether a check-in waits for the user's decision.
   final bool isCheckInOpen;
 
-  /// Today's TDEE, or `null` before the first goal.
+  /// The TDEE of the last chart day, or `null` before the first goal.
   ///
   /// Today carries yesterday's estimate, because today's diary is not
   /// complete yet.

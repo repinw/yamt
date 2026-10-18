@@ -66,8 +66,7 @@ Current providers:
 - `features/auth` for account data, auth actions, and auth error mapping.
 - `features/calories` for the profile page's body data and macro weight
   (settings repository and nutrition target resolver), and calorie goal
-  settings surfaces, including the complete goal archive page that the goal
-  archive row opens through app routing (`AppRoutes.homeSettingsGoalArchive`).
+  settings surfaces.
 - `features/health` for Health connection status, actions, domain result
   models, and the recent weights of the profile page.
 - `features/home_widget` for the home-screen widget's silent/verbose choice,
