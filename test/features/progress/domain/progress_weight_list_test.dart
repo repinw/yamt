@@ -261,4 +261,56 @@ void main() {
     expect(list.runs.last.trendWeightKg, closeTo(83.1, 1e-9));
     expect(list.runs.first.trendWeightKg, closeTo(82.4, 1e-9));
   });
+
+  test('lists the ignored weighings of all runs', () {
+    final list = _list(
+      manualEntries: [
+        ManualHealthWeightEntry(day: DateTime(2026, 9, 8), weightKg: 84),
+      ],
+      healthSamples: [
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 9, 23, 6),
+          weightKg: 82.4,
+          isIgnored: true,
+        ),
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 9, 9, 6),
+          weightKg: 90,
+          isIgnored: true,
+        ),
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 9, 22, 6),
+          weightKg: 82.8,
+        ),
+      ],
+    );
+
+    expect([for (final w in list.ignoredWeighings) w.weightKg], [82.4, 90]);
+  });
+
+  test('only a Health weighing can be ignored', () {
+    final list = _list(
+      manualEntries: [
+        ManualHealthWeightEntry(day: DateTime(2026, 9, 8), weightKg: 84),
+      ],
+      healthSamples: [
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 9, 23, 6),
+          weightKg: 82.4,
+          isIgnored: true,
+        ),
+        HealthWeightSample(
+          recordedAt: DateTime(2026, 9, 22, 6),
+          weightKg: 82.8,
+        ),
+      ],
+    );
+
+    final byWeight = {
+      for (final run in list.runs)
+        for (final w in run.weighings) w.weightKg: w.isIgnored,
+    };
+    expect(byWeight, {84.0: false, 82.4: true, 82.8: false});
+    expect(_list().ignoredWeighings, isEmpty);
+  });
 }

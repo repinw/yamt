@@ -65,7 +65,15 @@ class _FakeHealthConnectionService implements HealthConnectionService {
 }
 
 class _FakeHealthWeightService implements HealthWeightService {
-  new({this.shouldSaveFail = false, this.shouldThrowOnSave = false});
+  new({
+    this.shouldSaveFail = false,
+    this.shouldThrowOnSave = false,
+    this.localSamples = const <HealthWeightSample>[],
+    this.deleteSucceeds = true,
+  });
+  final List<HealthWeightSample> localSamples;
+  final bool deleteSucceeds;
+  final deletedSamples = <HealthWeightSample>[];
   bool shouldSaveFail;
   bool shouldThrowOnSave;
   int saveCallCount = 0;
@@ -77,12 +85,13 @@ class _FakeHealthWeightService implements HealthWeightService {
     required DateTime startInclusive,
     required DateTime endExclusive,
   }) async {
-    return const <HealthWeightSample>[];
+    return localSamples;
   }
 
   @override
   Future<bool> deleteWeightSample(HealthWeightSample sample) async {
-    return true;
+    deletedSamples.add(sample);
+    return deleteSucceeds;
   }
 
   @override
@@ -130,7 +139,7 @@ class _FakeManualHealthWeightRepository
   }
 
   @override
-  Future<void> updateEntry(
+  Future<ManualHealthWeightEntry> updateEntry(
     ManualHealthWeightEntry previous,
     ManualHealthWeightEntry next,
   ) async {
@@ -139,6 +148,7 @@ class _FakeManualHealthWeightRepository
         if (existing.storageId != previous.storageId) existing,
     ];
     await saveEntry(next);
+    return next;
   }
 
   @override
@@ -195,6 +205,13 @@ class _RecordingSampleRepository extends Fake
     required double weightKg,
   }) async {
     saved.add(HealthWeightSample(recordedAt: recordedAt, weightKg: weightKg));
+  }
+
+  final deleted = <HealthWeightSample>[];
+
+  @override
+  Future<void> deleteSample(HealthWeightSample sample) async {
+    deleted.add(sample);
   }
 }
 
@@ -432,29 +449,6 @@ void main() {
     expect(repository.entries.single.weightKg, 72);
   });
 
-  test('updateEntry moves an entry stored under its day to an id', () async {
-    final legacy = ManualHealthWeightEntry(
-      day: DateTime(2026, 4, 2),
-      weightKg: 72.1,
-      id: '2026-04-02',
-    );
-    final repository = _FakeManualHealthWeightRepository(entries: [legacy]);
-    final container = buildContainer(repository: repository);
-    addTearDown(container.dispose);
-
-    await container.read(manualHealthWeightEntriesControllerProvider.future);
-    await container
-        .read(manualHealthWeightEntriesControllerProvider.notifier)
-        .updateEntry(
-          legacy,
-          recordedAt: DateTime(2026, 4, 2, 7),
-          weightKg: 72.1,
-        );
-
-    expect(repository.entries.single.id, isNot('2026-04-02'));
-    expect(repository.entries.single.recordedAt, DateTime(2026, 4, 2, 7));
-  });
-
   test('deleteEntry deletes only that entry', () async {
     final morning = ManualHealthWeightEntry(
       day: DateTime(2026, 4, 2, 8),
@@ -518,6 +512,158 @@ void main() {
           .single
           .id,
       'morning',
+    );
+  });
+
+  group('Health weighings of this app', () {
+    final at = DateTime(2026, 4, 1, 7, 30, 15);
+    final own = HealthWeightSample(
+      recordedAt: at,
+      weightKg: 80.4,
+      isFromThisApp: true,
+    );
+    final onDevice = HealthWeightSample(
+      recordedAt: at,
+      weightKg: 80.4,
+      isFromThisApp: true,
+      uuid: 'health-1',
+    );
+
+    test('deleteAppWeight deletes the Health record and the copy', () async {
+      final health = _FakeHealthWeightService(localSamples: [onDevice]);
+      final cloud = _RecordingSampleRepository();
+      final container = buildContainer(
+        repository: _FakeManualHealthWeightRepository(),
+        healthWeightService: health,
+        sampleRepository: cloud,
+      );
+      addTearDown(container.dispose);
+
+      final deleted = await container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .deleteAppWeight(own);
+
+      expect(deleted, isTrue);
+      expect(health.deletedSamples.single.uuid, 'health-1');
+      expect(cloud.deleted, [own]);
+    });
+
+    test('deleteAppWeight is false when Health refuses or lacks it', () async {
+      for (final health in [
+        _FakeHealthWeightService(
+          localSamples: [onDevice],
+          deleteSucceeds: false,
+        ),
+        _FakeHealthWeightService(),
+      ]) {
+        final cloud = _RecordingSampleRepository();
+        final container = buildContainer(
+          repository: _FakeManualHealthWeightRepository(),
+          healthWeightService: health,
+          sampleRepository: cloud,
+        );
+        addTearDown(container.dispose);
+
+        final deleted = await container
+            .read(manualHealthWeightEntriesControllerProvider.notifier)
+            .deleteAppWeight(own);
+
+        expect(deleted, isFalse);
+        expect(cloud.deleted, isEmpty);
+      }
+    });
+
+    test('updateAppWeight replaces the weighing in Health', () async {
+      final health = _FakeHealthWeightService(localSamples: [onDevice]);
+      final cloud = _RecordingSampleRepository();
+      final container = buildContainer(
+        repository: _FakeManualHealthWeightRepository(),
+        status: _readyStatus,
+        healthWeightService: health,
+        sampleRepository: cloud,
+      );
+      addTearDown(container.dispose);
+
+      final updated = await container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .updateAppWeight(
+            own,
+            recordedAt: DateTime(2026, 3, 31, 8),
+            weightKg: 79.9,
+          );
+
+      expect(updated, isTrue);
+      expect(cloud.deleted, [own]);
+      expect(health.lastRecordedAt, DateTime(2026, 3, 31, 8));
+      expect(health.lastWeightKg, 79.9);
+      expect(cloud.saved.single.weightKg, 79.9);
+    });
+
+    test('updateAppWeight keeps the old weighing when the add fails', () async {
+      final health = _FakeHealthWeightService(
+        localSamples: [onDevice],
+        shouldSaveFail: true,
+      );
+      final cloud = _RecordingSampleRepository();
+      final container = buildContainer(
+        repository: _FakeManualHealthWeightRepository(shouldSaveFail: true),
+        status: _readyStatus,
+        healthWeightService: health,
+        sampleRepository: cloud,
+      );
+      addTearDown(container.dispose);
+
+      final updated = await container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .updateAppWeight(own, recordedAt: at, weightKg: 79.9);
+
+      expect(updated, isFalse);
+      expect(health.deletedSamples, isEmpty);
+      expect(cloud.deleted, isEmpty);
+    });
+
+    test('updateAppWeight keeps both when the old one fails to go', () async {
+      final health = _FakeHealthWeightService();
+      final container = buildContainer(
+        repository: _FakeManualHealthWeightRepository(),
+        status: _readyStatus,
+        healthWeightService: health,
+      );
+      addTearDown(container.dispose);
+
+      final updated = await container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .updateAppWeight(own, recordedAt: at, weightKg: 79.9);
+
+      expect(updated, isTrue);
+      expect(health.saveCallCount, 1);
+    });
+
+    test(
+      'updateAppWeight does nothing for the same minute and weight',
+      () async {
+        final health = _FakeHealthWeightService(localSamples: [onDevice]);
+        final cloud = _RecordingSampleRepository();
+        final container = buildContainer(
+          repository: _FakeManualHealthWeightRepository(),
+          status: _readyStatus,
+          healthWeightService: health,
+          sampleRepository: cloud,
+        );
+        addTearDown(container.dispose);
+
+        final updated = await container
+            .read(manualHealthWeightEntriesControllerProvider.notifier)
+            .updateAppWeight(
+              own,
+              recordedAt: DateTime(2026, 4, 1, 7, 30),
+              weightKg: 80.4,
+            );
+
+        expect(updated, isTrue);
+        expect(health.saveCallCount, 0);
+        expect(cloud.deleted, isEmpty);
+      },
     );
   });
 

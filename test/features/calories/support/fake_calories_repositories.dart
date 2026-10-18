@@ -385,19 +385,26 @@ class FakeManualHealthWeightRepository implements ManualHealthWeightRepository {
   final List<ManualHealthWeightEntry> deletedEntries =
       <ManualHealthWeightEntry>[];
 
+  /// Makes every delete throw.
+  bool failDeletes = false;
+
   @override
   Future<void> deleteEntry(ManualHealthWeightEntry entry) async {
+    if (failDeletes) {
+      throw StateError('delete failed');
+    }
     deletedEntries.add(entry);
     entries.removeWhere((existing) => existing.storageId == entry.storageId);
   }
 
   @override
-  Future<void> updateEntry(
+  Future<ManualHealthWeightEntry> updateEntry(
     ManualHealthWeightEntry previous,
     ManualHealthWeightEntry next,
   ) async {
     entries.removeWhere((existing) => existing.storageId == previous.storageId);
     await saveEntry(next);
+    return next;
   }
 
   @override

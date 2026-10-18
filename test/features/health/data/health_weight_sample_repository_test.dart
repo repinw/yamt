@@ -307,6 +307,103 @@ void main() {
     expect(stored.single.isIgnored, isTrue);
   });
 
+  test('an ignored weight can count again', () async {
+    final repository = HealthWeightSampleRepository(
+      firestore: FakeFirebaseFirestore(),
+      dataCipher: signedIn,
+      preferences: MemoryAppPreferences(),
+    );
+    final scale = HealthWeightSample(
+      recordedAt: DateTime(2026, 3, 20, 7),
+      weightKg: 80.9,
+      sourcePackageName: 'com.scale',
+    );
+    await repository.syncDevice(
+      loadHealth: () async => [scale],
+      mirrorSince: _longAgo,
+      activeDevices: const {},
+    );
+    await pumpEventQueue();
+
+    await repository.setIgnored(scale, ignored: true);
+    await pumpEventQueue();
+    expect((await repository.loadSamples()).single.isIgnored, isTrue);
+    await repository.setIgnored(scale, ignored: false);
+    await pumpEventQueue();
+
+    final stored = (await repository.loadSamples()).single;
+    expect(stored.isIgnored, isFalse);
+    expect(stored.sourcePackageName, 'com.scale');
+  });
+
+  test('ignoring a weight without a stored copy throws', () async {
+    final repository = HealthWeightSampleRepository(
+      firestore: FakeFirebaseFirestore(),
+      dataCipher: signedIn,
+      preferences: MemoryAppPreferences(),
+    );
+    final sample = HealthWeightSample(
+      recordedAt: DateTime(2026, 3, 20, 7),
+      weightKg: 80.9,
+    );
+
+    await expectLater(
+      repository.setIgnored(sample, ignored: true),
+      throwsStateError,
+    );
+    await expectLater(
+      HealthWeightSampleRepository(
+        firestore: FakeFirebaseFirestore(),
+        dataCipher: null,
+        preferences: MemoryAppPreferences(),
+      ).setIgnored(sample, ignored: true),
+      throwsStateError,
+    );
+  });
+
+  test('ignoring a weight keeps the devices that hold it', () async {
+    final firestore = FakeFirebaseFirestore();
+    final phone = _device(firestore, signedIn, 'phone');
+    final tablet = _device(firestore, signedIn, 'tablet');
+    final scale = HealthWeightSample(
+      recordedAt: DateTime(2026, 3, 20, 7),
+      weightKg: 80.9,
+    );
+    final kept = HealthWeightSample(
+      recordedAt: DateTime(2026, 3, 25, 7),
+      weightKg: 80.2,
+    );
+    for (final device in [phone, tablet]) {
+      await device.syncDevice(
+        loadHealth: () async => [scale, kept],
+        mirrorSince: DateTime(2026, 3),
+        activeDevices: const {'phone', 'tablet'},
+      );
+      await pumpEventQueue();
+    }
+
+    await phone.setIgnored(scale, ignored: true);
+    await pumpEventQueue();
+    // The phone drops the weight from Health; the tablet still holds it.
+    await phone.syncDevice(
+      loadHealth: () async => [kept],
+      mirrorSince: DateTime(2026, 3),
+      activeDevices: const {'phone', 'tablet'},
+    );
+    await pumpEventQueue();
+
+    final stored = await phone.loadSamples();
+    expect(stored.singleWhere((s) => s.weightKg == 80.9).isIgnored, isTrue);
+    // Once the tablet drops it too, no device holds it and it is deleted.
+    await tablet.syncDevice(
+      loadHealth: () async => [kept],
+      mirrorSince: DateTime(2026, 3),
+      activeDevices: const {'phone', 'tablet'},
+    );
+    await pumpEventQueue();
+    expect([for (final s in await phone.loadSamples()) s.weightKg], [80.2]);
+  });
+
   group('mirrors Health deletions', () {
     final scale = HealthWeightSample(
       recordedAt: DateTime(2026, 3, 20, 7),

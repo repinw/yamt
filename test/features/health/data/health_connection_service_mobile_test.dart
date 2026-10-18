@@ -175,6 +175,66 @@ void main() {
     expect(fakeHealth.installHealthConnectCallCount, 1);
   });
 
+  test('openHealthApp opens the Health home settings on Android', () async {
+    final launchedActions = <String?>[];
+    final service = MobileHealthConnectionService(
+      health: _FakeHealth(hasPermissionsResult: true),
+      isAndroid: true,
+      isIOS: false,
+      androidIntentLauncher: (intent) async {
+        launchedActions.add(intent.action);
+        return true;
+      },
+    );
+
+    await service.openHealthApp();
+
+    expect(launchedActions, [
+      'android.health.connect.action.HEALTH_HOME_SETTINGS',
+    ]);
+  });
+
+  test('openHealthApp falls back to the legacy settings intent', () async {
+    final launchedActions = <String?>[];
+    final service = MobileHealthConnectionService(
+      health: _FakeHealth(hasPermissionsResult: true),
+      isAndroid: true,
+      isIOS: false,
+      androidIntentLauncher: (intent) async {
+        launchedActions.add(intent.action);
+        return launchedActions.length == 2;
+      },
+    );
+
+    await service.openHealthApp();
+
+    expect(launchedActions, [
+      'android.health.connect.action.HEALTH_HOME_SETTINGS',
+      'androidx.health.ACTION_HEALTH_CONNECT_SETTINGS',
+    ]);
+  });
+
+  test('openHealthApp throws when no intent opens', () async {
+    final service = MobileHealthConnectionService(
+      health: _FakeHealth(hasPermissionsResult: true),
+      isAndroid: true,
+      isIOS: false,
+      androidIntentLauncher: (intent) async => false,
+    );
+
+    await expectLater(service.openHealthApp(), throwsStateError);
+  });
+
+  test('openHealthApp throws on a platform without Health', () async {
+    final service = MobileHealthConnectionService(
+      health: _FakeHealth(hasPermissionsResult: true),
+      isAndroid: false,
+      isIOS: false,
+    );
+
+    await expectLater(service.openHealthApp(), throwsStateError);
+  });
+
   test(
     'openAppPermissionSettings uses injected app settings launcher',
     () async {

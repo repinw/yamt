@@ -45,4 +45,48 @@ void main() {
       isTrue,
     );
   });
+
+  group('healthWeightIgnoredCopy', () {
+    final scale = HealthWeightSample(
+      recordedAt: recordedAt,
+      weightKg: 81.4,
+      sourcePackageName: 'com.scale',
+    );
+
+    test('flags the sample and keeps the rest and the devices', () {
+      final copy = healthWeightIgnoredCopy((
+        sample: scale,
+        devices: {'phone', 'tablet'},
+      ), ignored: true);
+
+      expect(copy.sample.isIgnored, isTrue);
+      expect(copy.sample.recordedAt, recordedAt);
+      expect(copy.sample.weightKg, 81.4);
+      expect(copy.sample.sourcePackageName, 'com.scale');
+      expect(copy.sample.isFromThisApp, isFalse);
+      expect(copy.devices, {'phone', 'tablet'});
+    });
+
+    test('counts an ignored sample again', () {
+      final copy = healthWeightIgnoredCopy((
+        sample: HealthWeightSample(
+          recordedAt: recordedAt,
+          weightKg: 81.4,
+          isFromThisApp: true,
+          isIgnored: true,
+        ),
+        devices: {'phone'},
+      ), ignored: false);
+
+      expect(copy.sample.isIgnored, isFalse);
+      expect(copy.sample.isFromThisApp, isTrue);
+    });
+
+    test('throws without a copy', () {
+      expect(
+        () => healthWeightIgnoredCopy(null, ignored: true),
+        throwsStateError,
+      );
+    });
+  });
 }
