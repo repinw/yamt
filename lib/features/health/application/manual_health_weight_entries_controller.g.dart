@@ -8,20 +8,23 @@ part of 'manual_health_weight_entries_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Defines manual health weight entries controller.
+/// The manual weight entries, and the weighings that the user adds, changes,
+/// or deletes: in Health when it is ready, else as manual entries.
 
 @ProviderFor(ManualHealthWeightEntriesController)
 final manualHealthWeightEntriesControllerProvider =
     ManualHealthWeightEntriesControllerProvider._();
 
-/// Defines manual health weight entries controller.
+/// The manual weight entries, and the weighings that the user adds, changes,
+/// or deletes: in Health when it is ready, else as manual entries.
 final class ManualHealthWeightEntriesControllerProvider
     extends
         $AsyncNotifierProvider<
           ManualHealthWeightEntriesController,
           List<ManualHealthWeightEntry>
         > {
-  /// Defines manual health weight entries controller.
+  /// The manual weight entries, and the weighings that the user adds, changes,
+  /// or deletes: in Health when it is ready, else as manual entries.
   ManualHealthWeightEntriesControllerProvider._()
     : super(
         from: null,
@@ -44,9 +47,10 @@ final class ManualHealthWeightEntriesControllerProvider
 }
 
 String _$manualHealthWeightEntriesControllerHash() =>
-    r'd7bbf5d60878f8fef78983311b4f752a3d514547';
+    r'271009802d22279452cf0a6384bf4d97659894d6';
 
-/// Defines manual health weight entries controller.
+/// The manual weight entries, and the weighings that the user adds, changes,
+/// or deletes: in Health when it is ready, else as manual entries.
 
 abstract class _$ManualHealthWeightEntriesController
     extends $AsyncNotifier<List<ManualHealthWeightEntry>> {

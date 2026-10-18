@@ -199,7 +199,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsNothing);
-    expect(_todaysWeighIn(tester), 80.4);
+    // A new weighing joins the day's 82.0, so the day counts their median.
+    expect(_todaysWeighIn(tester), closeTo(81.2, 0.001));
     expect(_trendWeight(tester), isNot(trendBefore));
     expect(remaining(), isNot(remainingBefore));
     expect(tester.takeException(), isNull);

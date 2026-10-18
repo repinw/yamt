@@ -8,6 +8,14 @@ abstract interface class ManualHealthWeightRepository {
   /// Saves [entry] under its id, or under its day without one.
   Future<bool> saveEntry(ManualHealthWeightEntry entry);
 
-  /// Deletes every entry of [day].
-  Future<bool> deleteEntryForDay(DateTime day);
+  /// Stores [next] in place of [previous] and returns what it stored.
+  /// Throws when it fails or without a signed-in user.
+  Future<ManualHealthWeightEntry> updateEntry(
+    ManualHealthWeightEntry previous,
+    ManualHealthWeightEntry next,
+  );
+
+  /// Deletes exactly [entry]. Throws when it fails or without a signed-in
+  /// user.
+  Future<void> deleteEntry(ManualHealthWeightEntry entry);
 }

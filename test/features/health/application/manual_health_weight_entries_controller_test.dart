@@ -46,6 +46,9 @@ class _FakeHealthConnectionService implements HealthConnectionService {
   Future<void> installHealthConnect() async {}
 
   @override
+  Future<void> openHealthApp() async {}
+
+  @override
   Future<void> openAppPermissionSettings() async {}
 
   @override
@@ -103,32 +106,39 @@ class _FakeManualHealthWeightRepository
     this.entries = const <ManualHealthWeightEntry>[],
     this.readEntriesCompleter,
     this.shouldSaveFail = false,
-    this.shouldDeleteFail = false,
     this.shouldSaveThrow = false,
     this.shouldDeleteThrow = false,
   });
   List<ManualHealthWeightEntry> entries;
   Completer<List<ManualHealthWeightEntry>>? readEntriesCompleter;
   bool shouldSaveFail;
-  bool shouldDeleteFail;
   bool shouldSaveThrow;
   bool shouldDeleteThrow;
   int saveCallCount = 0;
   int deleteCallCount = 0;
 
   @override
-  Future<bool> deleteEntryForDay(DateTime day) async {
+  Future<void> deleteEntry(ManualHealthWeightEntry entry) async {
     deleteCallCount += 1;
     if (shouldDeleteThrow) {
-      throw Exception('deleteEntryForDay failed');
+      throw Exception('deleteEntry failed');
     }
-    if (shouldDeleteFail) {
-      return false;
-    }
-    entries = entries
-        .where((entry) => entry.day != DateTime(day.year, day.month, day.day))
-        .toList(growable: false);
-    return true;
+    entries = [
+      for (final existing in entries)
+        if (existing.storageId != entry.storageId) existing,
+    ];
+  }
+
+  @override
+  Future<void> updateEntry(
+    ManualHealthWeightEntry previous,
+    ManualHealthWeightEntry next,
+  ) async {
+    entries = [
+      for (final existing in entries)
+        if (existing.storageId != previous.storageId) existing,
+    ];
+    await saveEntry(next);
   }
 
   @override
@@ -249,13 +259,14 @@ void main() {
     expect(healthWeightService.lastRecordedAt?.second, 0);
     expect(healthWeightService.lastRecordedAt?.millisecond, 0);
     expect(healthWeightService.lastRecordedAt?.microsecond, 0);
+    // The manual weighing of the day is another weighing and stays.
     expect(repository.saveCallCount, 0);
-    expect(repository.deleteCallCount, 1);
-    expect(repository.entries, isEmpty);
+    expect(repository.deleteCallCount, 0);
+    expect(repository.entries, hasLength(1));
     final stateEntries = container
         .read(manualHealthWeightEntriesControllerProvider)
         .requireValue;
-    expect(stateEntries, isEmpty);
+    expect(stateEntries, hasLength(1));
   });
 
   test(
@@ -361,39 +372,7 @@ void main() {
     expect(repository.entries.single.weightKg, 71.2);
   });
 
-  test(
-    'saveEntry keeps success when health save works and fallback cleanup fails',
-    () async {
-      final repository = _FakeManualHealthWeightRepository(
-        entries: [
-          ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 72.1),
-        ],
-        shouldDeleteFail: true,
-      );
-      final healthWeightService = _FakeHealthWeightService();
-      final container = buildContainer(
-        repository: repository,
-        status: _readyStatus,
-        healthWeightService: healthWeightService,
-      );
-      addTearDown(container.dispose);
-
-      await container.read(manualHealthWeightEntriesControllerProvider.future);
-      final saved = await container
-          .read(manualHealthWeightEntriesControllerProvider.notifier)
-          .saveEntry(day: DateTime(2026, 3, 20, 18), weightKg: 71.2);
-
-      expect(saved, isTrue);
-      expect(healthWeightService.saveCallCount, 1);
-      expect(repository.deleteCallCount, 1);
-      final stateEntries = container
-          .read(manualHealthWeightEntriesControllerProvider)
-          .requireValue;
-      expect(stateEntries, isEmpty);
-    },
-  );
-
-  test('saveEntry stores the time over the last entry of the day', () async {
+  test('saveEntry adds a weighing with an id of its own', () async {
     final repository = _FakeManualHealthWeightRepository(
       entries: [
         ManualHealthWeightEntry(
@@ -421,13 +400,125 @@ void main() {
         .saveEntry(day: DateTime(2026, 4, 2), weightKg: 71.8);
 
     final saved = repository.entries.last;
-    expect(repository.entries.map((entry) => entry.storageId), [
-      '2026-04-02',
-      'morning',
-    ]);
-    expect(saved.id, 'morning');
+    expect(repository.entries, hasLength(3));
+    expect(saved.id, isNot(anyOf('2026-04-02', 'morning')));
     expect(saved.recordedAt, DateTime(2026, 4, 2, 9, 29, 59));
     expect(saved.weightKg, 71.8);
+  });
+
+  test('updateEntry keeps the id of the entry', () async {
+    final morning = ManualHealthWeightEntry(
+      day: DateTime(2026, 4, 2, 8),
+      weightKg: 72.4,
+      recordedAt: DateTime(2026, 4, 2, 8),
+      id: 'morning',
+    );
+    final repository = _FakeManualHealthWeightRepository(entries: [morning]);
+    final container = buildContainer(repository: repository);
+    addTearDown(container.dispose);
+
+    await container.read(manualHealthWeightEntriesControllerProvider.future);
+    final updated = await container
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .updateEntry(
+          morning,
+          recordedAt: DateTime(2026, 4, 1, 7, 15),
+          weightKg: 72,
+        );
+
+    expect(updated, isTrue);
+    expect(repository.entries.single.id, 'morning');
+    expect(repository.entries.single.day, DateTime(2026, 4));
+    expect(repository.entries.single.weightKg, 72);
+  });
+
+  test('updateEntry moves an entry stored under its day to an id', () async {
+    final legacy = ManualHealthWeightEntry(
+      day: DateTime(2026, 4, 2),
+      weightKg: 72.1,
+      id: '2026-04-02',
+    );
+    final repository = _FakeManualHealthWeightRepository(entries: [legacy]);
+    final container = buildContainer(repository: repository);
+    addTearDown(container.dispose);
+
+    await container.read(manualHealthWeightEntriesControllerProvider.future);
+    await container
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .updateEntry(
+          legacy,
+          recordedAt: DateTime(2026, 4, 2, 7),
+          weightKg: 72.1,
+        );
+
+    expect(repository.entries.single.id, isNot('2026-04-02'));
+    expect(repository.entries.single.recordedAt, DateTime(2026, 4, 2, 7));
+  });
+
+  test('deleteEntry deletes only that entry', () async {
+    final morning = ManualHealthWeightEntry(
+      day: DateTime(2026, 4, 2, 8),
+      weightKg: 72.4,
+      recordedAt: DateTime(2026, 4, 2, 8),
+      id: 'morning',
+    );
+    final evening = ManualHealthWeightEntry(
+      day: DateTime(2026, 4, 2, 20),
+      weightKg: 73,
+      recordedAt: DateTime(2026, 4, 2, 20),
+      id: 'evening',
+    );
+    final repository = _FakeManualHealthWeightRepository(
+      entries: [morning, evening],
+    );
+    final container = buildContainer(repository: repository);
+    addTearDown(container.dispose);
+
+    await container.read(manualHealthWeightEntriesControllerProvider.future);
+    final deleted = await container
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .deleteEntry(morning);
+
+    expect(deleted, isTrue);
+    expect(repository.entries.single.id, 'evening');
+    expect(
+      container
+          .read(manualHealthWeightEntriesControllerProvider)
+          .requireValue
+          .single
+          .id,
+      'evening',
+    );
+  });
+
+  test('deleteEntry restores the entries when the delete throws', () async {
+    final morning = ManualHealthWeightEntry(
+      day: DateTime(2026, 4, 2, 8),
+      weightKg: 72.4,
+      recordedAt: DateTime(2026, 4, 2, 8),
+      id: 'morning',
+    );
+    final repository = _FakeManualHealthWeightRepository(
+      entries: [morning],
+      shouldDeleteThrow: true,
+    );
+    final container = buildContainer(repository: repository);
+    addTearDown(container.dispose);
+
+    await container.read(manualHealthWeightEntriesControllerProvider.future);
+    final deleted = await container
+        .read(manualHealthWeightEntriesControllerProvider.notifier)
+        .deleteEntry(morning);
+
+    expect(deleted, isFalse);
+    expect(
+      container
+          .read(manualHealthWeightEntriesControllerProvider)
+          .requireValue
+          .single
+          .id,
+      'morning',
+    );
   });
 
   test('saveEntry reverts state when repository save fails', () async {

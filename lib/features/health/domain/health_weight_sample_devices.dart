@@ -1,4 +1,3 @@
-import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 /// A cloud copy of a Health weight sample and the devices whose Health store
@@ -61,41 +60,24 @@ HealthWeightSamplePlan healthWeightDeviceSync({
   return (writes: writes, deletes: deletes);
 }
 
-/// The weight [sample] that this app wrote to the Health store of
-/// [deviceId] under [id], replacing its earlier one of that day there, as
-/// Health does.
-HealthWeightSamplePlan healthWeightAppWeightSave({
-  required String deviceId,
-  required Map<String, DeviceHealthWeightSample> stored,
-  required String id,
-  required HealthWeightSample sample,
+/// [copy] left out of every count, or counted again, on all devices. Throws
+/// [StateError] without a copy.
+DeviceHealthWeightSample healthWeightIgnoredCopy(
+  DeviceHealthWeightSample? copy, {
+  required bool ignored,
 }) {
-  final writes = <String, DeviceHealthWeightSample>{
-    id: (sample: sample, devices: {...?stored[id]?.devices, deviceId}),
-  };
-  final deletes = <String>{};
-  for (final MapEntry(key: earlierId, value: earlier) in stored.entries) {
-    if (earlierId != id &&
-        earlier.sample.isFromThisApp &&
-        earlier.devices.contains(deviceId) &&
-        isSameLocalDay(earlier.sample.recordedAt, sample.recordedAt)) {
-      _dropDevice(earlierId, earlier, deviceId, writes, deletes);
-    }
+  if (copy == null) {
+    throw StateError('The Health weight has no readable cloud copy.');
   }
-  return (writes: writes, deletes: deletes);
-}
-
-void _dropDevice(
-  String id,
-  DeviceHealthWeightSample copy,
-  String deviceId,
-  Map<String, DeviceHealthWeightSample> writes,
-  Set<String> deletes,
-) {
-  final devices = {...copy.devices}..remove(deviceId);
-  if (devices.isEmpty) {
-    deletes.add(id);
-  } else {
-    writes[id] = (sample: copy.sample, devices: devices);
-  }
+  final sample = copy.sample;
+  return (
+    sample: HealthWeightSample(
+      recordedAt: sample.recordedAt,
+      weightKg: sample.weightKg,
+      sourcePackageName: sample.sourcePackageName,
+      isFromThisApp: sample.isFromThisApp,
+      isIgnored: ignored,
+    ),
+    devices: copy.devices,
+  );
 }

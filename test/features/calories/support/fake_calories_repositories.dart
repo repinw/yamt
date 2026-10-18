@@ -9,7 +9,6 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
@@ -296,6 +295,7 @@ class FakeHealthConnectionService implements HealthConnectionService {
   int installHealthConnectCallCount = 0;
   int openAppPermissionSettingsCallCount = 0;
   int openHealthPermissionSettingsCallCount = 0;
+  int openHealthAppCallCount = 0;
 
   @override
   Future<HealthDisconnectResult> disconnect() async {
@@ -315,6 +315,11 @@ class FakeHealthConnectionService implements HealthConnectionService {
   @override
   Future<void> openHealthPermissionSettings() async {
     openHealthPermissionSettingsCallCount += 1;
+  }
+
+  @override
+  Future<void> openHealthApp() async {
+    openHealthAppCallCount += 1;
   }
 
   @override
@@ -377,15 +382,22 @@ class FakeManualHealthWeightRepository implements ManualHealthWeightRepository {
 
   /// Holds every read back until it completes, like a slow load.
   final Future<void>? ready;
-  final List<DateTime> deletedDays = <DateTime>[];
-
-  int get deleteEntryForDayCallCount => deletedDays.length;
+  final List<ManualHealthWeightEntry> deletedEntries =
+      <ManualHealthWeightEntry>[];
 
   @override
-  Future<bool> deleteEntryForDay(DateTime day) async {
-    deletedDays.add(day);
-    entries.removeWhere((entry) => isSameDiaryDay(entry.day, day));
-    return true;
+  Future<void> deleteEntry(ManualHealthWeightEntry entry) async {
+    deletedEntries.add(entry);
+    entries.removeWhere((existing) => existing.storageId == entry.storageId);
+  }
+
+  @override
+  Future<void> updateEntry(
+    ManualHealthWeightEntry previous,
+    ManualHealthWeightEntry next,
+  ) async {
+    entries.removeWhere((existing) => existing.storageId == previous.storageId);
+    await saveEntry(next);
   }
 
   @override
@@ -397,9 +409,9 @@ class FakeManualHealthWeightRepository implements ManualHealthWeightRepository {
   @override
   Future<bool> saveEntry(ManualHealthWeightEntry entry) async {
     entries
-      ..removeWhere((existing) => isSameDiaryDay(existing.day, entry.day))
+      ..removeWhere((existing) => existing.storageId == entry.storageId)
       ..add(entry)
-      ..sort((left, right) => left.day.compareTo(right.day));
+      ..sort((left, right) => left.at.compareTo(right.at));
     return true;
   }
 }
