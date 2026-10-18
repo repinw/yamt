@@ -161,29 +161,14 @@ void main() {
     expect(items?.single.quantity, 2);
   });
 
-  test('addItemsByNames saves multiple labels in one mutation', () async {
-    final repository = FakeShoppingListRepository();
-    final container = await _createContainer(repository);
-    final controller = container.read(shoppingListControllerProvider.notifier);
-
-    final added = await controller.addItemsByNames(<String>['Mehl', 'Milch']);
-
-    final items = container.read(shoppingListControllerProvider).asData?.value;
-    expect(added, isNotNull);
-    expect(items?.map((item) => item.name), <String>['Mehl', 'Milch']);
-    expect(repository.savedItems.map((item) => item.name), <String>[
-      'Mehl',
-      'Milch',
-    ]);
-  });
-
   test('revert removes new entries and restores merged ones', () async {
     final repository = FakeShoppingListRepository();
     final container = await _createContainer(repository);
     final controller = container.read(shoppingListControllerProvider.notifier);
     await controller.addItem(name: 'Mehl');
 
-    final revert = await controller.addItemsByNames(<String>['Mehl', 'Milch']);
+    final merged = await controller.addItemWithRevert(name: 'Mehl');
+    final added = await controller.addItemWithRevert(name: 'Milch');
     expect(
       container
           .read(shoppingListControllerProvider)
@@ -193,9 +178,8 @@ void main() {
       [('Mehl', 2), ('Milch', 1)],
     );
 
-    final reverted = await controller.revert(revert!);
-
-    expect(reverted, isTrue);
+    expect(await controller.revert(added!), isTrue);
+    expect(await controller.revert(merged!), isTrue);
     expect(
       container
           .read(shoppingListControllerProvider)
@@ -359,26 +343,6 @@ void main() {
     final items = container.read(shoppingListControllerProvider).asData?.value;
     expect(items, hasLength(1));
     expect(items?.single.quantity, 2);
-  });
-
-  test('resolveItemsByIds decrements and removes in one save', () async {
-    final repository = FakeShoppingListRepository(
-      initialItems: <ShoppingListItem>[
-        _item('a', quantity: 2),
-        _item('b', name: 'Bread'),
-        _item('c', name: 'Eggs', quantity: 3),
-      ],
-    );
-    final container = await _createContainer(repository);
-    final controller = container.read(shoppingListControllerProvider.notifier);
-
-    final result = await controller.resolveItemsByIds(<String>['a', 'b']);
-
-    final items = container.read(shoppingListControllerProvider).asData?.value;
-    expect(result, isTrue);
-    expect(items?.map((item) => item.id), <String>['a', 'c']);
-    expect(items?.first.quantity, 1);
-    expect(repository.savedItems.map((item) => item.id), <String>['a', 'c']);
   });
 
   test('clearCrossedOffItems removes only items with quantity zero', () async {

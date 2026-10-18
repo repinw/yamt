@@ -1,6 +1,5 @@
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
-import 'package:yamt/features/inventory/application/prepared_meal_from_items.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
@@ -29,7 +28,6 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
   required Map<String, RecipeIngredientAmountConversion>
   recipeIngredientAmountConversions,
   required TemplateIngredientParser ingredientParser,
-  Map<String, String> sourceKeysByIngredient = const <String, String>{},
 }) {
   final activeIngredients = template.recipeIngredients
       .where(
@@ -44,20 +42,13 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
 
   final nextItems = List<InventoryItem>.from(currentItems);
   final components = <PreparedMealComponent>[];
-  final componentSourceKeys = <String>[];
   final pendingIngredients = <String>[];
-  final pendingIngredientSourceKeys = <String>[];
 
   for (final ingredient in activeIngredients) {
-    void addPending(String label) {
-      pendingIngredients.add(label);
-      pendingIngredientSourceKeys.add(sourceKeysByIngredient[ingredient] ?? '');
-    }
-
     final assignedItemIds =
         recipeIngredientAssignments[ingredient] ?? const <String>[];
     if (assignedItemIds.isEmpty) {
-      addPending(
+      pendingIngredients.add(
         ingredientParser.pendingIngredientLabel(
           originalIngredient: ingredient,
           requirement: ingredientParser.parseRequirement(
@@ -76,7 +67,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
       basePortions: template.totalPortions,
     );
     if (requirement == null) {
-      addPending(ingredient.trim());
+      pendingIngredients.add(ingredient.trim());
       continue;
     }
 
@@ -93,7 +84,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
       ),
     );
     if (effectiveRequirement == null) {
-      addPending(
+      pendingIngredients.add(
         ingredientParser.pendingIngredientLabel(
           originalIngredient: ingredient,
           requirement: requirement,
@@ -171,13 +162,12 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
           ),
         ),
       );
-      componentSourceKeys.add(sourceKeysByIngredient[ingredient] ?? '');
       remainingAmount = nextRemainingAmount;
       consumedAnyAmount = true;
     }
 
     if (!consumedAnyAmount) {
-      addPending(
+      pendingIngredients.add(
         ingredientParser.pendingIngredientLabel(
           originalIngredient: ingredient,
           requirement: requirement,
@@ -187,7 +177,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
     }
 
     if (remainingAmount > 0) {
-      addPending(
+      pendingIngredients.add(
         ingredientParser.formatPendingIngredient(
           amount: remainingAmount,
           unit: effectiveRequirement.unit.toTemplateIngredientUnit(),
@@ -200,8 +190,6 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
   final nutritionTotals = components.nutritionTotals;
   return PreparedMealBuildResult(
     nextItems: nextItems,
-    componentSourceKeys: componentSourceKeys,
-    pendingIngredientSourceKeys: pendingIngredientSourceKeys,
     preparedMeal: PreparedMeal(
       id: preparedMealId,
       name: template.name,
@@ -237,44 +225,4 @@ RecipeIngredientAmountConversion? _assignmentAmountConversionForIngredient(
     return null;
   }
   return conversions[normalizedIngredient];
-}
-
-/// Adds the Vorrat [additionalItems] to the meal of [creationResult].
-PreparedMealBuildResult appendItemsToTemplateMeal({
-  required PreparedMealBuildResult creationResult,
-  required List<PreparedMealItemInput> additionalItems,
-  required DateTime now,
-  required String Function() buildId,
-  required PreparedMeal template,
-  required int totalPortions,
-}) {
-  final extraItemsResult = buildPreparedMealCreationResult(
-    currentItems: creationResult.nextItems,
-    preparedMealId: buildId(),
-    now: now,
-    name: template.name,
-    imageAssetId: template.imageAssetId,
-    totalPortions: totalPortions,
-    inputs: additionalItems,
-  );
-  final baseMeal = creationResult.preparedMeal;
-  final extraMeal = extraItemsResult.preparedMeal;
-  return PreparedMealBuildResult(
-    nextItems: extraItemsResult.nextItems,
-    componentSourceKeys: <String>[
-      ...creationResult.componentSourceKeys,
-      ...extraItemsResult.componentSourceKeys,
-    ],
-    pendingIngredientSourceKeys: creationResult.pendingIngredientSourceKeys,
-    preparedMeal: baseMeal.copyWith(
-      totalKcal: baseMeal.totalKcal + extraMeal.totalKcal,
-      totalProtein: baseMeal.totalProtein + extraMeal.totalProtein,
-      totalCarbs: baseMeal.totalCarbs + extraMeal.totalCarbs,
-      totalFat: baseMeal.totalFat + extraMeal.totalFat,
-      components: <PreparedMealComponent>[
-        ...baseMeal.components,
-        ...extraMeal.components,
-      ],
-    ),
-  );
 }
