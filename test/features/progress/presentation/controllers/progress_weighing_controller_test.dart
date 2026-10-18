@@ -17,11 +17,20 @@ import '../../../../helpers/fake_health_weight_sample_repository.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
 class _ThrowingHealthConnectionService extends FakeHealthConnectionService {
-  _ThrowingHealthConnectionService()
-    : super(const HealthConnectionStatus.unsupported());
+  new() : super(const HealthConnectionStatus.unsupported());
 
   @override
   Future<void> openHealthApp() async => throw StateError('no Health app');
+}
+
+class _UnreadableHealthWeightService extends FakeHealthWeightService {
+  new() : super(const []);
+
+  @override
+  Future<List<HealthWeightSample>> loadWeightSamples({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async => throw StateError('no Health access');
 }
 
 final _morning = DateTime(2026, 10, 18, 7, 30);
@@ -74,7 +83,7 @@ void main() {
   late ProviderContainer container;
   late List<AsyncValue<void>> states;
 
-  ProviderContainer _container({HealthConnectionService? service}) {
+  ProviderContainer container0({HealthConnectionService? service}) {
     final result = ProviderContainer(
       overrides: [
         clockProvider.overrideWithValue(() => _morning),
@@ -86,7 +95,7 @@ void main() {
         ),
         calorieWeightStateRefreshProvider.overrideWith(
           (ref) =>
-              ({required DateTime day}) async => refreshedDays.add(day),
+              ({required day}) async => refreshedDays.add(day),
         ),
       ],
     );
@@ -109,7 +118,7 @@ void main() {
       const HealthConnectionStatus.unsupported(),
     );
     refreshedDays = [];
-    container = _container();
+    container = container0();
   });
 
   tearDown(() => cloud.dispose());
@@ -132,10 +141,17 @@ void main() {
           uuid: 'health-1',
         ),
       ]);
-      container = _container();
+      container = container0();
       expect(await controller().canChange(_health(own)), isTrue);
     },
   );
+
+  test('canChange is null when Health cannot be read', () async {
+    health = _UnreadableHealthWeightService();
+    container = container0();
+
+    expect(await controller().canChange(_health(own)), isNull);
+  });
 
   test(
     'save changes a manual entry and refreshes from the earlier day',
@@ -190,7 +206,7 @@ void main() {
         uuid: 'health-1',
       ),
     ]);
-    container = _container();
+    container = container0();
 
     final saved = await controller().save(
       _health(own),
@@ -206,7 +222,7 @@ void main() {
   });
 
   test(
-    'save fails without a refresh when this device lacks the weighing',
+    'save keeps the old weighing when this device cannot delete it',
     () async {
       final saved = await controller().save(
         _health(own),
@@ -214,9 +230,11 @@ void main() {
         weightKg: 81.5,
       );
 
-      expect(saved, isFalse);
-      expect(refreshedDays, isEmpty);
-      expect(manual.entries, [entry]);
+      // The new weighing is stored first, so both stay visible.
+      expect(saved, isTrue);
+      expect(manual.entries, hasLength(2));
+      expect(cloud.samples, contains(own));
+      expect(refreshedDays, [DateTime(2026, 10, 16)]);
     },
   );
 
@@ -265,7 +283,7 @@ void main() {
   });
 
   test('openHealth is false when Health cannot open', () async {
-    container = _container(service: _ThrowingHealthConnectionService());
+    container = container0(service: _ThrowingHealthConnectionService());
 
     expect(await controller().openHealth(), isFalse);
   });

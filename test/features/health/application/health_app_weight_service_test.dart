@@ -6,11 +6,7 @@ import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import '../../../helpers/fake_health_weight_sample_repository.dart';
 
 class _FakeHealthWeightService implements HealthWeightService {
-  _FakeHealthWeightService({
-    this.local = const [],
-    this.saves = true,
-    this.deletes = true,
-  });
+  new({this.local = const [], this.saves = true, this.deletes = true});
 
   final List<HealthWeightSample> local;
   final bool saves;
@@ -97,7 +93,7 @@ void main() {
         local: [_own(at: DateTime(2026, 10, 18, 7, 30, 59), kg: 80.401)],
       );
 
-      final found = await service(health).isOnThisDevice(_own(kg: 80.4));
+      final found = await service(health).isOnThisDevice(_own());
 
       expect(found, isTrue);
       expect(health.loadedRanges.single, (
@@ -130,6 +126,15 @@ void main() {
 
       expect(health.deleted.single.uuid, 'health-1');
       expect(cloud.samples, isEmpty);
+    });
+
+    test('still counts as deleted when the cloud copy fails', () async {
+      cloud = FakeHealthWeightSampleRepository([_own()])..failChanges = true;
+      final health = _FakeHealthWeightService(local: [_own(uuid: 'health-1')]);
+
+      await service(health).delete(_own());
+
+      expect(health.deleted.single.uuid, 'health-1');
     });
 
     test('throws and keeps the copy when this device lacks it', () async {

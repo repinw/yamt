@@ -9,9 +9,8 @@ import 'package:yamt/features/health/domain/health_weight_sample.dart';
 class FakeHealthWeightSampleRepository extends Fake
     implements HealthWeightSampleRepository {
   /// Creates the repository holding [samples].
-  FakeHealthWeightSampleRepository([
-    Iterable<HealthWeightSample> samples = const [],
-  ]) : _samples = [...samples];
+  new([Iterable<HealthWeightSample> samples = const []])
+    : _samples = [...samples];
 
   final List<HealthWeightSample> _samples;
   final _changes = StreamController<void>.broadcast();
