@@ -221,6 +221,15 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
           failureMessage: AppLocalizations.of(context)!
               .preparedMealPendingIngredientFillFailed,
         );
+      case PreparedMealPendingFillShoppingList():
+        await _run(
+          () => ref
+              .read(preparedMealsControllerProvider.notifier)
+              .putPendingIngredientOnShoppingList(ingredient),
+          failureMessage: AppLocalizations.of(context)!
+              .preparedMealFillShoppingListFailed,
+          successMessage: AppLocalizations.of(context)!.eatPageOnShoppingList,
+        );
       case PreparedMealPendingFillIgnore():
         await _ignore(meal, ingredient);
     }
@@ -250,12 +259,13 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
       ref.read(inventoryItemsControllerProvider).value ??
       const <InventoryItem>[];
 
-  /// Runs [action] and shows [failureMessage] when it fails or throws. When
-  /// the page has closed in the meantime, the message shows on the page
-  /// below.
+  /// Runs [action] and shows [failureMessage] when it fails or throws, or
+  /// [successMessage] when it works. When the page has closed in the
+  /// meantime, the message shows on the page below.
   Future<bool> _run(
     Future<bool> Function() action, {
     String? failureMessage,
+    String? successMessage,
   }) async {
     final message =
         failureMessage ??
@@ -272,11 +282,13 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
     if (mounted) {
       setState(() => _isWorking = false);
     }
-    if (success) return true;
     final messenger = pageMessenger.mounted ? pageMessenger : belowMessenger;
-    if (messenger.mounted) {
+    if (!messenger.mounted) return success;
+    if (!success) {
       messenger.showAppSnackBar(message, tone: AppSnackBarTone.error);
+    } else if (successMessage != null) {
+      messenger.showAppSnackBar(successMessage);
     }
-    return false;
+    return success;
   }
 }

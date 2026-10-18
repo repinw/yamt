@@ -15,6 +15,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/shoppinglist/application/'
+    'shopping_list_names_service.dart';
 
 export 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart'
@@ -219,6 +221,22 @@ class PreparedMealsController extends _$PreparedMealsController {
     await service.changeWeight(meal: meal, netWeight: netWeight);
     return true;
   }, failed: false);
+
+  /// Puts the row [ingredient] on the shopping list; the meal keeps it.
+  Future<bool> putPendingIngredientOnShoppingList(String ingredient) async {
+    final link = ref.keepAlive();
+    final shopping = ref.listen(shoppingListNamesServiceProvider, (_, _) {});
+    try {
+      await shopping.read().addMissing([ingredient]);
+      return true;
+    } on Object catch (error, stackTrace) {
+      log('Row stayed off the list.', error: error, stackTrace: stackTrace);
+      return false;
+    } finally {
+      shopping.close();
+      link.close();
+    }
+  }
 
   /// Runs [mutation], which changes the rows of the meal [mealId], and
   /// then brings the meal's plans in step with its rows

@@ -10196,6 +10196,24 @@ abstract class AppLocalizations {
   /// **'Estimate from a photo or text'**
   String get preparedMealFillAiDescription;
 
+  /// No description provided for @preparedMealFillShoppingList.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to shopping list'**
+  String get preparedMealFillShoppingList;
+
+  /// No description provided for @preparedMealFillShoppingListFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not put the row on the shopping list.'**
+  String get preparedMealFillShoppingListFailed;
+
+  /// No description provided for @preparedMealFillShoppingListDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The row stays as it is'**
+  String get preparedMealFillShoppingListDescription;
+
   /// No description provided for @preparedMealFillIgnore.
   ///
   /// In en, this message translates to:

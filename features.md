@@ -573,7 +573,10 @@ and feature description docs. This is product-facing; architecture rules stay in
 - "Zutat ergänzen" opens the "Zeile füllen" sheet: when the row has an
   amount, the best Vorrat match comes first with how much is left and
   "Übernehmen", which uses the row's amount. Below it: "Vorrat" (pick other
-  Vorrat foods), "Suche", "Barcode", "KI", and "Zeile ignorieren". Search,
+  Vorrat foods), "Suche", "Barcode", "KI", "Auf die Einkaufsliste", and
+  "Zeile ignorieren". "Auf die Einkaufsliste" puts the row's text on the
+  shopping list as it is written, unless that text is listed already, and
+  leaves the row as it is; ignored rows offer it too. Search,
   barcode, and AI open the food pick at that tool; the found food's eat page
   asks the amount, the food is added to the Vorrat with exactly that amount
   and used up for the row. This also fills rows without an amount ("Salz").

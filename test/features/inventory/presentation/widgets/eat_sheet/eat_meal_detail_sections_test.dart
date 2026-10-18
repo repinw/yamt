@@ -20,9 +20,11 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_meal_ingredients_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_fill_sheet.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../../helpers/inventory_item_whole_list_writes.dart';
+import '../../../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 final _now = DateTime.utc(2026, 10, 10, 19);
 
@@ -120,6 +122,56 @@ void main() {
     // It is ignored already.
     expect(find.byKey(PreparedMealPendingFillSheet.ignoreKey), findsNothing);
   });
+
+  testWidgets('an open row goes on the shopping list and stays open', (
+    tester,
+  ) async {
+    final list = FakeShoppingListRepository();
+    await _openDetail(
+      tester,
+      _Meals(_meal(open: const ['Salz'])),
+      _actions(),
+      list: list,
+    );
+
+    await _tap(tester, find.byKey(EatMealIngredientsBox.fillKey('Salz')));
+    await _tap(
+      tester,
+      find.byKey(PreparedMealPendingFillSheet.shoppingListKey),
+    );
+
+    expect(list.savedItems.map((item) => item.name), ['Salz']);
+    expect(
+      find.byKey(EatMealIngredientsBox.openRowKey('Salz')),
+      findsOneWidget,
+    );
+    expect(find.text('On the shopping list'), findsOneWidget);
+  });
+
+  testWidgets('a failed shopping list write says so', (tester) async {
+    final list = FakeShoppingListRepository()..saveAllShouldThrow = true;
+    await _openDetail(
+      tester,
+      _Meals(_meal(open: const ['Salz'])),
+      _actions(),
+      list: list,
+    );
+
+    await _tap(tester, find.byKey(EatMealIngredientsBox.fillKey('Salz')));
+    await _tap(
+      tester,
+      find.byKey(PreparedMealPendingFillSheet.shoppingListKey),
+    );
+
+    expect(
+      find.text('Could not put the row on the shopping list.'),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(EatMealIngredientsBox.openRowKey('Salz')),
+      findsOneWidget,
+    );
+  });
 }
 
 Future<void> _tap(WidgetTester tester, Finder finder) async {
@@ -132,9 +184,12 @@ Future<void> _tap(WidgetTester tester, Finder finder) async {
 Future<void> _openDetail(
   WidgetTester tester,
   _Meals meals,
-  PreparedMealActions actions,
-) async {
+  PreparedMealActions actions, {
+  FakeShoppingListRepository? list,
+}) async {
   addTearDown(meals.dispose);
+  final shoppingList = list ?? FakeShoppingListRepository();
+  addTearDown(shoppingList.dispose);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -147,6 +202,7 @@ Future<void> _openDetail(
         firebaseFirestoreProvider.overrideWith((ref) => null),
         preparedMealRepositoryProvider.overrideWithValue(meals),
         inventoryItemRepositoryProvider.overrideWithValue(_Items()),
+        shoppingListRepositoryProvider.overrideWithValue(shoppingList),
       ],
       child: MaterialApp(
         locale: const Locale('en'),
