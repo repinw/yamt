@@ -16,12 +16,15 @@ import 'memory_app_preferences.dart';
 /// Backs the settings profile summary with fake data sources: calorie
 /// settings, the user's name, and manual weigh-ins without Health access.
 /// The weigh-ins load once [weighInsReady] completes, when it is given.
+/// Health is unsupported unless [healthStatus] says otherwise.
 List<Override> profileSummarySourceOverrides({
   required CalorieSettingsRepository settingsRepository,
   required DateTime now,
   String? displayName,
   List<ManualHealthWeightEntry> weighIns = const [],
   Future<void>? weighInsReady,
+  HealthConnectionStatus healthStatus =
+      const HealthConnectionStatus.unsupported(),
 }) {
   return [
     appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
@@ -31,9 +34,7 @@ List<Override> profileSummarySourceOverrides({
       (ref) => Stream.value(UserProfile(uid: 'u1', displayName: displayName)),
     ),
     healthConnectionServiceProvider.overrideWith(
-      (ref) => FakeHealthConnectionService(
-        const HealthConnectionStatus.unsupported(),
-      ),
+      (ref) => FakeHealthConnectionService(healthStatus),
     ),
     healthWeightServiceProvider.overrideWith(
       (ref) => FakeHealthWeightService(const []),

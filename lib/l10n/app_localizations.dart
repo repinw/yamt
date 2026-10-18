@@ -11305,6 +11305,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Compare before and after'**
   String get progressPhotoCompareSlider;
+
+  /// No description provided for @progressWeightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weights'**
+  String get progressWeightsTitle;
+
+  /// No description provided for @progressWeightsAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All weights'**
+  String get progressWeightsAll;
+
+  /// No description provided for @progressWeightsRangeGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get progressWeightsRangeGoal;
+
+  /// No description provided for @progressWeightsRangeFourWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'4 weeks'**
+  String get progressWeightsRangeFourWeeks;
+
+  /// No description provided for @progressWeightsRangeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get progressWeightsRangeAll;
+
+  /// No description provided for @progressWeightsSinceGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Since goal start {date}'**
+  String progressWeightsSinceGoal(String date);
+
+  /// No description provided for @progressWeightsSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Since {date}'**
+  String progressWeightsSince(String date);
+
+  /// No description provided for @progressWeightsTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend {kg} kg'**
+  String progressWeightsTrend(String kg);
+
+  /// No description provided for @progressWeightsToTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{kg} kg to goal'**
+  String progressWeightsToTarget(String kg);
+
+  /// No description provided for @progressWeightsTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {kg} kg'**
+  String progressWeightsTarget(String kg);
+
+  /// No description provided for @progressWeightsRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Run {number} · since {date}'**
+  String progressWeightsRun(int number, String date);
+
+  /// No description provided for @progressWeightsRunTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend {trend} kg · {change} kg'**
+  String progressWeightsRunTrend(String trend, String change);
+
+  /// No description provided for @progressWeightsSourceManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get progressWeightsSourceManual;
+
+  /// No description provided for @progressWeightsSourceScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale'**
+  String get progressWeightsSourceScale;
+
+  /// No description provided for @progressWeightsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No weights in this period yet.'**
+  String get progressWeightsEmpty;
+
+  /// No description provided for @progressWeightsHealthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take weights from your scale'**
+  String get progressWeightsHealthTitle;
+
+  /// No description provided for @progressWeightsHealthBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Health and the weights of your scale arrive on their own.'**
+  String get progressWeightsHealthBody;
+
+  /// No description provided for @progressWeightsHealthConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Health'**
+  String get progressWeightsHealthConnect;
+
+  /// No description provided for @progressWeightsHealthDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get progressWeightsHealthDismiss;
 }
 
 class _AppLocalizationsDelegate

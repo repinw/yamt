@@ -6787,4 +6787,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get progressPhotoCompareSlider => 'Compare before and after';
+
+  @override
+  String get progressWeightsTitle => 'Weights';
+
+  @override
+  String get progressWeightsAll => 'All weights';
+
+  @override
+  String get progressWeightsRangeGoal => 'Goal';
+
+  @override
+  String get progressWeightsRangeFourWeeks => '4 weeks';
+
+  @override
+  String get progressWeightsRangeAll => 'All';
+
+  @override
+  String progressWeightsSinceGoal(String date) {
+    return 'Since goal start $date';
+  }
+
+  @override
+  String progressWeightsSince(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String progressWeightsTrend(String kg) {
+    return 'Trend $kg kg';
+  }
+
+  @override
+  String progressWeightsToTarget(String kg) {
+    return '$kg kg to goal';
+  }
+
+  @override
+  String progressWeightsTarget(String kg) {
+    return 'Goal $kg kg';
+  }
+
+  @override
+  String progressWeightsRun(int number, String date) {
+    return 'Run $number · since $date';
+  }
+
+  @override
+  String progressWeightsRunTrend(String trend, String change) {
+    return 'Trend $trend kg · $change kg';
+  }
+
+  @override
+  String get progressWeightsSourceManual => 'Manual';
+
+  @override
+  String get progressWeightsSourceScale => 'Scale';
+
+  @override
+  String get progressWeightsEmpty => 'No weights in this period yet.';
+
+  @override
+  String get progressWeightsHealthTitle => 'Take weights from your scale';
+
+  @override
+  String get progressWeightsHealthBody =>
+      'Connect Health and the weights of your scale arrive on their own.';
+
+  @override
+  String get progressWeightsHealthConnect => 'Connect Health';
+
+  @override
+  String get progressWeightsHealthDismiss => 'Hide';
 }

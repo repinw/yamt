@@ -4152,5 +4152,79 @@
     }
   },
   "progressPhotoCompareTitle": "Compare",
-  "progressPhotoCompareSlider": "Compare before and after"
+  "progressPhotoCompareSlider": "Compare before and after",
+  "progressWeightsTitle": "Weights",
+  "progressWeightsAll": "All weights",
+  "progressWeightsRangeGoal": "Goal",
+  "progressWeightsRangeFourWeeks": "4 weeks",
+  "progressWeightsRangeAll": "All",
+  "progressWeightsSinceGoal": "Since goal start {date}",
+  "@progressWeightsSinceGoal": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsSince": "Since {date}",
+  "@progressWeightsSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsTrend": "Trend {kg} kg",
+  "@progressWeightsTrend": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsToTarget": "{kg} kg to goal",
+  "@progressWeightsToTarget": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsTarget": "Goal {kg} kg",
+  "@progressWeightsTarget": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsRun": "Run {number} · since {date}",
+  "@progressWeightsRun": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsRunTrend": "Trend {trend} kg · {change} kg",
+  "@progressWeightsRunTrend": {
+    "placeholders": {
+      "trend": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsSourceManual": "Manual",
+  "progressWeightsSourceScale": "Scale",
+  "progressWeightsEmpty": "No weights in this period yet.",
+  "progressWeightsHealthTitle": "Take weights from your scale",
+  "progressWeightsHealthBody": "Connect Health and the weights of your scale arrive on their own.",
+  "progressWeightsHealthConnect": "Connect Health",
+  "progressWeightsHealthDismiss": "Hide"
 }

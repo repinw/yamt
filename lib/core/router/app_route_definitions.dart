@@ -41,6 +41,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/progress/presentation/progress_photo_compare_page.dart';
 import 'package:yamt/features/progress/presentation/progress_photo_viewer_page.dart';
 import 'package:yamt/features/progress/presentation/progress_photos_page.dart';
+import 'package:yamt/features/progress/presentation/progress_weights_page.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
@@ -169,6 +170,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.homeProgressPhotos,
       builder: (context, state) => const ProgressPhotosPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.homeProgressWeights,
+      builder: (context, state) => const ProgressWeightsPage(),
     ),
     GoRoute(
       path: AppRoutes.homeProgressPhotoViewer,

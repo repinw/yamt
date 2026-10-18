@@ -264,6 +264,38 @@ void main() {
     },
   );
 
+  test('requestAccess takes the step that the status needs', () async {
+    Future<_FakeHealthConnectionService> requestWith(
+      HealthConnectionStatus status,
+    ) async {
+      final service = _FakeHealthConnectionService()..status = status;
+      final container = _createContainer(service);
+      final sub = container.listen(
+        healthConnectionControllerProvider,
+        (_, _) {},
+      );
+      addTearDown(sub.close);
+      await container.read(healthConnectionControllerProvider.future);
+      await container
+          .read(healthConnectionControllerProvider.notifier)
+          .requestAccess();
+      return service;
+    }
+
+    final install = await requestWith(_installRequiredStatus);
+    expect(install.installHealthConnectCallCount, 1);
+    expect(install.requestAuthorizationCallCount, 0);
+
+    final denied = await requestWith(
+      _permissionRequiredStatus.copyWith(errorMessage: 'denied'),
+    );
+    expect(denied.openHealthPermissionSettingsCallCount, 1);
+    expect(denied.requestAuthorizationCallCount, 0);
+
+    final fresh = await requestWith(_permissionRequiredStatus);
+    expect(fresh.requestAuthorizationCallCount, 1);
+  });
+
   test('installHealthConnect stays loading until install finishes', () async {
     final installCompleter = Completer<void>();
     final service = _FakeHealthConnectionService()

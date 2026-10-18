@@ -130,6 +130,9 @@ abstract final class AppRoutes {
   /// All progress photos, grouped by goal.
   static const homeProgressPhotos = '/home/progress/photos';
 
+  /// Every weighing with the weight trend, grouped by 7-day runs.
+  static const homeProgressWeights = '/home/progress/weights';
+
   /// The before and after comparison of the progress photos.
   static const homeProgressPhotoCompare = '/home/progress/photos/compare';
 

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -258,5 +260,49 @@ void main() {
       find.descendant(of: tile, matching: find.text('Mi · Do · Mo')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the weight card opens all weights', (tester) async {
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2100,
+        calculatorProfile: const CalorieCalculatorProfile.defaults(),
+        effectiveDate: DateTime(2026, 9),
+      ),
+    );
+    addTearDown(repository.dispose);
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (context, state) => const ProfilePage()),
+        GoRoute(
+          path: AppRoutes.homeProgressWeights,
+          builder: (context, state) =>
+              const Scaffold(body: Text(AppRoutes.homeProgressWeights)),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: profileSummarySourceOverrides(
+          settingsRepository: repository,
+          now: DateTime(2026, 9, 24, 10),
+        ),
+        child: MaterialApp.router(
+          locale: const Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(ProfileWeightCard.allWeightsKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ProfileWeightCard.allWeightsKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppRoutes.homeProgressWeights), findsOneWidget);
   });
 }

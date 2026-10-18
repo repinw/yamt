@@ -3224,5 +3224,79 @@
   "progressPhotoMissing": "Dieses Foto gibt es nicht mehr.",
   "progressPhotoViewerCaption": "{pose} · {caption}",
   "progressPhotoCompareTitle": "Vergleich",
-  "progressPhotoCompareSlider": "Vorher und Nachher vergleichen"
+  "progressPhotoCompareSlider": "Vorher und Nachher vergleichen",
+  "progressWeightsTitle": "Gewichte",
+  "progressWeightsAll": "Alle Gewichte",
+  "progressWeightsRangeGoal": "Ziel",
+  "progressWeightsRangeFourWeeks": "4 Wochen",
+  "progressWeightsRangeAll": "Alles",
+  "progressWeightsSinceGoal": "Seit Zielstart {date}",
+  "@progressWeightsSinceGoal": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsSince": "Seit {date}",
+  "@progressWeightsSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsTrend": "Trend {kg} kg",
+  "@progressWeightsTrend": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsToTarget": "noch {kg} kg bis zum Ziel",
+  "@progressWeightsToTarget": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsTarget": "Ziel {kg} kg",
+  "@progressWeightsTarget": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsRun": "Run {number} · seit {date}",
+  "@progressWeightsRun": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsRunTrend": "Trend {trend} kg · {change} kg",
+  "@progressWeightsRunTrend": {
+    "placeholders": {
+      "trend": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightsSourceManual": "Von Hand",
+  "progressWeightsSourceScale": "Waage",
+  "progressWeightsEmpty": "In diesem Zeitraum gibt es noch keine Gewichte.",
+  "progressWeightsHealthTitle": "Waage automatisch übernehmen",
+  "progressWeightsHealthBody": "Verbinde Health, dann kommen die Gewichte deiner Waage von selbst.",
+  "progressWeightsHealthConnect": "Health verbinden",
+  "progressWeightsHealthDismiss": "Ausblenden"
 }
