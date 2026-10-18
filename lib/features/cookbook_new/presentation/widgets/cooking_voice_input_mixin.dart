@@ -21,8 +21,9 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
   bool _awaitsFinal = false;
   int _silentRestarts = 0;
 
-  /// What the microphone hears before it is final.
-  String? pendingSpeech;
+  /// What the microphone hears before it is final. Only the widgets that
+  /// show it listen, so a partial result does not rebuild the page.
+  final pendingSpeech = ValueNotifier<String?>(null);
 
   /// The voice service, read once when the page opens.
   VoiceSearchService get voiceService;
@@ -59,7 +60,7 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
     _awaitsFinal = true;
     await voiceService.stopListening();
     if (mounted) {
-      setState(() => pendingSpeech = null);
+      pendingSpeech.value = null;
     }
   }
 
@@ -69,9 +70,9 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
   Future<void> finishListening() async {
     _keepsListening = false;
     _awaitsFinal = false;
-    final pending = pendingSpeech;
+    final pending = pendingSpeech.value;
     if (pending != null) {
-      setState(() => pendingSpeech = null);
+      pendingSpeech.value = null;
       onSpokenText(pending);
     }
     if (isListening) {
@@ -97,13 +98,15 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
     unawaited(voiceService.cancelListening());
   }
 
+  @override
+  void dispose() {
+    pendingSpeech.dispose();
+    super.dispose();
+  }
+
   Future<void> _listen() async {
     setState(() => isStartingVoiceSearch = true);
-    final failure = await voiceService.startListening(
-      onResult: _onSpeech,
-      onListeningStateChanged: _onListeningChanged,
-      onError: _onVoiceError,
-    );
+    final failure = await startVoiceInput(voiceService, onResult: _onSpeech);
     if (!mounted) {
       // The page closed while listening was starting.
       if (failure == null) {
@@ -121,15 +124,21 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
       isListeningToSpeech = failure == null && !stopped;
     });
     if (failure != null && !stopped) {
-      _onVoiceError(failure);
+      handleVoiceError(failure);
     }
   }
 
-  void _onListeningChanged(bool isListening) {
+  @override
+  void handleVoiceListeningChanged({required bool isListening}) {
+    // While starting, _listen sets the flags once the start returns; a
+    // restart now would overlap the session that is starting.
+    if (isStartingVoiceSearch) {
+      return;
+    }
+    super.handleVoiceListeningChanged(isListening: isListening);
     if (isDisposingVoiceInput || !mounted) {
       return;
     }
-    setState(() => isListeningToSpeech = isListening);
     // A pause or silence ends one recognition. Listening goes on until the
     // cook taps, but stops after about a minute of silence.
     if (!isListening && _keepsListening) {
@@ -151,18 +160,15 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
     unawaited(_listen());
   }
 
-  void _onVoiceError(VoiceSearchFailure failure) {
+  @override
+  void handleVoiceError(VoiceSearchFailure failure) {
     if (isDisposingVoiceInput || !mounted) {
       return;
     }
     _keepsListening = false;
     _awaitsFinal = false;
-    setState(() {
-      isListeningToSpeech = false;
-      isStartingVoiceSearch = false;
-      pendingSpeech = null;
-    });
-    showVoiceInputFailure(failure);
+    pendingSpeech.value = null;
+    super.handleVoiceError(failure);
   }
 
   void _onSpeech(VoiceSearchRecognition result) {
@@ -173,12 +179,12 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
       return;
     }
     if (!result.isFinal) {
-      setState(() => pendingSpeech = result.transcript);
+      pendingSpeech.value = result.transcript;
       return;
     }
     _awaitsFinal = false;
     _silentRestarts = 0;
-    setState(() => pendingSpeech = null);
+    pendingSpeech.value = null;
     onSpokenText(result.transcript);
   }
 

@@ -141,12 +141,15 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
               FreeCookingHeader(nameController: _nameController, rows: rows),
               Expanded(
                 child: rowsAsync.when(
-                  data: (rows) => FreeCookingRowList(
-                    rows: rows,
-                    pendingText: pendingSpeech,
-                    onRemove: (index) => ref
-                        .read(freeCookingControllerProvider.notifier)
-                        .removeRow(index),
+                  data: (rows) => ValueListenableBuilder(
+                    valueListenable: pendingSpeech,
+                    builder: (context, pending, _) => FreeCookingRowList(
+                      rows: rows,
+                      pendingText: pending,
+                      onRemove: (index) => ref
+                          .read(freeCookingControllerProvider.notifier)
+                          .removeRow(index),
+                    ),
                   ),
                   loading: () => const AppLoadingView(),
                   error: (_, _) => AppErrorRetryView(
