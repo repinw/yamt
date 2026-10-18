@@ -10898,6 +10898,12 @@ abstract class AppLocalizations {
   /// **'Not from stock'**
   String get recipeNotFromStock;
 
+  /// No description provided for @cookedDoneElsewhere.
+  ///
+  /// In en, this message translates to:
+  /// **'This meal is already cooked and in your stock.'**
+  String get cookedDoneElsewhere;
+
   /// No description provided for @cookedLoadFailed.
   ///
   /// In en, this message translates to:

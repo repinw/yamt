@@ -22,21 +22,42 @@ abstract final class PreparedMealGoneFlow {
     });
   }
 
+  /// Closes the page of the meal [mealId] at [context] with [message] when
+  /// the meal leaves the pot while the page is open, for example because
+  /// another device cooked it, but not while [unless] holds. The snack bar
+  /// gets [key].
+  static void closeWhenOutOfPot(
+    WidgetRef ref,
+    BuildContext context,
+    String mealId, {
+    required String message,
+    required bool Function() unless,
+    Key? key,
+  }) {
+    ref.listen(livePreparedMealProvider(mealId), (previous, next) {
+      if ((previous?.value?.isInPot ?? false) &&
+          next.value?.isInPot == false &&
+          !unless()) {
+        close(context, message: message, key: key);
+      }
+    });
+  }
+
   /// Closes the page of a meal that is gone, together with every sheet or
-  /// dialog open on top of it, and shows "Mahlzeit nicht mehr im Vorrat".
-  /// Does nothing when the page is already closing, for example because a
-  /// meal page below it closed it first.
-  static void close(BuildContext context) {
+  /// dialog open on top of it, and shows [message], by default "Mahlzeit
+  /// nicht mehr im Vorrat". Does nothing when the page is already closing,
+  /// for example because a meal page below it closed it first.
+  static void close(BuildContext context, {String? message, Key? key}) {
     final route = ModalRoute.of(context);
     if (route == null || !route.isActive) {
       return;
     }
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    final message = AppLocalizations.of(context)!.preparedMealGone;
+    final text = message ?? AppLocalizations.of(context)!.preparedMealGone;
     navigator
       ..popUntil((top) => top == route)
       ..pop();
-    messenger.showAppSnackBar(message);
+    messenger.showAppSnackBar(text, key: key);
   }
 }

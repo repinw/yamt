@@ -20,6 +20,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_save_bar.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_actions.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_discard_dialog.dart';
@@ -123,11 +125,13 @@ void main() {
       find.byKey(CookedMealPotSection.utensilOptionKey('pot')).last,
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.tap(find.byKey(CookedMealSaveBar.saveKey));
     await tester.pumpAndSettle();
 
     expect(find.byKey(_startKey), findsOneWidget);
     expect(screenSwitches, [true, false]);
+    // The page's own save is no news from another device.
+    expect(find.byKey(CookedMealPage.doneElsewhereKey), findsNothing);
     final cooked = meals.saved.single;
     expect(cooked.isInPot, isFalse);
     expect(cooked.totalPortions, 2);
@@ -161,7 +165,7 @@ void main() {
     await _showCookbookSwitch(tester);
     await tester.tap(find.byKey(CookedMealCookbookSwitch.switchKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.tap(find.byKey(CookedMealSaveBar.saveKey));
     await tester.pumpAndSettle();
 
     expect(find.byKey(_startKey), findsOneWidget);
@@ -199,7 +203,7 @@ void main() {
     await _showCookbookSwitch(tester);
     await tester.tap(find.byKey(CookedMealCookbookSwitch.switchKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.tap(find.byKey(CookedMealSaveBar.saveKey));
     await tester.pumpAndSettle();
 
     expect(find.byKey(_startKey), findsOneWidget);
@@ -234,7 +238,7 @@ void main() {
       await tester.tap(find.byKey(CookedMealPotSection.morePortionsKey));
       await tester.pump();
     }
-    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.tap(find.byKey(CookedMealSaveBar.saveKey));
     await tester.pumpAndSettle();
 
     final cooked = meals.saved.single;
@@ -259,7 +263,7 @@ void main() {
     expect(find.byKey(CookedMealPotSection.grossKey), findsNothing);
     await tester.tap(find.byKey(CookedMealPotSection.morePortionsKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.tap(find.byKey(CookedMealSaveBar.saveKey));
     await tester.pumpAndSettle();
 
     final meal = meals.saved.single;
@@ -281,7 +285,7 @@ void main() {
     // Pieces need no weight, so neither the sum nor the scale shows.
     expect(find.byKey(CookedMealPotSection.weighKey), findsNothing);
     expect(find.byKey(CookedMealPotSection.utensilKey), findsNothing);
-    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.tap(find.byKey(CookedMealSaveBar.saveKey));
     await tester.pumpAndSettle();
 
     final meal = meals.saved.single;
@@ -455,7 +459,7 @@ AppSwitchListTile _cookbookSwitch(WidgetTester tester) => tester
     .widget<AppSwitchListTile>(find.byKey(CookedMealCookbookSwitch.switchKey));
 
 FilledButton _saveButton(WidgetTester tester) =>
-    tester.widget<FilledButton>(find.byKey(CookedMealPage.saveKey));
+    tester.widget<FilledButton>(find.byKey(CookedMealSaveBar.saveKey));
 
 Widget _app({
   required _FakeMealRepository meals,
