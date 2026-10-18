@@ -4,6 +4,7 @@ import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_photo_pose_chips.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_photo_section.dart';
+import 'package:yamt/l10n/app_localizations_de.dart';
 
 import '../../../../helpers/fake_progress_photo_repository.dart';
 import '../../../../helpers/progress_photo_harness.dart';
@@ -46,6 +47,21 @@ void main() {
     expect(find.byKey(ProgressPhotoSection.addKey), findsOneWidget);
     expect(find.byKey(ProgressPhotoSection.allKey), findsOneWidget);
     expect(find.byKey(ProgressPhotoSection.compareKey), findsNothing);
+  });
+
+  testWidgets('a past goal offers no button to add a photo', (tester) async {
+    await _pump(
+      tester,
+      scope: const ProgressPastGoalScope(1),
+      photos: FakeProgressPhotoRepository(),
+    );
+
+    expect(find.byKey(ProgressPhotoSection.addKey), findsNothing);
+    expect(find.byKey(ProgressPhotoSection.allKey), findsOneWidget);
+    expect(
+      find.text(AppLocalizationsDe().progressPhotosEmptyPastGoal),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shows the first photo as before and the newest as after', (

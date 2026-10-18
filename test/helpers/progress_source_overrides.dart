@@ -4,6 +4,8 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.dart';
 import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -83,4 +85,24 @@ List<CalorieEntry> progressEntries() {
         loggedAt: DateTime(2026, 9, day, 12),
       ),
   ];
+}
+
+/// Two goals: a past one from 1 to 10 September 2026 (lose from 86 kg to
+/// 80 kg) and the current one of [progressProfile] from 10 September.
+CalorieGoalSettings progressTwoGoalSettings() {
+  return CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: progressProfile.copyWith(
+          weightKg: 86,
+          targetWeightKg: 80,
+        ),
+        effectiveDate: DateTime(2026, 9),
+      )
+      .markActiveGoalEnded(DateTime(2026, 9, 10), weightKg: 84)
+      .applyGoalChange(
+        changedAt: DateTime(2026, 9, 10),
+        dailyKcalGoal: 2200,
+        calculatorProfile: progressProfile,
+        preserveSameDayGoalEntries: true,
+      );
 }

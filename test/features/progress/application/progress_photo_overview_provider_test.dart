@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/features/progress/application/progress_photo_overview_provider.dart';
@@ -22,9 +23,10 @@ Future<ProgressPhotoOverview> _overview(
   ProgressScope scope, {
   List<ProgressPhoto> olderPhotos = const [],
   List<ManualHealthWeightEntry> extraWeighIns = const [],
+  CalorieGoalSettings? goals,
 }) async {
   final settings = FakeCalorieSettingsRepository(
-    initialSettings: progressSettings(),
+    initialSettings: goals ?? progressSettings(),
   );
   addTearDown(settings.dispose);
   final calorieLog = FakeCalorieLogRepository();
@@ -62,6 +64,17 @@ void main() {
 
     expect(overview.photos.map((photo) => photo.id), ['start', 'typed']);
     expect(overview.goalStarts.single.day, DateTime(2026, 9, 7));
+    expect(overview.groups.single.goal?.number, 1);
+  });
+
+  test('a past goal keeps the photos from its start to its last day', () async {
+    final overview = await _overview(
+      const ProgressPastGoalScope(1),
+      goals: progressTwoGoalSettings(),
+    );
+
+    // The goal runs from 1 to 9 September.
+    expect(overview.photos.map((photo) => photo.id), ['before', 'start']);
     expect(overview.groups.single.goal?.number, 1);
   });
 
