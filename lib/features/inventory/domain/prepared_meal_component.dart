@@ -98,9 +98,9 @@ class PreparedMealComponent {
     if (pendingRecipeIngredient case final row?) {
       return row;
     }
-    final amount = preparedMealComponentDisplayAmount(this)
-        .toStringAsFixed(2)
-        .replaceFirst(RegExp(r'\.?0+$'), '');
+    final amount = preparedMealAmountText(
+      preparedMealComponentDisplayAmount(this),
+    );
     return '$amount ${usedUnit.code} $name';
   }
 
@@ -251,6 +251,10 @@ double preparedMealNutritionFactor({
   }
   return amount / 100;
 }
+
+/// [amount] with at most two decimals and no trailing zeros, such as "0.5".
+String preparedMealAmountText(double amount) =>
+    amount.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
 
 /// Converts a raw amount of [component] (its [PreparedMealComponent.usedAmount]
 /// or a value derived from it, for example scaled by a portion ratio) into a
