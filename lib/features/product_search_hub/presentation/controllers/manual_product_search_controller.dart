@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_item_edit_policy.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -23,6 +22,8 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_selection_rules.dart';
 
 part 'manual_product_search_controller.g.dart';
 
@@ -30,8 +31,6 @@ part 'manual_product_search_controller.g.dart';
 @riverpod
 class InventoryReceiptManualProductController
     extends _$InventoryReceiptManualProductController {
-  static const _nutritionValueTolerance = 0.000001;
-
   @override
   InventoryReceiptManualProductState build(
     InventoryReceiptManualProductConfig config,
@@ -403,7 +402,7 @@ class InventoryReceiptManualProductController
       item: updatedItem,
       selectedProduct: effectiveSelectedProduct?.externalProduct,
       selectedGlobalFoodItemId: effectiveSelectedProduct?.globalFoodItemId,
-      requiresGlobalPersistence: _requiresGlobalPersistenceForSelection(
+      requiresGlobalPersistence: manualProductRequiresGlobalPersistence(
         selection: effectiveSelectedProduct,
         editKind: selectedEditKind,
         aiEstimated: aiEstimated,
@@ -443,7 +442,7 @@ class InventoryReceiptManualProductController
       per100Salt: salt,
     );
     if (sourceNutrition == null ||
-        !_hasSameNutritionValues(nutrition, sourceNutrition)) {
+        !manualProductHasSameNutrition(nutrition, sourceNutrition)) {
       return nutrition;
     }
     return nutrition.copyWith(qualityStatus: sourceNutrition.qualityStatus);
@@ -512,7 +511,7 @@ class InventoryReceiptManualProductController
       item: updatedItem,
       selectedProduct: effectiveSelectedProduct?.externalProduct,
       selectedGlobalFoodItemId: effectiveSelectedProduct?.globalFoodItemId,
-      requiresGlobalPersistence: _requiresGlobalPersistenceForSelection(
+      requiresGlobalPersistence: manualProductRequiresGlobalPersistence(
         selection: effectiveSelectedProduct,
         editKind: selectedEditKind,
         aiEstimated: false,
@@ -606,7 +605,7 @@ class InventoryReceiptManualProductController
     }
 
     return classifyGlobalFoodItemEdit(
-      currentItem: _globalFoodItemFromSelection(resolvedSelection),
+      currentItem: manualProductGlobalFoodItem(resolvedSelection),
       name: item.name,
       brand: item.brand,
       barcode: item.barcode,
@@ -631,69 +630,5 @@ class InventoryReceiptManualProductController
 
   String _resolvedManualName({required String fallbackName}) {
     return normalizeManualProductText(state.nameText) ?? fallbackName;
-  }
-
-  bool _requiresGlobalPersistenceForSelection({
-    required InventoryReceiptManualProductSelection? selection,
-    required GlobalFoodItemEditKind editKind,
-    required bool aiEstimated,
-  }) {
-    // An AI estimate stays the user's own, also after an edit (#701).
-    if (aiEstimated) {
-      return false;
-    }
-    if (selection == null) {
-      return true;
-    }
-    if (selection.externalProduct != null) {
-      return true;
-    }
-    return editKind == GlobalFoodItemEditKind.patchExisting;
-  }
-
-  bool _hasSameNutritionValues(
-    GlobalFoodNutrition left,
-    GlobalFoodNutrition right,
-  ) {
-    return _hasSameNutritionAmount(left.per100Kcal, right.per100Kcal) &&
-        _hasSameNutritionAmount(left.per100Protein, right.per100Protein) &&
-        _hasSameNutritionAmount(left.per100Carbs, right.per100Carbs) &&
-        _hasSameNutritionAmount(left.per100Fat, right.per100Fat) &&
-        _hasSameNutritionAmount(left.per100Salt, right.per100Salt) &&
-        _hasSameNutritionAmount(
-          left.per100SaturatedFat,
-          right.per100SaturatedFat,
-        ) &&
-        _hasSameNutritionAmount(
-          left.per100PolyunsaturatedFat,
-          right.per100PolyunsaturatedFat,
-        ) &&
-        _hasSameNutritionAmount(left.per100Sugar, right.per100Sugar) &&
-        _hasSameNutritionAmount(left.per100Fiber, right.per100Fiber);
-  }
-
-  bool _hasSameNutritionAmount(double? left, double? right) {
-    if (left == null || right == null) {
-      return left == right;
-    }
-    return (left - right).abs() <= _nutritionValueTolerance;
-  }
-
-  GlobalFoodItem _globalFoodItemFromSelection(
-    InventoryReceiptManualProductSelection selection,
-  ) {
-    return GlobalFoodItem.create(
-      id: selection.globalFoodItemId ?? '',
-      name: selection.name,
-      now: DateTime.fromMillisecondsSinceEpoch(0),
-      brand: selection.brand,
-      barcode: selection.barcode,
-      imageUrl: normalizeProductImageUrl(selection.imageUrl),
-      packageWeight: selection.packageWeight,
-      servingSize: selection.servingSize,
-      servingQuantity: selection.servingQuantity,
-      servingQuantityUnit: selection.servingQuantityUnit,
-      nutrition: selection.nutrition,
-    );
   }
 }
