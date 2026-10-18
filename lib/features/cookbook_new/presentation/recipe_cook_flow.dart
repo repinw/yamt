@@ -10,6 +10,27 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Puts a recipe in the pot from its recipe page or its Kochhelfer.
 abstract final class RecipeCookFlow {
+  /// The recipe pages whose Kochhelfer is open or opening.
+  static final _openingGuide = Expando<bool>('openingGuide');
+
+  /// Opens the Kochhelfer of [recipeId] over its recipe page [context]. A tap
+  /// that reaches the page under the Kochhelfer does nothing, and so does a
+  /// second tap before the Kochhelfer is on top, which still finds the page
+  /// current. A `go` that drops the Kochhelfer drops the page too, and the
+  /// mark goes with its [context].
+  static Future<void> openGuide(BuildContext context, String recipeId) async {
+    if (!(ModalRoute.isCurrentOf(context) ?? false) ||
+        _openingGuide[context] != null) {
+      return;
+    }
+    _openingGuide[context] = true;
+    try {
+      await context.push<void>(AppRoutes.homeRecipeGuidePath(recipeId));
+    } finally {
+      _openingGuide[context] = null;
+    }
+  }
+
   /// Cooks the recipe [recipeId] as the recipe page shows it now and
   /// replaces the page with the "Gekocht" step; from the Kochhelfer
   /// ([fromGuide]) the Kochhelfer closes too. A failure says so and stays.

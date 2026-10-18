@@ -286,9 +286,8 @@ class _RecipeBody extends ConsumerWidget {
     final recipeId = view.recipe.id;
     if (!withGuide || !view.hasSteps) {
       await RecipeCookFlow.cook(context: context, ref: ref, recipeId: recipeId);
-    } else if (ModalRoute.isCurrentOf(context) ?? false) {
-      // A tap that reaches this page under the Kochhelfer does nothing.
-      await context.push<void>(AppRoutes.homeRecipeGuidePath(recipeId));
+    } else {
+      await RecipeCookFlow.openGuide(context, recipeId);
     }
   }
 }

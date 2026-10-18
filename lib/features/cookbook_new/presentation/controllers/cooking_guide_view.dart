@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/cookbook_new/domain/food_word_match.dart';
 import 'package:yamt/features/cookbook_new/domain/recipe_sentences.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
@@ -39,7 +40,10 @@ class CookingGuide {
         for (final sentence in recipeSentences(steps))
           (
             sentence: sentence,
-            ingredients: _named(ingredientFoodWords(sentence.text), foods),
+            ingredients: foodsNamedBy(
+              ingredientFoodWords(sentence.text),
+              foods,
+            ),
           ),
       ],
     );
@@ -53,14 +57,6 @@ class CookingGuide {
     required this.steps,
     required this.sentences,
   });
-
-  static List<String> _named(
-    Set<String> words,
-    List<({String label, Set<String> words})> foods,
-  ) => [
-    for (final food in foods)
-      if (food.words.any(words.contains)) food.label,
-  ];
 
   /// The recipe's name.
   final String name;

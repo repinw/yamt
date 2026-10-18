@@ -77,6 +77,11 @@ void main() {
       '1. Zwiebeln schälen.',
       '2. Karotten schneiden.',
     ]);
+    expect(texts('Bis zum 3. Dann umrühren. Im 2. Schritt salzen.'), [
+      'Bis zum 3.',
+      'Dann umrühren.',
+      'Im 2. Schritt salzen.',
+    ]);
     expect(texts('Preheat oven to 350. Grease a pan.'), [
       'Preheat oven to 350.',
       'Grease a pan.',
