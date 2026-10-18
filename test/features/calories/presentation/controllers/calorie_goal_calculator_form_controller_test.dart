@@ -363,6 +363,20 @@ void main() {
       },
     );
   });
+
+  test('setSaving locks and unlocks the form (#721)', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = calorieGoalCalculatorFormControllerProvider(null);
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+
+    container.read(provider.notifier).setSaving(isSaving: true);
+    expect(container.read(provider).isSaving, isTrue);
+
+    container.read(provider.notifier).setSaving(isSaving: false);
+    expect(container.read(provider).isSaving, isFalse);
+  });
 }
 
 class _BlockingCalorieSettingsRepository implements CalorieSettingsRepository {

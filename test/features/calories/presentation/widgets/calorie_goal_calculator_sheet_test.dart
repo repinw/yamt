@@ -465,7 +465,8 @@ void main() {
     await _goToResultsWithDefaults(tester);
     await _ensureSaveButtonVisible(tester);
     await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
-    await tester.pumpAndSettle();
+    // The save button spins while the start day question is open (#721).
+    await tester.pump(const Duration(seconds: 1));
     await tester.tap(
       find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
     );
@@ -506,8 +507,19 @@ void main() {
     await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
     await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
     await tester.pump();
+    // The steps are locked while the save reads today (#721).
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is IgnorePointer &&
+            widget.ignoring &&
+            widget.child is AnimatedSwitcher,
+      ),
+      findsOneWidget,
+    );
     reading.complete();
-    await tester.pumpAndSettle();
+    // The save button spins while the start day question is open (#721).
+    await tester.pump(const Duration(seconds: 1));
 
     expect(
       find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
@@ -532,7 +544,8 @@ void main() {
     await _goToResultsWithDefaults(tester);
     await _ensureSaveButtonVisible(tester);
     await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.saveButton));
-    await tester.pumpAndSettle();
+    // The save button spins while the start day question is open (#721).
+    await tester.pump(const Duration(seconds: 1));
     await tester.tap(
       find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
     );

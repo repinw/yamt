@@ -166,7 +166,8 @@ class _CalorieGoalCalculatorFlowState
     final formProvider = calorieGoalCalculatorFormControllerProvider(
       widget.initialSettings.calculatorProfile,
     );
-    final formNotifier = ref.read(formProvider.notifier);
+    final formNotifier = ref.read(formProvider.notifier)
+      ..setSaving(isSaving: true);
     final allowsFutureGoalStart = _goalStartDate.isAfter(
       CalorieGoalStartPicker.normalizeDate(DateTime.now()),
     );
@@ -175,9 +176,8 @@ class _CalorieGoalCalculatorFlowState
       goalStartDate: _goalStartDate,
       failedMessage: l10n.caloriesCalculatorSaveFailed,
     );
-    if (!mounted || startDay == null) {
-      return;
-    }
+    if (!mounted) return;
+    if (startDay == null) return formNotifier.setSaving(isSaving: false);
     final save = formNotifier.save(
       goalStartDate: _goalStartDate,
       maintainUntil: _maintainUntil,
@@ -187,14 +187,11 @@ class _CalorieGoalCalculatorFlowState
     );
     widget.onSaveStarted?.call(save.catchError((Object _) => false));
     final saved = await save;
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
     if (saved) {
       Navigator.of(context).pop(true);
       return;
     }
-
     ScaffoldMessenger.of(context).showAppSnackBar(
       l10n.caloriesCalculatorSaveFailed,
       tone: AppSnackBarTone.error,
@@ -319,16 +316,19 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                child: _StepPanel(
-                  key: ValueKey<_CalculatorStep>(currentStep),
-                  title: _titleForStep(currentStep, l10n),
-                  child: _buildStepContent(
-                    context: context,
-                    l10n: l10n,
-                    state: state,
-                    step: currentStep,
+              IgnorePointer(
+                ignoring: state.isSaving,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  child: _StepPanel(
+                    key: ValueKey<_CalculatorStep>(currentStep),
+                    title: _titleForStep(currentStep, l10n),
+                    child: _buildStepContent(
+                      context: context,
+                      l10n: l10n,
+                      state: state,
+                      step: currentStep,
+                    ),
                   ),
                 ),
               ),

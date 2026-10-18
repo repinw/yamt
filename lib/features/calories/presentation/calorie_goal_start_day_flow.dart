@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_goal_start_food_tracking_dialog.dart';
@@ -17,11 +18,13 @@ Future<({bool? countsToday})?> askGoalStartDayForLearning(
   required DateTime goalStartDate,
   required String failedMessage,
 }) async {
-  final today = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+  final container = ProviderScope.containerOf(context, listen: false);
+  final today = CalorieGoalStartPicker.normalizeDate(
+    container.read(clockProvider)(),
+  );
   if (!CalorieGoalStartPicker.isSameDay(goalStartDate, today)) {
     return (countsToday: null);
   }
-  final container = ProviderScope.containerOf(context, listen: false);
   // Keeps the auto-dispose goal controller alive while it reads.
   final subscription = container.listen(
     calorieGoalControllerProvider,
