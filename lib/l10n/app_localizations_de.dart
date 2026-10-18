@@ -6974,4 +6974,24 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get progressWeightsHealthDismiss => 'Ausblenden';
+
+  @override
+  String shoppingPlanNeedsDialogTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zutaten fehlen',
+      one: '1 Zutat fehlt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingPlanNeedsDialogMessage => 'Auf die Einkaufsliste setzen?';
+
+  @override
+  String get shoppingPlanNeedsDialogSkip => 'Nicht jetzt';
+
+  @override
+  String get shoppingPlanNeedsDialogAdd => 'Auf die Liste';
 }

@@ -4226,5 +4226,17 @@
   "progressWeightsHealthTitle": "Take weights from your scale",
   "progressWeightsHealthBody": "Connect Health and the weights of your scale arrive on their own.",
   "progressWeightsHealthConnect": "Connect Health",
-  "progressWeightsHealthDismiss": "Hide"
+  "progressWeightsHealthDismiss": "Hide",
+  "shoppingPlanNeedsDialogTitle": "{count, plural, =1{1 ingredient missing} other{{count} ingredients missing}}",
+  "@shoppingPlanNeedsDialogTitle": {
+    "description": "Title of the question after planning a recipe whose ingredients the Vorrat lacks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingPlanNeedsDialogMessage": "Put them on the shopping list?",
+  "shoppingPlanNeedsDialogSkip": "Not now",
+  "shoppingPlanNeedsDialogAdd": "Add to list"
 }

@@ -5,6 +5,7 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
+import 'package:yamt/features/shoppinglist/presentation/shopping_plan_needs_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Plans a Kochbuch recipe or Vorlage from the Kochbuch or its recipe page.
@@ -15,7 +16,8 @@ abstract final class RecipePlanFlow {
   /// Asks for the day, then plans one portion of the recipe or Vorlage
   /// [recipeId] as its recipe page shows it now, with an undo. A recipe
   /// with an ingredient that has no Vorrat item becomes a reminder without
-  /// kcal. A failure says so.
+  /// kcal. A failure says so. Then it offers the ingredients the Vorrat
+  /// lacks for the shopping list.
   static Future<void> plan({
     required BuildContext context,
     required WidgetRef ref,
@@ -43,12 +45,24 @@ abstract final class RecipePlanFlow {
       );
       return;
     }
+    var undone = false;
     messenger.showAppSnackBar(
       planSavedMessage(l10n, day: plan.loggedAt, today: today),
       key: snackBarKey,
-      onUndo: () => container
-          .read(recipeControllerProvider(recipeId).notifier)
-          .unplan(plan),
+      onUndo: () {
+        undone = true;
+        return container
+            .read(recipeControllerProvider(recipeId).notifier)
+            .unplan(plan);
+      },
     );
+    final missing = await controller.missingIngredients(plan);
+    if (!undone && context.mounted) {
+      await ShoppingPlanNeedsFlow.offer(
+        context,
+        missing,
+        isCancelled: () => undone,
+      );
+    }
   }
 }

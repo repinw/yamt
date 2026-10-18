@@ -11419,6 +11419,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide'**
   String get progressWeightsHealthDismiss;
+
+  /// Title of the question after planning a recipe whose ingredients the Vorrat lacks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ingredient missing} other{{count} ingredients missing}}'**
+  String shoppingPlanNeedsDialogTitle(int count);
+
+  /// No description provided for @shoppingPlanNeedsDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Put them on the shopping list?'**
+  String get shoppingPlanNeedsDialogMessage;
+
+  /// No description provided for @shoppingPlanNeedsDialogSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get shoppingPlanNeedsDialogSkip;
+
+  /// No description provided for @shoppingPlanNeedsDialogAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to list'**
+  String get shoppingPlanNeedsDialogAdd;
 }
 
 class _AppLocalizationsDelegate

@@ -33,6 +33,9 @@ saved favorites, and products that come back on a schedule.
   line with a retry when the needs fail to load. `groupShoppingPlanNeeds`
   (application) groups `ShoppingPlanNeed` values by day and meal and drops
   foods that are already on the list.
+- `ShoppingPlanNeedsFlow.offer` asks whether a plan's missing foods go on
+  the list, each one tickable, and adds the ticked ones; cookbook calls it
+  after planning a recipe.
 
 ## Rules
 

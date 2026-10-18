@@ -3298,5 +3298,9 @@
   "progressWeightsHealthTitle": "Waage automatisch übernehmen",
   "progressWeightsHealthBody": "Verbinde Health, dann kommen die Gewichte deiner Waage von selbst.",
   "progressWeightsHealthConnect": "Health verbinden",
-  "progressWeightsHealthDismiss": "Ausblenden"
+  "progressWeightsHealthDismiss": "Ausblenden",
+  "shoppingPlanNeedsDialogTitle": "{count, plural, =1{1 Zutat fehlt} other{{count} Zutaten fehlen}}",
+  "shoppingPlanNeedsDialogMessage": "Auf die Einkaufsliste setzen?",
+  "shoppingPlanNeedsDialogSkip": "Nicht jetzt",
+  "shoppingPlanNeedsDialogAdd": "Auf die Liste"
 }
