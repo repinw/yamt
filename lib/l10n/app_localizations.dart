@@ -10544,6 +10544,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 line} other{{count} lines}}'**
   String cookingGuideLineCount(int count);
 
+  /// No description provided for @recipeGuideAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 addition from the cooking helper} other{{count} additions from the cooking helper}}'**
+  String recipeGuideAdded(int count);
+
   /// No description provided for @cookingGuideJustAdded.
   ///
   /// In en, this message translates to:

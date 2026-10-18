@@ -6411,6 +6411,17 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String recipeGuideAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zusätze aus dem Kochhelfer',
+      one: '1 Zusatz aus dem Kochhelfer',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get cookingGuideJustAdded => 'Gerade dazu';
 
   @override

@@ -9,6 +9,7 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'recipe_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/models/recipe_draft.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/'
     'recipe_view.dart';
 import 'package:yamt/features/inventory/application/'
@@ -199,6 +200,43 @@ void main() {
         container.read(recipeControllerProvider('stew')).justAdded,
         isEmpty,
       );
+    },
+  );
+
+  test(
+    'keeps what the Kochhelfer added until all of it is taken back',
+    () async {
+      final container = _container(recipe: _recipe());
+      final view = (await _view(container))!;
+      final controller = _controller(container);
+      RecipeDraft draft() => container.read(recipeControllerProvider('stew'));
+
+      controller
+        ..addSpoken(view, '100 g Feta')
+        ..addSpoken(view, '200 ml Sahne');
+      expect(draft().fromGuide, hasLength(2));
+
+      // "Rückgängig" in the Kochhelfer takes back only the last one.
+      controller.undoAdded();
+      expect(draft().fromGuide, hasLength(1));
+
+      // An edit that keeps a line keeps it the Kochhelfer's; a line changed
+      // by hand is the cook's own.
+      controller
+        ..addSpoken(view, '200 ml Sahne')
+        ..setEdits(draft().edits);
+      expect(draft().fromGuide, hasLength(2));
+      final cream = draft().fromGuide.last;
+      controller.setEdits(
+        draft().edits.copyWith(
+          added: {...draft().edits.added, cream: '300 ml Sahne'},
+        ),
+      );
+      expect(draft().fromGuide, hasLength(1));
+
+      controller.undoGuideAdded();
+      expect(draft().fromGuide, isEmpty);
+      expect(draft().edits.added.values, ['300 ml Sahne']);
     },
   );
 

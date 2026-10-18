@@ -2929,6 +2929,14 @@
       }
     }
   },
+  "recipeGuideAdded": "{count, plural, =1{1 Zusatz aus dem Kochhelfer} other{{count} Zusätze aus dem Kochhelfer}}",
+  "@recipeGuideAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "cookingGuideJustAdded": "Gerade dazu",
   "cookingGuideVoiceHint": "„50 g Sahne“ · „nein“ macht rückgängig",
   "cookingGuideNext": "Nächster Satz",

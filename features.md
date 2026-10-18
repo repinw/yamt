@@ -940,7 +940,9 @@ and feature description docs. This is product-facing; architecture rules stay in
     "No-Name Senf" stays an ingredient). Listening goes on across sentences
     until the next tap.
   - "Fertig gekocht" puts the meal in the pot like "Kochen" and goes on to
-    "Gekocht". Leaving the Kochhelfer before that cooks nothing.
+    "Gekocht". Leaving the Kochhelfer before that cooks nothing; what it
+    added stays on the recipe page until the page closes, with "2 Zusätze
+    aus dem Kochhelfer" and "Rückgängig" above the ingredients.
 - A long press on a Vorlage or recipe opens a small menu with "Planen"
   and "Entfernen"; screen readers offer both as actions of the card.
 - "Planen" (in that menu, or the calendar button on the recipe photo) asks
