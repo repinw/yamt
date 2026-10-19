@@ -60,7 +60,9 @@ Future<void> _openSelectionAsMeal({
     // Kept, so the catalog foods and their amounts are not lost.
     return;
   }
-  ref.read(preparedMealSelectionControllerProvider.notifier).clearSelection();
+  final selectionController = ref.read(
+    preparedMealSelectionControllerProvider.notifier,
+  )..clearSelection();
   await InventoryItemHubFlow.open(
     context: context,
     ref: ref,
@@ -70,6 +72,8 @@ Future<void> _openSelectionAsMeal({
         if (item.id != hubItem.id) item,
     ],
     initialFoods: selection.catalogFoods,
+    // Closing the hub keeps the selection, catalog amounts included (#728).
+    onDismissed: () => selectionController.restore(selection),
   );
 }
 

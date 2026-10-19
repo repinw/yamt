@@ -27,15 +27,19 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// to the shopping list keeps the hub open.
 abstract final class InventoryItemHubFlow {
   /// Opens the hub for [item]. [initialPicks] and the catalog foods
-  /// [initialFoods] join the meal right away.
+  /// [initialFoods] join the meal right away. [onDismissed] runs when the
+  /// user closes the hub without eating, combining, or a finished action.
   static Future<void> open({
     required BuildContext context,
     required WidgetRef ref,
     required InventoryItem item,
     List<InventoryItem> initialPicks = const <InventoryItem>[],
     List<InventoryMealFoodPick> initialFoods = const <InventoryMealFoodPick>[],
+    VoidCallback? onDismissed,
   }) async {
     final pageMessenger = ScaffoldMessenger.of(context);
+    // An edit, replace, or remove closes the hub without a result too.
+    var closedByAction = false;
     final result = await Navigator.of(context, rootNavigator: true)
         .push<InventoryItemHubResult>(
           MaterialPageRoute<InventoryItemHubResult>(
@@ -44,8 +48,19 @@ abstract final class InventoryItemHubFlow {
               item: item,
               initialPicks: initialPicks,
               initialFoods: initialFoods,
-              onAction: (hubContext, action) =>
-                  _run(hubContext, ref, item, action, pageMessenger),
+              onAction: (hubContext, action) async {
+                final changed = await _run(
+                  hubContext,
+                  ref,
+                  item,
+                  action,
+                  pageMessenger,
+                );
+                closedByAction |=
+                    changed &&
+                    action != InventoryItemHubAction.addToShoppingList;
+                return changed;
+              },
             ),
           ),
         );
@@ -54,7 +69,7 @@ abstract final class InventoryItemHubFlow {
     }
     switch (result) {
       case null:
-        return;
+        if (!closedByAction) onDismissed?.call();
       case InventoryItemHubCombine(:final picks, :final includesItem):
         ref
             .read(preparedMealSelectionControllerProvider.notifier)

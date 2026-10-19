@@ -1241,6 +1241,35 @@ void main() {
     expect(find.byKey(EatItemActionsCard.inedibleKey), findsOneWidget);
   });
 
+  testWidgets('closing the meal hub keeps the selection (#728)', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _itemWithNutrition('b', name: 'Oats'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository, includeHomeShellChrome: true);
+    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.byKey(EatItemActionsCard.combineKey));
+    await _tapVisible(tester, find.text('Oats'));
+    await _tapVisible(
+      tester,
+      find.byKey(InventoryHomeShellTopChrome.confirmSelectionKey),
+    );
+    expect(find.text('Milk + Oats'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Milk + Oats'), findsNothing);
+    expect(find.text('2 selected'), findsOneWidget);
+  });
+
   testWidgets('item hub without nutrition offers no meal', (tester) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_amountItemWithoutNutrition('a')],
