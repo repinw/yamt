@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -14,7 +15,6 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'inventory_item_eat_sheet_body.dart';
-import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';

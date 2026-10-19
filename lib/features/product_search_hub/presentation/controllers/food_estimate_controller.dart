@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'food_estimate_repository.dart';
 import 'package:yamt/features/product_search_hub/data/'
