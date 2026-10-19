@@ -20,6 +20,7 @@ class DiaryMealGroup extends StatelessWidget {
     this.onAcceptAllPlans,
     this.shortPlanIds = const {},
     this.planPortionTexts = const {},
+    this.countsOpenPlans = false,
     this.onCopy,
     super.key,
   });
@@ -45,6 +46,10 @@ class DiaryMealGroup extends StatelessWidget {
   /// The amount text of meal plans by plan id, as their meals are now.
   final Map<String, String> planPortionTexts;
 
+  /// Whether today's head counts the open plans, so the meal total adds
+  /// them too.
+  final bool countsOpenPlans;
+
   /// Copies the meal as plans to other days. Without it, no copy icon.
   final VoidCallback? onCopy;
 
@@ -59,6 +64,7 @@ class DiaryMealGroup extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
     );
+    final heading = section.headingTotal(withOpenPlans: countsOpenPlans);
 
     return Column(
       key: DiaryMealsSectionKeys.mealGroup(section.mealType),
@@ -75,10 +81,10 @@ class DiaryMealGroup extends StatelessWidget {
               ),
             ),
             // A single counted row already shows the same kcal.
-            if (section.countedRowCount > 1) ...[
+            if (heading.rows > 1) ...[
               const SizedBox(width: AppSpacing.md),
               Text(
-                '${numberFormat.format(section.totalKcal.round())} '
+                '${numberFormat.format(heading.kcal.round())} '
                 '${l10n.caloriesUnitKcal}',
                 maxLines: 1,
                 style: labelStyle,

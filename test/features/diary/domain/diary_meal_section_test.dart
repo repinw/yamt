@@ -51,4 +51,39 @@ void main() {
       expect(section.totalFat, 0);
     });
   });
+
+  group('DiaryMealSection heading total', () {
+    DiaryMealEntry food(String id, double kcal, {bool pending = false}) =>
+        DiaryMealEntry(
+          id: id,
+          mealType: MealType.lunch,
+          name: id,
+          totalKcal: kcal,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+          nutritionPending: pending,
+        );
+    DiaryMealSection section({required bool countsPlans}) => DiaryMealSection(
+      mealType: MealType.lunch,
+      totalKcal: countsPlans ? 650 : 400,
+      entries: [food('rice', 400)],
+      plannedEntries: [food('plan', 250), food('reminder', 0, pending: true)],
+      countsPlans: countsPlans,
+    );
+
+    test('today adds the plans only when the head counts them', () {
+      final today = section(countsPlans: false);
+
+      expect(today.headingTotal(withOpenPlans: false), (kcal: 400, rows: 1));
+      expect(today.headingTotal(withOpenPlans: true), (kcal: 650, rows: 2));
+    });
+
+    test('a planned day counts its plans once, reminders not as rows', () {
+      final planned = section(countsPlans: true);
+
+      expect(planned.headingTotal(withOpenPlans: false), (kcal: 650, rows: 2));
+      expect(planned.headingTotal(withOpenPlans: true), (kcal: 650, rows: 2));
+    });
+  });
 }

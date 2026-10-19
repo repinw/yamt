@@ -5,7 +5,9 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
+import 'package:yamt/features/diary/application/diary_open_plans.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_after_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_overlay.dart';
@@ -21,7 +23,11 @@ import '../../../support/diary_dashboard_test_support.dart';
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
-  Widget app(Widget child, {bool showDetails = false}) {
+  Widget app(
+    Widget child, {
+    bool showDetails = false,
+    DiaryOpenPlans? openPlans,
+  }) {
     final container = ProviderContainer(
       overrides: [
         clockProvider.overrideWithValue(() => DateTime(2026, 4, 27, 12)),
@@ -32,6 +38,7 @@ void main() {
                 : null,
           ),
         ),
+        diaryOpenPlansProvider(selectedDay).overrideWithValue(openPlans),
         diaryDayDashboardControllerProvider(selectedDay).overrideWithValue(
           diaryDashboardLoadedStateForTest(
             selectedDay: selectedDay,
@@ -71,6 +78,26 @@ void main() {
       Theme.of(tester.element(find.text('2g over'))).colorScheme.error,
     );
   });
+
+  for (final (counted, left) in [(true, '44g left'), (false, '64g left')]) {
+    testWidgets('open plans count in the strip only with "+ Plan" on '
+        '(counted: $counted)', (tester) async {
+      await tester.pumpWidget(
+        app(
+          DiaryMacroStrip(selectedDay: selectedDay),
+          openPlans: DiaryOpenPlans(
+            kcal: 300,
+            protein: 20,
+            carbs: 0,
+            fat: 0,
+            counted: counted,
+          ),
+        ),
+      );
+
+      expect(find.text(left), findsOneWidget);
+    });
+  }
 
   testWidgets('detailed strip shows eaten and target with segmented bars', (
     tester,

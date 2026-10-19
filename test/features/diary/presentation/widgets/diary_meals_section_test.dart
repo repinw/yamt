@@ -10,7 +10,9 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
+import 'package:yamt/features/diary/application/diary_open_plans.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_after_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
@@ -562,6 +564,53 @@ void main() {
       findsOneWidget,
     );
   });
+
+  for (final (counted, total) in [(true, '650 kcal'), (false, null)]) {
+    testWidgets('the meal total adds the plans only with "+ Plan" on '
+        '(counted: $counted)', (tester) async {
+      DiaryMealEntry row(String id, double kcal) => _entry(
+        id: id,
+        day: selectedDay,
+        mealType: MealType.lunch,
+        name: id,
+        kcal: kcal,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+      );
+      await _pumpMealsSection(
+        tester,
+        selectedDay: selectedDay,
+        sections: [
+          _mealSection(
+            MealType.lunch,
+            [row('rice', 400)],
+            plannedEntries: [row('plan', 250)],
+          ),
+        ],
+        overrides: [
+          diaryOpenPlansProvider(selectedDay).overrideWithValue(
+            DiaryOpenPlans(
+              kcal: 250,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+              counted: counted,
+            ),
+          ),
+        ],
+      );
+
+      // One eaten row alone shows its kcal on the row, not in the heading.
+      expect(
+        find.descendant(
+          of: find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.lunch)),
+          matching: find.text('650 kcal'),
+        ),
+        total == null ? findsNothing : findsOneWidget,
+      );
+    });
+  }
 
   group('eat all plans of a meal', () {
     DiaryMealEntry row(String id) => _entry(

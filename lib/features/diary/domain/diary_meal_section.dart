@@ -110,10 +110,24 @@ class DiaryMealSection {
   /// Section kcal total, with the plans when they count toward the day.
   final double totalKcal;
 
-  /// How many rows [totalKcal] sums up: the merged entries, and the plans
-  /// when they count.
-  int get countedRowCount =>
-      entryGroups.length + (countsPlans ? plannedEntries.length : 0);
+  /// The kcal of the meal heading and how many rows it sums up: the merged
+  /// entries, and the plans when they count toward the day or
+  /// [withOpenPlans] (today's head counts them on the user's choice). A
+  /// reminder without kcal is no counted row.
+  ({double kcal, int rows}) headingTotal({required bool withOpenPlans}) {
+    final plans = countsPlans || withOpenPlans
+        ? [
+            for (final plan in plannedEntries)
+              if (!plan.nutritionPending) plan,
+          ]
+        : const <DiaryMealEntry>[];
+    return (
+      kcal: countsPlans
+          ? totalKcal
+          : plans.fold(totalKcal, (sum, plan) => sum + plan.totalKcal),
+      rows: entryGroups.length + plans.length,
+    );
+  }
 
   /// [entries] with identical foods merged, computed once.
   final List<DiaryMealEntryGroup> entryGroups;

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_after_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -45,6 +46,12 @@ class DiaryMacroStrip extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final data = dashboardData.nutritionBars;
+    // Today's open plans are striped like in the head, and counted when the
+    // head counts them ("Nach Plan").
+    final plans = ref.watch(
+      diaryOpenPlansProvider(normalizeLocalDay(selectedDay)),
+    );
+    final countsPlanned = plans?.counted ?? false;
     final daily = ref
         .watch(diaryBalanceCardProvider(normalizeLocalDay(selectedDay)))
         ?.loadedMetrics
@@ -56,16 +63,24 @@ class DiaryMacroStrip extends ConsumerWidget {
       (
         l10n.caloriesProteinShortLetter,
         data.protein,
+        plans?.protein ?? 0,
         data.goals.protein,
         accents.protein,
       ),
       (
         l10n.caloriesCarbsShortLetter,
         data.carbs,
+        plans?.carbs ?? 0,
         data.goals.carbs,
         accents.carbs,
       ),
-      (l10n.caloriesFatShortLetter, data.fat, data.goals.fat, accents.fat),
+      (
+        l10n.caloriesFatShortLetter,
+        data.fat,
+        plans?.fat ?? 0,
+        data.goals.fat,
+        accents.fat,
+      ),
     ];
 
     return Column(
@@ -79,6 +94,8 @@ class DiaryMacroStrip extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
               child: DiaryMacroStripKcalRow(
                 eaten: daily.eatenKcal,
+                planned: plans?.kcal ?? 0,
+                countsPlanned: countsPlanned,
                 target: daily.targetKcal,
                 showTotal: showDetails,
               ),
@@ -88,13 +105,15 @@ class DiaryMacroStrip extends ConsumerWidget {
           visible: showMacros,
           child: Row(
             children: [
-              for (final (index, (letter, current, target, color))
+              for (final (index, (letter, current, planned, target, color))
                   in macros.indexed) ...[
                 if (index > 0) const SizedBox(width: AppSpacing.lg),
                 Expanded(
                   child: DiaryMacroStripMacroItem(
                     letter: letter,
                     current: current,
+                    planned: planned,
+                    countsPlanned: countsPlanned,
                     target: target,
                     color: color,
                     showTotal: showDetails,

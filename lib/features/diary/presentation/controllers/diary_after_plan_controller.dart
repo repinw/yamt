@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/diary/application/diary_open_plans.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 
 part 'diary_after_plan_controller.g.dart';
@@ -34,11 +35,17 @@ class DiaryAfterPlanController extends _$DiaryAfterPlanController {
 }
 
 /// The open plans of [day], counted when the user counts them; null when the
-/// day offers none.
+/// day offers none. A practice day and a scheduled restart have no "Nach
+/// Plan" head, so they offer none either: the head, the macro strip and the
+/// meal headings all follow this one answer.
 @riverpod
 DiaryOpenPlans? diaryOpenPlans(Ref ref, DateTime day) {
   final data = ref.watch(diaryDayDashboardControllerProvider(day)).data;
   if (data == null) return null;
+  final card = ref.watch(diaryBalanceCardProvider(day));
+  if (card?.practiceDay != null || card?.scheduledRestartDate != null) {
+    return null;
+  }
   return DiaryOpenPlans.of(
     data,
     today: ref.watch(clockProvider)(),

@@ -16,6 +16,8 @@ class DiaryMacroStripMacroItem extends StatelessWidget {
     required this.target,
     required this.color,
     required this.showTotal,
+    this.planned = 0,
+    this.countsPlanned = false,
     super.key,
   });
 
@@ -33,6 +35,12 @@ class DiaryMacroStripMacroItem extends StatelessWidget {
 
   /// Whether eaten and target are shown instead of what is left.
   final bool showTotal;
+
+  /// Planned grams not eaten yet, striped after the eaten part.
+  final double planned;
+
+  /// Whether the amount counts [planned], like the head's "Nach Plan".
+  final bool countsPlanned;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +62,7 @@ class DiaryMacroStripMacroItem extends StatelessWidget {
             Text(letter, style: labelStyle),
             const Spacer(),
             DiaryMacroStripAmountText(
-              current: current,
+              current: current + (countsPlanned ? planned : 0),
               target: target,
               suffix: AppLocalizations.of(context)!.caloriesUnitGram,
               showTotal: showTotal,
@@ -67,6 +75,7 @@ class DiaryMacroStripMacroItem extends StatelessWidget {
         DiarySegmentedProgressBar(
           progress: target <= 0 ? 0 : current / target,
           overflow: diaryMacroOverageShare(current: current, target: target),
+          planned: target <= 0 ? 0 : planned / target,
           color: color,
           trackColor: colors.surfaceContainerHighest,
           height: AppSizes.stripProgressBarHeight,
