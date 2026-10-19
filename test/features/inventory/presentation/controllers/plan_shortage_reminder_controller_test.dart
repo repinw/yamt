@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/device/local_notifications.dart';
@@ -11,6 +13,30 @@ import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
 
 import '../../../../helpers/fake_local_notifications.dart';
 import '../../../../helpers/memory_app_preferences.dart';
+
+class _AskingNotifications extends FakeLocalNotifications {
+  final answer = Completer<bool>();
+
+  @override
+  Future<bool> requestPermission() {
+    permissionRequests++;
+    return answer.future;
+  }
+}
+
+class _FailingRequestNotifications extends FakeLocalNotifications {
+  @override
+  Future<bool> requestPermission() async => throw StateError('no dialog');
+}
+
+class _CheckingNotifications extends FakeLocalNotifications {
+  new(this._check);
+
+  final Future<bool> Function() _check;
+
+  @override
+  Future<bool> areAllowed(String channelId) => _check();
+}
 
 class _FailingOncePreferences extends MemoryAppPreferences {
   bool _failed = false;
@@ -26,6 +52,8 @@ class _FailingOncePreferences extends MemoryAppPreferences {
 }
 
 void main() {
+  // The allowed check listens for the app returning to the foreground.
+  TestWidgetsFlutterBinding.ensureInitialized();
   final now = DateTime(2026, 10, 18, 12);
   final tomorrow = DateTime(2026, 10, 19);
   final texts = (
@@ -253,5 +281,159 @@ void main() {
         .missingFor(tomorrow);
 
     expect(needs.map((need) => need.name), ['Milch', 'Reis']);
+  });
+
+  const asked = {'plan_shortage_reminder_permission_asked_v1': 'set'};
+
+  Future<bool> blocked({
+    required LocalNotifications notifications,
+    Map<String, String> strings = asked,
+  }) async {
+    final container = containerWith(
+      preferences: MemoryAppPreferences(initialStrings: strings),
+      notifications: notifications,
+    );
+    final subscription = container.listen(
+      planShortageReminderBlockedProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    await pumpEventQueue();
+    return subscription.read();
+  }
+
+  test('the reminder is blocked once asked when the system says no', () async {
+    expect(
+      await blocked(notifications: FakeLocalNotifications()..allowed = false),
+      isTrue,
+    );
+  });
+
+  test('the reminder is not blocked while the system allows it', () async {
+    expect(await blocked(notifications: FakeLocalNotifications()), isFalse);
+  });
+
+  test('the reminder is not blocked while it is off', () async {
+    expect(
+      await blocked(
+        strings: {...asked, 'plan_shortage_reminder_off_v1': 'set'},
+        notifications: FakeLocalNotifications()..allowed = false,
+      ),
+      isFalse,
+    );
+  });
+
+  test('the reminder is not blocked before the app asked', () async {
+    expect(
+      await blocked(
+        strings: const {},
+        notifications: FakeLocalNotifications()..allowed = false,
+      ),
+      isFalse,
+    );
+  });
+
+  test('the reminder is not blocked while the system checks', () async {
+    expect(
+      await blocked(
+        notifications: _CheckingNotifications(() => Completer<bool>().future),
+      ),
+      isFalse,
+    );
+  });
+
+  test('the reminder is not blocked when the check fails', () async {
+    expect(
+      await blocked(
+        notifications: _CheckingNotifications(
+          () async => throw StateError('no answer'),
+        ),
+      ),
+      isFalse,
+    );
+  });
+
+  test('the reminder keeps the last answer while it checks again', () async {
+    var checks = 0;
+    final container = containerWith(
+      preferences: MemoryAppPreferences(initialStrings: asked),
+      notifications: _CheckingNotifications(
+        () => checks++ == 0 ? Future.value(false) : Completer<bool>().future,
+      ),
+    );
+    final subscription = container.listen(
+      planShortageReminderBlockedProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    await pumpEventQueue();
+
+    container.invalidate(localNotificationsAllowedProvider);
+    await pumpEventQueue();
+
+    expect(checks, 2);
+    expect(subscription.read(), isTrue);
+  });
+
+  test('turning the reminder on waits for the answer and asks once', () async {
+    final notifications = _AskingNotifications();
+    final preferences = MemoryAppPreferences(
+      initialStrings: {'plan_shortage_reminder_off_v1': 'set'},
+    );
+    final container = containerWith(
+      preferences: preferences,
+      notifications: notifications,
+    );
+    // Settings keep the reminder alive while the system asks.
+    final subscription = container.listen(
+      planShortageReminderControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    final controller = container.read(
+      planShortageReminderControllerProvider.notifier,
+    );
+
+    final first = controller.setEnabled(enabled: true);
+    await pumpEventQueue();
+    // A second tap while the system asks.
+    await controller.setEnabled(enabled: true);
+    expect(
+      container.read(planShortageReminderControllerProvider).enabled,
+      isFalse,
+    );
+
+    notifications.answer.complete(false);
+    await first;
+    final settings = container.read(planShortageReminderControllerProvider);
+    expect(notifications.permissionRequests, 1);
+    expect(settings.enabled, isTrue);
+    expect(settings.permissionAsked, isTrue);
+    expect(preferences.getStringSync('plan_shortage_reminder_off_v1'), isNull);
+  });
+
+  test('a failed permission request does not count as asked', () async {
+    final container = containerWith(
+      notifications: _FailingRequestNotifications(),
+    );
+
+    await container
+        .read(planShortageReminderControllerProvider.notifier)
+        .setEnabled(enabled: true);
+
+    expect(
+      container.read(planShortageReminderControllerProvider).permissionAsked,
+      isFalse,
+    );
+  });
+
+  test('openSystemSettings tells whether the settings opened', () async {
+    final notifications = FakeLocalNotifications();
+    final controller = containerWith(notifications: notifications)
+        .read(planShortageReminderControllerProvider.notifier);
+
+    expect(await controller.openSystemSettings(), isTrue);
+    notifications.canOpenSettings = false;
+    expect(await controller.openSystemSettings(), isFalse);
   });
 }

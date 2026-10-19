@@ -26,9 +26,10 @@ import '../../test/helpers/memory_app_preferences.dart';
 /// Opens the settings page in an app themed like `lib/app.dart`.
 Future<MemoryAppPreferences> _pumpSettings(
   WidgetTester tester,
-  FakeLocalNotifications notifications,
-) async {
-  final preferences = MemoryAppPreferences();
+  FakeLocalNotifications notifications, {
+  Map<String, String>? preferenceStrings,
+}) async {
+  final preferences = MemoryAppPreferences(initialStrings: preferenceStrings);
   final settingsRepository = FakeCalorieSettingsRepository();
   addTearDown(settingsRepository.dispose);
 
@@ -100,6 +101,42 @@ void main() {
     expect(
       find.byKey(SettingsPageKeys.planShortageReminderTimeTile),
       findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a blocked reminder leads to the system settings and clears '
+      'on return', (tester) async {
+    final notifications = FakeLocalNotifications()..allowed = false;
+    await _pumpSettings(
+      tester,
+      notifications,
+      preferenceStrings: {'plan_shortage_reminder_permission_asked_v1': 'set'},
+    );
+    final tile = find.byKey(SettingsPageKeys.planShortageReminderTile);
+    final blocked = lookupAppLocalizations(const Locale('de'))
+        .settingsPlanShortageReminderBlocked;
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: tile, matching: find.text(blocked)),
+      findsOneWidget,
+    );
+
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(notifications.settingsOpened, 1);
+
+    // The user allows them in the system settings and comes back.
+    notifications.allowed = true;
+    tester.binding
+      ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(of: tile, matching: find.text(blocked)),
+      findsNothing,
     );
     expect(tester.takeException(), isNull);
   });

@@ -2296,6 +2296,10 @@
   "settingsHomeWidgetVerboseModeSubtitle": "Show meals and macros, not just kcal left",
   "settingsPlanShortageReminderTitle": "Reminder for missing ingredients",
   "settingsPlanShortageReminderSubtitle": "The day before, when planned food lacks something",
+  "settingsPlanShortageReminderBlocked": "Notifications are off. Tap to allow them.",
+  "@settingsPlanShortageReminderBlocked": {
+    "description": "Subtitle of the reminder switch when it is on but the system blocks the app's notifications; a tap opens the system settings."
+  },
   "settingsPlanShortageReminderTimeTitle": "Time",
   "commonOr": "Or",
   "login": "Login",
@@ -4101,6 +4105,10 @@
   "planShortageReminderCheckFailed": "Could not check the missing ingredients.",
   "@planShortageReminderCheckFailed": {
     "description": "Snackbar after tapping the day-before reminder when the plans or the stock could not be read."
+  },
+  "planShortageReminderSettingsFailed": "Could not open the notification settings.",
+  "@planShortageReminderSettingsFailed": {
+    "description": "Snackbar after tapping the blocked day-before reminder in Settings when the system notification settings did not open."
   },
   "planShortageReminderAllThere": "Everything for the plan is there.",
   "@planShortageReminderAllThere": {

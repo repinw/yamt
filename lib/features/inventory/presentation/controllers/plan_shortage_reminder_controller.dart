@@ -20,6 +20,9 @@ const _quietDaysKey = 'plan_shortage_reminder_quiet_days_v1';
 const _permissionAskedKey = 'plan_shortage_reminder_permission_asked_v1';
 const _setValue = 'set';
 
+/// The Android notification channel of the day-before reminder.
+const planShortageChannelId = 'plan_shortage';
+
 /// 17:00, the default time of the day-before reminder.
 const int _defaultMinute = 17 * 60;
 
@@ -61,20 +64,31 @@ class PlanShortageReminderController extends _$PlanShortageReminderController {
   }
 
   /// Turns the reminder on or off. Turning it on asks for the
-  /// notification permission, which the user may have denied before.
+  /// notification permission first, which the user may have denied before,
+  /// and turns the reminder on once the system answered, so Settings never
+  /// call it blocked while the system asks.
   Future<void> setEnabled({required bool enabled}) async {
-    _update(enabled: enabled);
     final preferences = ref.read(appPreferencesProvider);
-    if (enabled) {
-      await preferences.remove(_offKey);
-      if (!ref.mounted) return;
-      await _markPermissionAsked();
-      if (!ref.mounted) return;
-      await _requestPermission();
-    } else {
+    if (!enabled) {
+      _update(enabled: false);
       await preferences.setString(_offKey, _setValue);
+      return;
     }
+    // A second request while the system asks fails and would turn the
+    // reminder on before the answer.
+    if (_requesting) return;
+    _requesting = true;
+    try {
+      await _requestPermission();
+    } finally {
+      _requesting = false;
+    }
+    if (ref.mounted) _update(enabled: true);
+    // Saved also when nothing watches the reminder any more.
+    await preferences.remove(_offKey);
   }
+
+  bool _requesting = false;
 
   /// Sets the time of day the reminder fires.
   Future<void> setMinuteOfDay(int minuteOfDay) async {
@@ -126,9 +140,8 @@ class PlanShortageReminderController extends _$PlanShortageReminderController {
     if (!ref.mounted) return;
     final notifications = ref.read(localNotificationsProvider);
     if (reminders.isNotEmpty && !state.permissionAsked) {
-      await _markPermissionAsked();
-      if (!ref.mounted) return;
       await _requestPermission();
+      if (!ref.mounted) return;
     }
     final wanted = {
       for (final reminder in reminders)
@@ -150,7 +163,7 @@ class PlanShortageReminderController extends _$PlanShortageReminderController {
         () => notifications.schedule(
           id: id,
           at: reminder.at,
-          channel: (id: 'plan_shortage', name: texts.channelName),
+          channel: (id: planShortageChannelId, name: texts.channelName),
           title: texts.title(reminder.count),
           body: texts.body,
           payload: planShortageReminderPayload(reminder.day),
@@ -185,8 +198,23 @@ class PlanShortageReminderController extends _$PlanShortageReminderController {
         .setString(_permissionAskedKey, _setValue);
   }
 
-  Future<void> _requestPermission() =>
-      _logFailure(ref.read(localNotificationsProvider).requestPermission);
+  // Asked counts only once the system answered: before, iOS has no
+  // notification settings for the app that the user could open.
+  Future<void> _requestPermission() async {
+    final answer = await _logFailure(
+      ref.read(localNotificationsProvider).requestPermission,
+    );
+    if (answer != null && ref.mounted) await _markPermissionAsked();
+  }
+
+  /// Opens the system settings of the app's notifications, so the user can
+  /// allow them again. Returns whether they opened.
+  Future<bool> openSystemSettings() async =>
+      await _logFailure(() async {
+        await ref.read(localNotificationsProvider).openSettings();
+        return true;
+      }) ??
+      false;
 
   void _update({
     bool? enabled,
@@ -213,6 +241,28 @@ class PlanShortageReminderController extends _$PlanShortageReminderController {
       return null;
     }
   }
+}
+
+/// Whether the system blocks the day-before reminder while it is on: its
+/// notifications are off or its channel is muted. Only once the app asked
+/// for the permission, since the system has no answer before. Keeps the
+/// last answer while it checks again; false before the first answer and
+/// when the check fails: the reminder still tries to show.
+@riverpod
+bool planShortageReminderBlocked(Ref ref) {
+  final settings = ref.watch(
+    planShortageReminderControllerProvider.select(
+      (settings) =>
+          (enabled: settings.enabled, asked: settings.permissionAsked),
+    ),
+  );
+  if (!settings.enabled || !settings.asked) {
+    return false;
+  }
+  final allowed = ref.watch(
+    localNotificationsAllowedProvider(planShortageChannelId),
+  );
+  return !allowed.hasError && allowed.value == false;
 }
 
 /// The day-before reminders the open plans need now; none while the

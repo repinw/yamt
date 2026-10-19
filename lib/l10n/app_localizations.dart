@@ -6611,6 +6611,12 @@ abstract class AppLocalizations {
   /// **'The day before, when planned food lacks something'**
   String get settingsPlanShortageReminderSubtitle;
 
+  /// Subtitle of the reminder switch when it is on but the system blocks the app's notifications; a tap opens the system settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off. Tap to allow them.'**
+  String get settingsPlanShortageReminderBlocked;
+
   /// No description provided for @settingsPlanShortageReminderTimeTitle.
   ///
   /// In en, this message translates to:
@@ -10804,6 +10810,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not check the missing ingredients.'**
   String get planShortageReminderCheckFailed;
+
+  /// Snackbar after tapping the blocked day-before reminder in Settings when the system notification settings did not open.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the notification settings.'**
+  String get planShortageReminderSettingsFailed;
 
   /// Snackbar after tapping the day-before reminder when nothing is missing any more.
   ///

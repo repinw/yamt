@@ -59,7 +59,7 @@ final class PlanShortageReminderControllerProvider
 }
 
 String _$planShortageReminderControllerHash() =>
-    r'9098f16bfb29ce4a4c928c69ba5d91d9f7c70c54';
+    r'20907dd91adc1551be0a092b28a85d353e86436b';
 
 /// The day-before reminder for missing plan ingredients. Its state is the
 /// settings: on or off (on until the user turns it off), the time of day in
@@ -89,6 +89,66 @@ abstract class _$PlanShortageReminderController
     return element.handleCreate(ref, build);
   }
 }
+
+/// Whether the system blocks the day-before reminder while it is on: its
+/// notifications are off or its channel is muted. Only once the app asked
+/// for the permission, since the system has no answer before. Keeps the
+/// last answer while it checks again; false before the first answer and
+/// when the check fails: the reminder still tries to show.
+
+@ProviderFor(planShortageReminderBlocked)
+final planShortageReminderBlockedProvider =
+    PlanShortageReminderBlockedProvider._();
+
+/// Whether the system blocks the day-before reminder while it is on: its
+/// notifications are off or its channel is muted. Only once the app asked
+/// for the permission, since the system has no answer before. Keeps the
+/// last answer while it checks again; false before the first answer and
+/// when the check fails: the reminder still tries to show.
+
+final class PlanShortageReminderBlockedProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  /// Whether the system blocks the day-before reminder while it is on: its
+  /// notifications are off or its channel is muted. Only once the app asked
+  /// for the permission, since the system has no answer before. Keeps the
+  /// last answer while it checks again; false before the first answer and
+  /// when the check fails: the reminder still tries to show.
+  PlanShortageReminderBlockedProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'planShortageReminderBlockedProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$planShortageReminderBlockedHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return planShortageReminderBlocked(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$planShortageReminderBlockedHash() =>
+    r'f5e56cf9728f765e70f063e80ac6af783c966ee2';
 
 /// The day-before reminders the open plans need now; none while the
 /// reminder is off.

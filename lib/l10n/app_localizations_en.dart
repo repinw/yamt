@@ -3942,6 +3942,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The day before, when planned food lacks something';
 
   @override
+  String get settingsPlanShortageReminderBlocked =>
+      'Notifications are off. Tap to allow them.';
+
+  @override
   String get settingsPlanShortageReminderTimeTitle => 'Time';
 
   @override
@@ -6530,6 +6534,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get planShortageReminderCheckFailed =>
       'Could not check the missing ingredients.';
+
+  @override
+  String get planShortageReminderSettingsFailed =>
+      'Could not open the notification settings.';
 
   @override
   String get planShortageReminderAllThere =>

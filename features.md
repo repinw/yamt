@@ -1094,7 +1094,12 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Language display.
 - "Erinnerung für fehlende Zutaten" switch (on by default) and its time
   ("Uhrzeit", 17:00 by default) in the App section; the time row is greyed
-  out while the switch is off. Saved on the device only.
+  out while the switch is off. Saved on the device only. When the switch is
+  on but the system blocks the app's notifications or mutes the reminder's
+  channel, after the app has asked for the permission, the row says
+  "Benachrichtigungen sind aus. Tippen zum Erlauben." and a tap opens the system settings; the row checks again when
+  the user comes back to the app. Turning the switch on asks for the
+  permission again.
 - Privacy placeholder.
 - About/app version tile.
 
