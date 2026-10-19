@@ -1,9 +1,8 @@
 import 'dart:math' show max;
 
-import 'package:collection/collection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/inventory/application/ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_from_template.dart';
 import 'package:yamt/features/inventory/application/'
@@ -64,30 +63,61 @@ CalorieEntry? buildTemplatePlanEntry({
   );
 }
 
-/// The saved Vorrat items in [items] of each ingredient of [recipe], or the
-/// best name match for one without, like the recipe page picks them.
+/// The Vorrat items in [items] that supply each ingredient of [recipe], as
+/// the recipe page picks them: the saved items kept in a fitting unit, else
+/// the best match that fits. A plan cooks from full packs, so a saved item
+/// stays even when it is used up.
+///
+/// shortcut: plans match with the lexicon of all languages; pass the app
+/// locale when a plan needs one language's food words.
 Map<String, List<String>> templatePlanAssignments(
   PreparedMeal recipe,
-  List<InventoryItem> items,
-) {
-  final ids = {for (final item in items) item.id};
+  List<InventoryItem> items, {
+  required TemplateIngredientParser parser,
+}) {
+  final byId = {for (final item in items) item.id: item};
   return {
     for (final ingredient in recipe.recipeIngredients)
-      ingredient: switch (<String>[
-        for (final id
-            in recipe.recipeIngredientAssignments[ingredient] ??
-                const <String>[])
-          if (ids.contains(id)) id,
-      ]) {
-        [] => [
-          ?matchInventoryItemsForIngredient(
-            ingredient: ingredient,
-            inventoryItems: items,
-          ).firstOrNull?.id,
-        ],
-        final saved => saved,
-      },
+      ingredient: _planItems(recipe, ingredient, items, byId, parser),
   };
+}
+
+List<String> _planItems(
+  PreparedMeal recipe,
+  String ingredient,
+  List<InventoryItem> items,
+  Map<String, InventoryItem> byId,
+  TemplateIngredientParser parser,
+) {
+  final requirement = parser.parseRequirement(
+    ingredient: ingredient,
+    selectedPortions: 1,
+    basePortions: 1,
+  );
+  if (requirement == null) {
+    return const <String>[];
+  }
+  final conversion =
+      recipe.recipeIngredientAmountConversions[ingredient.trim()];
+  final saved = [
+    for (final id
+        in recipe.recipeIngredientAssignments[ingredient] ?? const <String>[])
+      if (byId[id] case final item?
+          when ingredientItemFits(item, requirement, conversion))
+        id,
+  ];
+  if (saved.isNotEmpty) {
+    return saved;
+  }
+  return [
+    ?bestIngredientStockMatch(
+      text: ingredient,
+      requirement: requirement,
+      items: items,
+      localeCode: null,
+      amountConversion: conversion,
+    )?.id,
+  ];
 }
 
 /// The stock [plan] of the Kochbuch [template] takes from each Vorrat item
@@ -120,7 +150,7 @@ Map<String, int> templatePlanIngredientNeeds({
     final cooked = _cookedOnPaper(
       template,
       cookedPortions: cookedPortions,
-      assignments: templatePlanAssignments(template, items),
+      assignments: templatePlanAssignments(template, items, parser: parser),
       items: items,
       parser: parser,
       now: now,
@@ -151,7 +181,7 @@ List<PlanUnstockedIngredient> templatePlanUnstockedIngredients({
 }) {
   final cookedPortions = plan.bundleTotalPortions ?? template.totalPortions;
   final share = (plan.bundleConsumedPortions ?? 1) / max(1, cookedPortions);
-  final assignments = templatePlanAssignments(template, items);
+  final assignments = templatePlanAssignments(template, items, parser: parser);
   return [
     for (final ingredient in template.recipeIngredients)
       if (!template.ignoredRecipeIngredients.contains(ingredient) &&

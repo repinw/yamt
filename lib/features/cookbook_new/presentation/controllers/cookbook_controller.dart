@@ -3,9 +3,11 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cookbook_new/domain/cookbook_overview.dart';
 import 'package:yamt/features/inventory/application/ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 part 'cookbook_controller.g.dart';
 
@@ -28,6 +30,7 @@ class CookbookController extends _$CookbookController {
       ..ignore();
     final itemsFuture = ref.watch(inventoryQuickEatItemsProvider.future)
       ..ignore();
+    final parser = ref.watch(templateIngredientParserProvider);
     final templates = await templatesFuture;
     final meals = await mealsFuture;
     final items = await itemsFuture;
@@ -44,6 +47,34 @@ class CookbookController extends _$CookbookController {
           localeCode: localeCode,
         ),
       ),
+      // The recipe page's rule: a saved item that fits, else a match. Saved
+      // items and conversions belong to their recipe, so only lines without
+      // them share the cache.
+      canSupply: (recipe, ingredient) {
+        final conversion =
+            recipe.recipeIngredientAmountConversions[ingredient.trim()];
+        final saved =
+            recipe.recipeIngredientAssignments[ingredient] ?? const <String>[];
+        bool supply() {
+          final (:matches, :others) = ingredientStockCandidates(
+            text: ingredient,
+            requirement: parser.parseRequirement(
+              ingredient: ingredient,
+              selectedPortions: 1,
+              basePortions: 1,
+            ),
+            items: items,
+            localeCode: localeCode,
+            amountConversion: conversion,
+          );
+          return matches.isNotEmpty ||
+              others.any((item) => saved.contains(item.id));
+        }
+
+        return conversion == null && saved.isEmpty
+            ? inStockByFood.putIfAbsent('line:$ingredient', supply)
+            : supply();
+      },
     );
   }
 

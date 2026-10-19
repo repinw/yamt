@@ -34,11 +34,13 @@ class CookbookOverview {
   ///
   /// A template with recipe ingredients is a recipe; one without is a Vorlage
   /// combined from Vorrat foods. [isInStock] tells whether the Vorrat holds a
-  /// food with the given name.
+  /// food of a Vorlage by its name, and [canSupply] whether it holds an item
+  /// that fits an ingredient line of a recipe.
   factory fromMeals({
     required List<PreparedMeal> savedTemplates,
     required List<PreparedMeal> meals,
     required bool Function(String food) isInStock,
+    required bool Function(PreparedMeal recipe, String ingredient) canSupply,
   }) {
     final templates = <CookbookEntry>[];
     final recipes = <CookbookEntry>[];
@@ -60,7 +62,7 @@ class CookbookOverview {
             inStock: [
               for (final ingredient in template.recipeIngredients)
                 if (!template.ignoredRecipeIngredients.contains(ingredient))
-                  isInStock(ingredient),
+                  canSupply(template, ingredient),
             ],
           ),
         );

@@ -21,11 +21,10 @@ InventoryItem? bestIngredientStockMatch({
   if (requirement == null) {
     return null;
   }
-  return _matches(
-    text,
-    items,
-    localeCode,
-  ).firstWhereOrNull((item) => _fits(item, requirement, amountConversion));
+  return _matches(text, [
+    for (final item in items)
+      if (ingredientItemFits(item, requirement, amountConversion)) item,
+  ], localeCode).firstOrNull;
 }
 
 /// The Vorrat items that can supply [requirement] of the ingredient [text]:
@@ -43,25 +42,20 @@ ingredientStockCandidates({
   if (requirement == null) {
     return (matches: const <InventoryItem>[], others: const <InventoryItem>[]);
   }
-  final matches = _matches(
-    text,
-    items,
-    localeCode,
-  ).where((item) => _fits(item, requirement, amountConversion)).toList();
+  // The unit check is cheap, the name score is not, so it goes first.
+  final fitting = [
+    for (final item in items)
+      if (!item.isFullyConsumed &&
+          ingredientItemFits(item, requirement, amountConversion))
+        item,
+  ];
+  final matches = _matches(text, fitting, localeCode);
   final matchIds = {for (final item in matches) item.id};
-  final others =
-      items
-          .where(
-            (item) =>
-                !matchIds.contains(item.id) &&
-                !item.isFullyConsumed &&
-                _fits(item, requirement, amountConversion),
-          )
-          .toList()
-        ..sort(
-          (left, right) =>
-              left.name.toLowerCase().compareTo(right.name.toLowerCase()),
-        );
+  final others = fitting.where((item) => !matchIds.contains(item.id)).toList()
+    ..sort(
+      (left, right) =>
+          left.name.toLowerCase().compareTo(right.name.toLowerCase()),
+    );
   return (matches: matches, others: others);
 }
 
@@ -112,7 +106,9 @@ List<InventoryItem> _matches(
   localeCode: localeCode,
 );
 
-bool _fits(
+/// Whether [item] is kept in a unit that can supply [requirement], with the
+/// recipe's saved [amountConversion] for pieces, whatever it still holds.
+bool ingredientItemFits(
   InventoryItem item,
   TemplateIngredientRequirement requirement,
   RecipeIngredientAmountConversion? amountConversion,

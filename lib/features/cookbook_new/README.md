@@ -56,8 +56,13 @@ templates list and the old cooking flow.
 - Removing a template deletes only its document. Its photo stays, because
   Vorrat meals cooked from it keep the same photo reference, and the undo
   saves the same template back.
-- A food counts as in stock when the ingredient matcher finds a Vorrat item
-  that is not used up. Ignored recipe ingredients are left out.
+- A recipe ingredient counts as in stock when its saved Vorrat item, or else
+  a name match, is kept in a unit that fits its amount
+  (`inventory/application/ingredient_stock_match.dart`, the rule the recipe
+  page, plans and open rows share). How much the item still holds does not
+  count here; the recipe page shows a shortfall. A Vorlage food counts
+  when an item of its name is not used up. Ignored recipe ingredients are
+  left out.
 - "Offen" shows meals that are still in the pot or have open rows, and
   have portions left.
 - The food weight is the pot on the scale minus the empty utensil. A cooked
