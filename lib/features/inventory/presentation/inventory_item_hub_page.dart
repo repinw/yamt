@@ -111,18 +111,22 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     final combine = inventoryItemCombineControllerProvider(widget.item.id);
     final picks = ref.watch(combine);
     final canEat = consumableInventoryAmount(widget.item) != null;
-    final actions = InventoryItemHubActionsCard(
-      key: _cardKey,
-      item: widget.item,
-      isOnShoppingList: isOnShoppingList,
-      onPicked: _run,
-      actions: [
-        for (final action in InventoryItemHubAction.values)
-          if (action != InventoryItemHubAction.remove &&
-              (picks.isEmpty || action != InventoryItemHubAction.edit))
-            action,
-      ],
-      offersEatActions: canEat && picks.isEmpty,
+    // A running action also blocks "Kombinieren", which closes the hub (#728).
+    final actions = IgnorePointer(
+      ignoring: _isRunning,
+      child: InventoryItemHubActionsCard(
+        key: _cardKey,
+        item: widget.item,
+        isOnShoppingList: isOnShoppingList,
+        onPicked: _run,
+        actions: [
+          for (final action in InventoryItemHubAction.values)
+            if (action != InventoryItemHubAction.remove &&
+                (picks.isEmpty || action != InventoryItemHubAction.edit))
+              action,
+        ],
+        offersEatActions: canEat && picks.isEmpty,
+      ),
     );
     if (!canEat) {
       return InventoryItemUsedUpHubBody(
