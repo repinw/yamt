@@ -357,6 +357,54 @@ void main() {
     );
   });
 
+  test('reloads when an earlier day of the week becomes a pause day', () async {
+    final logRepository = FakeCalorieLogRepository();
+    addTearDown(logRepository.dispose);
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2026, 5),
+      ),
+    );
+    final container = _dashboardContainer(
+      preferences: MemoryAppPreferences(),
+      logRepository: logRepository,
+      selectedDay: selectedDay,
+      settingsRepository: settingsRepository,
+    );
+    addTearDown(container.dispose);
+    final provider = diaryDayDashboardControllerProvider(selectedDay);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+    await _waitForDashboardRefresh(container, selectedDay);
+    // Two days back, so the whole week counts, not only the day before.
+    bool dayBeforeIsPause() {
+      final days = container.read(provider).data!.weekOverview.days;
+      return days[days.length - 3].isPauseDay;
+    }
+
+    expect(dayBeforeIsPause(), isFalse);
+
+    // The earlier days add up to this day's carryover, so this day reloads,
+    // although its own budget stays the same.
+    await container
+        .read(calorieGoalControllerProvider.notifier)
+        .setPauseDay(
+          day: selectedDay.subtract(const Duration(days: 2)),
+          isPause: true,
+        );
+    for (var i = 0; i < 40 && !dayBeforeIsPause(); i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+
+    expect(dayBeforeIsPause(), isTrue);
+  });
+
   test('reloads when the day turns from a plan into today', () async {
     final preferences = MemoryAppPreferences();
     final logRepository = FakeCalorieLogRepository();
