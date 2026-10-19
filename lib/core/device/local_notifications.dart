@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show AppLifecycleListener;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -19,6 +20,15 @@ abstract interface class LocalNotifications {
   /// Asks for the permission to show notifications; returns whether it is
   /// granted.
   Future<bool> requestPermission();
+
+  /// Whether the system lets the app show notifications on [channelId]:
+  /// the app's switch and, on Android, the channel's own. True when the
+  /// platform cannot tell.
+  Future<bool> areAllowed(String channelId);
+
+  /// Opens the system settings of the app's notifications. Throws when no
+  /// settings screen opens.
+  Future<void> openSettings();
 
   /// Shows a notification at [at], or a few minutes later: Android may
   /// delay it to save battery. Replaces a notification with the same [id].
@@ -93,6 +103,43 @@ class PluginLocalNotifications implements LocalNotifications {
   }
 
   @override
+  Future<bool> areAllowed(String channelId) async {
+    await _ready;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        final android = _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+        if (android == null) return true;
+        if (await android.areNotificationsEnabled() == false) return false;
+        // The channel is missing until its first notification is scheduled.
+        final channels = await android.getNotificationChannels() ?? const [];
+        return channels.every(
+          (channel) =>
+              channel.id != channelId || channel.importance != Importance.none,
+        );
+      case TargetPlatform.iOS:
+        final permissions = await _plugin
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >()
+            ?.checkPermissions();
+        return permissions?.isEnabled ?? true;
+      case _:
+        return true;
+    }
+  }
+
+  @override
+  Future<void> openSettings() async {
+    await _ready;
+    if (await _plugin.openAppNotificationSettings() == false) {
+      throw StateError('No notification settings screen opened.');
+    }
+  }
+
+  @override
   Future<void> schedule({
     required int id,
     required DateTime at,
@@ -157,6 +204,13 @@ class UnavailableLocalNotifications implements LocalNotifications {
   Future<bool> requestPermission() async => false;
 
   @override
+  Future<bool> areAllowed(String channelId) async => true;
+
+  @override
+  Future<void> openSettings() async =>
+      throw UnsupportedError('No notification settings on this platform.');
+
+  @override
   Future<void> schedule({
     required int id,
     required DateTime at,
@@ -185,4 +239,14 @@ LocalNotifications localNotifications(Ref ref) {
               defaultTargetPlatform == TargetPlatform.iOS)
       ? PluginLocalNotifications()
       : const UnavailableLocalNotifications();
+}
+
+/// Whether the system lets the app show notifications on [channelId].
+/// Checks again whenever the app returns to the foreground: the user may
+/// have changed it in the system settings.
+@riverpod
+Future<bool> localNotificationsAllowed(Ref ref, String channelId) {
+  final lifecycle = AppLifecycleListener(onResume: ref.invalidateSelf);
+  ref.onDispose(lifecycle.dispose);
+  return ref.watch(localNotificationsProvider).areAllowed(channelId);
 }

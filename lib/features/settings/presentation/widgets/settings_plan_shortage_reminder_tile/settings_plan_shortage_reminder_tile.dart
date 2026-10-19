@@ -24,16 +24,25 @@ class SettingsPlanShortageReminderTile extends StatelessWidget {
             context, {
             required enabled,
             required minuteOfDay,
+            required blocked,
             required setEnabled,
             required setMinuteOfDay,
+            required openSystemSettings,
           }) => SettingsTile(
             key: SettingsPageKeys.planShortageReminderTile,
-            icon: Icons.notifications_none_rounded,
+            icon: blocked
+                ? Icons.notifications_off_outlined
+                : Icons.notifications_none_rounded,
+            iconColor: blocked ? Theme.of(context).colorScheme.error : null,
             title: l10n.settingsPlanShortageReminderTitle,
-            subtitle: l10n.settingsPlanShortageReminderSubtitle,
+            // A blocked reminder never shows; a tap leads to the system
+            // switch.
+            subtitle: blocked
+                ? l10n.settingsPlanShortageReminderBlocked
+                : l10n.settingsPlanShortageReminderSubtitle,
             showChevron: false,
             trailing: Switch(value: enabled, onChanged: setEnabled),
-            onTap: () => setEnabled(!enabled),
+            onTap: blocked ? openSystemSettings : () => setEnabled(!enabled),
           ),
     );
   }
@@ -53,8 +62,10 @@ class SettingsPlanShortageReminderTimeTile extends StatelessWidget {
             context, {
             required enabled,
             required minuteOfDay,
+            required blocked,
             required setEnabled,
             required setMinuteOfDay,
+            required openSystemSettings,
           }) {
             final time = TimeOfDay(
               hour: minuteOfDay ~/ 60,

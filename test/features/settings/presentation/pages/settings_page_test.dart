@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/device/local_notifications.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
@@ -25,6 +26,7 @@ import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../helpers/fake_local_notifications.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
@@ -137,6 +139,8 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
   _FakeHealthConnectionService? healthService,
   Stream<UserProfile?>? userProfile,
   bool revealAppearance = false,
+  FakeLocalNotifications? notifications,
+  Map<String, String>? preferenceStrings,
 }) async {
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: calorieSettings,
@@ -151,7 +155,11 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        appPreferencesProvider.overrideWithValue(
+          MemoryAppPreferences(initialStrings: preferenceStrings),
+        ),
+        if (notifications != null)
+          localNotificationsProvider.overrideWithValue(notifications),
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(null),
         ),
@@ -314,6 +322,136 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byType(TimePickerDialog), findsNothing);
+  });
+
+  group('blocked reminder', () {
+    const blockedText = 'Notifications are off. Tap to allow them.';
+    const permissionAsked = {
+      'plan_shortage_reminder_permission_asked_v1': 'set',
+    };
+    Switch reminderSwitch(WidgetTester tester) => tester.widget<Switch>(
+      find.descendant(
+        of: _settingsTile(SettingsPageKeys.planShortageReminderTile),
+        matching: find.byType(Switch),
+      ),
+    );
+
+    testWidgets('says so and opens the system settings', (tester) async {
+      final notifications = FakeLocalNotifications()..allowed = false;
+      await _pumpSettingsPage(
+        tester,
+        appVersionOverride: (ref) async => '1.1.0+2',
+        notifications: notifications,
+        preferenceStrings: permissionAsked,
+      );
+      await tester.pumpAndSettle();
+
+      await _scrollToText(tester, 'Reminder for missing ingredients');
+      expect(find.text(blockedText), findsOneWidget);
+      await tester.tap(
+        _settingsTile(SettingsPageKeys.planShortageReminderTile),
+      );
+      await tester.pumpAndSettle();
+
+      expect(notifications.settingsOpened, 1);
+      // The tap leads to the system switch and leaves the reminder on.
+      expect(reminderSwitch(tester).value, isTrue);
+    });
+
+    testWidgets('appears when the switch asks and the user denies', (
+      tester,
+    ) async {
+      final notifications = FakeLocalNotifications()
+        ..allowed = false
+        ..grants = false;
+      await _pumpSettingsPage(
+        tester,
+        appVersionOverride: (ref) async => '1.1.0+2',
+        notifications: notifications,
+      );
+      await tester.pumpAndSettle();
+      await _scrollToText(tester, 'Reminder for missing ingredients');
+      final switchFinder = find.descendant(
+        of: _settingsTile(SettingsPageKeys.planShortageReminderTile),
+        matching: find.byType(Switch),
+      );
+      expect(find.text(blockedText), findsNothing);
+
+      await tester.tap(switchFinder);
+      await tester.pumpAndSettle();
+      await tester.tap(switchFinder);
+      await tester.pumpAndSettle();
+
+      expect(notifications.permissionRequests, 1);
+      expect(reminderSwitch(tester).value, isTrue);
+      expect(find.text(blockedText), findsOneWidget);
+    });
+
+    testWidgets('says so when the system settings do not open', (tester) async {
+      final notifications = FakeLocalNotifications()
+        ..allowed = false
+        ..canOpenSettings = false;
+      await _pumpSettingsPage(
+        tester,
+        appVersionOverride: (ref) async => '1.1.0+2',
+        notifications: notifications,
+        preferenceStrings: permissionAsked,
+      );
+      await tester.pumpAndSettle();
+
+      await _scrollToText(tester, 'Reminder for missing ingredients');
+      await tester.tap(
+        _settingsTile(SettingsPageKeys.planShortageReminderTile),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Could not open the notification settings.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows nothing before the app asked for the permission', (
+      tester,
+    ) async {
+      await _pumpSettingsPage(
+        tester,
+        appVersionOverride: (ref) async => '1.1.0+2',
+        notifications: FakeLocalNotifications()..allowed = false,
+      );
+      await tester.pumpAndSettle();
+
+      await _scrollToText(tester, 'Reminder for missing ingredients');
+      expect(find.text(blockedText), findsNothing);
+    });
+
+    testWidgets('clears when turning the switch on grants the permission', (
+      tester,
+    ) async {
+      final notifications = FakeLocalNotifications()..allowed = false;
+      await _pumpSettingsPage(
+        tester,
+        appVersionOverride: (ref) async => '1.1.0+2',
+        notifications: notifications,
+        preferenceStrings: permissionAsked,
+      );
+      await tester.pumpAndSettle();
+      await _scrollToText(tester, 'Reminder for missing ingredients');
+      final switchFinder = find.descendant(
+        of: _settingsTile(SettingsPageKeys.planShortageReminderTile),
+        matching: find.byType(Switch),
+      );
+
+      await tester.tap(switchFinder);
+      await tester.pumpAndSettle();
+      expect(reminderSwitch(tester).value, isFalse);
+      await tester.tap(switchFinder);
+      await tester.pumpAndSettle();
+
+      expect(notifications.permissionRequests, 1);
+      expect(reminderSwitch(tester).value, isTrue);
+      expect(find.text(blockedText), findsNothing);
+    });
   });
 
   testWidgets('home widget verbose-mode tile toggles and saves the choice', (

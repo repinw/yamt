@@ -8,9 +8,15 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const channel = MethodChannel('dexterous.com/flutter/local_notifications');
   final calls = <MethodCall>[];
+  var enabled = false;
+  var channels = <Map<String, Object?>>[];
+  bool? settingsOpened = true;
 
   setUp(() {
     calls.clear();
+    enabled = false;
+    channels = [];
+    settingsOpened = true;
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     AndroidFlutterLocalNotificationsPlugin.registerWith();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -18,6 +24,9 @@ void main() {
           calls.add(call);
           return switch (call.method) {
             'initialize' => true,
+            'areNotificationsEnabled' => enabled,
+            'getNotificationChannels' => channels,
+            'openAppNotificationSettings' => settingsOpened,
             'pendingNotificationRequests' => [
               {'id': 7, 'title': 't', 'body': 'b', 'payload': 'p'},
             ],
@@ -79,5 +88,40 @@ void main() {
     final notifications = PluginLocalNotifications();
 
     expect(await notifications.taps.first, 'plan-day');
+  });
+
+  test('areAllowed reads the app switch and the channel', () async {
+    final notifications = PluginLocalNotifications();
+    Map<String, Object?> channel(int importance) => {
+      'id': 'plan_shortage',
+      'name': 'Fehlende Zutaten',
+      'importance': importance,
+      'showBadge': true,
+      'bypassDnd': false,
+      'playSound': true,
+      'enableLights': false,
+      'enableVibration': true,
+      'ledColor': 0,
+    };
+
+    expect(await notifications.areAllowed('plan_shortage'), isFalse);
+    enabled = true;
+    // Not created yet: nothing scheduled on it so far.
+    expect(await notifications.areAllowed('plan_shortage'), isTrue);
+    channels = [channel(Importance.defaultImportance.value)];
+    expect(await notifications.areAllowed('plan_shortage'), isTrue);
+    channels = [channel(Importance.none.value)];
+    expect(await notifications.areAllowed('plan_shortage'), isFalse);
+    expect(await notifications.areAllowed('other'), isTrue);
+  });
+
+  test('openSettings opens them and throws when it cannot', () async {
+    final notifications = PluginLocalNotifications();
+
+    await notifications.openSettings();
+    expect(calls.last.method, 'openAppNotificationSettings');
+
+    settingsOpened = false;
+    await expectLater(notifications.openSettings(), throwsStateError);
   });
 }

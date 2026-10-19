@@ -125,8 +125,9 @@ already documented as a reusable presentation surface.
 
 - `presentation/widgets/plan_shortage_reminder_settings_builder.dart`
   (`PlanShortageReminderSettingsBuilder`) gives another feature's surface the
-  day-before reminder's on/off and time with their setters. Settings uses it
-  for its rows.
+  day-before reminder's on/off and time with their setters, whether the
+  system blocks its notifications, and a callback that opens the system
+  notification settings. Settings uses it for its rows.
 - `presentation/widgets/plan_shortage_reminder_listener.dart`
   (`PlanShortageReminderListener`) wraps the app in `lib/app.dart`: it keeps
   the day-before reminders for missing plan ingredients scheduled through

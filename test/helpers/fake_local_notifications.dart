@@ -10,6 +10,19 @@ class FakeLocalNotifications implements LocalNotifications {
   /// How often the permission was requested.
   int permissionRequests = 0;
 
+  /// Whether the system allows notifications.
+  bool allowed = true;
+
+  /// Whether the user grants a permission request.
+  bool grants = true;
+
+  /// How often the system settings were opened.
+  int settingsOpened = 0;
+
+  /// Whether the system settings can open; when not, [openSettings]
+  /// throws.
+  bool canOpenSettings = true;
+
   final _taps = StreamController<String>.broadcast();
 
   /// Taps the notification with [payload].
@@ -18,7 +31,17 @@ class FakeLocalNotifications implements LocalNotifications {
   @override
   Future<bool> requestPermission() async {
     permissionRequests++;
-    return true;
+    if (grants) allowed = true;
+    return grants;
+  }
+
+  @override
+  Future<bool> areAllowed(String channelId) async => allowed;
+
+  @override
+  Future<void> openSettings() async {
+    if (!canOpenSettings) throw StateError('No settings screen opened.');
+    settingsOpened++;
   }
 
   @override
