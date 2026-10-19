@@ -18,6 +18,7 @@ class DiaryPlannedEntryTile extends StatelessWidget {
     required this.onTap,
     this.onAccept,
     this.isShort = false,
+    this.portionText,
     super.key,
   });
 
@@ -32,6 +33,9 @@ class DiaryPlannedEntryTile extends StatelessWidget {
 
   /// Whether the Vorrat cannot cover the plan in full.
   final bool isShort;
+
+  /// The amount as the plan's meal is now; null keeps the stored one.
+  final String? portionText;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +59,7 @@ class DiaryPlannedEntryTile extends StatelessWidget {
                     child: DiaryMealEntryTile(
                       entry: plan,
                       onTap: onTap,
+                      portionText: portionText,
                       // Too few portions left matters more than the
                       // meal prep mark.
                       tag: isShort

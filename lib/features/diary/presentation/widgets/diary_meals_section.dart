@@ -11,9 +11,11 @@ import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_plan_meals_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_portion_formatter.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_empty_state.dart';
@@ -90,6 +92,11 @@ class DiaryMealsSection extends ConsumerWidget {
             .keys
             .toSet() ??
         const <String>{};
+    final planMeals = ref.watch(diaryPlanMealsProvider(normalizedDay));
+    final planPortionTexts = {
+      for (final plan in data?.plannedEntries ?? const <CalorieEntry>[])
+        plan.id: ?diaryPlanPortionText(l10n, plan, planMeals[plan.id]),
+    };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.xxl,
@@ -98,6 +105,7 @@ class DiaryMealsSection extends ConsumerWidget {
           DiaryMealGroup(
             section: section,
             shortPlanIds: shortPlanIds,
+            planPortionTexts: planPortionTexts,
             onCopy: data == null
                 ? null
                 : () => unawaited(

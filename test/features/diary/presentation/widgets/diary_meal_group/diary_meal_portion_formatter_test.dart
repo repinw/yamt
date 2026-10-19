@@ -5,6 +5,8 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_portion_formatter.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 DiaryMealEntry _entry(double amount, {double? portionAmount, String? label}) {
@@ -68,5 +70,60 @@ void main() {
     // An amount edited off the portion grid falls back to grams.
     expect(label(_entry(55, portionAmount: 40, label: 'Brotscheibe')), '55 g');
     expect(label(_entry(37.5)), '37,5 g');
+  });
+
+  test('a meal plan reads as the meal is now', () {
+    final l10n = lookupAppLocalizations(const Locale('de'));
+    PreparedMeal meal({required int total, bool inPot = false}) => PreparedMeal(
+      id: 'chili',
+      name: 'Chili',
+      totalPortions: total,
+      remainingPortions: total,
+      totalKcal: 2000,
+      totalProtein: 100,
+      totalCarbs: 200,
+      totalFat: 80,
+      createdAt: DateTime(2026, 10, 7),
+      updatedAt: DateTime(2026, 10, 7),
+      components: const <PreparedMealComponent>[],
+      inPot: inPot ? true : null,
+    );
+    CalorieEntry plan(num consumed, int total) => CalorieEntry.bundle(
+      id: 'plan-1',
+      userId: 'user-1',
+      name: 'Chili',
+      mealType: MealType.dinner,
+      totalKcal: 500,
+      totalProtein: 25,
+      totalCarbs: 50,
+      totalFat: 20,
+      bundleSourcePreparedMealId: 'chili',
+      bundleConsumedPortions: consumed,
+      bundleTotalPortions: total,
+      bundleComponents: const [],
+      loggedAt: DateTime(2026, 10, 8, 19),
+    );
+
+    // Planned in the pot, still in the pot.
+    expect(
+      diaryPlanPortionText(l10n, plan(0.5, 1), meal(total: 1, inPot: true)),
+      '½ Topf',
+    );
+    expect(
+      diaryPlanPortionText(l10n, plan(0.25, 1), meal(total: 1, inPot: true)),
+      '¼ Topf',
+    );
+    // Planned in the pot, cooked into 4 portions since.
+    expect(
+      diaryPlanPortionText(l10n, plan(0.5, 1), meal(total: 4)),
+      '2/4 Portionen',
+    );
+    // A cooked meal of one portion stays in portions.
+    expect(
+      diaryPlanPortionText(l10n, plan(1, 1), meal(total: 1)),
+      '1/1 Portionen',
+    );
+    // Without the meal the row keeps the stored amount.
+    expect(diaryPlanPortionText(l10n, plan(0.5, 1), null), isNull);
   });
 }

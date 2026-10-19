@@ -19,6 +19,7 @@ class DiaryMealGroup extends StatelessWidget {
     this.onAcceptPlan,
     this.onAcceptAllPlans,
     this.shortPlanIds = const {},
+    this.planPortionTexts = const {},
     this.onCopy,
     super.key,
   });
@@ -40,6 +41,9 @@ class DiaryMealGroup extends StatelessWidget {
 
   /// Plans the Vorrat cannot cover in full.
   final Set<String> shortPlanIds;
+
+  /// The amount text of meal plans by plan id, as their meals are now.
+  final Map<String, String> planPortionTexts;
 
   /// Copies the meal as plans to other days. Without it, no copy icon.
   final VoidCallback? onCopy;
@@ -121,6 +125,7 @@ class DiaryMealGroup extends StatelessWidget {
             child: DiaryPlannedEntryTile(
               plan: plan,
               isShort: shortPlanIds.contains(plan.id),
+              portionText: planPortionTexts[plan.id],
               onTap: () => onTapPlan(plan),
               onAccept: switch (onAcceptPlan) {
                 final accept? => () => accept(plan),

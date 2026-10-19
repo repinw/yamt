@@ -20,7 +20,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// diary row.
 class DiaryEntryLabelSection extends ConsumerWidget {
   /// Creates the section for [entry].
-  const new({required this.entry, super.key});
+  const new({required this.entry, this.eatenHeader, super.key});
 
   /// Key of the nutrition label.
   static const labelKey = Key('diary_entry_details_label');
@@ -30,6 +30,9 @@ class DiaryEntryLabelSection extends ConsumerWidget {
 
   /// The entry, with the totals of the entered amount.
   final CalorieEntry entry;
+
+  /// The header of the eaten column instead of the stored amount.
+  final String? eatenHeader;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,7 +70,7 @@ class DiaryEntryLabelSection extends ConsumerWidget {
               : l10n.caloriesEntryPer100Label(
                   consumedUnitSymbol(l10n, entry.consumedUnit),
                 ),
-          eatenHeader: _eatenHeader(l10n, entry),
+          eatenHeader: eatenHeader ?? _eatenHeader(l10n, entry),
         ),
       ],
     );

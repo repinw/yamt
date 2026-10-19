@@ -1,7 +1,11 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/consumed_unit_l10n.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Formats the portion or bundle amount string for a diary meal entry.
@@ -56,4 +60,24 @@ String _formatCount(double count, NumberFormat format) {
     return whole == 0 ? '½' : '$whole½';
   }
   return format.format(count);
+}
+
+/// The amount of a meal plan as the meal is now: a share of the pot while it
+/// is in the pot ("½ Topf"), else its portions of the cooked meal. Null
+/// without the meal, so the row keeps the stored amount.
+String? diaryPlanPortionText(
+  AppLocalizations l10n,
+  CalorieEntry plan,
+  PreparedMeal? meal,
+) {
+  if (meal == null || plan.bundleSourcePreparedMealId != meal.id) {
+    return null;
+  }
+  final share = preparedMealPlanShare(plan, meal);
+  final format = NumberFormat.decimalPattern(l10n.localeName)
+    ..maximumFractionDigits = 2;
+  final amount = formatQuickChipAmount(share, format.format);
+  return meal.isInPot
+      ? l10n.inventoryEatSheetAmountWithUnit(amount, l10n.eatPagePotUnit)
+      : l10n.caloriesBundlePortions(amount, meal.totalPortions);
 }
