@@ -271,6 +271,22 @@ void main() {
     expect(result, isA<InventoryItemHubCombine>());
   });
 
+  testWidgets('back waits for a running action (#312)', (tester) async {
+    final action = Completer<bool>();
+    await _openHub(tester, _chicken(), onAction: () => action.future);
+
+    await _tapKey(tester, const Key('eat_item_action_shopping_list'));
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(InventoryItemHubPage), findsOneWidget);
+
+    action.complete(false);
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(InventoryItemHubPage), findsNothing);
+  });
+
   testWidgets('a food counted in pieces offers no inedible part', (
     tester,
   ) async {

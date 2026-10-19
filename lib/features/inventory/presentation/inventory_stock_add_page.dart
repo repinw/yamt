@@ -70,6 +70,10 @@ class _InventoryStockAddPageState extends ConsumerState<InventoryStockAddPage> {
   final GlobalKey _cardKey = GlobalKey();
   late int _packages = widget.initialPackages;
 
+  /// Whether "buy again" still saves; the page stays open until it is done,
+  /// so its snack bar and undo reach the user.
+  var _isRunning = false;
+
   /// Asks for the day, from today on, then plans the product for it at the
   /// time of day of now, so the eat page picks the meal for that time.
   void _plan() => unawaited(() async {
@@ -100,73 +104,80 @@ class _InventoryStockAddPageState extends ConsumerState<InventoryStockAddPage> {
     );
     final weight = item.weight?.trim() ?? '';
 
-    return EatPageScaffold(
-      whenControl: const SizedBox.shrink(),
-      kcal: null,
-      confirmButtonKey: InventoryStockAddPage.confirmKey,
-      confirmLabel: l10n.inventoryStockAddConfirm(_packages),
-      onConfirm: () =>
-          Navigator.of(context).pop(InventoryStockAddConfirmed(_packages)),
-      cancelButtonKey: const Key('inventory_stock_add_close'),
-      onPlan: widget.offersEat ? _plan : null,
-      onDiary: widget.offersEat
-          ? () => Navigator.of(context).pop(const InventoryStockAddEat())
-          : null,
-      children: [
-        EatPageHeader(
-          title: item.name,
-          brand: item.brand,
-          caption: weight.isEmpty
-              ? null
-              : l10n.receiptReviewPackageSize(weight),
-          imageUrl: item.imageUrl,
-        ),
-        if (missingItemValues(item, checkPackageSize: true) case final missing
-            when missing.isNotEmpty)
-          EatMissingValuesHint(
-            missing: missing,
-            onPressed: () => _run(InventoryItemHubAction.edit),
-          ),
-        if (_packageNutrition(package) case final nutrition?)
-          EatLabelTable(
-            rows: nutritionFactsRows(
-              context,
-              eaten: nutrition.eaten,
-              per100: nutrition.per100,
-              unknownEaten: l10n.eatPageAmountUnknown,
-            ),
-            per100Header: l10n.caloriesEntryPer100Label(_unit(l10n, item)),
-            eatenHeader: switch (nutrition.amount) {
-              final amount? => l10n.inventoryEatSheetAmountWithUnit(
-                formatInventoryNutritionValue(amount),
-                _unit(l10n, item),
-              ),
-              null => l10n.eatPageAmountUnknown,
-            },
-          ),
-        EatCountRow(
-          label: l10n.eatPagePackages,
-          count: _packages,
-          decreaseTooltip: l10n.eatPageRemovePackage,
-          increaseTooltip: l10n.eatPageAddPackage,
-          onDecrease: _packages > 1
-              ? () => setState(() => _packages -= 1)
+    // Every exit waits for "buy again": X and back, and its buttons.
+    return PopScope(
+      canPop: !_isRunning,
+      child: IgnorePointer(
+        ignoring: _isRunning,
+        child: EatPageScaffold(
+          whenControl: const SizedBox.shrink(),
+          kcal: null,
+          confirmButtonKey: InventoryStockAddPage.confirmKey,
+          confirmLabel: l10n.inventoryStockAddConfirm(_packages),
+          onConfirm: () =>
+              Navigator.of(context).pop(InventoryStockAddConfirmed(_packages)),
+          cancelButtonKey: const Key('inventory_stock_add_close'),
+          onPlan: widget.offersEat ? _plan : null,
+          onDiary: widget.offersEat
+              ? () => Navigator.of(context).pop(const InventoryStockAddEat())
               : null,
-          onIncrease: () => setState(() => _packages += 1),
-          decreaseKey: InventoryStockAddPage.decreaseKey,
-          increaseKey: InventoryStockAddPage.increaseKey,
-          valueKey: InventoryStockAddPage.countKey,
-        ),
-        EatItemActionsCard(
-          key: _cardKey,
-          isOnShoppingList: isOnShoppingList,
-          actions: const [
-            InventoryItemHubAction.addToShoppingList,
-            InventoryItemHubAction.edit,
+          children: [
+            EatPageHeader(
+              title: item.name,
+              brand: item.brand,
+              caption: weight.isEmpty
+                  ? null
+                  : l10n.receiptReviewPackageSize(weight),
+              imageUrl: item.imageUrl,
+            ),
+            if (missingItemValues(item, checkPackageSize: true)
+                case final missing when missing.isNotEmpty)
+              EatMissingValuesHint(
+                missing: missing,
+                onPressed: () => _run(InventoryItemHubAction.edit),
+              ),
+            if (_packageNutrition(package) case final nutrition?)
+              EatLabelTable(
+                rows: nutritionFactsRows(
+                  context,
+                  eaten: nutrition.eaten,
+                  per100: nutrition.per100,
+                  unknownEaten: l10n.eatPageAmountUnknown,
+                ),
+                per100Header: l10n.caloriesEntryPer100Label(_unit(l10n, item)),
+                eatenHeader: switch (nutrition.amount) {
+                  final amount? => l10n.inventoryEatSheetAmountWithUnit(
+                    formatInventoryNutritionValue(amount),
+                    _unit(l10n, item),
+                  ),
+                  null => l10n.eatPageAmountUnknown,
+                },
+              ),
+            EatCountRow(
+              label: l10n.eatPagePackages,
+              count: _packages,
+              decreaseTooltip: l10n.eatPageRemovePackage,
+              increaseTooltip: l10n.eatPageAddPackage,
+              onDecrease: _packages > 1
+                  ? () => setState(() => _packages -= 1)
+                  : null,
+              onIncrease: () => setState(() => _packages += 1),
+              decreaseKey: InventoryStockAddPage.decreaseKey,
+              increaseKey: InventoryStockAddPage.increaseKey,
+              valueKey: InventoryStockAddPage.countKey,
+            ),
+            EatItemActionsCard(
+              key: _cardKey,
+              isOnShoppingList: isOnShoppingList,
+              actions: const [
+                InventoryItemHubAction.addToShoppingList,
+                InventoryItemHubAction.edit,
+              ],
+              onPicked: _run,
+            ),
           ],
-          onPicked: _run,
         ),
-      ],
+      ),
     );
   }
 
@@ -194,13 +205,17 @@ class _InventoryStockAddPageState extends ConsumerState<InventoryStockAddPage> {
   }
 
   Future<void> _run(InventoryItemHubAction action) async {
+    if (_isRunning) return;
     if (action == InventoryItemHubAction.edit) {
       Navigator.of(context).pop(InventoryStockAddEdit(_packages));
       return;
     }
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(inventoryItemsControllerProvider.notifier);
-    final revert = await controller.buyAgainItem(widget.item);
+    setState(() => _isRunning = true);
+    final revert = await controller.buyAgainItem(widget.item).whenComplete(() {
+      if (mounted) setState(() => _isRunning = false);
+    });
     final cardContext = _cardKey.currentContext;
     if (!mounted || cardContext == null || !cardContext.mounted) {
       return;

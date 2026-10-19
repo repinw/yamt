@@ -5,10 +5,14 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_flow.dart';
+import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_stock_add_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 final _now = DateTime(2026, 5, 13, 12, 30);
 
@@ -26,13 +30,20 @@ InventoryItem _milk() => InventoryItem.create(
 Future<List<InventoryStockAddResult?>> _open(
   WidgetTester tester, {
   required bool offersEat,
+  FakeShoppingListRepository? shoppingList,
 }) async {
   final results = <InventoryStockAddResult?>[];
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         clockProvider.overrideWithValue(() => _now),
-        sourceItemInActiveShoppingListProvider.overrideWith((ref, _) => false),
+        // With a list, its real line watches the shopping list controller.
+        if (shoppingList != null)
+          shoppingListRepositoryProvider.overrideWithValue(shoppingList)
+        else
+          sourceItemInActiveShoppingListProvider.overrideWith(
+            (ref, _) => false,
+          ),
       ],
       child: MaterialApp(
         locale: const Locale('en'),
@@ -88,5 +99,33 @@ void main() {
 
     final plan = results.single! as InventoryStockAddPlan;
     expect(plan.day, _now);
+  });
+
+  testWidgets('the page stays open while "buy again" saves', (tester) async {
+    final shoppingList = FakeShoppingListRepository()
+      ..saveDelay = const Duration(seconds: 2);
+    addTearDown(shoppingList.dispose);
+    final results = await _open(
+      tester,
+      offersEat: false,
+      shoppingList: shoppingList,
+    );
+
+    await tester.tap(find.byKey(const Key('eat_item_action_shopping_list')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('inventory_stock_add_close')));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(results, isEmpty, reason: 'X waits for the save');
+    await tester.tap(
+      find.byKey(InventoryStockAddPage.confirmKey),
+      warnIfMissed: false,
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(results, isEmpty, reason: 'confirm waits for the save too');
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.tap(find.byKey(const Key('inventory_stock_add_close')));
+    await tester.pumpAndSettle();
+    expect(results, [null]);
   });
 }
