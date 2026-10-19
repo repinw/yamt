@@ -124,6 +124,70 @@ void main() {
     expect(overview.recipes.single.inStock, [true, false]);
   });
 
+  test('a food kept in another unit does not count as in stock', () async {
+    final recipe = preparedMealTestData(id: 'pancakes')
+        .copyWith(recipeIngredients: const ['300 ml Milk', '200 g Flour']);
+    final container = _container(
+      templates: [recipe],
+      meals: const [],
+      // The milk is kept in grams, so it cannot give 300 ml.
+      items: [_item('Milk'), _item('Flour')],
+    );
+
+    final overview = await _overview(container);
+
+    expect(overview.recipes.single.inStock, [false, true]);
+  });
+
+  test('a saved item counts as in stock without a name match', () async {
+    final recipe = preparedMealTestData(id: 'chili').copyWith(
+      recipeIngredients: const ['500 g Minced beef'],
+      recipeIngredientAssignments: const {
+        '500 g Minced beef': ['Organic chuck'],
+      },
+    );
+    final container = _container(
+      templates: [recipe],
+      meals: const [],
+      items: [_item('Organic chuck')],
+    );
+
+    final overview = await _overview(container);
+
+    expect(overview.recipes.single.inStock, [true]);
+  });
+
+  test('a saved unit conversion counts only for its own recipe', () async {
+    final converted = preparedMealTestData(id: 'soup').copyWith(
+      name: 'Soup',
+      recipeIngredients: const ['2 Onions'],
+      recipeIngredientAmountConversions: const {
+        '2 Onions': RecipeIngredientAmountConversion(
+          amountPerPiece: 80,
+          unit: InventoryAmountUnit.gram,
+        ),
+      },
+    );
+    final plain = preparedMealTestData(id: 'stew')
+        .copyWith(name: 'Stew', recipeIngredients: const ['2 Onions']);
+    final container = _container(
+      templates: [converted, plain],
+      meals: const [],
+      // The onions are kept in grams.
+      items: [_item('Onions')],
+    );
+
+    final overview = await _overview(container);
+
+    expect(
+      {for (final recipe in overview.recipes) recipe.meal.name: recipe.inStock},
+      {
+        'Soup': [true],
+        'Stew': [false],
+      },
+    );
+  });
+
   test('shows meals with open rows in the pot', () async {
     final meal = preparedMealTestData(id: 'free')
         .copyWith(pendingRecipeIngredients: const ['500 g Chicken']);

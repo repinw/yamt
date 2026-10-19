@@ -239,7 +239,11 @@ class InventoryPlanAcceptService {
         : buildTemplatePlanEntry(
             template: template,
             cookedPortions: plan.bundleTotalPortions ?? template.totalPortions,
-            assignments: templatePlanAssignments(template, items),
+            assignments: templatePlanAssignments(
+              template,
+              items,
+              parser: _parser,
+            ),
             items: items,
             parser: _parser,
             mealType: plan.mealType,

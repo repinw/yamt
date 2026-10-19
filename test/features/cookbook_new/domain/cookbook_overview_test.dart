@@ -15,7 +15,9 @@ void main() {
       final overview = CookbookOverview.fromMeals(
         savedTemplates: [template, recipe],
         meals: const [],
-        isInStock: (food) => food.contains('Rice') || food.contains('Beans'),
+        isInStock: (food) => food.contains('Rice'),
+        canSupply: (meal, ingredient) =>
+            meal.id == 'chili' && ingredient.contains('Beans'),
       );
 
       expect(overview.templates.single.meal.id, 'bowl');
@@ -44,6 +46,7 @@ void main() {
         savedTemplates: const [],
         meals: [older, complete, eaten, newer],
         isInStock: (_) => true,
+        canSupply: (_, _) => true,
       );
 
       expect(overview.openMeals.map((meal) => meal.id), ['newer', 'older']);
@@ -59,6 +62,7 @@ void main() {
           preparedMealTestData(id: 'cooked'),
         ],
         isInStock: (_) => true,
+        canSupply: (_, _) => true,
       );
 
       expect(overview.openMeals.single.id, 'cooking');

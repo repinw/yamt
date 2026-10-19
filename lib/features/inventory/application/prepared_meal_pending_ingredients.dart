@@ -1,6 +1,6 @@
-import 'package:collection/collection.dart';
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
@@ -127,8 +127,7 @@ buildPreparedMealPendingIngredientFillResult({
 
 /// The best Vorrat item that can fill the open row [ingredient] with the
 /// row's own amount, or `null` when the row has no amount or no matching
-/// item supplies its unit. It uses the same unit check as
-/// [buildPreparedMealPendingIngredientFillResult].
+/// item fits it, by the same rule as the recipe page.
 InventoryItem? findPendingIngredientStockMatch({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
@@ -140,18 +139,11 @@ InventoryItem? findPendingIngredientStockMatch({
     selectedPortions: 1,
     basePortions: 1,
   );
-  if (requirement == null) {
-    return null;
-  }
-  return matchInventoryItemsForIngredient(
-    ingredient: ingredient,
-    inventoryItems: inventoryItems,
+  return bestIngredientStockMatch(
+    text: ingredient,
+    requirement: requirement,
+    items: inventoryItems,
     localeCode: localeCode,
-  ).firstWhereOrNull(
-    (item) => hasCompatibleTemplateRequirement(
-      item: item,
-      requiredUnit: requirement.inventoryUnit,
-    ),
   );
 }
 

@@ -71,8 +71,13 @@ Other features may consume these public Inventory entry points:
   it, or, without portions left, logs the meal's values without stock.
   A plan of a Kochbuch recipe or Vorlage (`CalorieEntry.bundleSourceTemplateId`)
   is logged without stock; its reminder takes the recipe's Vorrat items
-  (saved, else the best match) and its planned portions when accepted and throws the same flags while one is missing or
+  (the saved ones in a fitting unit, used up or not, else the best match
+  that fits) and its planned portions when accepted and throws the same flags while one is missing or
   the recipe is gone.
+- `application/ingredient_stock_match.dart`: the one rule for which Vorrat
+  items can supply a recipe ingredient, best first: a name match whose unit
+  fits the amount, with the recipe's saved unit conversion. The recipe page,
+  free cooking, plans, open rows and the Kochbuch cards use it.
 - `application/template_plan_entry.dart`: `buildTemplatePlanEntry` builds
   the plan of one portion of a Kochbuch recipe (cooked on paper from its
   assigned Vorrat items, each counted as a full pack) or Vorlage.

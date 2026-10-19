@@ -131,4 +131,49 @@ void main() {
     expect(unstocked.first.inMilliliters, isTrue);
     expect(unstocked.last.amount, isNull);
   });
+
+  test('a plan takes the item that fits, like the recipe page', () {
+    InventoryItem milk(String id, InventoryAmountUnit unit) => _item(
+      id,
+      currentAmount: 1000,
+    ).copyWith(name: 'Milch', amountUnit: unit);
+
+    final assignments = templatePlanAssignments(
+      _template(
+        ingredients: const ['300 ml Milch', '200 g Mehl'],
+        // The saved item is kept in grams now and no longer fits.
+        assignments: const {
+          '300 ml Milch': ['milk-g'],
+        },
+      ),
+      [
+        milk('milk-g', InventoryAmountUnit.gram),
+        milk('milk-ml', InventoryAmountUnit.milliliter),
+      ],
+      parser: const TemplateIngredientParser(),
+    );
+
+    expect(assignments, {
+      '300 ml Milch': ['milk-ml'],
+      '200 g Mehl': <String>[],
+    });
+  });
+
+  test('a used-up saved item still serves a plan, which cooks from full '
+      'packs', () {
+    final assignments = templatePlanAssignments(
+      _template(
+        ingredients: const ['200 g flour'],
+        assignments: const {
+          '200 g flour': ['flour'],
+        },
+      ),
+      [_item('flour', currentAmount: 0)],
+      parser: const TemplateIngredientParser(),
+    );
+
+    expect(assignments, {
+      '200 g flour': ['flour'],
+    });
+  });
 }
