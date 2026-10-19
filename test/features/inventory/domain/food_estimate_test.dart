@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -48,5 +50,17 @@ void main() {
 
     expect(half.map((i) => i.grams), [75, 125]);
     expect(half.map((i) => i.kcal), [200, 200]);
+  });
+
+  test('a saved estimate reads back as it was written', () {
+    const saved = SavedFoodEstimate(
+      estimate: _estimate,
+      level: FoodEstimateLevel.rich,
+      description: 'Döner mit allem',
+    );
+
+    final stored = jsonDecode(jsonEncode(saved.toJson()));
+
+    expect(SavedFoodEstimate.fromJson(stored as Map<String, dynamic>), saved);
   });
 }

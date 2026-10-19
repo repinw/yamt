@@ -1,3 +1,4 @@
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -100,8 +101,14 @@ InventoryItem buildSwappedItem({
   required String? weight,
   required bool canReferenceGlobalItem,
   bool aiEstimated = false,
+  SavedFoodEstimate? aiEstimate,
 }) {
   final updatedItem = sourceItem.copyWith(
+    // The old estimate described the replaced food; only a new AI food
+    // brings its own (#763).
+    productSnapshot: sourceItem.productSnapshot.copyWith(
+      aiEstimate: aiEstimated ? aiEstimate : null,
+    ),
     aiEstimated: aiEstimated,
     globalFoodItemId: canReferenceGlobalItem
         ? resolvedProduct.id

@@ -245,6 +245,7 @@ abstract final class InventoryItemHubFlow {
                 requiresGlobalPersistence: request.requiresGlobalPersistence,
                 weight: request.weight,
                 aiEstimated: request.aiEstimated,
+                aiEstimate: request.aiEstimate,
               ),
         ) ??
         false;

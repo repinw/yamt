@@ -19,6 +19,7 @@ import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -706,6 +707,58 @@ void main() {
       );
 
       expect(catalog.appendedItems, isEmpty);
+    });
+
+    testWidgets('keeps the AI estimate on the saved item, and only on an '
+        'AI food (#763)', (tester) async {
+      const estimate = SavedFoodEstimate(
+        estimate: FoodEstimate(
+          name: 'Muesli',
+          portionGrams: 80,
+          kcalLean: 280,
+          kcalRich: 340,
+          per100: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+            per100Kcal: 380,
+          ),
+          ingredients: [
+            FoodEstimateIngredient(name: 'Hafer', grams: 60, kcal: 220),
+          ],
+        ),
+        level: FoodEstimateLevel.lean,
+        description: 'Muesli mit Milch',
+      );
+      final item = _manualItemWithNutrition();
+      final withEstimate = item.copyWith(
+        productSnapshot: item.productSnapshot.copyWith(aiEstimate: estimate),
+      );
+      final aiItems = <InventoryItem>[];
+      final realItems = <InventoryItem>[];
+
+      await save(
+        tester,
+        productSearchHubAiResult(
+          ManualProductAiSearchResult(
+            item: withEstimate.copyWith(aiEstimated: true),
+            action: InventoryReceiptManualProductAction.addToInventory,
+            globalPackageWeight: '500 g',
+          ),
+        ),
+        savedItems: aiItems,
+      );
+      // A real product picked for it: the estimate described the old food.
+      await save(
+        tester,
+        InventoryReceiptManualProductResult(
+          item: withEstimate,
+          action: InventoryReceiptManualProductAction.addToInventory,
+          skipMissingBarcodePrompt: true,
+        ),
+        savedItems: realItems,
+      );
+
+      expect(aiItems.single.productSnapshot.aiEstimate, estimate);
+      expect(realItems.single.productSnapshot.aiEstimate, isNull);
     });
 
     testWidgets('keeps an AI food private when another path rebuilt its '

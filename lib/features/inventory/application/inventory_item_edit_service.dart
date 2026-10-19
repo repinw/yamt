@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'global_food_item_repository.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_stock_changes.dart';
@@ -86,7 +87,7 @@ class InventoryItemEditService {
   ///
   /// An [aiEstimated] product stays the user's own: it gets no catalog
   /// document and no barcode candidate, and the item keeps its pending id
-  /// (#701).
+  /// (#701), and keeps its [aiEstimate] (#763).
   Future<InventoryItemChange<bool>> swap(
     List<InventoryItem> items, {
     required String itemId,
@@ -94,6 +95,7 @@ class InventoryItemEditService {
     required bool requiresGlobalPersistence,
     String? weight,
     bool aiEstimated = false,
+    SavedFoodEstimate? aiEstimate,
   }) async {
     final index = items.indexWhere((item) => item.id == itemId);
     if (index < 0 || !items[index].isFullyAvailable) {
@@ -109,6 +111,7 @@ class InventoryItemEditService {
         weight: weight,
         canReferenceGlobalItem: inCatalog,
         aiEstimated: aiEstimated,
+        aiEstimate: aiEstimate,
       );
     if (!await _writer.save(items, next)) {
       return (result: false, written: null);
