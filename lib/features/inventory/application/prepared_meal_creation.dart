@@ -3,6 +3,8 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_from_template.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_from_vorlage.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
@@ -90,6 +92,40 @@ class PreparedMealCreation {
           recipeIngredientAssignments: recipeIngredientAssignments,
           recipeIngredientAmountConversions: recipeIngredientAmountConversions,
           ingredientParser: ingredientParser,
+        ),
+      );
+    } on PreparedMealBuildException catch (error) {
+      return PreparedMealCreationResult.failure(error.reason);
+    }
+  }
+
+  /// Creates a prepared meal from the Vorlage [vorlage] with [foods] for
+  /// [totalPortions] portions.
+  Future<PreparedMealCreationResult> createPreparedMealFromVorlage({
+    required PreparedMeal vorlage,
+    required int totalPortions,
+    required List<VorlageFood> foods,
+    required InventoryItemRepository inventoryRepository,
+  }) async {
+    if (totalPortions < 1 || vorlage.name.trim().isEmpty) {
+      return const PreparedMealCreationResult.failure(
+        PreparedMealCreationFailureReason.invalidInput,
+      );
+    }
+    final currentMeals = await _writer.loadMeals();
+    final currentItems = await inventoryRepository.readAllForChange();
+    try {
+      return await _persistCreatedMeal(
+        inventoryRepository: inventoryRepository,
+        currentMeals: currentMeals,
+        currentItems: currentItems,
+        creationResult: buildPreparedMealFromVorlage(
+          currentItems: currentItems,
+          preparedMealId: _writer.buildId(),
+          now: _writer.buildNow(),
+          vorlage: vorlage,
+          totalPortions: totalPortions,
+          foods: foods,
         ),
       );
     } on PreparedMealBuildException catch (error) {

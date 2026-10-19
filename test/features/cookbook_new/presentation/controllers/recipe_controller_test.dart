@@ -16,6 +16,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_cooking_service.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_from_vorlage.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -88,6 +89,18 @@ class _FakeCookingService implements PreparedMealCookingService {
         : const PreparedMealCreationResult.failure(
             PreparedMealCreationFailureReason.mealSaveFailed,
           );
+  }
+
+  final vorlageCalls = <({int portions, List<VorlageFood> foods})>[];
+
+  @override
+  Future<PreparedMealCreationResult> cookVorlage({
+    required PreparedMeal vorlage,
+    required int portions,
+    required List<VorlageFood> foods,
+  }) async {
+    vorlageCalls.add((portions: portions, foods: foods));
+    return const PreparedMealCreationResult.success('meal');
   }
 
   @override
@@ -542,30 +555,42 @@ void main() {
 
       expect(view.isVorlage, isTrue);
       // Two packs of the same food are one line, sized for two portions, and
-      // pieces go without a unit.
+      // pieces go without a unit. The line shows what cooking takes.
       expect(view.lines.map((line) => line.label), [
         '500 g Hackfleisch',
         '200 g Karotten',
         '4 Eier',
         '4 Mozzarella',
-        '2 Zitrone',
+        '0.6 Zitrone',
       ]);
       final mozzarella = view.lines[3].row.requirement!;
       expect(mozzarella.amount, 4);
       expect(mozzarella.unit, TemplateIngredientUnit.piece);
+      // Part of a lemon still needs one lemon in the Vorrat.
+      expect(view.lines.last.row.requirement!.amount, 1);
       expect(view.lines.first.items.map((item) => item.id), [
         'mince',
         'mince-2',
       ]);
 
+      // Cooking takes the foods' own amounts for two portions, a third of
+      // a lemon included, without reading the lines again.
       await _controller(container).cook(view);
-      expect(service.calls.single.assignments, {
-        '250 g Hackfleisch': ['mince', 'mince-2'],
-        '100 g Karotten': ['carrots'],
-        '2 Eier': ['eggs'],
-        '2 Mozzarella': ['mozzarella'],
-        '1 Zitrone': ['lemon'],
-      });
+      expect(service.calls, isEmpty);
+      final call = service.vorlageCalls.single;
+      expect(call.portions, 2);
+      expect(
+        call.foods.map(
+          (food) => (food.name, food.amount, food.itemIds.join(' ')),
+        ),
+        <(String, double, String)>[
+          ('Hackfleisch', 500, 'mince mince-2'),
+          ('Karotten', 200, 'carrots'),
+          ('Eier', 4, 'eggs'),
+          ('Mozzarella', 4, 'mozzarella'),
+          ('Zitrone', 0.6, 'lemon'),
+        ],
+      );
     },
   );
 

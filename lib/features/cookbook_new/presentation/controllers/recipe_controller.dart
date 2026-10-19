@@ -11,12 +11,14 @@ import 'package:yamt/features/cookbook_new/domain/free_cooking_transcript.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_ingredient_texts.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_view_builder.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/vorlage_as_recipe.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_draft.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/inventory_shopping_suggestions.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_cooking_service.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_from_vorlage.dart';
 import 'package:yamt/features/inventory/application/template_plan_entry.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
@@ -138,13 +140,18 @@ class RecipeController extends _$RecipeController {
     final link = ref.keepAlive();
     state = state.copyWith(isCooking: true);
     try {
-      final result = await ref
-          .read(preparedMealCookingServiceProvider)
-          .cookRecipe(
-            recipe: view.recipe.copyWith(totalPortions: view.basePortions),
-            portions: view.portions,
-            assignments: view.assignments,
-          );
+      final service = ref.read(preparedMealCookingServiceProvider);
+      final result = view.isVorlage
+          ? await service.cookVorlage(
+              vorlage: view.saved,
+              portions: view.portions,
+              foods: _vorlageFoods(view),
+            )
+          : await service.cookRecipe(
+              recipe: view.recipe.copyWith(totalPortions: view.basePortions),
+              portions: view.portions,
+              assignments: view.assignments,
+            );
       return result.isSuccess ? result.preparedMealId : null;
     } on Object catch (error, stackTrace) {
       log(
@@ -160,6 +167,24 @@ class RecipeController extends _$RecipeController {
       }
       link.close();
     }
+  }
+
+  /// The foods of the Vorlage of [view] for its portions, from the items
+  /// the page shows for them.
+  List<VorlageFood> _vorlageFoods(RecipeView view) {
+    final assignments = view.assignments;
+    return [
+      for (final (:line, :food) in vorlageFoods(
+        view.saved,
+        ref.read(templateIngredientParserProvider),
+      ))
+        (
+          name: food.name,
+          unit: food.unit,
+          amount: food.amount * view.portions / view.basePortions,
+          itemIds: assignments[line] ?? const <String>[],
+        ),
+    ];
   }
 
   /// Plans one portion of [view], cooked as the page shows it now, on [day]

@@ -909,8 +909,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   for the chosen portions, then "Planen" and "Kochen" → "Gekocht". It has
   no steps, no Kochhelfer and no "Zutaten prüfen"; "Planen" keeps the
   Vorlage's own values for one portion.
-  Known limit: foods counted in pieces are cooked in whole pieces, so a
-  part of a piece counts as one (a third of a lemon takes a whole one).
+  "Kochen" takes each food's own amount for the chosen portions from the
+  items its line shows, parts of a piece included where the item counts
+  parts (a pack by weight counts as one piece, an item counted in whole
+  pieces gives whole ones); what they lack stays an open row on the meal,
+  in whole pieces so it can be filled from the Vorrat.
+  A line shows at least one piece.
 - A recipe opens its recipe page: the recipe photo with its source and name
   over it, the portions (stepper, "Original für N"), the ingredients sized
   for those portions, and the steps. Each ingredient shows the Vorrat food
