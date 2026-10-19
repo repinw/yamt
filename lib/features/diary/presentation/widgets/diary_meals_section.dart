@@ -10,6 +10,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_after_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_meals_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -93,6 +94,10 @@ class DiaryMealsSection extends ConsumerWidget {
             .toSet() ??
         const <String>{};
     final planMeals = ref.watch(diaryPlanMealsProvider(normalizedDay));
+    final countsOpenPlans = ref.watch(
+      diaryOpenPlansProvider(normalizedDay)
+          .select((plans) => plans?.counted ?? false),
+    );
     final planPortionTexts = {
       for (final plan in data?.plannedEntries ?? const <CalorieEntry>[])
         plan.id: ?diaryPlanPortionText(l10n, plan, planMeals[plan.id]),
@@ -106,6 +111,7 @@ class DiaryMealsSection extends ConsumerWidget {
             section: section,
             shortPlanIds: shortPlanIds,
             planPortionTexts: planPortionTexts,
+            countsOpenPlans: countsOpenPlans,
             onCopy: data == null
                 ? null
                 : () => unawaited(

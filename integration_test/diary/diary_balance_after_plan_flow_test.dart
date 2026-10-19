@@ -226,6 +226,51 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the meal heading follows "Nach Plan"', (tester) async {
+    await _pumpDiary(
+      tester,
+      planned: [
+        _food(
+          id: 'plan-lunch',
+          name: 'Brot',
+          mealType: MealType.lunch,
+          hour: 12,
+          kcal: 300,
+          protein: 10,
+          carbs: 50,
+          fat: 5,
+        ),
+      ],
+    );
+    final chip = find.byKey(DiaryBalanceCardKeys.afterPlanChip);
+    await _pumpUntil(
+      tester,
+      () => chip.evaluate().length == 1,
+      description: 'the after plan chip of today',
+    );
+    await tester.pumpAndSettle();
+    final lunchTotal = find.descendant(
+      of: find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.lunch)),
+      matching: find.text('1.300 kcal'),
+    );
+    await tester.ensureVisible(
+      find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.lunch)),
+    );
+    await tester.pumpAndSettle();
+
+    // "Nach Plan" is on by default: the plan counts in the lunch heading.
+    expect(lunchTotal, findsOneWidget);
+
+    await tester.ensureVisible(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+
+    // Off, the eaten soup alone is the meal, and its row shows its kcal.
+    expect(lunchTotal, findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('a reminder plan says its kcal are open and counts nowhere', (
     tester,
   ) async {

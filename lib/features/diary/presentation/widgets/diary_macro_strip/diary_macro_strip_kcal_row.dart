@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_amount_text.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Kcal row of the macro strip: label, a thin bar of four quarters like the
@@ -15,6 +16,8 @@ class DiaryMacroStripKcalRow extends StatelessWidget {
     required this.eaten,
     required this.target,
     required this.showTotal,
+    this.planned = 0,
+    this.countsPlanned = false,
     super.key,
   });
 
@@ -26,6 +29,12 @@ class DiaryMacroStripKcalRow extends StatelessWidget {
 
   /// Whether eaten and target are shown instead of what is left.
   final bool showTotal;
+
+  /// Planned kcal not eaten yet, striped after the eaten part.
+  final double planned;
+
+  /// Whether the amount counts [planned], like the head's "Nach Plan".
+  final bool countsPlanned;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +49,8 @@ class DiaryMacroStripKcalRow extends StatelessWidget {
       fontWeight: FontWeight.w700,
     );
     final progress = target <= 0 ? 0.0 : (eaten / target).clamp(0.0, 1.0);
+    final plannedRatio = target <= 0 ? 0.0 : planned / target;
+    final quarters = AppFoodLabel.kcalQuarterAlphas.length;
     final labelColors = FoodLabelColors.of(context);
 
     return Row(
@@ -57,16 +68,32 @@ class DiaryMacroStripKcalRow extends StatelessWidget {
                   Expanded(
                     child: ColoredBox(
                       color: labelColors.rule,
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor:
-                            (progress * AppFoodLabel.kcalQuarterAlphas.length -
-                                    index)
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: (progress * quarters - index).clamp(
+                              0.0,
+                              1.0,
+                            ),
+                            heightFactor: 1,
+                            child: ColoredBox(
+                              color: labelColors.accent.withValues(
+                                alpha: alpha,
+                              ),
+                            ),
+                          ),
+                          DiaryStripedSpan(
+                            from: (progress * quarters - index).clamp(0.0, 1.0),
+                            to: ((progress + plannedRatio) * quarters - index)
                                 .clamp(0.0, 1.0),
-                        heightFactor: 1,
-                        child: ColoredBox(
-                          color: labelColors.accent.withValues(alpha: alpha),
-                        ),
+                            color: labelColors.accent.withValues(
+                              alpha: diaryPlannedStripeAlpha,
+                            ),
+                            background: labelColors.rule,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -76,7 +103,7 @@ class DiaryMacroStripKcalRow extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.xs),
         DiaryMacroStripAmountText(
-          current: eaten,
+          current: eaten + (countsPlanned ? planned : 0),
           target: target,
           showTotal: showTotal,
           format: format,

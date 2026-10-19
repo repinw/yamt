@@ -76,20 +76,26 @@ abstract class _$DiaryAfterPlanController extends $Notifier<bool> {
 }
 
 /// The open plans of [day], counted when the user counts them; null when the
-/// day offers none.
+/// day offers none. A practice day and a scheduled restart have no "Nach
+/// Plan" head, so they offer none either: the head, the macro strip and the
+/// meal headings all follow this one answer.
 
 @ProviderFor(diaryOpenPlans)
 final diaryOpenPlansProvider = DiaryOpenPlansFamily._();
 
 /// The open plans of [day], counted when the user counts them; null when the
-/// day offers none.
+/// day offers none. A practice day and a scheduled restart have no "Nach
+/// Plan" head, so they offer none either: the head, the macro strip and the
+/// meal headings all follow this one answer.
 
 final class DiaryOpenPlansProvider
     extends
         $FunctionalProvider<DiaryOpenPlans?, DiaryOpenPlans?, DiaryOpenPlans?>
     with $Provider<DiaryOpenPlans?> {
   /// The open plans of [day], counted when the user counts them; null when the
-  /// day offers none.
+  /// day offers none. A practice day and a scheduled restart have no "Nach
+  /// Plan" head, so they offer none either: the head, the macro strip and the
+  /// meal headings all follow this one answer.
   DiaryOpenPlansProvider._({
     required DiaryOpenPlansFamily super.from,
     required DateTime super.argument,
@@ -141,10 +147,12 @@ final class DiaryOpenPlansProvider
   }
 }
 
-String _$diaryOpenPlansHash() => r'8f0e95ed9728b01d033acd859ab214403f41ee1e';
+String _$diaryOpenPlansHash() => r'deaf56e7c0a634fa0079ee560325b64b8d50fc09';
 
 /// The open plans of [day], counted when the user counts them; null when the
-/// day offers none.
+/// day offers none. A practice day and a scheduled restart have no "Nach
+/// Plan" head, so they offer none either: the head, the macro strip and the
+/// meal headings all follow this one answer.
 
 final class DiaryOpenPlansFamily extends $Family
     with $FunctionalFamilyOverride<DiaryOpenPlans?, DateTime> {
@@ -158,7 +166,9 @@ final class DiaryOpenPlansFamily extends $Family
       );
 
   /// The open plans of [day], counted when the user counts them; null when the
-  /// day offers none.
+  /// day offers none. A practice day and a scheduled restart have no "Nach
+  /// Plan" head, so they offer none either: the head, the macro strip and the
+  /// meal headings all follow this one answer.
 
   DiaryOpenPlansProvider call(DateTime day) =>
       DiaryOpenPlansProvider._(argument: day, from: this);

@@ -9,7 +9,10 @@ part 'diary_balance_card_provider.g.dart';
 
 /// The resolved balance of [day], read by the balance card, the macro strip
 /// and the home widget, so all three show the same numbers and move to the
-/// new day together. `null` while the day's dashboard has not loaded yet.
+/// new day together. The card and the strip add today's open plans on top
+/// when the user counts them (`diaryOpenPlansProvider`); the home widget
+/// shows what was eaten. `null` while the day's dashboard has not loaded
+/// yet.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.

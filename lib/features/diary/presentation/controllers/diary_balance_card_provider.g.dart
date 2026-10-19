@@ -10,7 +10,10 @@ part of 'diary_balance_card_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// The resolved balance of [day], read by the balance card, the macro strip
 /// and the home widget, so all three show the same numbers and move to the
-/// new day together. `null` while the day's dashboard has not loaded yet.
+/// new day together. The card and the strip add today's open plans on top
+/// when the user counts them (`diaryOpenPlansProvider`); the home widget
+/// shows what was eaten. `null` while the day's dashboard has not loaded
+/// yet.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.
@@ -20,7 +23,10 @@ final diaryBalanceCardProvider = DiaryBalanceCardFamily._();
 
 /// The resolved balance of [day], read by the balance card, the macro strip
 /// and the home widget, so all three show the same numbers and move to the
-/// new day together. `null` while the day's dashboard has not loaded yet.
+/// new day together. The card and the strip add today's open plans on top
+/// when the user counts them (`diaryOpenPlansProvider`); the home widget
+/// shows what was eaten. `null` while the day's dashboard has not loaded
+/// yet.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.
@@ -35,7 +41,10 @@ final class DiaryBalanceCardProvider
     with $Provider<DiaryBalanceCardData?> {
   /// The resolved balance of [day], read by the balance card, the macro strip
   /// and the home widget, so all three show the same numbers and move to the
-  /// new day together. `null` while the day's dashboard has not loaded yet.
+  /// new day together. The card and the strip add today's open plans on top
+  /// when the user counts them (`diaryOpenPlansProvider`); the home widget
+  /// shows what was eaten. `null` while the day's dashboard has not loaded
+  /// yet.
   ///
   /// Lives in `presentation/` because it derives from the dashboard
   /// controller's state.
@@ -95,7 +104,10 @@ String _$diaryBalanceCardHash() => r'e422579d44984b4119c06f15dce362507e04b0c9';
 
 /// The resolved balance of [day], read by the balance card, the macro strip
 /// and the home widget, so all three show the same numbers and move to the
-/// new day together. `null` while the day's dashboard has not loaded yet.
+/// new day together. The card and the strip add today's open plans on top
+/// when the user counts them (`diaryOpenPlansProvider`); the home widget
+/// shows what was eaten. `null` while the day's dashboard has not loaded
+/// yet.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.
@@ -113,7 +125,10 @@ final class DiaryBalanceCardFamily extends $Family
 
   /// The resolved balance of [day], read by the balance card, the macro strip
   /// and the home widget, so all three show the same numbers and move to the
-  /// new day together. `null` while the day's dashboard has not loaded yet.
+  /// new day together. The card and the strip add today's open plans on top
+  /// when the user counts them (`diaryOpenPlansProvider`); the home widget
+  /// shows what was eaten. `null` while the day's dashboard has not loaded
+  /// yet.
   ///
   /// Lives in `presentation/` because it derives from the dashboard
   /// controller's state.

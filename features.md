@@ -260,8 +260,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   Plan" instead of "<kcal> gegessen". Each macro shows the grams left after
   the plans, and its eaten grams count the plans too. The budget details
   sheet then lists "Offene Pläne" under what was eaten and ends with
-  "Übrig nach Plan", what the head counts as left after the plans. The choice is saved on
-  the device. Plans of past days never count.
+  "Übrig nach Plan", what the head counts as left after the plans. The
+  sticky macro strip stripes the plans like the head, and it and the kcal
+  totals of the meal headings count them too while the chip is on; a
+  reminder without kcal is no counted row. A practice day and a scheduled
+  restart show no chip and count no plans. The choice is saved on the
+  device. Plans of past days never count.
 - Plans of the last week that were never eaten or removed stay on their
   day. Today shows a line above the meals that names those days ("Offene
   Pläne vom <day>"); a tap opens the last of them, and the close button
