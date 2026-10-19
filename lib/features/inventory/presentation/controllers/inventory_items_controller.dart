@@ -16,6 +16,7 @@ import 'package:yamt/features/inventory/application/inventory_item_writer.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -255,6 +256,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     required bool requiresGlobalPersistence,
     String? weight,
     bool aiEstimated = false,
+    SavedFoodEstimate? aiEstimate,
   }) {
     return _mutate(
       false,
@@ -265,6 +267,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         requiresGlobalPersistence: requiresGlobalPersistence,
         weight: weight,
         aiEstimated: aiEstimated,
+        aiEstimate: aiEstimate,
       ),
     );
   }

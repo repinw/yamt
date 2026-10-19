@@ -2,9 +2,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_manual_add_product_factory.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+
+const _aiEstimate = SavedFoodEstimate(
+  estimate: FoodEstimate(
+    name: 'Milchreis',
+    portionGrams: 300,
+    kcalLean: 300,
+    kcalRich: 420,
+    per100: GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+      per100Kcal: 120,
+    ),
+    ingredients: [FoodEstimateIngredient(name: 'Reis', grams: 80, kcal: 280)],
+  ),
+  level: FoodEstimateLevel.normal,
+  description: 'Milchreis mit Zimt',
+);
 
 void main() {
   test('draft item derives amount data from weight', () {
@@ -98,11 +115,14 @@ void main() {
       storeName: 'Added manually',
       inventoryWeight: '300 ml',
       aiEstimated: true,
+      aiEstimate: _aiEstimate,
       inCatalog: true,
     );
 
     expect(savedItem.aiEstimated, isTrue);
     expect(isPendingGlobalFoodItemId(savedItem.globalFoodItemId), isTrue);
+    // The eat page and a new analysis read it later (#763).
+    expect(savedItem.productSnapshot.aiEstimate, _aiEstimate);
   });
 
   test('a product outside the catalog keeps a pending id (#698)', () {

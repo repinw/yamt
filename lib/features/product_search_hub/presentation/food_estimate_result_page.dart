@@ -153,6 +153,7 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
     estimate: widget.estimate,
     level: _level,
     grams: grams,
+    description: widget.description,
   );
 
   void _pickLevel(FoodEstimateLevel level) {
