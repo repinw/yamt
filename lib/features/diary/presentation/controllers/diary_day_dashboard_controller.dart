@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -79,14 +80,21 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       previous,
       next,
     ) {
-      final previousSignature = diaryDayGoalSignature(
-        previous?.value,
-        normalizedDay,
-      );
-      final nextSignature = diaryDayGoalSignature(next.value, normalizedDay);
-      if (previousSignature == null ||
-          nextSignature == null ||
-          previousSignature == nextSignature) {
+      // Every day of the week up to this one counts: their types and goals
+      // add up to the carryover this day starts with.
+      final weekDays = buildDiaryVisibleDays(anchorDay: normalizedDay);
+      List<Object?>? signatures(CalorieGoalSettings? settings) =>
+          settings == null
+          ? null
+          : [for (final day in weekDays) diaryDayGoalSignature(settings, day)];
+      final previousSignatures = signatures(previous?.value);
+      final nextSignatures = signatures(next.value);
+      if (previousSignatures == null ||
+          nextSignatures == null ||
+          const ListEquality<Object?>().equals(
+            previousSignatures,
+            nextSignatures,
+          )) {
         return;
       }
       unawaited(_refreshSelectedDay(forceRefresh: true));
