@@ -718,6 +718,7 @@
   "preparedMealIngredientsTitle": "Zutaten",
   "preparedMealEmptyIngredientsMessage": "Füge vor dem Speichern mindestens eine Zutat hinzu.",
   "preparedMealBindAction": "Lebensmittel kombinieren",
+  "preparedMealSelectionNeedsStockFood": "Wähle ein Lebensmittel aus dem Vorrat",
   "preparedMealSelectionCount": "{count} ausgewählt",
   "@preparedMealSelectionCount": {
     "placeholders": {

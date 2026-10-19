@@ -1784,6 +1784,54 @@ void main() {
     expect(find.byType(EatMealTable), findsNothing);
   });
 
+  testWidgets('only catalog foods left say a stock food is missing (#728)', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(
+      tester,
+      repository,
+      includeHomeShellChrome: true,
+      calorieEntryRoute: GoRoute(
+        path: AppRoutes.homeFoodPick,
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.pop(
+              _mealFoodPick(
+                InventoryReceiptManualProductResult(
+                  item: _itemWithNutrition('draft-bread', name: 'Bread'),
+                  action: InventoryReceiptManualProductAction.eatNow,
+                  requiresGlobalPersistence: false,
+                  skipMissingBarcodePrompt: true,
+                ),
+              ),
+            ),
+            child: const Text('pick bread'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('Milk'));
+    await tester.pumpAndSettle();
+    await _tapVisible(
+      tester,
+      find.byKey(InventorySelectionCatalogSliver.searchKey),
+    );
+    await _tapVisible(tester, find.text('pick bread'));
+    expect(find.text('PICK A FOOD FROM THE INVENTORY'), findsNothing);
+
+    await _tapVisible(tester, find.text('Milk'));
+
+    expect(find.text('PICK A FOOD FROM THE INVENTORY'), findsOneWidget);
+    expect(find.text('1 selected'), findsOneWidget);
+  });
+
   testWidgets('a selection without a food to combine keeps its catalog foods', (
     tester,
   ) async {

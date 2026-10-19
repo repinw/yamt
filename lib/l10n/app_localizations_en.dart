@@ -1342,6 +1342,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealBindAction => 'Combine foods';
 
   @override
+  String get preparedMealSelectionNeedsStockFood =>
+      'Pick a food from the inventory';
+
+  @override
   String preparedMealSelectionCount(int count) {
     return '$count selected';
   }

@@ -818,6 +818,10 @@
   "preparedMealIngredientsTitle": "Ingredients",
   "preparedMealEmptyIngredientsMessage": "Add at least one ingredient before saving.",
   "preparedMealBindAction": "Combine foods",
+  "preparedMealSelectionNeedsStockFood": "Pick a food from the inventory",
+  "@preparedMealSelectionNeedsStockFood": {
+    "description": "Hint above the selection count when only catalog foods are selected; a meal needs one food from the inventory before it can be confirmed."
+  },
   "preparedMealSelectionCount": "{count} selected",
   "@preparedMealSelectionCount": {
     "placeholders": {

@@ -32,7 +32,12 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
     return HomeShellTabTopChrome(
       // While selecting, the header holds the selection actions.
       pinned: selectionState.isSelectionMode,
-      kicker: selectionState.isSelectionMode || stockCount == null
+      // Only catalog foods: confirming waits for a stock food (#728).
+      kicker: selectionState.isSelectionMode
+          ? selectionState.selectedItemIds.isEmpty
+                ? l10n.preparedMealSelectionNeedsStockFood
+                : null
+          : stockCount == null
           ? null
           : l10n.inventoryPageKicker(stockCount),
       title: selectionState.isSelectionMode

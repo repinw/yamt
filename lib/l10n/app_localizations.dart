@@ -2314,6 +2314,12 @@ abstract class AppLocalizations {
   /// **'Combine foods'**
   String get preparedMealBindAction;
 
+  /// Hint above the selection count when only catalog foods are selected; a meal needs one food from the inventory before it can be confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a food from the inventory'**
+  String get preparedMealSelectionNeedsStockFood;
+
   /// No description provided for @preparedMealSelectionCount.
   ///
   /// In en, this message translates to:
