@@ -7,15 +7,13 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_manual_add_product_factory.dart';
-import 'package:yamt/features/inventory/data/'
-    'global_barcode_candidate_repository.dart';
-import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'manual_product_share_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_product_save_outcome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -172,11 +170,9 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     // A private food photo stays on the user's own item only.
     imageUrl: normalizeProductImageUrl(promptResult.item.imageUrl),
     aiEstimated: promptResult.item.aiEstimated,
-    // A save that skips the catalog only has a catalog id when the user
-    // picked a catalog product (#698).
-    inCatalog:
-        result.requiresGlobalPersistence ||
-        result.selectedGlobalFoodItemId != null,
+    // Only a picked catalog product has its catalog id at once. A new one
+    // gets it once the catalog write succeeded (#698, #806).
+    inCatalog: result.selectedGlobalFoodItemId != null,
   );
   final savedItem = adjustItem?.call(builtItem) ?? builtItem;
   final inventorySaved =
@@ -189,67 +185,33 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     );
     return const InventoryManualProductSaveOutcome.failed();
   }
-  // An AI estimate is the user's own meal: no catalog product and no
-  // barcode for other users' scans, whatever path built the result (#701).
-  if (!savedItem.staysPrivate) {
+  final pending = isPendingGlobalFoodItemId(savedItem.globalFoodItemId);
+  // An AI estimate is the user's own meal, whatever path built the result
+  // (#701), and so is a product outside the catalog that does not ask for it
+  // (#698): no catalog product and no barcode for other users' scans.
+  if (!savedItem.staysPrivate &&
+      (!pending || result.requiresGlobalPersistence)) {
+    final pendingItem = pending && inventoryItemsController != null
+        ? savedItem
+        : null;
+    // The Vorrat controller, and with it its queue, stays for the link.
+    final inventory = pendingItem == null
+        ? null
+        : container.listen(inventoryItemsControllerProvider, (_, _) {});
     unawaited(
-      _persistGlobalProduct(
-        container: container,
-        globalProduct: globalProduct,
-        requiresGlobalPersistence: result.requiresGlobalPersistence,
-        // The barcode candidate shows the whole product to other users, so a
-        // product outside the catalog gets none (#698).
-        barcode: isPendingGlobalFoodItemId(builtItem.globalFoodItemId)
-            ? null
-            : promptResult.barcode,
-        selectedAt: now,
-      ),
+      container
+          .read(manualProductShareControllerProvider.notifier)
+          .share(
+            product: globalProduct,
+            append: result.requiresGlobalPersistence,
+            barcode: promptResult.barcode,
+            selectedAt: now,
+            pendingItem: pendingItem,
+          )
+          .whenComplete(() => inventory?.close()),
     );
   }
   return InventoryManualProductSaveOutcome.saved(savedItem);
-}
-
-/// Writes the shared catalog product and its barcode selection.
-///
-/// It runs in the background because both are catalog extras: the user's
-/// inventory item and diary entry do not wait for the server.
-Future<void> _persistGlobalProduct({
-  required ProviderContainer container,
-  required GlobalFoodItem globalProduct,
-  required bool requiresGlobalPersistence,
-  required String? barcode,
-  required DateTime selectedAt,
-}) async {
-  try {
-    if (requiresGlobalPersistence) {
-      final saved = await container
-          .read(globalFoodItemRepositoryProvider)
-          .appendAll([globalProduct]);
-      if (!saved) {
-        log(
-          'Failed to save global product ${globalProduct.id}.',
-          name: _inventoryManualProductSaveLogName,
-        );
-        return;
-      }
-    }
-    if (barcode != null) {
-      await container
-          .read(globalBarcodeCandidateRepositoryProvider)
-          .recordSelection(
-            barcode: barcode,
-            globalFoodItem: globalProduct,
-            selectedAt: selectedAt,
-          );
-    }
-  } on Object catch (error, stackTrace) {
-    log(
-      'Failed to persist global product ${globalProduct.id}.',
-      name: _inventoryManualProductSaveLogName,
-      error: error,
-      stackTrace: stackTrace,
-    );
-  }
 }
 
 Future<_ManualBarcodePromptResult?> _resolveMissingBarcode(

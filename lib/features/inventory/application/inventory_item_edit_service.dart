@@ -57,6 +57,31 @@ class InventoryItemEditService {
     return (result: saved, written: saved ? next : null);
   }
 
+  /// Points [pendingItem], saved with its pending id, at the catalog product
+  /// [globalFoodItemId] once the catalog has it (#806). An item that was
+  /// swapped or removed in the meantime stays as it is.
+  Future<InventoryItemChange<bool>> linkToCatalog(
+    List<InventoryItem> items,
+    InventoryItem pendingItem,
+    String globalFoodItemId,
+  ) async {
+    final index = items.indexWhere((item) => item.id == pendingItem.id);
+    if (index < 0 ||
+        items[index].globalFoodItemId != pendingItem.globalFoodItemId) {
+      return (result: false, written: null);
+    }
+    final next = List<InventoryItem>.from(items)
+      ..[index] = items[index].copyWith(globalFoodItemId: globalFoodItemId);
+    final saved = await _writer.save(items, next);
+    if (!saved) {
+      log(
+        'Failed to point ${pendingItem.id} at $globalFoodItemId.',
+        name: 'InventoryItemEditService',
+      );
+    }
+    return (result: saved, written: saved ? next : null);
+  }
+
   /// Points a full item at another product.
   ///
   /// An [aiEstimated] product stays the user's own: it gets no catalog
