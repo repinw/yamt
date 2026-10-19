@@ -115,4 +115,19 @@ void main() {
     expect(read().anchorItemId, isNull);
     expect(read().catalogFoods, isEmpty);
   });
+
+  test('restore brings back a cleared selection (#728)', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(
+      preparedMealSelectionControllerProvider.notifier,
+    )..startFrom(anchorItemId: 'a', itemIds: {'a', 'b'});
+    final selection = container.read(preparedMealSelectionControllerProvider);
+
+    controller
+      ..clearSelection()
+      ..restore(selection);
+
+    expect(container.read(preparedMealSelectionControllerProvider), selection);
+  });
 }

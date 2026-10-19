@@ -170,6 +170,17 @@ class PreparedMealSelectionController
     );
   }
 
+  /// Brings back the [previous] selection, for example after its meal's hub
+  /// closed without a result (#728).
+  void restore(PreparedMealSelectionState previous) {
+    state = PreparedMealSelectionState(
+      selectedItemIds: previous.selectedItemIds,
+      bindRequestToken: state.bindRequestToken,
+      anchorItemId: previous.anchorItemId,
+      catalogFoods: previous.catalogFoods,
+    );
+  }
+
   /// Request the active selection action.
   void confirmSelection() {
     state = state.copyWith(bindRequestToken: state.bindRequestToken + 1);
