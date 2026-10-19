@@ -244,6 +244,33 @@ void main() {
     expect(result, isA<InventoryItemHubCombine>());
   });
 
+  testWidgets('a running action blocks Kombinieren on the item card (#728)', (
+    tester,
+  ) async {
+    InventoryItemHubResult? result;
+    final action = Completer<bool>();
+    await _openHub(
+      tester,
+      _chicken(),
+      onAction: () => action.future,
+      onResult: (value) => result = value,
+    );
+
+    await _tapKey(tester, const Key('eat_item_action_shopping_list'));
+    await tester.tap(
+      find.byKey(EatItemActionsCard.combineKey),
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(InventoryItemHubPage), findsOneWidget);
+    expect(result, isNull);
+
+    action.complete(false);
+    await tester.pumpAndSettle();
+    await _tapKey(tester, EatItemActionsCard.combineKey);
+    expect(result, isA<InventoryItemHubCombine>());
+  });
+
   testWidgets('a food counted in pieces offers no inedible part', (
     tester,
   ) async {
