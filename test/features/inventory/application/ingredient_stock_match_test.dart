@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/cookbook_new/application/ingredient_stock_match.dart';
+import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
