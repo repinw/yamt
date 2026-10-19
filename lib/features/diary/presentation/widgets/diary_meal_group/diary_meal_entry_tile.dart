@@ -20,6 +20,7 @@ class DiaryMealEntryTile extends StatelessWidget {
     this.countLabel,
     this.expanded,
     this.tag,
+    this.portionText,
     super.key,
   });
 
@@ -41,6 +42,9 @@ class DiaryMealEntryTile extends StatelessWidget {
   /// Shown under the macros, for example the Meal Prep tag of a plan.
   final Widget? tag;
 
+  /// The amount text instead of the one stored with [entry].
+  final String? portionText;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -49,7 +53,8 @@ class DiaryMealEntryTile extends StatelessWidget {
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
     );
-    final portionText = formatDiaryMealPortionLabel(context, entry);
+    final portionText =
+        this.portionText ?? formatDiaryMealPortionLabel(context, entry);
     final expanded = this.expanded;
 
     return Material(

@@ -499,6 +499,70 @@ void main() {
     expect(saved.totalKcal, 600);
   });
 
+  testWidgets('a plan of a meal in the pot reads as a share of the pot', (
+    tester,
+  ) async {
+    final meal = PreparedMeal(
+      id: 'chili',
+      name: 'Chili',
+      totalPortions: 1,
+      remainingPortions: 1,
+      totalKcal: 600,
+      totalProtein: 30,
+      totalCarbs: 60,
+      totalFat: 15,
+      createdAt: selectedDay,
+      updatedAt: selectedDay,
+      components: const [],
+      inPot: true,
+    );
+    final plan = buildConsumedPreparedMealCalorieEntry(
+      meal: meal,
+      consumedPortions: 0.5,
+      mealType: MealType.dinner,
+      now: () => selectedDay.add(const Duration(hours: 19)),
+      nextEntryId: () => 'plan',
+      loggedDay: selectedDay,
+    )!.copyWith(userId: 'user-1');
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'plan',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Chili',
+              kcal: 300,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            ),
+          ],
+        ),
+      ],
+      plannedEntries: [plan],
+      overrides: [
+        inventoryQuickEatMealsProvider.overrideWith(
+          (ref) => Stream.value([meal]),
+        ),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(DiaryMealsSectionKeys.plannedEntryTile('plan')),
+        matching: find.textContaining('½ pot'),
+      ),
+      findsOneWidget,
+    );
+  });
+
   group('eat all plans of a meal', () {
     DiaryMealEntry row(String id) => _entry(
       id: id,

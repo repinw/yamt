@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_details_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_portion_formatter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_action_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
@@ -168,7 +169,11 @@ class _DiaryPlanDetailsPageState extends ConsumerState<DiaryPlanDetailsPage> {
           : l10n.diaryPlanAcceptLaterHint,
       cancelButtonKey: DiaryPlanDetailsPage.closeButtonKey,
       children: [
-        if (!preview.nutritionPending) DiaryEntryLabelSection(entry: preview),
+        if (!preview.nutritionPending)
+          DiaryEntryLabelSection(
+            entry: preview,
+            eatenHeader: diaryPlanPortionText(l10n, preview, state.meal),
+          ),
         if (amountState.canEditAmount)
           EatAmountRuler(
             key: DiaryPlanDetailsPage.amountKey,
