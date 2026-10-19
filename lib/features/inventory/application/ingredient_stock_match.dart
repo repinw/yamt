@@ -15,7 +15,7 @@ InventoryItem? bestIngredientStockMatch({
   required String text,
   required TemplateIngredientRequirement? requirement,
   required List<InventoryItem> items,
-  required String localeCode,
+  required String? localeCode,
   RecipeIngredientAmountConversion? amountConversion,
 }) {
   if (requirement == null) {
@@ -37,7 +37,7 @@ ingredientStockCandidates({
   required String text,
   required TemplateIngredientRequirement? requirement,
   required List<InventoryItem> items,
-  required String localeCode,
+  required String? localeCode,
   RecipeIngredientAmountConversion? amountConversion,
 }) {
   if (requirement == null) {
@@ -105,7 +105,7 @@ int ingredientStockedAmount(
 List<InventoryItem> _matches(
   String text,
   List<InventoryItem> items,
-  String localeCode,
+  String? localeCode,
 ) => matchInventoryItemsForIngredient(
   ingredient: text,
   inventoryItems: items,

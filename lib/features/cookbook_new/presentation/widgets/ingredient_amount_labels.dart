@@ -1,5 +1,5 @@
-import 'package:yamt/features/cookbook_new/application/ingredient_stock_match.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
+import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 import 'package:yamt/l10n/app_localizations.dart';
