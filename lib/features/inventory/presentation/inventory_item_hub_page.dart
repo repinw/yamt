@@ -96,8 +96,13 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     });
   }
 
+  // X and back wait for a running action, so its result and snack bar
+  // reach the user (#312).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      PopScope(canPop: !_isRunning, child: _content(context));
+
+  Widget _content(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // Watched, so the line follows the list after an undo.
     final isOnShoppingList = ref.watch(
