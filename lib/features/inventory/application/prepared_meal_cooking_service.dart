@@ -5,6 +5,8 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_editing.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_from_vorlage.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
@@ -109,6 +111,28 @@ class PreparedMealCookingService {
               recipe.recipeIngredientAmountConversions,
           inventoryRepository: inventory,
           ingredientParser: _ingredientParser,
+        ),
+    succeeded: (result) => result.isSuccess,
+  );
+
+  /// Puts a meal from the Vorlage [vorlage] for [portions] portions in the
+  /// pot, with the amounts of [foods] taken from their Vorrat items; what
+  /// they cannot supply stays open on the meal. A repository failure is
+  /// rethrown after the Vorrat is restored.
+  Future<PreparedMealCreationResult> cookVorlage({
+    required PreparedMeal vorlage,
+    required int portions,
+    required List<VorlageFood> foods,
+  }) => _writer.trackStock(
+    inventory: _inventoryRepository,
+    activity: _activityRepository,
+    actor: _actor,
+    operation: (inventory) =>
+        PreparedMealCreation(writer: _writer).createPreparedMealFromVorlage(
+          vorlage: vorlage,
+          totalPortions: portions,
+          foods: foods,
+          inventoryRepository: inventory,
         ),
     succeeded: (result) => result.isSuccess,
   );

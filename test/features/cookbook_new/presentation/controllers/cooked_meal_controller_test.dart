@@ -5,6 +5,7 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cooked_meal_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_cooking_service.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_from_vorlage.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/data/'
@@ -30,6 +31,13 @@ class _FakeCookingService implements PreparedMealCookingService {
     required PreparedMeal recipe,
     required int portions,
     required Map<String, List<String>> assignments,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<PreparedMealCreationResult> cookVorlage({
+    required PreparedMeal vorlage,
+    required int portions,
+    required List<VorlageFood> foods,
   }) => throw UnimplementedError();
 
   @override

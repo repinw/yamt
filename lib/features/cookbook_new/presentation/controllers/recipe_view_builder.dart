@@ -7,8 +7,10 @@ import 'package:yamt/features/cookbook_new/domain/free_cooking_row.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/vorlage_as_recipe.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
+import 'package:yamt/features/inventory/application/template_ingredient_unit_mapper.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
@@ -46,10 +48,16 @@ AsyncValue<RecipeView?> buildRecipeView({
   if (stored == null) {
     return const AsyncData(null);
   }
+  final isVorlage = stored.recipeIngredients.isEmpty;
   final (:recipe, :keys) = _applyEdits(
-    stored.recipeIngredients.isEmpty ? vorlageAsRecipe(stored, parser) : stored,
+    isVorlage ? vorlageAsRecipe(stored, parser) : stored,
     edits,
   );
+  // A Vorlage food is sized from its own amount, as cooking takes it.
+  final vorlageFoodByLine = {
+    if (isVorlage)
+      for (final (:line, :food) in vorlageFoods(stored, parser)) line: food,
+  };
   // A recipe needs at least one portion to scale from.
   final basePortions = max(1, recipe.totalPortions);
   final chosen = portions ?? basePortions;
@@ -90,11 +98,23 @@ AsyncValue<RecipeView?> buildRecipeView({
             isAdded: keys[index].isAdded,
             ingredient: ingredient,
             recipe: recipe,
-            requirement: parser.parseRequirement(
-              ingredient: ingredient,
-              selectedPortions: chosen,
-              basePortions: basePortions,
-            ),
+            vorlageAmount: switch (vorlageFoodByLine[ingredient]) {
+              final food? => food.amount * chosen / basePortions,
+              null => null,
+            },
+            requirement: switch (vorlageFoodByLine[ingredient]) {
+              final food? => TemplateIngredientRequirement(
+                // Matching counts whole pieces; the label keeps the part.
+                amount: max(1, (food.amount * chosen / basePortions).round()),
+                unit: food.unit.toTemplateIngredientUnit(),
+                name: food.name,
+              ),
+              null => parser.parseRequirement(
+                ingredient: ingredient,
+                selectedPortions: chosen,
+                basePortions: basePortions,
+              ),
+            },
             items: vorrat,
             parser: parser,
             localeCode: localeCode,
@@ -115,6 +135,7 @@ RecipeIngredientLine _line({
   required TemplateIngredientParser parser,
   required String localeCode,
   required Map<String, String?> picks,
+  double? vorlageAmount,
 }) {
   final conversion =
       recipe.recipeIngredientAmountConversions[ingredient.trim()];
@@ -167,7 +188,17 @@ RecipeIngredientLine _line({
     candidates: candidates,
     items: stock,
     shortfall: shortfall,
-    label: _label(parser, ingredient, requirement),
+    label: switch ((vorlageAmount, requirement)) {
+      // Grams and milliliters cook whole, parts of a piece stay.
+      (final amount?, final requirement?) => preparedMealFoodRow(
+        requirement.unit == TemplateIngredientUnit.piece
+            ? amount
+            : amount.roundToDouble(),
+        requirement.inventoryUnit,
+        requirement.name,
+      ),
+      _ => _label(parser, ingredient, requirement),
+    },
     stockedLabel: partLabel(ingredientStockedAmount(stock, shortfall?.unit)),
     restLabel: partLabel(shortfall?.amount ?? 0),
   );

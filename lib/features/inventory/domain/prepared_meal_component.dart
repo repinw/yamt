@@ -256,6 +256,16 @@ double preparedMealNutritionFactor({
 String preparedMealAmountText(double amount) =>
     amount.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
 
+/// A row such as "200 g Reis", or "2 Eier" for pieces, which recipes count
+/// without a unit.
+String preparedMealFoodRow(
+  double amount,
+  InventoryAmountUnit unit,
+  String name,
+) => unit == InventoryAmountUnit.piece
+    ? '${preparedMealAmountText(amount)} $name'
+    : '${preparedMealAmountText(amount)} ${unit.code} $name';
+
 /// Converts a raw amount of [component] (its [PreparedMealComponent.usedAmount]
 /// or a value derived from it, for example scaled by a portion ratio) into a
 /// value fit to display, undoing the fractional-piece storage scale of its

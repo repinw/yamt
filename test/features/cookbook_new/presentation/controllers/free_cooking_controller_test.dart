@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_cooking_service.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_from_vorlage.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -57,6 +58,13 @@ class _FakeCookingService implements PreparedMealCookingService {
     required PreparedMeal recipe,
     required int portions,
     required Map<String, List<String>> assignments,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<PreparedMealCreationResult> cookVorlage({
+    required PreparedMeal vorlage,
+    required int portions,
+    required List<VorlageFood> foods,
   }) => throw UnimplementedError();
 
   @override
