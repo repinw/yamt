@@ -1358,6 +1358,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealBindAction => 'Lebensmittel kombinieren';
 
   @override
+  String get preparedMealSelectionNeedsStockFood =>
+      'Wähle ein Lebensmittel aus dem Vorrat';
+
+  @override
   String preparedMealSelectionCount(int count) {
     return '$count ausgewählt';
   }
