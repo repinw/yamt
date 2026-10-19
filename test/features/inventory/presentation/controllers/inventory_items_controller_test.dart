@@ -943,6 +943,66 @@ void main() {
     expect(isPendingGlobalFoodItemId(item.globalFoodItemId), isTrue);
   });
 
+  group('linkToCatalog (#806)', () {
+    final pendingItem = _item(
+      id: 'a',
+      quantity: 2,
+      initialQuantity: 2,
+    ).copyWith(globalFoodItemId: buildPendingGlobalFoodItemId('milk'));
+
+    Future<(bool, _FakeInventoryItemRepository)> link(
+      List<InventoryItem> stored,
+    ) async {
+      final repository = _FakeInventoryItemRepository(initialItems: stored);
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+      await container.read(inventoryItemsControllerProvider.future);
+
+      final linked = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .linkToCatalog(pendingItem, 'off-milk');
+      return (linked, repository);
+    }
+
+    test(
+      'points the item at the catalog product and keeps its stock',
+      () async {
+        final eaten = pendingItem.copyWith(quantity: 1);
+
+        final (linked, repository) = await link([eaten]);
+
+        expect(linked, isTrue);
+        expect(
+          (await repository.readAll()).single,
+          eaten.copyWith(globalFoodItemId: 'off-milk'),
+        );
+      },
+    );
+
+    test('keeps an item that was swapped in the meantime', () async {
+      final swapped = pendingItem.copyWith(globalFoodItemId: 'off-oat');
+
+      final (linked, repository) = await link([swapped]);
+
+      expect(linked, isFalse);
+      expect(repository.saveHistory, isEmpty);
+    });
+
+    test('does not bring back a removed item', () async {
+      final (linked, repository) = await link(const []);
+
+      expect(linked, isFalse);
+      expect(repository.saveHistory, isEmpty);
+    });
+  });
+
   test(
     'swapItemCandidate rejects items that were already partially consumed',
     () async {

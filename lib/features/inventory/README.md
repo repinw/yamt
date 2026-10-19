@@ -215,6 +215,10 @@ already documented as a reusable presentation surface.
   on the detail page or in the editor, opens that row again and gives its
   stock back. Meal totals are always summed from the foods, never patched,
   so taking a food out restores the totals from before it came in.
+- A new manual product keeps its pending id until its catalog write
+  succeeds (`application/manual_product_catalog_service.dart`); only then the
+  barcode is recorded and the Vorrat item points at the catalog product,
+  through the Vorrat queue. Offline, the product stays private (#806).
 
 ## Providers
 

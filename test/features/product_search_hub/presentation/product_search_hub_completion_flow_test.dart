@@ -18,6 +18,7 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -43,6 +44,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
 import '../support/fake_product_search_sources.dart';
 
@@ -727,19 +729,30 @@ void main() {
   });
 
   group('barcode candidate', () {
+    late _ControllerBackedInventoryRepository inventoryRepository;
+
     Future<(List<InventoryItem>, List<String>)> save(
       WidgetTester tester,
-      InventoryReceiptManualProductResult result,
-    ) async {
+      InventoryReceiptManualProductResult result, {
+      bool catalogWriteSucceeds = true,
+    }) async {
       final inventoryController = _RecordingInventoryItemsController();
       final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository();
+      inventoryRepository = _ControllerBackedInventoryRepository(
+        inventoryController,
+      );
       await tester.pumpWidget(
         _buildCompletionHarness(
           inventoryController: inventoryController,
           barcodeRepository: barcodeRepository,
           overrides: [
             globalFoodItemRepositoryProvider.overrideWithValue(
-              FakeGlobalFoodItemRepository(),
+              catalogWriteSucceeds
+                  ? FakeGlobalFoodItemRepository()
+                  : _FailingGlobalFoodItemRepository(),
+            ),
+            inventoryItemRepositoryProvider.overrideWithValue(
+              inventoryRepository,
             ),
           ],
           onRun: (context, container, l10n) async {
@@ -793,9 +806,8 @@ void main() {
       expect(items.single.globalFoodItemId, 'catalog-muesli');
     });
 
-    testWidgets('a new product for the catalog records its barcode', (
-      tester,
-    ) async {
+    testWidgets('a new product gets its catalog id and records its barcode '
+        'once the catalog has it (#806)', (tester) async {
       final (items, barcodes) = await save(
         tester,
         _manualResult(
@@ -805,7 +817,26 @@ void main() {
       );
 
       expect(barcodes, ['4006381333931']);
-      expect(isPendingGlobalFoodItemId(items.single.globalFoodItemId), isFalse);
+      expect(isPendingGlobalFoodItemId(items.single.globalFoodItemId), isTrue);
+      final linked = inventoryRepository.savedItems.single;
+      expect(linked.id, items.single.id);
+      expect(isPendingGlobalFoodItemId(linked.globalFoodItemId), isFalse);
+    });
+
+    testWidgets('a new product stays private when the catalog write fails '
+        '(#806)', (tester) async {
+      final (items, barcodes) = await save(
+        tester,
+        _manualResult(
+          item: _manualItem().copyWith(barcode: '4006381333931'),
+          requiresGlobalPersistence: true,
+        ),
+        catalogWriteSucceeds: false,
+      );
+
+      expect(barcodes, isEmpty);
+      expect(isPendingGlobalFoodItemId(items.single.globalFoodItemId), isTrue);
+      expect(inventoryRepository.savedItems, isEmpty);
     });
   });
 
@@ -936,6 +967,41 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
   ) async {
     return null;
   }
+}
+
+/// Reads the Vorrat that [_controller] added and records single writes.
+class _ControllerBackedInventoryRepository with InventoryItemWholeListWrites {
+  new(this._controller);
+
+  final _RecordingInventoryItemsController _controller;
+
+  /// The items written one by one after the save.
+  final savedItems = <InventoryItem>[];
+
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield _controller.addedItems;
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async => _controller.addedItems;
+
+  @override
+  Future<bool> save(InventoryItem item) async {
+    savedItems.add(item);
+    return true;
+  }
+
+  @override
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
+}
+
+class _FailingGlobalFoodItemRepository extends FakeGlobalFoodItemRepository {
+  @override
+  Future<bool> appendAll(List<GlobalFoodItem> items) async => false;
 }
 
 class _DelayedBuildInventoryItemsController

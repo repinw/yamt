@@ -238,6 +238,16 @@ class InventoryItemsController extends _$InventoryItemsController {
   Future<bool> updateItem(InventoryItem item) =>
       _mutate(false, (items) => _edits.update(items, item));
 
+  /// Points [pendingItem] at the catalog product [globalFoodItemId], see
+  /// [InventoryItemEditService.linkToCatalog].
+  Future<bool> linkToCatalog(
+    InventoryItem pendingItem,
+    String globalFoodItemId,
+  ) => _mutate(
+    false,
+    (items) => _edits.linkToCatalog(items, pendingItem, globalFoodItemId),
+  );
+
   /// Replaces the product reference on an existing full inventory item.
   Future<bool> swapItemCandidate({
     required String itemId,
