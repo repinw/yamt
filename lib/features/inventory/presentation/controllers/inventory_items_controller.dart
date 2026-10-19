@@ -68,9 +68,7 @@ class InventoryItemsController extends _$InventoryItemsController {
           }
         });
     await waitForHouseholdDataOwnerProfile(ref);
-    if (!ref.mounted) {
-      return const <InventoryItem>[];
-    }
+    if (!ref.mounted) return const <InventoryItem>[];
     ref.watch(activeHouseholdIdProvider);
     return await _feed.start();
   }
@@ -161,9 +159,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     int amount, {
     DateTime? consumedAt,
   }) {
-    if (amount < 1) {
-      return Future<InventoryItemReductionResult?>.value();
-    }
+    if (amount < 1) return Future<InventoryItemReductionResult?>.value();
     return _mutate(
       null,
       (items) => _mutations.eat(items, itemId, amount, consumedAt: consumedAt),
@@ -176,9 +172,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     int amount,
     InventoryDiscardReason reason,
   ) {
-    if (amount < 1) {
-      return Future<InventoryItemDiscardResult?>.value();
-    }
+    if (amount < 1) return Future<InventoryItemDiscardResult?>.value();
     return _mutate(
       null,
       (items) => _discards.throwAway(items, itemId, amount, reason),
@@ -186,9 +180,8 @@ class InventoryItemsController extends _$InventoryItemsController {
   }
 
   /// Restore consumed item.
-  Future<bool> restoreConsumedItem(String itemId, int amount) {
-    return restoreConsumedItems({itemId: amount});
-  }
+  Future<bool> restoreConsumedItem(String itemId, int amount) =>
+      restoreConsumedItems({itemId: amount});
 
   /// Returns several amounts to their items in one write. Nothing changes
   /// when an item is missing or an amount is below 1.
@@ -238,14 +231,12 @@ class InventoryItemsController extends _$InventoryItemsController {
   }
 
   /// Undoes [buyAgainItem].
-  Future<bool> undoBuyAgainItem(ShoppingListRevert revert) {
-    return ref.read(shoppingListControllerProvider.notifier).revert(revert);
-  }
+  Future<bool> undoBuyAgainItem(ShoppingListRevert revert) =>
+      ref.read(shoppingListControllerProvider.notifier).revert(revert);
 
   /// Update item.
-  Future<bool> updateItem(InventoryItem item) {
-    return _mutate(false, (items) => _edits.update(items, item));
-  }
+  Future<bool> updateItem(InventoryItem item) =>
+      _mutate(false, (items) => _edits.update(items, item));
 
   /// Replaces the product reference on an existing full inventory item.
   Future<bool> swapItemCandidate({
@@ -270,9 +261,8 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   /// Adds a newly created item and shows it once it is written, so follow-up
   /// flows can reference it before the item stream catches up.
-  Future<bool> addItem(InventoryItem item) {
-    return _mutate(false, (items) => _mutations.add(items, item));
-  }
+  Future<bool> addItem(InventoryItem item) =>
+      _mutate(false, (items) => _mutations.add(items, item));
 
   /// Reserves [amount] of the item [itemId] as the list shows it now, so
   /// the reservation is capped at the newest stock. Returns null when the
@@ -281,9 +271,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     String itemId,
     int amount,
   ) {
-    if (amount < 1) {
-      return Future<PendingInventoryConsumption?>.value();
-    }
+    if (amount < 1) return Future<PendingInventoryConsumption?>.value();
     return _mutate(null, (items) async {
       final pendings = ref.read(inventoryPendingConsumptionStoreProvider);
       final visible = state.asData?.value ?? items;
