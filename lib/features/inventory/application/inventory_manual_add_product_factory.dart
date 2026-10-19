@@ -1,5 +1,6 @@
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -86,8 +87,9 @@ InventoryItem buildInventoryManualAddSavedItem({
   required bool inCatalog,
   String? imageUrl,
   bool aiEstimated = false,
+  SavedFoodEstimate? aiEstimate,
 }) {
-  return InventoryItem.create(
+  final item = InventoryItem.create(
     id: id,
     // An AI estimate gets no catalog document, so it keeps a pending id
     // like a swapped one (#701).
@@ -109,7 +111,15 @@ InventoryItem buildInventoryManualAddSavedItem({
     nutrition: globalProduct.nutrition,
     weight: inventoryWeight,
     foodFingerprint: globalProduct.resolvedFoodFingerprint,
-  ).withDerivedAmount(weight: inventoryWeight, quantity: 1);
+  );
+  return item
+      .copyWith(
+        // Only an AI food keeps an estimate (#763).
+        productSnapshot: item.productSnapshot.copyWith(
+          aiEstimate: aiEstimated ? aiEstimate : null,
+        ),
+      )
+      .withDerivedAmount(weight: inventoryWeight, quantity: 1);
 }
 
 /// Resolves inventory-local package weight text.

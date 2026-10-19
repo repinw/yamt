@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/domain/'
@@ -225,6 +226,41 @@ void main() {
       final payload = controller.buildSavePayload();
 
       expect(payload?.item.aiEstimated, isFalse);
+    });
+
+    test('a picked food drops the estimate of the item, a hand edit keeps '
+        'it (#763)', () {
+      const estimate = SavedFoodEstimate(
+        estimate: FoodEstimate(
+          name: 'Eier mit Speck',
+          portionGrams: 300,
+          kcalLean: 500,
+          kcalRich: 700,
+          per100: nutrition,
+          ingredients: [],
+        ),
+        level: FoodEstimateLevel.normal,
+        description: 'Rührei',
+      );
+      final aiItem = food(aiEstimated: true);
+      final withEstimate = aiItem.copyWith(
+        productSnapshot: aiItem.productSnapshot.copyWith(aiEstimate: estimate),
+      );
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      InventoryReceiptManualProductController controller() => container.read(
+        inventoryReceiptManualProductControllerProvider(
+          InventoryReceiptManualProductConfig(item: withEstimate),
+        ).notifier,
+      );
+
+      final edited = (controller()..updateNameText('Rührei mit Speck'))
+          .buildSavePayload();
+      final picked = (controller()..applyRecentItem(food(aiEstimated: true)))
+          .buildSavePayload();
+
+      expect(edited?.item.productSnapshot.aiEstimate, estimate);
+      expect(picked?.item.productSnapshot.aiEstimate, isNull);
     });
 
     test('an AI food picked from the recent items stays one', () {

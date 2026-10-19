@@ -22,7 +22,7 @@ const _estimate = FoodEstimate(
 );
 
 void main() {
-  test('the item holds the amount and the estimated portion', () {
+  test('the item holds the amount, the estimated portion and the estimate', () {
     final item = buildFoodEstimateItem(
       baseItem: InventoryItem.create(
         id: 'item-1',
@@ -35,6 +35,7 @@ void main() {
       estimate: _estimate,
       level: FoodEstimateLevel.rich,
       grams: 250,
+      description: 'Döner mit allem',
     );
 
     expect(item.name, 'Döner Kebab');
@@ -45,5 +46,13 @@ void main() {
     expect(item.nutrition?.per100Kcal, closeTo(240, 0.001));
     // The mark keeps the meal out of the shared catalog (#701).
     expect(item.aiEstimated, isTrue);
+    expect(
+      item.productSnapshot.aiEstimate,
+      const SavedFoodEstimate(
+        estimate: _estimate,
+        level: FoodEstimateLevel.rich,
+        description: 'Döner mit allem',
+      ),
+    );
   });
 }

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/food_fingerprint.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
@@ -17,6 +18,7 @@ class InventoryItemProductSnapshot {
     this.servingQuantity,
     this.servingQuantityUnit,
     this.nutrition,
+    this.aiEstimate,
   });
 
   /// Creates a [InventoryItemProductSnapshot] for from json.
@@ -38,6 +40,12 @@ class InventoryItemProductSnapshot {
         json['serving_quantity_unit'] ?? json['servingQuantityUnit'],
       ),
       nutrition: _readNutrition(json['nutrition']),
+      aiEstimate: switch (json['ai_estimate']) {
+        null => null,
+        final Object value => SavedFoodEstimate.fromJson(
+          Map<String, dynamic>.from(value as Map),
+        ),
+      },
     );
   }
 
@@ -71,6 +79,10 @@ class InventoryItemProductSnapshot {
   /// The nutrition.
   final GlobalFoodNutrition? nutrition;
 
+  /// The AI estimate the food was made from; null for every other food and
+  /// for AI foods from before #763.
+  final SavedFoodEstimate? aiEstimate;
+
   /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -84,6 +96,7 @@ class InventoryItemProductSnapshot {
       'serving_quantity': servingQuantity,
       'serving_quantity_unit': servingQuantityUnit,
       'nutrition': nutrition?.toJson(),
+      'ai_estimate': aiEstimate?.toJson(),
     };
   }
 
@@ -99,6 +112,7 @@ class InventoryItemProductSnapshot {
     Object? servingQuantity = _keepValue,
     Object? servingQuantityUnit = _keepValue,
     Object? nutrition = _keepValue,
+    Object? aiEstimate = _keepValue,
   }) {
     return InventoryItemProductSnapshot(
       name: name ?? this.name,
@@ -121,6 +135,9 @@ class InventoryItemProductSnapshot {
       nutrition: nutrition == _keepValue
           ? this.nutrition
           : nutrition as GlobalFoodNutrition?,
+      aiEstimate: aiEstimate == _keepValue
+          ? this.aiEstimate
+          : aiEstimate as SavedFoodEstimate?,
     );
   }
 
@@ -155,7 +172,8 @@ class InventoryItemProductSnapshot {
             other.servingSize == servingSize &&
             other.servingQuantity == servingQuantity &&
             other.servingQuantityUnit == servingQuantityUnit &&
-            other.nutrition == nutrition;
+            other.nutrition == nutrition &&
+            other.aiEstimate == aiEstimate;
   }
 
   @override
@@ -171,6 +189,7 @@ class InventoryItemProductSnapshot {
       servingQuantity,
       servingQuantityUnit,
       nutrition,
+      aiEstimate,
     );
   }
 }

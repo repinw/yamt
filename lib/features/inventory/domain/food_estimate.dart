@@ -1,5 +1,9 @@
+import 'package:collection/collection.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+
+part 'food_estimate.g.dart';
 
 /// How rich the preparation of an estimated food is assumed to be.
 enum FoodEstimateLevel {
@@ -15,9 +19,14 @@ enum FoodEstimateLevel {
 
 /// One component of an estimated food, for a normal preparation.
 @immutable
+@JsonSerializable(fieldRename: FieldRename.snake)
 class FoodEstimateIngredient {
   /// Creates an ingredient.
   const new({required this.name, required this.grams, required this.kcal});
+
+  /// Reads a stored ingredient.
+  factory fromJson(Map<String, dynamic> json) =>
+      _$FoodEstimateIngredientFromJson(json);
 
   /// Ingredient name.
   final String name;
@@ -27,10 +36,24 @@ class FoodEstimateIngredient {
 
   /// Energy in the whole portion.
   final double kcal;
+
+  /// The stored form.
+  Map<String, dynamic> toJson() => _$FoodEstimateIngredientToJson(this);
+
+  @override
+  bool operator ==(Object other) =>
+      other is FoodEstimateIngredient &&
+      other.name == name &&
+      other.grams == grams &&
+      other.kcal == kcal;
+
+  @override
+  int get hashCode => Object.hash(name, grams, kcal);
 }
 
 /// AI estimate of a food from photos and a description.
 @immutable
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class FoodEstimate {
   /// Creates an estimate.
   const new({
@@ -41,6 +64,9 @@ class FoodEstimate {
     required this.per100,
     required this.ingredients,
   });
+
+  /// Reads a stored estimate.
+  factory fromJson(Map<String, dynamic> json) => _$FoodEstimateFromJson(json);
 
   /// Dish or food name.
   final String name;
@@ -55,6 +81,7 @@ class FoodEstimate {
   final double kcalRich;
 
   /// Nutrition per 100 g for a normal preparation.
+  @JsonKey(name: 'per_100')
   final GlobalFoodNutrition per100;
 
   /// Components of the portion for a normal preparation.
@@ -110,4 +137,69 @@ class FoodEstimate {
     final normal = portionKcal(FoodEstimateLevel.normal);
     return normal <= 0 ? 1 : portionKcal(level) / normal;
   }
+
+  /// The stored form.
+  Map<String, dynamic> toJson() => _$FoodEstimateToJson(this);
+
+  @override
+  bool operator ==(Object other) =>
+      other is FoodEstimate &&
+      other.name == name &&
+      other.portionGrams == portionGrams &&
+      other.kcalLean == kcalLean &&
+      other.kcalRich == kcalRich &&
+      other.per100 == per100 &&
+      const ListEquality<FoodEstimateIngredient>().equals(
+        other.ingredients,
+        ingredients,
+      );
+
+  @override
+  int get hashCode => Object.hash(
+    name,
+    portionGrams,
+    kcalLean,
+    kcalRich,
+    per100,
+    const ListEquality<FoodEstimateIngredient>().hash(ingredients),
+  );
+}
+
+/// The AI estimate an item was made from, kept for its eat page and a new
+/// analysis (#763).
+@immutable
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class SavedFoodEstimate {
+  /// Creates the saved estimate.
+  const new({
+    required this.estimate,
+    required this.level,
+    required this.description,
+  });
+
+  /// Reads a stored estimate.
+  factory fromJson(Map<String, dynamic> json) =>
+      _$SavedFoodEstimateFromJson(json);
+
+  /// What the AI answered.
+  final FoodEstimate estimate;
+
+  /// The preparation the user chose.
+  final FoodEstimateLevel level;
+
+  /// The user's description of the food.
+  final String description;
+
+  /// The stored form.
+  Map<String, dynamic> toJson() => _$SavedFoodEstimateToJson(this);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedFoodEstimate &&
+      other.estimate == estimate &&
+      other.level == level &&
+      other.description == description;
+
+  @override
+  int get hashCode => Object.hash(estimate, level, description);
 }

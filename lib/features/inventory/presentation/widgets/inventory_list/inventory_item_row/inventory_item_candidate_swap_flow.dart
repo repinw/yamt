@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -27,6 +28,7 @@ class InventoryItemCandidateSwapRequest {
     required this.requiresGlobalPersistence,
     required this.weight,
     this.aiEstimated = false,
+    this.aiEstimate,
   });
 
   /// The resolved product.
@@ -41,6 +43,9 @@ class InventoryItemCandidateSwapRequest {
   /// Whether the product is an AI estimate, which stays the user's own and
   /// never goes into the shared catalog (#701).
   final bool aiEstimated;
+
+  /// The estimate of an [aiEstimated] product, which the item keeps (#763).
+  final SavedFoodEstimate? aiEstimate;
 }
 
 /// Runs the inventory candidate swap picker and returns the chosen product.
@@ -177,6 +182,7 @@ buildInventoryItemCandidateSwapRequestFromManualResult({
         result.requiresGlobalPersistence || selectedGlobalFoodItemId == null,
     weight: result.item.weight,
     aiEstimated: result.item.aiEstimated,
+    aiEstimate: result.item.productSnapshot.aiEstimate,
   );
 }
 
