@@ -1,6 +1,6 @@
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
 
 /// Builds the inventory item for [estimate] at [level], with [grams] as its
 /// amount and the estimated portion as its serving.
