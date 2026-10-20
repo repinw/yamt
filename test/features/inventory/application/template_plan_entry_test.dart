@@ -179,7 +179,14 @@ void main() {
 
   test('a food that names no amount takes the item of its name', () {
     final assignments = templatePlanAssignments(
-      _template(ingredients: const ['Salz', 'Pfeffer']),
+      _template(
+        ingredients: const ['Salz', 'Pfeffer'],
+        // The recipe page offers no item of another name, so neither does
+        // the plan.
+        assignments: const {
+          'Pfeffer': ['Salz'],
+        },
+      ),
       [_item('Salz', currentAmount: 500)],
       parser: const TemplateIngredientParser(),
     );

@@ -64,9 +64,8 @@ CalorieEntry? buildTemplatePlanEntry({
 }
 
 /// The Vorrat items in [items] that supply each ingredient of [recipe], as
-/// the recipe page picks them: the saved items kept in a fitting unit, else
-/// the best match that fits. A plan cooks from full packs, so a saved item
-/// stays even when it is used up.
+/// the recipe page picks them ([ingredientStockPick]). A plan cooks from
+/// full packs, so a saved item stays even when it is used up.
 ///
 /// shortcut: plans match with the lexicon of all languages; pass the app
 /// locale when a plan needs one language's food words.
@@ -75,10 +74,9 @@ Map<String, List<String>> templatePlanAssignments(
   List<InventoryItem> items, {
   required TemplateIngredientParser parser,
 }) {
-  final byId = {for (final item in items) item.id: item};
   return {
     for (final ingredient in recipe.recipeIngredients)
-      ingredient: _planItems(recipe, ingredient, items, byId, parser),
+      ingredient: _planItems(recipe, ingredient, items, parser),
   };
 }
 
@@ -86,37 +84,32 @@ List<String> _planItems(
   PreparedMeal recipe,
   String ingredient,
   List<InventoryItem> items,
-  Map<String, InventoryItem> byId,
   TemplateIngredientParser parser,
 ) {
-  final requirement = parser.parseRequirement(
-    ingredient: ingredient,
-    selectedPortions: 1,
-    basePortions: 1,
+  final saved =
+      recipe.recipeIngredientAssignments[ingredient] ?? const <String>[];
+  final candidates = ingredientStockCandidates(
+    text: ingredient,
+    requirement: parser.parseRequirement(
+      ingredient: ingredient,
+      selectedPortions: 1,
+      basePortions: 1,
+    ),
+    items: [
+      for (final item in items)
+        if (saved.contains(item.id)) _fullPack(item) else item,
+    ],
+    localeCode: null,
+    amountConversion:
+        recipe.recipeIngredientAmountConversions[ingredient.trim()],
   );
-  if (requirement == null && !ingredientNamesNoAmount(ingredient)) {
-    return const <String>[];
-  }
-  final conversion =
-      recipe.recipeIngredientAmountConversions[ingredient.trim()];
-  final saved = [
-    for (final id
-        in recipe.recipeIngredientAssignments[ingredient] ?? const <String>[])
-      if (byId[id] case final item?
-          when ingredientItemFits(item, requirement, conversion))
-        id,
-  ];
-  if (saved.isNotEmpty) {
-    return saved;
-  }
   return [
-    ?bestIngredientStockMatch(
+    for (final item in ingredientStockPick(
+      recipe: recipe,
       text: ingredient,
-      requirement: requirement,
-      items: items,
-      localeCode: null,
-      amountConversion: conversion,
-    )?.id,
+      candidates: candidates,
+    ))
+      item.id,
   ];
 }
 
@@ -217,12 +210,13 @@ PlanUnstockedIngredient _unstocked(
 
 // A plan takes no stock, so each item counts as a full pack.
 List<InventoryItem> _fullPacks(List<InventoryItem> items) => [
-  for (final item in items)
-    item.copyWith(
-      quantity: max(item.quantity, item.initialQuantity),
-      currentAmount: max(item.currentAmount, item.initialAmount),
-    ),
+  for (final item in items) _fullPack(item),
 ];
+
+InventoryItem _fullPack(InventoryItem item) => item.copyWith(
+  quantity: max(item.quantity, item.initialQuantity),
+  currentAmount: max(item.currentAmount, item.initialAmount),
+);
 
 PreparedMealBuildResult? _cookedOnPaper(
   PreparedMeal recipe, {

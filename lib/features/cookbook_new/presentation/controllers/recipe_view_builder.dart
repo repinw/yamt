@@ -139,26 +139,21 @@ RecipeIngredientLine _line({
 }) {
   final conversion =
       recipe.recipeIngredientAmountConversions[ingredient.trim()];
-  final (:matches, :others) = ingredientStockCandidates(
+  final found = ingredientStockCandidates(
     text: ingredient,
     requirement: requirement,
     items: items,
     localeCode: localeCode,
     amountConversion: conversion,
   );
-  final candidates = [...matches, ...others];
-  List<InventoryItem> pickable(Iterable<String?> ids) => [
-    for (final id in ids) ?candidates.firstWhereOrNull((i) => i.id == id),
-  ];
-  final List<InventoryItem> stock;
-  if (picks.containsKey(key)) {
-    stock = pickable([picks[key]]);
-  } else {
-    final savedItems = pickable(
-      recipe.recipeIngredientAssignments[ingredient] ?? const <String>[],
-    );
-    stock = savedItems.isNotEmpty ? savedItems : [?matches.firstOrNull];
-  }
+  final candidates = [...found.matches, ...found.others];
+  final stock = picks.containsKey(key)
+      ? [?candidates.firstWhereOrNull((item) => item.id == picks[key])]
+      : ingredientStockPick(
+          recipe: recipe,
+          text: ingredient,
+          candidates: found,
+        );
   final shortfall = ingredientShortfall(
     requirement: requirement,
     items: stock,
