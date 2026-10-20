@@ -825,6 +825,12 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Each Vorlage and recipe shows one square per food: ink when the Vorrat holds
   a matching food, the low color when it is missing, followed by "Alles da" or
   the missing count.
+- A food that names no amount, such as "Salz" or "Pfeffer", counts as there
+  when the Vorrat holds an item of its name: on the cards, on the recipe
+  page and in plans. Cooking takes nothing from that item and leaves no open
+  row. An amount the app cannot read ("1 cup Milch", "eine Dose Tomaten",
+  "etwas Mehl", "Bund Petersilie") still stays an open row, and so does a
+  free cooking row without an amount.
 - The "Kochen" button offers "Frei kochen", a recipe from a link, and an AI
   idea. The header offers the kitchen utensils.
 - "Frei kochen" is a meal without a recipe. The cook names the dish (empty
