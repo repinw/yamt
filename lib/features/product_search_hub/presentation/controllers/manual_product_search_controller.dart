@@ -257,9 +257,7 @@ class InventoryReceiptManualProductController
     final hasOwnBarcode =
         state.hasBarcode &&
         state.barcodeOrigin != ManualProductBarcodeOrigin.ai;
-    if (hasOwnBarcode || state.hasNoBarcode) {
-      return;
-    }
+    if (hasOwnBarcode || state.hasNoBarcode) return;
     state = state.copyWith(
       barcode: barcode,
       barcodeOrigin: ManualProductBarcodeOrigin.photo,
@@ -469,9 +467,7 @@ class InventoryReceiptManualProductController
     }
 
     final barcode = normalizeManualProductText(selection.barcode);
-    if (barcode == null) {
-      return null;
-    }
+    if (barcode == null) return null;
 
     final updatedItem = config.item
         .copyWith(
