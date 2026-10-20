@@ -88,7 +88,8 @@ void main() {
     expect(await cipher.keyedId('health-weight-sample:a:80.00'), id);
     expect(await cipher.keyedId('health-weight-sample:a:80.01'), isNot(id));
     expect(await otherKey.keyedId('health-weight-sample:a:80.00'), isNot(id));
-    expect(id, isNot(contains('80')));
+    // The id holds none of the input; two digits would match by chance.
+    expect(id, isNot(contains('health-weight-sample')));
     expect(id, matches(RegExp(r'^[A-Za-z0-9_-]+$')));
   });
 
