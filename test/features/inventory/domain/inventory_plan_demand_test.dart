@@ -4,6 +4,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
+import 'package:yamt/features/inventory/domain/plan_reservation.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
@@ -269,6 +270,109 @@ void main() {
     expect(demand.missingIngredientsByPlanId, isEmpty);
     expect(demand.unstockedIngredientsByPlanId, {
       'recipe': [eggs],
+    });
+  });
+
+  group('household', () {
+    MemberPlanReservation other(
+      String uid,
+      String stockId,
+      double amount, {
+      required int day,
+    }) => (
+      uid: uid,
+      reservation: (
+        stockId: stockId,
+        amount: amount,
+        at: DateTime(2026, 10, day, 12),
+      ),
+    );
+
+    test('lists what the own plans want from each pack and meal', () {
+      final demand = inventoryPlanDemand(
+        [
+          _plan('oats', day: 8, grams: 300, itemId: 'pack'),
+          _mealPlan('chili', day: 9, portions: 2),
+        ],
+        [_pack('pack')],
+        [_meal()],
+      );
+
+      expect(demand.ownReservations, [
+        (stockId: 'pack', amount: 300.0, at: DateTime(2026, 10, 8, 8)),
+        (stockId: 'chili', amount: 2.0, at: DateTime(2026, 10, 9, 18)),
+      ]);
+      expect(demand.othersByStockId, isEmpty);
+    });
+
+    test('an earlier plan of another member takes the stock first', () {
+      final demand = inventoryPlanDemand(
+        [_plan('mine', day: 9, grams: 300, itemId: 'pack')],
+        [_pack('pack')],
+        [_meal()],
+        othersReservations: [
+          other('anna', 'pack', 400, day: 8),
+          other('ben', 'chili', 1, day: 10),
+        ],
+      );
+
+      expect(demand.plannedByItemId, {'pack': 500});
+      expect(demand.missingShareByPlanId['mine'], closeTo(2 / 3, 1e-9));
+      expect(demand.plannedPortionsByMealId, {'chili': 1.0});
+      expect(demand.othersByStockId, {
+        'pack': [(uid: 'anna', day: DateTime(2026, 10, 8))],
+        'chili': [(uid: 'ben', day: DateTime(2026, 10, 10))],
+      });
+      // The own plan still wants its full amount.
+      expect(demand.ownReservations.single.amount, 300);
+    });
+
+    test('at the same time the smaller uid comes first on every device', () {
+      final mine = _plan(
+        'mine',
+        day: 8,
+        grams: 300,
+        itemId: 'pack',
+      ).copyWith(loggedAt: DateTime(2026, 10, 8, 12));
+      final pack = _pack('pack', currentAmount: 300);
+
+      final asAnna = inventoryPlanDemand(
+        [mine],
+        [pack],
+        const [],
+        othersReservations: [other('ben', 'pack', 300, day: 8)],
+        ownUid: 'anna',
+      );
+      final asBen = inventoryPlanDemand(
+        [mine],
+        [pack],
+        const [],
+        othersReservations: [other('anna', 'pack', 300, day: 8)],
+        ownUid: 'ben',
+      );
+
+      expect(asAnna.missingShareByPlanId, isEmpty);
+      expect(asBen.missingShareByPlanId, {'mine': 1.0});
+    });
+
+    test('a later plan of another member gets what is left', () {
+      final demand = inventoryPlanDemand(
+        [_plan('mine', day: 8, grams: 300, itemId: 'pack')],
+        [_pack('pack')],
+        const [],
+        othersReservations: [
+          other('anna', 'pack', 400, day: 9),
+          other('anna', 'pack', 100, day: 10),
+          other('anna', 'gone', 100, day: 9),
+        ],
+      );
+
+      expect(demand.plannedByItemId, {'pack': 500});
+      expect(demand.missingShareByPlanId, isEmpty);
+      // Nothing left for the plan on the 10th; a used-up pack names nobody.
+      expect(demand.othersByStockId, {
+        'pack': [(uid: 'anna', day: DateTime(2026, 10, 9))],
+      });
     });
   });
 }

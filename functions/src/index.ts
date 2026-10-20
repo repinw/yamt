@@ -5,7 +5,7 @@ import * as functions from 'firebase-functions/v1';
 
 import { bucketFileStore } from './bucket-file-store';
 import { deleteUserData } from './delete-user-data';
-import { repairHousehold } from './repair-household';
+import { deleteLeftMemberData, repairHousehold } from './repair-household';
 
 initializeApp();
 
@@ -42,9 +42,10 @@ export const deleteAccountData = functions
   });
 
 /**
- * Deletes a household once its last member left and names a new admin when
- * none is left. Runs on every deleted member document and every role change;
- * joins need nothing. Retries are on because repairHousehold is idempotent.
+ * Deletes the data a member who left keeps in the household, deletes a
+ * household once its last member left and names a new admin when none is
+ * left. Runs on every deleted member document and every role change; joins
+ * need nothing. Retries are on because every step is idempotent.
  */
 export const repairHouseholdOnMemberChange = functions
   .region('europe-west1')
@@ -56,6 +57,9 @@ export const repairHouseholdOnMemberChange = functions
     }
     const householdId: string = context.params.householdId;
     try {
+      if (!change.after.exists) {
+        await deleteLeftMemberData(getFirestore(), householdId, context.params.uid);
+      }
       const result = await repairHousehold(
         getFirestore(),
         bucketFileStore(getStorage().bucket()),

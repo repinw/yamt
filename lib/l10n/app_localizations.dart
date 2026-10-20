@@ -704,6 +704,24 @@ abstract class AppLocalizations {
   /// **'{amount} planned'**
   String inventoryRowPlanned(String amount);
 
+  /// One household member in inventoryRowPlannedBy: the name and the day of the plan, a short weekday in the coming week and a short date later, such as "Anna Wed" or "Anna Wed, 10/28".
+  ///
+  /// In en, this message translates to:
+  /// **'{name} {day}'**
+  String inventoryRowPlanHolder(String name, String day);
+
+  /// Between the members in inventoryRowPlannedBy.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get inventoryRowPlanHolderSeparator;
+
+  /// Vorrat row: stock that open plans keep, then the other household members whose plans keep part of it, each with a short weekday, such as "Anna Wed, Ben Fri".
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} planned · {members}'**
+  String inventoryRowPlannedBy(String amount, String members);
+
   /// No description provided for @inventoryRowLow.
   ///
   /// In en, this message translates to:

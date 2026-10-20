@@ -82,6 +82,8 @@ describe('deleteUserData (Firestore emulator)', () => {
     await set('households/shared/keys/u', { wrapped: 'k' });
     await set('households/shared/keys/v', { wrapped: 'k' });
     await set('households/shared/key_restores/u', { wrapped: 'k' });
+    await set('households/shared/plan_reservations/u', { payload: 'p' });
+    await set('households/shared/plan_reservations/v', { payload: 'p' });
     await set('households/shared/inventory_items/s1', { name: 'x' });
 
     await set('households/other', { created_at: joined(1) });
@@ -119,6 +121,7 @@ describe('deleteUserData (Firestore emulator)', () => {
     assert.equal((await db.doc('households/shared/members/v').get()).get('role'), 'member');
     assert.deepEqual(await ids('households/shared/keys'), ['v']);
     assert.deepEqual(await ids('households/shared/key_restores'), []);
+    assert.deepEqual(await ids('households/shared/plan_reservations'), ['v']);
     assert.deepEqual(await ids('households/shared/inventory_items'), ['s1']);
 
     assert.deepEqual(await ids('households/other/members'), ['x']);

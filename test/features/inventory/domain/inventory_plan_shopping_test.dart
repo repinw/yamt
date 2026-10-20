@@ -18,6 +18,8 @@ InventoryPlanDemand _demand(
   missingShareByPlanId: missingShareByPlanId,
   missingIngredientsByPlanId: missingIngredientsByPlanId,
   unstockedIngredientsByPlanId: unstockedIngredientsByPlanId,
+  ownReservations: const [],
+  othersByStockId: const {},
 );
 
 CalorieEntry _plan(String id, {ConsumedUnit unit = ConsumedUnit.grams}) {

@@ -41,6 +41,7 @@ const householdEncryptedCollections = <String>[
   'kitchen_utensils',
   'inventory_discard_events',
   'inventory_activity_events',
+  'plan_reservations',
 ];
 
 /// Storage folders under `households/{householdId}` that hold household

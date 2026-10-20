@@ -491,6 +491,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   with its planned portions ("2 Port. verplant"). A meal plan that the
   meal's portions left cannot cover shows "fehlt" in the diary but stays out of
   the shopping block.
+- The open plans of the other household members count as well: they take
+  stock in the order of their days together with the own plans, so an
+  earlier plan comes first whoever made it. Their part adds to "verplant",
+  and the row names them with the weekday of each plan ("300 verplant · Anna
+  Mi, Ben Fr"), or with its date beyond the coming week ("Anna Mi., 28.10.").
+  Only the stock, the amount and the time of each plan are
+  shared, sealed with the household key; a member who leaves the household takes them along.
 - The Sortieren sheet sorts by added, eaten, name or amount; tapping the
   chosen field again flips its direction. Until the user changes it, the
   list sorts by last eaten, newest first. It also holds "Verbrauchte

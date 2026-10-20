@@ -342,6 +342,50 @@ describe('household data', () => {
   });
 });
 
+describe('plan reservations', () => {
+  beforeEach(async () => {
+    await seedHousehold(env, 'h1', 'ada', ['bob']);
+    await seedHousehold(env, 'h2', 'dora');
+  });
+
+  it('lets a member write their own and read everyone\'s', async () => {
+    const bob = account(env, 'bob').firestore();
+    await assertSucceeds(bob.doc('households/h1/plan_reservations/bob').set(encrypted));
+    const ada = account(env, 'ada').firestore();
+    await assertSucceeds(ada.doc('households/h1/plan_reservations/bob').get());
+    await assertSucceeds(bob.doc('households/h1/plan_reservations/bob').delete());
+  });
+
+  it('refuses writing another member\'s but lets a fresh start delete it', async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await context.firestore().doc('households/h1/plan_reservations/ada').set(encrypted);
+    });
+    const bob = account(env, 'bob').firestore();
+    await assertFails(bob.doc('households/h1/plan_reservations/ada').set(encrypted));
+    await assertSucceeds(bob.doc('households/h1/plan_reservations/ada').delete());
+  });
+
+  it('refuses plaintext fields beyond the payload', async () => {
+    const bob = account(env, 'bob').firestore();
+    await assertFails(
+      bob.doc('households/h1/plan_reservations/bob').set({ ...encrypted, day: '2026-10-21' }),
+    );
+  });
+
+  it('keeps a member who left and another household out', async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await context.firestore().doc('households/h1/plan_reservations/ada').set(encrypted);
+      await context.firestore().doc('households/h1/members/bob').delete();
+    });
+    const bob = account(env, 'bob').firestore();
+    await assertFails(bob.doc('households/h1/plan_reservations/bob').set(encrypted));
+    await assertFails(bob.doc('households/h1/plan_reservations/ada').get());
+    const dora = account(env, 'dora').firestore();
+    await assertFails(dora.doc('households/h1/plan_reservations/ada').get());
+    await assertFails(dora.doc('households/h1/plan_reservations/dora').set(encrypted));
+  });
+});
+
 describe('profiles of co-members', () => {
   beforeEach(async () => {
     await seedHousehold(env, 'h1', 'ada', ['bob']);

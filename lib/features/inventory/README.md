@@ -15,6 +15,12 @@ discard events, and inventory-backed calorie handoff context.
 - Inventory pages, widgets, controllers, and presentation-only helpers.
 - Global food item matching and serving suggestion persistence used by
   inventory flows.
+- Household plan reservations: `households/{hid}/plan_reservations/{uid}`
+  holds, sealed with the household key, what each member's open plans keep
+  from the shared Vorrat (`data/plan_reservation_repository.dart`). Each
+  member writes only their own document, through
+  `presentation/controllers/plan_reservation_sharing_controller.dart`; the
+  server deletes it when the member leaves, and a fresh start wipes it.
 
 ## Does Not Own
 
@@ -128,6 +134,11 @@ already documented as a reusable presentation surface.
   day-before reminder's on/off and time with their setters, whether the
   system blocks its notifications, and a callback that opens the system
   notification settings. Settings uses it for its rows.
+- `presentation/widgets/plan_reservation_listener.dart`
+  (`PlanReservationListener`) wraps the app in `lib/app.dart`: it writes what
+  the own open plans keep from the Vorrat (`ownPlanReservationsProvider`) to
+  the household whenever that changes, so the other members' demand counts
+  it as "verplant".
 - `presentation/widgets/plan_shortage_reminder_listener.dart`
   (`PlanShortageReminderListener`) wraps the app in `lib/app.dart`: it keeps
   the day-before reminders for missing plan ingredients scheduled through

@@ -20,6 +20,7 @@ const _privateCollectionNames = <String>[
   'kitchen_utensils',
   'inventory_discard_events',
   'inventory_activity_events',
+  'plan_reservations',
 ];
 
 /// Files that encrypt what they write to the private collections.
@@ -38,6 +39,7 @@ const _allowedFiles = <String>{
   'lib/features/inventory/data/inventory_activity_event_repository.dart',
   'lib/features/inventory/data/inventory_discard_event_repository.dart',
   'lib/features/inventory/data/inventory_item_store.dart',
+  'lib/features/inventory/data/plan_reservation_repository.dart',
   'lib/features/inventory/data/prepared_meal_store.dart',
   'lib/features/inventory/data/prepared_meal_template_store.dart',
   'lib/features/kitchen_utensils/data/kitchen_utensil_store.dart',

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/graphit_stock_bar.dart';
+import 'package:yamt/features/household/domain/household_member.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
@@ -71,6 +72,46 @@ Future<void> _pump(WidgetTester tester, Widget child) async {
 }
 
 void main() {
+  testWidgets('long names of planning members fit the row with large text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    HouseholdMember member(String email) => HouseholdMember(
+      uid: email,
+      role: HouseholdRole.member,
+      joinedAt: DateTime(2026),
+      email: email,
+    );
+
+    await _pump(
+      tester,
+      InventoryEntryRow(
+        entry: InventoryFoodEntry(_food(left: 500)),
+        tiltLeft: true,
+        planned: 300,
+        plannedBy: [
+          (
+            member: member('anna.mustermann@example.com'),
+            day: DateTime(2026, 10, 21),
+            daysAhead: 1,
+          ),
+          (
+            member: member('ben.beispiel@example.com'),
+            day: DateTime(2026, 10, 23),
+            daysAhead: 3,
+          ),
+        ],
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining('verplant'), findsOneWidget);
+  });
+
   testWidgets('shows the amount left, the full amount and one segment per '
       'pack', (tester) async {
     await _pump(

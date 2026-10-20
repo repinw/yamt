@@ -1018,6 +1018,17 @@ service cloud.firestore {
           && isEncryptedDocument(request.resource.data, ['happened_at']);
         allow delete: if isHouseholdAdmin(householdId);
       }
+
+      // What a member's open plans keep from the Vorrat, one document per
+      // member. Only that member writes it, while in the household; the
+      // server deletes it when the member leaves. Any member may delete it,
+      // as the household wipe of a fresh start does.
+      match /plan_reservations/{uid} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isOwner(uid)
+          && isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, []);
+      }
     }
 
     match /users/{uid} {

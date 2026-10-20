@@ -55,6 +55,10 @@ abstract final class AppGraphit {
   /// Share of the stock under which a row turns to the low color.
   static const double lowStockShare = 0.25;
 
+  /// Widest share of a stock row that its plan note ("verplant · names")
+  /// takes, so the amount beside it stays readable.
+  static const double stockRowPlanNoteShare = 0.6;
+
   /// Diameter of the round action button in the middle of the home bar.
   static const double navActionButton = 56;
 
