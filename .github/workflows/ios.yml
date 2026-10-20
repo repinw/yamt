@@ -1,0 +1,193 @@
+name: iOS
+
+# Builds the signed iOS app on a macOS runner. A release tag (ci.yml calls this
+# after the unit tests) uploads it to TestFlight and hands it to the external
+# testers; a manual run uploads a test build of the picked branch that only
+# internal testers can install; a pull request that changes the iOS build
+# checks that it still signs, without an upload.
+#
+# Xcode creates the App Store profiles itself (-allowProvisioningUpdates) and
+# signs the export with a cloud-managed distribution certificate, both with the
+# App Store Connect key, which needs the Admin role. The archive is signed only
+# ad hoc: Xcode's automatic development signing makes a new development
+# certificate on every fresh runner and fails from the second run on.
+on:
+  workflow_call:
+    inputs:
+      release:
+        type: boolean
+        default: false
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'ios/**'
+      - 'pubspec.lock'
+      - '.github/workflows/ios.yml'
+
+permissions:
+  contents: read
+
+env:
+  # Keep in step with ci.yml.
+  FLUTTER_VERSION: 3.47.5
+
+jobs:
+  build:
+    name: iOS build
+    # Pull requests from forks get no secrets and cannot sign.
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    runs-on: macos-26
+    timeout-minutes: 90
+    # Manual runs never overlap, so their build numbers reach TestFlight in
+    # order. GitHub keeps one waiting run: a newer one replaces it.
+    concurrency:
+      group: ios-${{ github.event.pull_request.number || (github.event_name == 'workflow_dispatch' && 'test-build') || github.run_id }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    env:
+      # Only ci.yml's release job, on a tag, is a release; a manual run of
+      # this workflow on a tag is a test build and skips no CI gate.
+      RELEASE: ${{ inputs.release == true }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # The version comes from pubspec.yaml. A release of <build> gets the
+      # build number <build> * 1000, and a test build of the release candidate
+      # (the bump commit, before the tag) gets (<build> - 1) * 1000 + <run
+      # number>: below its release and above the one before, because App
+      # Store Connect may refuse a lower build number after a higher one, and
+      # the app reads only whole numbers. A release takes its TestFlight notes
+      # from the version's folder, which ci.yml's unit job checks.
+      - name: Pick the build number
+        id: build
+        env:
+          TAG: ${{ github.ref_name }}
+          EXTERNAL_GROUP: ${{ vars.TESTFLIGHT_EXTERNAL_GROUP }}
+        run: |
+          version=$(sed -n 's/^version: *\([^+]*\)+.*/\1/p' pubspec.yaml)
+          build=$(sed -n 's/^version: *[^+]*+\(.*\)/\1/p' pubspec.yaml)
+          release=$((build * 1000))
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+          echo "release=$release" >>"$GITHUB_OUTPUT"
+          if [ "$RELEASE" = true ]; then
+            build=$release
+            if [ "$TAG" != "v$version" ]; then
+              echo "Tag $TAG does not match pubspec version $version" >&2
+              exit 1
+            fi
+            if [ -z "$EXTERNAL_GROUP" ]; then
+              echo "Set the repository variable TESTFLIGHT_EXTERNAL_GROUP" >&2
+              exit 1
+            fi
+            echo "notes=distribution/$version/testflight.json" >>"$GITHUB_OUTPUT"
+          else
+            # shortcut: run numbers from 1000 on would reach the release's
+            # number; widen the factor (for every release) when it gets there.
+            if [ "$GITHUB_RUN_NUMBER" -ge 1000 ]; then
+              echo "Run number $GITHUB_RUN_NUMBER no longer fits below the release's build number" >&2
+              exit 1
+            fi
+            build=$((release - 1000 + GITHUB_RUN_NUMBER))
+          fi
+          echo "Building $version ($build)"
+          echo "number=$build" >>"$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # The ad hoc signature carries the entitlements (app group, HealthKit,
+      # App Attest) into the archive, so the export keeps them. Inner bundles
+      # are signed first.
+      - name: Archive
+        env:
+          BUILD_NUMBER: ${{ steps.build.outputs.number }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          flutter build ios --release --config-only --no-codesign --build-number="$BUILD_NUMBER"
+          xcodebuild archive -quiet -workspace ios/Runner.xcworkspace -scheme Runner \
+            -configuration Release -destination generic/platform=iOS \
+            -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGNING_ALLOWED=NO
+          app="$RUNNER_TEMP/Runner.xcarchive/Products/Applications/Runner.app"
+          for framework in "$app"/Frameworks/*; do
+            codesign --force --sign - "$framework"
+          done
+          codesign --force --sign - --entitlements ios/HomeDiaryWidget/HomeDiaryWidget.entitlements \
+            "$app/PlugIns/HomeDiaryWidget.appex"
+          codesign --force --sign - --entitlements ios/Runner/Runner.entitlements "$app"
+
+      # A lost entitlement stops the run here, before anything ships.
+      - name: Sign and export
+        # bash with pipefail, so a failed codesign or plutil fails the check.
+        shell: bash
+        env:
+          KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          INTERNAL_ONLY: ${{ env.RELEASE != 'true' }}
+        run: |
+          # The secret holds the .p8 file, as text or in base64.
+          key="$RUNNER_TEMP/AuthKey.p8"
+          if [[ "$KEY" == *"BEGIN PRIVATE KEY"* ]]; then
+            printf '%s\n' "$KEY" >"$key"
+          else
+            base64 --decode <<<"$KEY" >"$key"
+          fi
+
+          options="$RUNNER_TEMP/ExportOptions.plist"
+          cat >"$options" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>export</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+            <key>testFlightInternalTestingOnly</key><$INTERNAL_ONLY/>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+            -exportOptionsPlist "$options" -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates -authenticationKeyPath "$key" \
+            -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER_ID"
+
+          mv "$RUNNER_TEMP"/export/*.ipa "$RUNNER_TEMP/yamt.ipa"
+          unzip -q "$RUNNER_TEMP/yamt.ipa" -d "$RUNNER_TEMP/ipa"
+          app="$RUNNER_TEMP/ipa/Payload/Runner.app"
+          check() {
+            signed=$(codesign -d --entitlements - --xml "$1" | plutil -convert json -o - -)
+            if ! plutil -convert json -o - "$2" |
+              jq -e --argjson signed "$signed" 'to_entries | all(.value == $signed[.key])' >/dev/null; then
+              echo "The export of $1 lost or changed an entitlement of $2: $signed" >&2
+              exit 1
+            fi
+          }
+          check "$app" ios/Runner/Runner.entitlements
+          check "$app/PlugIns/HomeDiaryWidget.appex" ios/HomeDiaryWidget/HomeDiaryWidget.entitlements
+
+      # ios/fastlane/Fastfile: a release also waits for the processing, sets
+      # "What to Test" from the notes and hands the build to the
+      # external group; a test build is only uploaded.
+      - name: Upload to TestFlight
+        if: github.event_name != 'pull_request'
+        working-directory: ios
+        env:
+          LANE: ${{ env.RELEASE == 'true' && 'release' || 'test_build' }}
+          IPA: ${{ runner.temp }}/yamt.ipa
+          VERSION: ${{ steps.build.outputs.version }}
+          BUILD_NUMBER: ${{ steps.build.outputs.number }}
+          KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          NOTES: ${{ github.workspace }}/${{ steps.build.outputs.notes }}
+          RELEASE_BUILD: ${{ steps.build.outputs.release }}
+          EXTERNAL_GROUP: ${{ vars.TESTFLIGHT_EXTERNAL_GROUP }}
+          FASTLANE_OPT_OUT_USAGE: 'YES'
+          FASTLANE_SKIP_UPDATE_CHECK: 'YES'
+        run: fastlane "$LANE"

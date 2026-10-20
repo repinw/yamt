@@ -1,0 +1,56 @@
+# TestFlight upload for .github/workflows/ios.yml, which signs and exports the
+# IPA and passes everything here through the environment. fastlane comes with
+# the macOS runner.
+default_platform(:ios)
+
+platform :ios do
+  before_all do
+    app_store_connect_api_key(
+      key_id: ENV.fetch('KEY_ID'),
+      issuer_id: ENV.fetch('ISSUER_ID'),
+      key_filepath: ENV.fetch('KEY_PATH'),
+    )
+  end
+
+  # Internal testers get the build once it is processed; it was exported for
+  # internal testing only, so it cannot reach an external group. Its number is
+  # lower than the release's, and App Store Connect may refuse a lower build
+  # number after a higher one, so a released version takes no test builds.
+  lane :test_build do
+    if uploaded?(ENV.fetch('RELEASE_BUILD'))
+      UI.user_error!("#{ENV.fetch('VERSION')} is released; test the bump commit of the next version")
+    end
+    upload_to_testflight(ipa: ENV.fetch('IPA'), skip_waiting_for_build_processing: true) unless uploaded?
+  end
+
+  # Waits for the processing, sets "What to Test" per App Store Connect locale
+  # from the version's testflight.json and submits the build to the external
+  # group. A re-run after a successful upload only distributes, once the
+  # build is processed.
+  lane :release do
+    notes = JSON.parse(File.read(ENV.fetch('NOTES'), encoding: 'UTF-8'))
+    distribution = {
+      localized_build_info: notes.to_h { |note| [note.fetch('language'), { whats_new: note.fetch('text') }] },
+      groups: [ENV.fetch('EXTERNAL_GROUP')],
+      distribute_external: true,
+      notify_external_testers: true,
+    }
+    if uploaded?
+      upload_to_testflight(
+        distribute_only: true,
+        app_version: ENV.fetch('VERSION'),
+        build_number: ENV.fetch('BUILD_NUMBER'),
+        **distribution,
+      )
+    else
+      upload_to_testflight(ipa: ENV.fetch('IPA'), **distribution)
+    end
+  end
+end
+
+# Whether App Store Connect has this build of the version, in any processing
+# state: it refuses a second upload of the same build number.
+def uploaded?(build_number = ENV.fetch('BUILD_NUMBER'))
+  app = Spaceship::ConnectAPI::App.find(CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier))
+  Spaceship::ConnectAPI::Build.all(app_id: app.id, version: ENV.fetch('VERSION'), build_number: build_number).any?
+end
