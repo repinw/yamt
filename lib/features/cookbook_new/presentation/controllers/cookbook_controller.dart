@@ -55,8 +55,10 @@ class CookbookController extends _$CookbookController {
             recipe.recipeIngredientAmountConversions[ingredient.trim()];
         final saved =
             recipe.recipeIngredientAssignments[ingredient] ?? const <String>[];
-        bool supply() {
-          final (:matches, :others) = ingredientStockCandidates(
+        bool supply() => ingredientStockPick(
+          recipe: recipe,
+          text: ingredient,
+          candidates: ingredientStockCandidates(
             text: ingredient,
             requirement: parser.parseRequirement(
               ingredient: ingredient,
@@ -66,10 +68,8 @@ class CookbookController extends _$CookbookController {
             items: items,
             localeCode: localeCode,
             amountConversion: conversion,
-          );
-          return matches.isNotEmpty ||
-              others.any((item) => saved.contains(item.id));
-        }
+          ),
+        ).isNotEmpty;
 
         return conversion == null && saved.isEmpty
             ? inStockByFood.putIfAbsent('line:$ingredient', supply)

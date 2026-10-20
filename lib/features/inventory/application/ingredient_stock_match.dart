@@ -23,7 +23,7 @@ InventoryItem? bestIngredientStockMatch({
   }
   return _matches(text, [
     for (final item in items)
-      if (ingredientItemFits(item, requirement, amountConversion)) item,
+      if (_itemFits(item, requirement, amountConversion)) item,
   ], localeCode).firstOrNull;
 }
 
@@ -48,7 +48,7 @@ ingredientStockCandidates({
   final fitting = [
     for (final item in items)
       if (!item.isFullyConsumed &&
-          ingredientItemFits(item, requirement, amountConversion))
+          _itemFits(item, requirement, amountConversion))
         item,
   ];
   final matches = _matches(text, fitting, localeCode);
@@ -62,6 +62,28 @@ ingredientStockCandidates({
           left.name.toLowerCase().compareTo(right.name.toLowerCase()),
     );
   return (matches: matches, others: others);
+}
+
+/// The items that supply the ingredient [text] of [recipe] when nobody picks
+/// one: its saved items among [candidates] ([ingredientStockCandidates]), in
+/// saved order, else the best match. The recipe page, the Kochbuch cards and
+/// plans all pick this way.
+List<InventoryItem> ingredientStockPick({
+  required PreparedMeal recipe,
+  required String text,
+  required ({List<InventoryItem> matches, List<InventoryItem> others})
+  candidates,
+}) {
+  final (:matches, :others) = candidates;
+  final byId = {
+    for (final item in [...matches, ...others]) item.id: item,
+  };
+  final saved = [
+    for (final id
+        in recipe.recipeIngredientAssignments[text] ?? const <String>[])
+      ?byId[id],
+  ];
+  return saved.isNotEmpty ? saved : [?matches.firstOrNull];
 }
 
 /// How much of [requirement] the [items] cannot supply, in the unit the
@@ -134,11 +156,11 @@ final _amountHint = RegExp(
   caseSensitive: false,
 );
 
-/// Whether [item] is kept in a unit that can supply [requirement], with the
-/// recipe's saved [amountConversion] for pieces, whatever it still holds.
-/// Without a [requirement] there is no amount to supply, so any item fits;
-/// callers check [ingredientNamesNoAmount] first.
-bool ingredientItemFits(
+// Whether [item] is kept in a unit that can supply [requirement], with the
+// recipe's saved [amountConversion] for pieces, whatever it still holds.
+// Without a [requirement] there is no amount to supply, so any item fits;
+// callers check [ingredientNamesNoAmount] first.
+bool _itemFits(
   InventoryItem item,
   TemplateIngredientRequirement? requirement,
   RecipeIngredientAmountConversion? amountConversion,
