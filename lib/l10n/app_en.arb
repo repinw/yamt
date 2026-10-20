@@ -223,6 +223,34 @@
       }
     }
   },
+  "inventoryRowPlanHolder": "{name} {day}",
+  "@inventoryRowPlanHolder": {
+    "description": "One household member in inventoryRowPlannedBy: the name and the day of the plan, a short weekday in the coming week and a short date later, such as \"Anna Wed\" or \"Anna Wed, 10/28\".",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryRowPlanHolderSeparator": ", ",
+  "@inventoryRowPlanHolderSeparator": {
+    "description": "Between the members in inventoryRowPlannedBy."
+  },
+  "inventoryRowPlannedBy": "{amount} planned · {members}",
+  "@inventoryRowPlannedBy": {
+    "description": "Vorrat row: stock that open plans keep, then the other household members whose plans keep part of it, each with a short weekday, such as \"Anna Wed, Ben Fri\".",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "members": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryRowLow": "almost empty",
   "inventoryRowInfo": "{first} · {second}",
   "@inventoryRowInfo": {

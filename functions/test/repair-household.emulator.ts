@@ -10,7 +10,7 @@ import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 
 import { FileStore } from '../src/delete-user-data';
-import { repairHousehold } from '../src/repair-household';
+import { deleteLeftMemberData, repairHousehold } from '../src/repair-household';
 
 const emulatorHost = process.env.FIRESTORE_EMULATOR_HOST;
 if (!emulatorHost) {
@@ -52,6 +52,33 @@ async function ids(path: string): Promise<string[]> {
 async function exists(path: string): Promise<boolean> {
   return (await db.doc(path).get()).exists;
 }
+
+describe('deleteLeftMemberData (Firestore emulator)', () => {
+  beforeEach(async () => {
+    const url = `http://${emulatorHost}/emulator/v1/projects/${projectId}/databases/(default)/documents`;
+    const response = await fetch(url, { method: 'DELETE' });
+    assert.equal(response.ok, true, `clearing the emulator failed: ${response.status}`);
+  });
+
+  it('deletes the plan reservations of a member who left', async () => {
+    await set('households/h/members/stays', { uid: 'stays', role: 'admin', joined_at: joined(1) });
+    await set('households/h/plan_reservations/gone', { payload: 'p' });
+    await set('households/h/plan_reservations/stays', { payload: 'p' });
+
+    await deleteLeftMemberData(db, 'h', 'gone');
+
+    assert.deepEqual(await ids('households/h/plan_reservations'), ['stays']);
+  });
+
+  it('keeps them when the member is back', async () => {
+    await set('households/h/members/back', { uid: 'back', role: 'member', joined_at: joined(1) });
+    await set('households/h/plan_reservations/back', { payload: 'p' });
+
+    await deleteLeftMemberData(db, 'h', 'back');
+
+    assert.deepEqual(await ids('households/h/plan_reservations'), ['back']);
+  });
+});
 
 describe('repairHousehold (Firestore emulator)', () => {
   beforeEach(async () => {

@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
+import 'package:yamt/features/inventory/domain/plan_reservation.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
@@ -40,6 +42,14 @@ typedef InventoryPlanDemand = ({
   /// The ingredients of each recipe plan that no Vorrat item stands for, by
   /// plan id; they are missing in full.
   Map<String, List<PlanUnstockedIngredient>> unstockedIngredientsByPlanId,
+
+  /// What the own plans want from each pack, cooked meal, or recipe
+  /// ingredient they take from, to share with the household.
+  List<PlanReservation> ownReservations,
+
+  /// The other members whose plans keep stock of a pack or cooked meal, by
+  /// item or meal id, each with the day of the plan.
+  Map<String, List<({String uid, DateTime day})>> othersByStockId,
 });
 
 /// Walks [plans] by their day and takes each one's stock from [items] the
@@ -54,6 +64,12 @@ typedef InventoryPlanDemand = ({
 /// no stock and leaves the plan missing in full.
 ///
 /// A plan of a found food names no stock.
+///
+/// The plans of the other household members, [othersReservations], take
+/// their stock in the same walk, at their own times, so an earlier plan
+/// comes first whoever made it; at the same time, the smaller uid first,
+/// with [ownUid] for the own plans, so every device agrees. They only count
+/// as "verplant".
 InventoryPlanDemand inventoryPlanDemand(
   List<CalorieEntry> plans,
   List<InventoryItem> items,
@@ -61,6 +77,8 @@ InventoryPlanDemand inventoryPlanDemand(
   Map<String, Map<String, int>> ingredientNeedsByPlanId = const {},
   Map<String, List<PlanUnstockedIngredient>> unstockedIngredientsByPlanId =
       const {},
+  List<MemberPlanReservation> othersReservations = const [],
+  String ownUid = '',
 }) {
   final left = {
     for (final item in items) item.id: consumableInventoryAmount(item) ?? 0,
@@ -73,12 +91,59 @@ InventoryPlanDemand inventoryPlanDemand(
   final plannedPortions = <String, double>{};
   final missing = <String, double>{};
   final missingIngredients = <String, Map<String, int>>{};
-  for (final plan in plans.sortedBy((plan) => plan.loggedAt)) {
+  final ownReservations = <PlanReservation>[];
+  final othersByStockId = <String, List<({String uid, DateTime day})>>{};
+
+  void takeForOther(MemberPlanReservation other) {
+    final (:stockId, :amount, :at) = other.reservation;
+    if (left[stockId] case final available?) {
+      final taken = math.min(amount.round(), available);
+      if (taken <= 0) return;
+      left[stockId] = available - taken;
+      planned.update(stockId, (sum) => sum + taken, ifAbsent: () => taken);
+    } else if (portionsLeft[stockId] case final available?) {
+      final taken = math.min(amount, available);
+      if (taken <= 0) return;
+      portionsLeft[stockId] = available - taken;
+      plannedPortions.update(
+        stockId,
+        (sum) => sum + taken,
+        ifAbsent: () => taken,
+      );
+    } else {
+      return;
+    }
+    final holder = (uid: other.uid, day: normalizeLocalDay(at));
+    final holders = othersByStockId.putIfAbsent(stockId, () => []);
+    if (!holders.contains(holder)) holders.add(holder);
+  }
+
+  final walk =
+      [
+        for (final plan in plans)
+          (at: plan.loggedAt, uid: ownUid, plan: plan, other: null),
+        for (final other in othersReservations)
+          (at: other.reservation.at, uid: other.uid, plan: null, other: other),
+      ].sorted((a, b) {
+        final byTime = a.at.compareTo(b.at);
+        return byTime != 0 ? byTime : a.uid.compareTo(b.uid);
+      });
+  for (final step in walk) {
+    final plan = step.plan;
+    if (plan == null) {
+      takeForOther(step.other!);
+      continue;
+    }
     if (ingredientNeedsByPlanId[plan.id] case final needs?) {
       // Items count in different units, so the share is the largest one.
       var share = 0.0;
       final short = <String, int>{};
       for (final MapEntry(key: itemId, value: amount) in needs.entries) {
+        ownReservations.add((
+          stockId: itemId,
+          amount: amount.toDouble(),
+          at: plan.loggedAt,
+        ));
         final taken = math.min(amount, left[itemId] ?? 0);
         if (taken > 0) {
           left[itemId] = left[itemId]! - taken;
@@ -110,6 +175,13 @@ InventoryPlanDemand inventoryPlanDemand(
       final wanted = meal == null
           ? 0.0
           : preparedMealPlanShare(plan, meal).toDouble();
+      if (wanted > 0) {
+        ownReservations.add((
+          stockId: mealId,
+          amount: wanted,
+          at: plan.loggedAt,
+        ));
+      }
       final taken = math.min(wanted, portionsLeft[mealId] ?? 0);
       if (taken > 0) {
         portionsLeft[mealId] = portionsLeft[mealId]! - taken;
@@ -147,6 +219,11 @@ InventoryPlanDemand inventoryPlanDemand(
       }
       continue;
     }
+    ownReservations.add((
+      stockId: pack.item.id,
+      amount: pack.amount.toDouble(),
+      at: plan.loggedAt,
+    ));
     final available = left[pack.item.id]!;
     final taken = math.min(pack.amount, available);
     left[pack.item.id] = available - taken;
@@ -173,5 +250,7 @@ InventoryPlanDemand inventoryPlanDemand(
             when unstocked.isNotEmpty)
           plan.id: unstocked,
     },
+    ownReservations: ownReservations,
+    othersByStockId: othersByStockId,
   );
 }

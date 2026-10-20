@@ -27,6 +27,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/plan_reservation_listener.dart';
 import 'package:yamt/features/inventory/presentation/widgets/plan_shortage_reminder_listener.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
@@ -104,10 +105,12 @@ class _YAMTState extends ConsumerState<YAMT> {
             child: AppUpdateHintListener(
               child: WhatsNewListener(
                 child: PlanShortageReminderListener(
-                  child: SharedReceiptListener(
-                    onReceiptSaved: () =>
-                        ref.invalidate(inventoryItemsControllerProvider),
-                    child: child ?? const SizedBox.shrink(),
+                  child: PlanReservationListener(
+                    child: SharedReceiptListener(
+                      onReceiptSaved: () =>
+                          ref.invalidate(inventoryItemsControllerProvider),
+                      child: child ?? const SizedBox.shrink(),
+                    ),
                   ),
                 ),
               ),

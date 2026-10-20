@@ -379,6 +379,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String inventoryRowPlanHolder(String name, String day) {
+    return '$name $day';
+  }
+
+  @override
+  String get inventoryRowPlanHolderSeparator => ', ';
+
+  @override
+  String inventoryRowPlannedBy(String amount, String members) {
+    return '$amount planned · $members';
+  }
+
+  @override
   String get inventoryRowLow => 'almost empty';
 
   @override

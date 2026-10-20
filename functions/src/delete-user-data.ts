@@ -29,6 +29,7 @@ const HOUSEHOLDS = 'households';
 const MEMBERS = 'members';
 const KEYS = 'keys';
 const KEY_RESTORES = 'key_restores';
+const PLAN_RESERVATIONS = 'plan_reservations';
 const HOUSEHOLD_INVITES = 'household_invites';
 const USERS = 'users';
 
@@ -197,6 +198,7 @@ async function settleMembership(
       tx.delete(members.doc(uid));
       tx.delete(household.collection(KEYS).doc(uid));
       tx.delete(household.collection(KEY_RESTORES).doc(uid));
+      tx.delete(household.collection(PLAN_RESERVATIONS).doc(uid));
       if (plan.promoteUid !== null) {
         tx.update(members.doc(plan.promoteUid), { role: 'admin' });
       }

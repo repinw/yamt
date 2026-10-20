@@ -157,6 +157,9 @@
     }
   },
   "inventoryRowPlanned": "{amount} verplant",
+  "inventoryRowPlanHolder": "{name} {day}",
+  "inventoryRowPlanHolderSeparator": ", ",
+  "inventoryRowPlannedBy": "{amount} verplant · {members}",
   "@inventoryRowPlanned": {
     "placeholders": {
       "amount": {

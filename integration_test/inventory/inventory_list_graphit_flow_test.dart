@@ -7,10 +7,13 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/core/widgets/graphit_stock_bar.dart';
+import 'package:yamt/features/household/application/household_members_provider.dart';
+import 'package:yamt/features/household/domain/household_member.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
+import 'package:yamt/features/inventory/domain/plan_reservation.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -150,7 +153,22 @@ Widget _buildHarness() {
           missingIngredientsByPlanId: const <String, Map<String, int>>{},
           unstockedIngredientsByPlanId:
               const <String, List<PlanUnstockedIngredient>>{},
+          ownReservations: const <PlanReservation>[],
+          // Anna plans with the Skyr on Wednesday.
+          othersByStockId: {
+            'skyr': [(uid: 'anna', day: DateTime(2026, 10, 21))],
+          },
         ),
+      ),
+      householdMembersProvider.overrideWith(
+        (ref) => Stream.value([
+          HouseholdMember(
+            uid: 'anna',
+            role: HouseholdRole.member,
+            joinedAt: DateTime(2026),
+            displayName: 'Anna',
+          ),
+        ]),
       ),
     ],
   );
@@ -215,6 +233,13 @@ void main() {
     await _tapChip(tester, InventoryQuickFilter.planned);
     await _settle(tester);
     expect(find.byKey(const ValueKey('inventory_entry_row_skyr')), findsOne);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('inventory_entry_row_skyr')),
+        matching: find.textContaining('· Anna Mi'),
+      ),
+      findsOne,
+    );
     expect(
       find.byKey(const ValueKey('inventory_entry_row_quark')),
       findsNothing,

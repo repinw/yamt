@@ -92,6 +92,7 @@ class InventoryEntriesSliver extends ConsumerWidget {
         : null;
 
     final demand = ref.watch(openPlanDemandProvider).value;
+    final holders = ref.watch(planStockHoldersProvider).value;
     num planned(InventoryListEntry entry) => switch (entry) {
       InventoryFoodEntry() => demand?.plannedByItemId[entry.id] ?? 0,
       InventoryMealEntry() => demand?.plannedPortionsByMealId[entry.id] ?? 0,
@@ -159,6 +160,7 @@ class InventoryEntriesSliver extends ConsumerWidget {
             onLongPress: onLongPress(entry),
             planned: planned(entry),
             missing: demand?.missingByItemId[entry.id] ?? 0,
+            plannedBy: holders?[entry.id] ?? const [],
           );
         },
       ),

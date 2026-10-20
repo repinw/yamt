@@ -1,3 +1,6 @@
+import 'package:intl/intl.dart';
+import 'package:yamt/features/household/presentation/models/household_member_label.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
@@ -24,30 +27,34 @@ class InventoryEntryTexts {
 
   /// Texts of [entry]. An entry that open plans take [planned] of, in the
   /// stored unit of a food or in portions of a meal, names that amount in
-  /// place of the full amount. A food whose plans lack [missing] of its
-  /// stock names that instead.
+  /// place of the full amount, and the other members in [plannedBy] whose
+  /// plans take part of it. A food whose plans lack [missing] of its stock
+  /// names that instead.
   factory of(
     InventoryListEntry entry,
     AppLocalizations l10n, {
     num planned = 0,
     int missing = 0,
+    List<PlanStockHolder> plannedBy = const [],
   }) {
     final texts = switch (entry) {
       InventoryFoodEntry(:final item) => _food(item, l10n),
       InventoryMealEntry(:final meal) => _meal(meal, l10n),
     };
+    final plannedAmount = switch (entry) {
+      _ when planned <= 0 => null,
+      InventoryFoodEntry(:final item) => _stored(item, planned.round()),
+      InventoryMealEntry(:final meal) => l10n.inventoryEatSheetAmountWithUnit(
+        formatInventoryNutritionValue(planned.toDouble()),
+        preparedMealServingUnit(l10n, meal),
+      ),
+    };
     final ofFull = switch (entry) {
       InventoryFoodEntry(:final item) when missing > 0 =>
         l10n.inventoryRowPlanMissing(_stored(item, missing)),
-      InventoryFoodEntry(:final item) when planned > 0 =>
-        l10n.inventoryRowPlanned(_stored(item, planned.round())),
-      InventoryMealEntry(:final meal) when planned > 0 =>
-        l10n.inventoryRowPlanned(
-          l10n.inventoryEatSheetAmountWithUnit(
-            formatInventoryNutritionValue(planned.toDouble()),
-            preparedMealServingUnit(l10n, meal),
-          ),
-        ),
+      _ when plannedAmount != null && plannedBy.isNotEmpty =>
+        l10n.inventoryRowPlannedBy(plannedAmount, _holders(plannedBy, l10n)),
+      _ when plannedAmount != null => l10n.inventoryRowPlanned(plannedAmount),
       _ when entry.isLow => l10n.inventoryRowLow,
       _ => null,
     };
@@ -122,6 +129,23 @@ InventoryEntryTexts _food(InventoryItem item, AppLocalizations l10n) {
     ),
     info: info,
   );
+}
+
+/// "Anna Mi, Ben Fr": who plans with the stock, and on which day. A weekday
+/// names a day of the coming week only; later days show their date.
+String _holders(List<PlanStockHolder> holders, AppLocalizations l10n) {
+  final weekday = DateFormat.E(l10n.localeName);
+  final date = DateFormat.MEd(l10n.localeName);
+  return holders
+      .map(
+        (holder) => l10n.inventoryRowPlanHolder(
+          householdMemberLabel(holder.member, l10n),
+          (holder.daysAhead < DateTime.daysPerWeek ? weekday : date).format(
+            holder.day,
+          ),
+        ),
+      )
+      .join(l10n.inventoryRowPlanHolderSeparator);
 }
 
 /// [amount] of [item]'s stored unit as the row shows it.

@@ -12,6 +12,26 @@ import { HouseholdRepairPlan, planHouseholdRepair } from './household-plan';
 
 const HOUSEHOLDS = 'households';
 const MEMBERS = 'members';
+const PLAN_RESERVATIONS = 'plan_reservations';
+
+/**
+ * Deletes the plan reservations of `uid`, who left `householdId`, so the
+ * others no longer read that member's plans. Keeps them when `uid` is a
+ * member again. Idempotent.
+ */
+export async function deleteLeftMemberData(
+  db: Firestore,
+  householdId: string,
+  uid: string,
+): Promise<void> {
+  const household = db.collection(HOUSEHOLDS).doc(householdId);
+  await db.runTransaction(async (tx) => {
+    if ((await tx.get(household.collection(MEMBERS).doc(uid))).exists) {
+      return;
+    }
+    tx.delete(household.collection(PLAN_RESERVATIONS).doc(uid));
+  });
+}
 
 /**
  * Keeps a household whole after a member document was deleted or changed its

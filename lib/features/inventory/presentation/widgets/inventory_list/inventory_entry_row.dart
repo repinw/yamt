@@ -4,6 +4,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/graphit_stock_bar.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -25,6 +26,7 @@ class InventoryEntryRow extends StatelessWidget {
     this.isSelected = false,
     this.planned = 0,
     this.missing = 0,
+    this.plannedBy = const [],
     super.key,
   });
 
@@ -53,6 +55,9 @@ class InventoryEntryRow extends StatelessWidget {
   /// Stock of the food that its open plans lack, in its stored unit.
   final int missing;
 
+  /// The other household members whose plans take part of [planned].
+  final List<PlanStockHolder> plannedBy;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -63,6 +68,7 @@ class InventoryEntryRow extends StatelessWidget {
       l10n,
       planned: planned,
       missing: missing,
+      plannedBy: plannedBy,
     );
     final amountColor = entry.isLow ? colors.low : colors.ink;
     final small = textTheme.labelSmall?.copyWith(color: colors.muted);
@@ -132,32 +138,44 @@ class InventoryEntryRow extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Row(
-                        spacing: AppSpacing.sm,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              texts.info,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: texts.infoIsWarning
-                                  ? small?.copyWith(
-                                      color: colors.low,
-                                      fontWeight: FontWeight.w700,
-                                    )
-                                  : small,
+                      LayoutBuilder(
+                        builder: (context, constraints) => Row(
+                          spacing: AppSpacing.sm,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                texts.info,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: texts.infoIsWarning
+                                    ? small?.copyWith(
+                                        color: colors.low,
+                                        fontWeight: FontWeight.w700,
+                                      )
+                                    : small,
+                              ),
                             ),
-                          ),
-                          Text(
-                            texts.ofFull,
-                            style: texts.ofFullIsWarning
-                                ? small?.copyWith(
-                                    color: colors.low,
-                                    fontWeight: FontWeight.w700,
-                                  )
-                                : small,
-                          ),
-                        ],
+                            // Names of household members can make it long.
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    constraints.maxWidth *
+                                    AppGraphit.stockRowPlanNoteShare,
+                              ),
+                              child: Text(
+                                texts.ofFull,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: texts.ofFullIsWarning
+                                    ? small?.copyWith(
+                                        color: colors.low,
+                                        fontWeight: FontWeight.w700,
+                                      )
+                                    : small,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: AppSpacing.xxs),
