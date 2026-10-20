@@ -219,10 +219,6 @@ const architectureBaseline = <String, Map<String, int>>{
         6,
     'lib/features/calories/presentation/widgets/calorie_goal_training_days_card.dart':
         2,
-    'lib/features/calories/presentation/widgets/tdee_analytics/tdee_goal_selector.dart':
-        1,
-    'lib/features/calories/presentation/widgets/tdee_analytics/tdee_weight_chart_builder.dart':
-        2,
     'lib/features/inventory/presentation/widgets/inventory_action_picker_sheet.dart':
         1,
     'lib/features/meal_templates/presentation/widgets/meal_template_recipe_template_sheet.dart':

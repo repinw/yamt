@@ -1899,166 +1899,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please enter a valid goal speed.';
 
   @override
-  String get settingsGoalArchiveTitle => 'Goal archive';
-
-  @override
-  String get settingsGoalArchiveSubtitle =>
-      'View your current and previous goals';
-
-  @override
-  String get goalArchiveTitle => 'Goal archive';
-
-  @override
-  String get goalArchiveLoadFailed => 'The goals could not be loaded.';
-
-  @override
-  String get goalArchiveRetryAction => 'Try again';
-
-  @override
-  String get goalArchiveActive => 'Active';
-
-  @override
-  String get goalArchiveCompleted => 'Completed';
-
-  @override
-  String get goalArchiveGoalLabel => 'Goal';
-
-  @override
-  String get goalArchiveSpeedLabel => 'Speed';
-
-  @override
-  String goalArchiveSpeedValue(String speed) {
-    return '$speed kg/week';
-  }
-
-  @override
-  String get goalArchiveStartLabel => 'Start';
-
-  @override
-  String get goalArchiveStartWeightLabel => 'Starting weight';
-
-  @override
-  String get goalArchiveEndWeightLabel => 'Ending weight';
-
-  @override
-  String get goalArchiveEstimatedEndLabel => 'Estimated end';
-
-  @override
-  String get goalArchiveEndLabel => 'End';
-
-  @override
-  String get goalArchiveReachedLabel => 'Reached';
-
-  @override
-  String get goalArchiveUnlimited => 'No end date';
-
-  @override
-  String get goalArchiveSelectHint =>
-      'Select one or more goals for one continuous timeline.';
-
-  @override
-  String get goalArchiveOpenAnalytics => 'Open timeline';
-
-  @override
-  String get tdeeChartEstimateMarker => 'Estimate';
-
-  @override
-  String get tdeeAnalyticsTitle => 'TDEE & expenditure';
-
-  @override
-  String get tdeeAnalyticsLoadFailed => 'Could not load the analysis.';
-
-  @override
-  String get tdeeAnalyticsNotEnoughData => 'Not enough data for this period.';
-
-  @override
-  String tdeeDateRange(String start, String end) {
-    return '$start – $end';
-  }
-
-  @override
-  String get tdeeHeaderAverage => 'Average';
-
-  @override
-  String get tdeeChangeLabel => 'Change';
-
-  @override
-  String get tdeeLegendFlux => 'Flux range';
-
-  @override
-  String get tdeeLegendTdee => 'Expenditure (TDEE)';
-
-  @override
-  String tdeeRangeDays(int count) {
-    return '$count d';
-  }
-
-  @override
-  String get tdeeRangeMonth => '1 mo';
-
-  @override
-  String get tdeeRangeAll => 'All';
-
-  @override
-  String get tdeeInsightsTitle => 'Insights & changes';
-
-  @override
-  String tdeeInsightsDays(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count days',
-      one: '1 day',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String tdeeGoalAchieved(String target) {
-    return '🎉 Target weight of $target already reached!';
-  }
-
-  @override
-  String tdeeGoalMovingAway(String target) {
-    return '⚠️ The current trend is moving away from your goal ($target).';
-  }
-
-  @override
-  String tdeeGoalProjection(String target, String date) {
-    return 'Goal $target: expected $date';
-  }
-
-  @override
-  String tdeeGoalRemaining(int days, String speed) {
-    return 'In about $days days at the current trend ($speed kg/week)';
-  }
-
-  @override
-  String get tdeeShowProjection => 'Show forecast in chart';
-
-  @override
-  String get tdeeWeightChartTitle => 'Weight trend & goal';
-
-  @override
-  String tdeeWeightTargetLine(String weight) {
-    return 'Goal $weight kg';
-  }
-
-  @override
-  String tdeeWeightTrendValue(String weight) {
-    return 'Trend $weight kg';
-  }
-
-  @override
-  String tdeeWeightScaleValue(String weight) {
-    return 'Scale $weight kg';
-  }
-
-  @override
   String get tdeeWeightStatTrend => 'Trend weight';
-
-  @override
-  String get tdeeWeightStatRate => 'Per week';
 
   @override
   String get caloriesCalculatorTargetWeightLabel => 'Target weight (kg)';
@@ -2976,6 +2817,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progressScopeAll => 'Overall';
 
   @override
+  String get progressScopePastGoal => 'Goal';
+
+  @override
   String progressRunKicker(int run, int day, int total) {
     return 'Run $run · day $day of $total';
   }
@@ -2984,12 +2828,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progressDayTypeKickerGoal => 'Since goal start · average';
 
   @override
+  String progressDayTypeKickerPastGoal(int number) {
+    return 'Goal $number · average';
+  }
+
+  @override
   String get progressDayTypeKickerAll => 'All goals · average';
 
   @override
   String progressGoalMarker(int number) {
     return 'Goal $number';
   }
+
+  @override
+  String progressGoalMenuRunning(int number) {
+    return 'Goal $number · running';
+  }
+
+  @override
+  String progressGoalMenuSince(String date) {
+    return 'since $date';
+  }
+
+  @override
+  String progressGoalMenuRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String progressGoalWeightValue(String weight) {
+    return '$weight kg';
+  }
+
+  @override
+  String get progressGoalSpeedLabel => 'Speed';
+
+  @override
+  String progressGoalSpeedValue(String speed) {
+    return '$speed kg/week';
+  }
+
+  @override
+  String get progressGoalStartLabel => 'Start';
+
+  @override
+  String get progressGoalStartWeightLabel => 'Starting weight';
+
+  @override
+  String get progressGoalEndWeightLabel => 'Ending weight';
+
+  @override
+  String get progressGoalEndLabel => 'End';
+
+  @override
+  String get progressGoalReachedLabel => 'Reached';
 
   @override
   String progressWeekKicker(String start, String end) {
@@ -6328,6 +6220,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get progressPhotosEmpty =>
       'No photos yet. Add one, or take it at the next check-in.';
+
+  @override
+  String get progressPhotosEmptyPastGoal => 'No photos from this goal.';
 
   @override
   String get progressPhotosAdd => 'Add photo';

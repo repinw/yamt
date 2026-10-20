@@ -34,14 +34,16 @@ void main() {
   final weekStart = DateTime(2026, 9, 21);
   final weekEnd = DateTime(2026, 9, 27);
 
-  ProgressIntake intake(List<ProgressDay> days) => ProgressIntake.fromDays(
-    days: days,
-    weekStart: weekStart,
-    weekEnd: weekEnd,
-    comparisonStart: DateTime(2026, 8, 29),
-    today: _today,
-    runNumber: 3,
-  );
+  ProgressIntake intake(List<ProgressDay> days, {DateTime? comparisonEnd}) =>
+      ProgressIntake.fromDays(
+        days: days,
+        weekStart: weekStart,
+        weekEnd: weekEnd,
+        comparisonStart: DateTime(2026, 8, 29),
+        comparisonEnd: comparisonEnd ?? _today,
+        today: _today,
+        runNumber: 3,
+      );
 
   test('averages only logged past days of the run', () {
     final result = intake([
@@ -85,6 +87,20 @@ void main() {
 
     expect(result.training.dayCount, 2);
     expect(result.training.eatenKcal, 2500);
+    expect(result.rest.dayCount, 1);
+    expect(result.rest.eatenKcal, 1800);
+  });
+
+  test('compares only the days up to the comparison end', () {
+    final result = intake([
+      _day(DateTime(2026, 9), eaten: 2600, training: true),
+      _day(DateTime(2026, 9, 2), eaten: 1800),
+      _day(DateTime(2026, 9, 3), eaten: 9000, training: true),
+      _day(DateTime(2026, 9, 4), eaten: 9000),
+    ], comparisonEnd: DateTime(2026, 9, 2));
+
+    expect(result.training.dayCount, 1);
+    expect(result.training.eatenKcal, 2600);
     expect(result.rest.dayCount, 1);
     expect(result.rest.eatenKcal, 1800);
   });

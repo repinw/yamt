@@ -28,10 +28,10 @@ class ProgressPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final rule = FoodLabelColors.of(context).rule;
     final scope = ref.watch(progressScopeControllerProvider);
-    final isGoal = scope == ProgressScope.goal;
+    final hasGoalCard = scope != ProgressScope.all;
     final sections = <Widget>[
       ProgressPhotoSection(scope: scope),
-      if (isGoal) const ProgressWeekSection(),
+      if (scope == ProgressScope.goal) const ProgressWeekSection(),
       ProgressWeightSection(scope: scope),
       ProgressTdeeSection(scope: scope),
       ProgressDayTypeSection(scope: scope),
@@ -57,9 +57,9 @@ class ProgressPage extends ConsumerWidget {
                     children: [
                       const ProgressScopeSwitch(),
                       const SizedBox(height: AppSpacing.md),
-                      if (isGoal) const ProgressGoalCard(),
+                      if (hasGoalCard) ProgressGoalCard(scope: scope),
                       for (final (index, section) in sections.indexed) ...[
-                        if (index > 0 || isGoal) ...[
+                        if (index > 0 || hasGoalCard) ...[
                           const SizedBox(height: AppSpacing.xxxl),
                           Divider(height: AppSizes.hairline, color: rule),
                           const SizedBox(height: AppSpacing.xl),

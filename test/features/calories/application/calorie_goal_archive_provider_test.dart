@@ -38,7 +38,7 @@ void main() {
 
     expect(cycles, hasLength(2));
     expect(cycles.any((cycle) => cycle.isAllGoals), isFalse);
-    expect(cycles.where((cycle) => cycle.isActive), hasLength(1));
+    expect(cycles.where((cycle) => cycle.endDate == null), hasLength(1));
     expect(cycles.last.endDate, DateTime(2026, 6, 10));
   });
 }

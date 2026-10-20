@@ -1082,65 +1082,7 @@
   "caloriesCalculatorGoalSpeedHint": "For example 0.25, 0.5 or 0.75",
   "caloriesCalculatorGoalSpeedEmpty": "Please enter a goal speed.",
   "caloriesCalculatorGoalSpeedInvalid": "Please enter a valid goal speed.",
-  "settingsGoalArchiveTitle": "Goal archive",
-  "settingsGoalArchiveSubtitle": "View your current and previous goals",
-  "goalArchiveTitle": "Goal archive",
-  "goalArchiveLoadFailed": "The goals could not be loaded.",
-  "goalArchiveRetryAction": "Try again",
-  "goalArchiveActive": "Active",
-  "goalArchiveCompleted": "Completed",
-  "goalArchiveGoalLabel": "Goal",
-  "goalArchiveSpeedLabel": "Speed",
-  "goalArchiveSpeedValue": "{speed} kg/week",
-  "@goalArchiveSpeedValue": {
-    "placeholders": {
-      "speed": {"type": "String"}
-    }
-  },
-  "goalArchiveStartLabel": "Start",
-  "goalArchiveStartWeightLabel": "Starting weight",
-  "goalArchiveEndWeightLabel": "Ending weight",
-  "goalArchiveEstimatedEndLabel": "Estimated end",
-  "goalArchiveEndLabel": "End",
-  "goalArchiveReachedLabel": "Reached",
-  "goalArchiveUnlimited": "No end date",
-  "goalArchiveSelectHint": "Select one or more goals for one continuous timeline.",
-  "goalArchiveOpenAnalytics": "Open timeline",
-  "tdeeChartEstimateMarker": "Estimate",
-  "tdeeAnalyticsTitle": "TDEE & expenditure",
-  "tdeeAnalyticsLoadFailed": "Could not load the analysis.",
-  "tdeeAnalyticsNotEnoughData": "Not enough data for this period.",
-  "tdeeDateRange": "{start} – {end}",
-  "@tdeeDateRange": {"placeholders": {"start": {"type": "String"}, "end": {"type": "String"}}},
-  "tdeeHeaderAverage": "Average",
-  "tdeeChangeLabel": "Change",
-  "tdeeLegendFlux": "Flux range",
-  "tdeeLegendTdee": "Expenditure (TDEE)",
-  "tdeeRangeDays": "{count} d",
-  "@tdeeRangeDays": {"placeholders": {"count": {"type": "int"}}},
-  "tdeeRangeMonth": "1 mo",
-  "tdeeRangeAll": "All",
-  "tdeeInsightsTitle": "Insights & changes",
-  "tdeeInsightsDays": "{count, plural, =1{1 day} other{{count} days}}",
-  "@tdeeInsightsDays": {"placeholders": {"count": {"type": "int"}}},
-  "tdeeGoalAchieved": "🎉 Target weight of {target} already reached!",
-  "@tdeeGoalAchieved": {"placeholders": {"target": {"type": "String"}}},
-  "tdeeGoalMovingAway": "⚠️ The current trend is moving away from your goal ({target}).",
-  "@tdeeGoalMovingAway": {"placeholders": {"target": {"type": "String"}}},
-  "tdeeGoalProjection": "Goal {target}: expected {date}",
-  "@tdeeGoalProjection": {"placeholders": {"target": {"type": "String"}, "date": {"type": "String"}}},
-  "tdeeGoalRemaining": "In about {days} days at the current trend ({speed} kg/week)",
-  "@tdeeGoalRemaining": {"placeholders": {"days": {"type": "int"}, "speed": {"type": "String"}}},
-  "tdeeShowProjection": "Show forecast in chart",
-  "tdeeWeightChartTitle": "Weight trend & goal",
-  "tdeeWeightTargetLine": "Goal {weight} kg",
-  "@tdeeWeightTargetLine": {"placeholders": {"weight": {"type": "String"}}},
-  "tdeeWeightTrendValue": "Trend {weight} kg",
-  "@tdeeWeightTrendValue": {"placeholders": {"weight": {"type": "String"}}},
-  "tdeeWeightScaleValue": "Scale {weight} kg",
-  "@tdeeWeightScaleValue": {"placeholders": {"weight": {"type": "String"}}},
   "tdeeWeightStatTrend": "Trend weight",
-  "tdeeWeightStatRate": "Per week",
   "caloriesCalculatorTargetWeightLabel": "Target weight (kg)",
   "caloriesMaintainUntilTitle": "Maintain weight until",
   "caloriesMaintainUntilUnlimited": "No end date – until you choose a new goal",
@@ -1655,6 +1597,7 @@
   "progressAveragePerDay": "average per day",
   "progressScopeGoal": "Current goal",
   "progressScopeAll": "Overall",
+  "progressScopePastGoal": "Goal",
   "progressRunKicker": "Run {run} · day {day} of {total}",
   "@progressRunKicker": {
     "placeholders": {
@@ -1670,6 +1613,15 @@
     }
   },
   "progressDayTypeKickerGoal": "Since goal start · average",
+  "progressDayTypeKickerPastGoal": "Goal {number} · average",
+  "@progressDayTypeKickerPastGoal": {
+    "description": "Kicker above the day-type stats when a past goal is selected; the average is over that goal.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "progressDayTypeKickerAll": "All goals · average",
   "progressGoalMarker": "Goal {number}",
   "@progressGoalMarker": {
@@ -1679,6 +1631,55 @@
       }
     }
   },
+  "progressGoalMenuRunning": "Goal {number} · running",
+  "@progressGoalMenuRunning": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "progressGoalMenuSince": "since {date}",
+  "@progressGoalMenuSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalMenuRange": "{start} – {end}",
+  "@progressGoalMenuRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalWeightValue": "{weight} kg",
+  "@progressGoalWeightValue": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalSpeedLabel": "Speed",
+  "progressGoalSpeedValue": "{speed} kg/week",
+  "@progressGoalSpeedValue": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalStartLabel": "Start",
+  "progressGoalStartWeightLabel": "Starting weight",
+  "progressGoalEndWeightLabel": "Ending weight",
+  "progressGoalEndLabel": "End",
+  "progressGoalReachedLabel": "Reached",
   "progressWeekKicker": "{start} – {end}",
   "@progressWeekKicker": {
     "placeholders": {
@@ -3958,6 +3959,10 @@
   "diaryCheckInPhotoAdd": "Photo",
   "progressPhotosKicker": "Photos · before / after",
   "progressPhotosEmpty": "No photos yet. Add one, or take it at the next check-in.",
+  "progressPhotosEmptyPastGoal": "No photos from this goal.",
+  "@progressPhotosEmptyPastGoal": {
+    "description": "Empty state of the photo list when a past goal is selected."
+  },
   "progressPhotosAdd": "Add photo",
   "progressPhotosAll": "All photos",
   "progressPhotosCompare": "Compare",

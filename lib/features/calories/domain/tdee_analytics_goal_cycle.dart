@@ -5,7 +5,6 @@ class TdeeAnalyticsGoalCycle {
   /// Creates a goal cycle descriptor.
   const new({
     required this.id,
-    required this.title,
     required this.startDate,
     this.endDate,
     this.isAllGoals = false,
@@ -13,17 +12,12 @@ class TdeeAnalyticsGoalCycle {
     this.startWeightKg,
     this.targetWeightKg,
     this.goalSpeedKgPerWeek,
-    this.initialGoalKcal,
-    this.estimatedEndDate,
     this.reachedDate,
     this.endWeightKg,
   });
 
   /// Unique identifier (e.g. ISO date or 'all').
   final String id;
-
-  /// Localized title.
-  final String title;
 
   /// Start date of this cycle.
   final DateTime startDate;
@@ -46,18 +40,9 @@ class TdeeAnalyticsGoalCycle {
   /// Planned weight loss/gain rate per week in kg.
   final double? goalSpeedKgPerWeek;
 
-  /// Initial daily calorie target.
-  final double? initialGoalKcal;
-
-  /// Planned end date derived from target/speed or chosen for maintenance.
-  final DateTime? estimatedEndDate;
-
   /// Date on which the target weight was first reached.
   final DateTime? reachedDate;
 
   /// Actual ending weight, or the configured target for an active goal.
   final double? endWeightKg;
-
-  /// Whether this cycle is active today.
-  bool get isActive => endDate == null && !isAllGoals;
 }

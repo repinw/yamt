@@ -38,7 +38,6 @@ void main() {
       );
       expect(result, isNotNull);
       expect(result!.isAchieved, isTrue);
-      expect(result.daysRemaining, 0);
       expect(result.projectedDate, today);
     });
 
@@ -51,7 +50,7 @@ void main() {
         startDate: today,
       );
       expect(result, isNotNull);
-      expect(result!.isMovingAway, isTrue);
+      expect(result!.isAchieved, isFalse);
       expect(result.projectedDate, isNull);
     });
 
@@ -66,13 +65,7 @@ void main() {
       );
       expect(result, isNotNull);
       expect(result!.isAchieved, isFalse);
-      expect(result.isMovingAway, isFalse);
-      expect(result.daysRemaining, 50);
       expect(result.projectedDate, today.add(const Duration(days: 50)));
-      expect(result.trendSpeedKgPerWeek, closeTo(-0.7, 0.001));
-      expect(result.projectionPoints, isNotEmpty);
-      expect(result.projectionPoints.first.weightKg, 80);
-      expect(result.projectionPoints.last.weightKg, 75);
     });
 
     test('projects future date accurately for weight gain', () {
@@ -86,9 +79,7 @@ void main() {
       );
       expect(result, isNotNull);
       expect(result!.isAchieved, isFalse);
-      expect(result.daysRemaining, 80);
       expect(result.projectedDate, today.add(const Duration(days: 80)));
-      expect(result.trendSpeedKgPerWeek, closeTo(0.35, 0.001));
     });
   });
 }

@@ -31,9 +31,6 @@ class HomeMenuPanel extends ConsumerWidget {
   /// Stable key of the profile entry.
   static const profileTileKey = ValueKey<String>('home-menu-profile-tile');
 
-  /// Stable key of the goal archive entry.
-  static const goalArchiveTileKey = ValueKey<String>('home-menu-goals-tile');
-
   /// Stable key of the household entry.
   static const householdTileKey = ValueKey<String>('home-menu-household-tile');
 
@@ -116,12 +113,6 @@ class HomeMenuPanel extends ConsumerWidget {
                           icon: Icons.person_outline_rounded,
                           label: l10n.homeProfile,
                           onTap: () => open(AppRoutes.homeProfile),
-                        ),
-                        HomeMenuEntry(
-                          key: goalArchiveTileKey,
-                          icon: Icons.flag_outlined,
-                          label: l10n.settingsGoalArchiveTitle,
-                          onTap: () => open(AppRoutes.homeSettingsGoalArchive),
                         ),
                         HomeMenuEntry(
                           key: householdTileKey,

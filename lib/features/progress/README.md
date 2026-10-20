@@ -7,9 +7,10 @@ week, and the longer trends are going, so the diary can stay focused on today.
 
 ## Owns
 
-- The Fortschritt tab page with its two scopes, "Aktuelles Ziel" and
-  "Gesamt", and its sections: the current goal with the way to the goal
-  archive, the progress photos (before and after, all photos grouped by goal,
+- The Fortschritt tab page with its scopes, "Aktuelles Ziel", "Gesamt",
+  and "Ziel" (a menu of all goals that shows one past goal), and its sections:
+  the goal card (for a past goal with the former archive details: pace, start
+  date, start and end weight, end date, reached date), the progress photos (before and after, all photos grouped by goal,
   the slider comparison, and one photo in full size with its edits: replace,
   move to another day or pose, delete), the 7-day run with its week budget and one bar
   per day, the weight trend with the goal forecast, the TDEE per confirmed weekly check-in, and
@@ -38,7 +39,8 @@ week, and the longer trends are going, so the diary can stay focused on today.
 - Weight data and the trend weight (Health).
 - Storing, encrypting, and deleting progress photos (Health), the photo
   capture sheet and the photo frame (Diary).
-- The goal archive page and the TDEE analytics page (Calories).
+- The goal list (Calories); Progress reads it for the "Ziel" menu and the past
+  goal card.
 - Home shell navigation chrome.
 - The weight dialog and saving a weight (Activity).
 - Storing, changing, and ignoring weighings (Health); Progress only starts
@@ -61,7 +63,8 @@ week, and the longer trends are going, so the diary can stay focused on today.
   is hatched.
 - "Aktuelles Ziel" covers the current goal from its start; "Gesamt" covers
   all goals from the start of the first one and hides the goal card and the
-  run. Charts cover at least 7 days, so a goal that just started still shows
+  run. A past goal covers its start to the day before the next goal. It shows
+  no forecast, no TDEE change lines, and no week section. Charts cover at least 7 days, so a goal that just started still shows
   a trend. A dashed line marks each goal start inside a chart.
 - Averages count only past or current days with entries that are no pause
   days. The training and rest day comparison ends the day before today.

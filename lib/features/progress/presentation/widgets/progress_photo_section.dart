@@ -77,18 +77,24 @@ class _ProgressPhotoSectionState extends ConsumerState<ProgressPhotoSection> {
         ),
         const SizedBox(height: AppSpacing.md),
         if (overview.photos.isEmpty) ...[
-          ProgressSectionNote(text: l10n.progressPhotosEmpty),
+          ProgressSectionNote(
+            text: widget.scope is ProgressPastGoalScope
+                ? l10n.progressPhotosEmptyPastGoal
+                : l10n.progressPhotosEmpty,
+          ),
           Wrap(
             spacing: AppSpacing.xs,
             children: [
-              OutlinedButton.icon(
-                key: ProgressPhotoSection.addKey,
-                onPressed: () => unawaited(showProgressPhotoCapture(context)),
-                icon: const Icon(Icons.add_a_photo_outlined),
-                label: Text(l10n.progressPhotosAdd),
-              ),
-              // Photos of earlier goals stay reachable from the goal scope.
-              if (widget.scope == ProgressScope.goal)
+              // A photo taken today does not belong to a past goal.
+              if (widget.scope is! ProgressPastGoalScope)
+                OutlinedButton.icon(
+                  key: ProgressPhotoSection.addKey,
+                  onPressed: () => unawaited(showProgressPhotoCapture(context)),
+                  icon: const Icon(Icons.add_a_photo_outlined),
+                  label: Text(l10n.progressPhotosAdd),
+                ),
+              // Photos of other goals stay reachable from a goal scope.
+              if (widget.scope != ProgressScope.all)
                 TextButton(
                   key: ProgressPhotoSection.allKey,
                   onPressed: () =>

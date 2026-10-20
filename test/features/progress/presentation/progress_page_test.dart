@@ -2,28 +2,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
+import 'package:yamt/features/progress/presentation/controllers/progress_scope_controller.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_day_row.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_day_type_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_goal_card.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_goal_details.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_scope_switch.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_state.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_tdee_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_week_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_weight_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+import 'package:yamt/l10n/app_localizations_de.dart';
 
 import '../../../helpers/progress_source_overrides.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 
-Future<FakeCalorieLogRepository> _pumpProgressPage(WidgetTester tester) async {
+Future<FakeCalorieLogRepository> _pumpProgressPage(
+  WidgetTester tester, {
+  CalorieGoalSettings? goals,
+}) async {
   tester.view.physicalSize = const Size(1080, 6000);
   addTearDown(tester.view.reset);
   final settings = FakeCalorieSettingsRepository(
-    initialSettings: progressSettings(),
+    initialSettings: goals ?? progressSettings(),
   );
   addTearDown(settings.dispose);
   final calorieLog = FakeCalorieLogRepository(
@@ -46,10 +52,6 @@ Future<FakeCalorieLogRepository> _pumpProgressPage(WidgetTester tester) async {
               path: '/',
               builder: (context, state) => const Scaffold(body: ProgressPage()),
             ),
-            GoRoute(
-              path: AppRoutes.homeSettingsGoalArchive,
-              builder: (context, state) => const Text(_archive),
-            ),
           ],
         ),
       ),
@@ -58,8 +60,6 @@ Future<FakeCalorieLogRepository> _pumpProgressPage(WidgetTester tester) async {
   await tester.pumpAndSettle();
   return calorieLog;
 }
-
-const _archive = 'goal archive';
 
 void main() {
   testWidgets('shows the goal, the week, and the trends', (tester) async {
@@ -99,13 +99,57 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('opens the goal archive from the goal card', (tester) async {
+  testWidgets('hides the goal menu chip with one goal', (tester) async {
     await _pumpProgressPage(tester);
 
-    await tester.tap(find.byKey(ProgressGoalCard.archiveButtonKey));
-    await tester.pumpAndSettle();
+    expect(find.byKey(ProgressScopeSwitch.goalMenuKey), findsNothing);
+  });
 
-    expect(find.text(_archive), findsOneWidget);
+  group('with two goals', () {
+    ProgressScope scopeOf(WidgetTester tester) =>
+        ProviderScope.containerOf(tester.element(find.byType(ProgressPage)))
+            .read(progressScopeControllerProvider);
+
+    Future<void> pick(WidgetTester tester, int number) async {
+      await tester.tap(find.byKey(ProgressScopeSwitch.goalMenuKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ProgressScopeSwitch.goalEntryKey(number)));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the newest entry selects the current goal', (tester) async {
+      await _pumpProgressPage(tester, goals: progressTwoGoalSettings());
+      await tester.tap(
+        find.byKey(ProgressScopeSwitch.chipKey(ProgressScope.all)),
+      );
+      await tester.pumpAndSettle();
+
+      await pick(tester, 2);
+
+      expect(scopeOf(tester), ProgressScope.goal);
+      expect(find.byKey(ProgressWeekSection.sectionKey), findsOneWidget);
+      expect(find.byType(ProgressGoalDetails), findsNothing);
+    });
+
+    testWidgets('an older entry selects that past goal', (tester) async {
+      await _pumpProgressPage(tester, goals: progressTwoGoalSettings());
+
+      await pick(tester, 1);
+
+      expect(scopeOf(tester), const ProgressPastGoalScope(1));
+      expect(find.byKey(ProgressGoalCard.cardKey), findsOneWidget);
+      expect(find.byType(ProgressGoalDetails), findsOneWidget);
+      expect(find.text('Abnehmen auf 80,0 kg'), findsOneWidget);
+      expect(
+        find.text(
+          AppLocalizationsDe().progressDayTypeKickerPastGoal(1).toUpperCase(),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(ProgressWeekSection.sectionKey), findsNothing);
+      expect(find.byKey(ProgressWeightSection.sectionKey), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   testWidgets('hides the goal and the week under Gesamt', (tester) async {

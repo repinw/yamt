@@ -17,6 +17,7 @@ class ProgressWeightChart extends StatelessWidget {
     required this.goalStarts,
     this.targetWeightKg,
     this.ignored = const [],
+    this.endsToday = true,
     super.key,
   });
 
@@ -31,6 +32,9 @@ class ProgressWeightChart extends StatelessWidget {
 
   /// Weighings the user left out of every count, drawn hollow.
   final List<ProgressWeighing> ignored;
+
+  /// Whether the last day is today, labelled so below the chart.
+  final bool endsToday;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +70,7 @@ class ProgressWeightChart extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxs),
         ProgressAxisLabels.forDays(
           days: [for (final day in days) day.day],
-          todayLabel: l10n.progressToday,
+          todayLabel: endsToday ? l10n.progressToday : null,
           locale: locale,
         ),
       ],

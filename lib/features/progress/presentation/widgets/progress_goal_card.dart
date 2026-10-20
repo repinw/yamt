@@ -1,26 +1,28 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_progress_constants.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
-import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/progress/application/progress_goal_provider.dart';
 import 'package:yamt/features/progress/domain/progress_goal.dart';
+import 'package:yamt/features/progress/domain/progress_period.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_goal_details.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_goal_title.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// The current goal: where the user wants to go, how far the weight got,
-/// the daily calories and macros, and the way to the goal archive.
+/// The goal of a scope. The current goal shows where the user wants to go,
+/// how far the weight got, and the daily calories and macros; a past goal
+/// shows its target and its facts.
 class ProgressGoalCard extends ConsumerWidget {
-  /// Creates the goal card.
-  const new({super.key});
+  /// Creates the goal card for [scope].
+  const new({required this.scope, super.key});
+
+  /// The current goal, or the past goal to show.
+  final ProgressScope scope;
 
   /// Stable key of the card.
   static const cardKey = ValueKey<String>('progress-goal-card');
@@ -29,45 +31,29 @@ class ProgressGoalCard extends ConsumerWidget {
   static ValueKey<String> shareFillKey(int index) =>
       ValueKey<String>('progress-goal-share-fill-$index');
 
-  /// Stable key of the goal archive button.
-  static const archiveButtonKey = ValueKey<String>(
-    'progress-goal-archive-button',
-  );
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final label = FoodLabelColors.of(context);
-    final goal = ref.watch(progressGoalProvider);
+    final scope = this.scope;
     return Container(
       key: cardKey,
       padding: AppInsets.card,
       decoration: BoxDecoration(
-        color: label.tile,
+        color: FoodLabelColors.of(context).tile,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.md,
-        children: [
-          goal.when(
-            data: (goal) => _GoalContent(goal: goal),
-            loading: () => const ProgressSectionLoading(),
-            error: (_, _) => const ProgressSectionError(),
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              key: archiveButtonKey,
-              onPressed: () =>
-                  unawaited(context.push(AppRoutes.homeSettingsGoalArchive)),
-              style: TextButton.styleFrom(foregroundColor: label.ink),
-              icon: const Icon(Icons.archive_outlined),
-              label: Text(l10n.settingsGoalArchiveTitle),
-            ),
-          ),
-        ],
-      ),
+      child: switch (scope) {
+        ProgressPastGoalScope(:final number) => ProgressGoalDetails(
+          number: number,
+        ),
+        _ =>
+          ref
+              .watch(progressGoalProvider)
+              .when(
+                data: (goal) => _GoalContent(goal: goal),
+                loading: () => const ProgressSectionLoading(),
+                error: (_, _) => const ProgressSectionError(),
+              ),
+      },
     );
   }
 }
@@ -96,20 +82,7 @@ class _GoalContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.md,
       children: [
-        Text(
-          switch ((profile.goalMode, target)) {
-            (CalorieGoalMode.lose, final kg?) => l10n.progressGoalLose(
-              decimal.format(kg),
-            ),
-            (CalorieGoalMode.gain, final kg?) => l10n.progressGoalGain(
-              decimal.format(kg),
-            ),
-            _ => l10n.progressGoalMaintain,
-          },
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        ProgressGoalTitle(mode: profile.goalMode, targetKg: target),
         if (share != null) _GoalShareBar(share: share),
         if (target != null)
           Wrap(
