@@ -51,15 +51,74 @@ void main() {
     expect(others.map((item) => item.id), ['rice']);
   });
 
-  test('an ingredient without an amount has no candidates', () {
+  test('an ingredient that names no amount fits any item of its name', () {
+    expect(
+      bestIngredientStockMatch(
+        text: 'Milch',
+        requirement: null,
+        items: items,
+        localeCode: 'de',
+      )?.id,
+      'milk',
+    );
+  });
+
+  test('a food name alone names no amount', () {
+    for (final text in [
+      'Salz',
+      'Pfeffer',
+      'Paprikapulver',
+      'Knoblauch',
+      'Eier',
+      'Butter',
+      'Anis',
+      'Salz und Pfeffer',
+      'Pfeffer aus der Mühle',
+      'Salt and pepper to taste',
+    ]) {
+      expect(ingredientNamesNoAmount(text), isTrue, reason: text);
+    }
+  });
+
+  test('an ingredient that names no amount offers only its name matches', () {
     final (:matches, :others) = ingredientStockCandidates(
-      text: 'Salz',
+      text: 'Karotten',
       requirement: null,
       items: items,
       localeCode: 'de',
     );
 
-    expect(matches, isEmpty);
+    expect(matches.map((item) => item.id), ['carrots', 'carrots-old']);
     expect(others, isEmpty);
+  });
+
+  test('an amount the parser cannot read has no candidates', () {
+    for (final text in [
+      '1 cup Milch',
+      '½ Milch',
+      'eine Milch',
+      'Einige Karotten',
+      'mehrere Karotten',
+      'etwas Milch',
+      'some carrots',
+      'Eineinhalb Liter Milch',
+      'halbes Pfund Karotten',
+      'Dose Milch',
+      'Bund Karotten',
+      'seven carrots',
+      '⅜ l Milch',
+      'Saft einer Milch',
+      'Juice of one carrot',
+    ]) {
+      final (:matches, :others) = ingredientStockCandidates(
+        text: text,
+        requirement: null,
+        items: items,
+        localeCode: 'de',
+      );
+
+      expect(matches, isEmpty, reason: text);
+      expect(others, isEmpty, reason: text);
+    }
   });
 }

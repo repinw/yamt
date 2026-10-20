@@ -139,6 +139,9 @@ InventoryItem? findPendingIngredientStockMatch({
     selectedPortions: 1,
     basePortions: 1,
   );
+  if (requirement == null) {
+    return null;
+  }
   return bestIngredientStockMatch(
     text: ingredient,
     requirement: requirement,

@@ -169,10 +169,13 @@ FreeCookingRow _row({
 }) => FreeCookingRow(
   text: text,
   requirement: requirement,
-  stockItem: bestIngredientStockMatch(
-    text: text,
-    requirement: requirement,
-    items: items,
-    localeCode: localeCode,
-  ),
+  // A row without an amount stays open until the cook gives one.
+  stockItem: requirement == null
+      ? null
+      : bestIngredientStockMatch(
+          text: text,
+          requirement: requirement,
+          items: items,
+          localeCode: localeCode,
+        ),
 );

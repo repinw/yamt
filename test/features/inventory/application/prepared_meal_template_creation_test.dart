@@ -111,8 +111,9 @@ InventoryItem _item({
 }
 
 void main() {
-  test('createPreparedMealFromTemplate parses fractions and decimals '
-      'and keeps unsupported units pending', () async {
+  test('createPreparedMealFromTemplate parses fractions and decimals, '
+      'keeps unsupported units pending, and takes nothing for a food that '
+      'names no amount', () async {
     final inventoryRepository = _FakeInventoryItemRepository(
       initialItems: [
         _item(id: 'potatoes', name: 'Potatoes', currentAmount: 1000),
@@ -128,6 +129,7 @@ void main() {
           currentAmount: 1000,
           amountUnit: InventoryAmountUnit.milliliter,
         ),
+        _item(id: 'salt', name: 'Salt', currentAmount: 500),
       ],
     );
     final preparedMealRepository = FakePreparedMealRepository();
@@ -140,6 +142,7 @@ void main() {
         '1/2 kg Potatoes',
         '1,5 l Broth',
         '1 cup Milk',
+        'Salt',
       ],
       totalPortions: 1,
       remainingPortions: 1,
@@ -161,6 +164,7 @@ void main() {
             '1/2 kg Potatoes': <String>['potatoes'],
             '1,5 l Broth': <String>['broth'],
             '1 cup Milk': <String>['milk'],
+            'Salt': <String>['salt'],
           },
           recipeIngredientAmountConversions:
               const <String, RecipeIngredientAmountConversion>{},
@@ -170,6 +174,7 @@ void main() {
     expect(inventoryRepository.savedItems[0].currentAmount, 500);
     expect(inventoryRepository.savedItems[1].currentAmount, 500);
     expect(inventoryRepository.savedItems[2].currentAmount, 1000);
+    expect(inventoryRepository.savedItems[3].currentAmount, 500);
     expect(preparedMealRepository.meals, hasLength(1));
     expect(preparedMealRepository.meals.single.components, hasLength(2));
     expect(

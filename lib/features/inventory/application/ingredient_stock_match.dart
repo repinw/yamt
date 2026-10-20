@@ -7,9 +7,9 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 /// The best Vorrat match for [requirement] of the ingredient [text], or
-/// `null` when no item fits. Only an amount can be taken from the Vorrat, so
-/// an ingredient without one never has a match. A recipe's saved
-/// [amountConversion] lets pieces come from an item kept in grams or
+/// `null` when no item fits. An ingredient that names no amount, such as
+/// "Salz", fits any item of its name ([ingredientNamesNoAmount]). A recipe's
+/// saved [amountConversion] lets pieces come from an item kept in grams or
 /// milliliters.
 InventoryItem? bestIngredientStockMatch({
   required String text,
@@ -18,7 +18,7 @@ InventoryItem? bestIngredientStockMatch({
   required String? localeCode,
   RecipeIngredientAmountConversion? amountConversion,
 }) {
-  if (requirement == null) {
+  if (requirement == null && !ingredientNamesNoAmount(text)) {
     return null;
   }
   return _matches(text, [
@@ -30,6 +30,8 @@ InventoryItem? bestIngredientStockMatch({
 /// The Vorrat items that can supply [requirement] of the ingredient [text]:
 /// the `matches` by name, best first, so the first is
 /// [bestIngredientStockMatch], and the `others` in a fitting unit by name.
+/// A line that names no amount has no unit to fit, so only its name matches
+/// count.
 /// [amountConversion] works as in [bestIngredientStockMatch].
 ({List<InventoryItem> matches, List<InventoryItem> others})
 ingredientStockCandidates({
@@ -39,7 +41,7 @@ ingredientStockCandidates({
   required String? localeCode,
   RecipeIngredientAmountConversion? amountConversion,
 }) {
-  if (requirement == null) {
+  if (requirement == null && !ingredientNamesNoAmount(text)) {
     return (matches: const <InventoryItem>[], others: const <InventoryItem>[]);
   }
   // The unit check is cheap, the name score is not, so it goes first.
@@ -50,6 +52,9 @@ ingredientStockCandidates({
         item,
   ];
   final matches = _matches(text, fitting, localeCode);
+  if (requirement == null) {
+    return (matches: matches, others: const <InventoryItem>[]);
+  }
   final matchIds = {for (final item in matches) item.id};
   final others = fitting.where((item) => !matchIds.contains(item.id)).toList()
     ..sort(
@@ -106,16 +111,42 @@ List<InventoryItem> _matches(
   localeCode: localeCode,
 );
 
+/// Whether the recipe line [text] names no amount at all, like "Salz". A
+/// Vorrat item of its name stands for it and gives nothing. "1 cup Milch",
+/// "½ Zwiebel", "eine Dose Tomaten" or "etwas Mehl" name an amount the
+/// parser cannot read, so they stay open rows.
+bool ingredientNamesNoAmount(String text) => !_amountHint.hasMatch(text);
+
+// A digit or fraction, or a word that starts like a number, a vague amount
+// or a measure ("Saft einer Zitrone"), anywhere in the line. It errs towards
+// an amount, which only keeps a line open as before.
+final _amountHint = RegExp(
+  r'[\d¼½¾\u2150-\u215E]|\b(?:(?:ein|zwei|drei|vier|fünf|sechs|sieben|'
+  'acht|neun|zehn|elf|zwölf|zwanzig|dreißig|hundert|halb|viertel|dutzend|'
+  'anderthalb|einige|mehrere|etwas|paar|wenig|viel|bisschen|handvoll|prise|'
+  'messerspitze|schuss|spritzer|packung|päckchen|dose|bund|becher|glas|'
+  'gläser|flasche|tasse|stück|scheibe|zehe|kopf|knolle|stange|zweig|blatt|'
+  'liter|gramm|kilo|pfund|seven|eight|nine|eleven|twelve|twenty|half|'
+  'quarter|dozen|some|several|few|little|handful|pinch|dash|splash|pack|'
+  r'bunch|cup|tablespoon|teaspoon|clove|slice|piece|bottle|pound|ounce)\w*|'
+  '(?:a|an|one|two|three|four|five|six|ten|can|tin|jar|tl|el|msp|pck|stk|'
+  r'tbsp|tsp|lb|oz)\b)',
+  caseSensitive: false,
+);
+
 /// Whether [item] is kept in a unit that can supply [requirement], with the
 /// recipe's saved [amountConversion] for pieces, whatever it still holds.
+/// Without a [requirement] there is no amount to supply, so any item fits;
+/// callers check [ingredientNamesNoAmount] first.
 bool ingredientItemFits(
   InventoryItem item,
-  TemplateIngredientRequirement requirement,
+  TemplateIngredientRequirement? requirement,
   RecipeIngredientAmountConversion? amountConversion,
 ) =>
+    requirement == null ||
     resolveEffectiveRequirementForItems(
-      requirement: requirement,
-      assignedItems: [item],
-      amountConversion: amountConversion,
-    ) !=
-    null;
+          requirement: requirement,
+          assignedItems: [item],
+          amountConversion: amountConversion,
+        ) !=
+        null;

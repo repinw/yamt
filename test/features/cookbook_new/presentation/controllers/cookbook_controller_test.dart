@@ -110,18 +110,24 @@ PreparedMeal _fullRecipe() =>
 
 void main() {
   test('marks recipe ingredients that the Vorrat holds', () async {
-    final recipe = preparedMealTestData(
-      id: 'pasta',
-    ).copyWith(recipeIngredients: const ['200 g Pasta', '150 g Tomato sauce']);
+    final recipe = preparedMealTestData(id: 'pasta').copyWith(
+      recipeIngredients: const [
+        '200 g Pasta',
+        '150 g Tomato sauce',
+        'Salt',
+        'Pepper',
+      ],
+    );
     final container = _container(
       templates: [recipe],
       meals: const [],
-      items: [_item('Pasta')],
+      items: [_item('Pasta'), _item('Salt')],
     );
 
     final overview = await _overview(container);
 
-    expect(overview.recipes.single.inStock, [true, false]);
+    // A food that names no amount is there when an item has its name.
+    expect(overview.recipes.single.inStock, [true, false, true, false]);
   });
 
   test('a food kept in another unit does not count as in stock', () async {

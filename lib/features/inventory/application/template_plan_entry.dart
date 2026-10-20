@@ -94,7 +94,7 @@ List<String> _planItems(
     selectedPortions: 1,
     basePortions: 1,
   );
-  if (requirement == null) {
+  if (requirement == null && !ingredientNamesNoAmount(ingredient)) {
     return const <String>[];
   }
   final conversion =

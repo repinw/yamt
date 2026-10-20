@@ -1,5 +1,6 @@
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
@@ -66,15 +67,19 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
       selectedPortions: totalPortions,
       basePortions: template.totalPortions,
     );
-    if (requirement == null) {
-      pendingIngredients.add(ingredient.trim());
-      continue;
-    }
-
     final assignedItems = resolveInventoryItemsById(
       inventoryItemIds: assignedItemIds,
       inventoryItems: nextItems,
     );
+    // A Vorrat item stands for an ingredient that names no amount, such as
+    // "Salz": it takes nothing and leaves no open row.
+    if (requirement == null) {
+      if (!ingredientNamesNoAmount(ingredient) || assignedItems.isEmpty) {
+        pendingIngredients.add(ingredient.trim());
+      }
+      continue;
+    }
+
     final effectiveRequirement = resolveEffectiveRequirementForItems(
       requirement: requirement,
       assignedItems: assignedItems,

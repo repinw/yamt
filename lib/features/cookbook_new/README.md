@@ -59,10 +59,11 @@ templates list and the old cooking flow.
 - A recipe ingredient counts as in stock when its saved Vorrat item, or else
   a name match, is kept in a unit that fits its amount
   (`inventory/application/ingredient_stock_match.dart`, the rule the recipe
-  page, plans and open rows share). How much the item still holds does not
-  count here; the recipe page shows a shortfall. A Vorlage food counts
-  when an item of its name is not used up. Ignored recipe ingredients are
-  left out.
+  page, plans and open rows share). An item that is not used up counts,
+  however much it still holds; the recipe page shows a shortfall. An
+  ingredient that names no amount ("Salz") fits any item of its name and
+  takes nothing when cooked. A Vorlage food counts when an item of its name
+  is not used up. Ignored recipe ingredients are left out.
 - "Offen" shows meals that are still in the pot or have open rows, and
   have portions left.
 - The food weight is the pot on the scale minus the empty utensil. A cooked

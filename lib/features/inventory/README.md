@@ -76,8 +76,10 @@ Other features may consume these public Inventory entry points:
   the recipe is gone.
 - `application/ingredient_stock_match.dart`: the one rule for which Vorrat
   items can supply a recipe ingredient, best first: a name match whose unit
-  fits the amount, with the recipe's saved unit conversion. The recipe page,
-  free cooking, plans, open rows and the Kochbuch cards use it.
+  fits the amount, with the recipe's saved unit conversion. A recipe line
+  that names no amount ("Salz") takes any item of its name and gives
+  nothing when cooked. The recipe page, free cooking (rows with an amount),
+  plans, open rows and the Kochbuch cards use it.
 - `application/template_plan_entry.dart`: `buildTemplatePlanEntry` builds
   the plan of one portion of a Kochbuch recipe (cooked on paper from its
   assigned Vorrat items, each counted as a full pack) or Vorlage.

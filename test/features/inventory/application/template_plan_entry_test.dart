@@ -176,4 +176,17 @@ void main() {
       '200 g flour': ['flour'],
     });
   });
+
+  test('a food that names no amount takes the item of its name', () {
+    final assignments = templatePlanAssignments(
+      _template(ingredients: const ['Salz', 'Pfeffer']),
+      [_item('Salz', currentAmount: 500)],
+      parser: const TemplateIngredientParser(),
+    );
+
+    expect(assignments, {
+      'Salz': ['Salz'],
+      'Pfeffer': <String>[],
+    });
+  });
 }
