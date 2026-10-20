@@ -38,6 +38,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      # A release tag hands these notes to TestFlight (ios.yml), so the bump
+      # pull request must add them. Checked here, before either release job
+      # ships anything; "What to Test" allows 4000 characters.
+      - name: TestFlight notes of this version
+        run: |
+          version=$(sed -n 's/^version: *\([^+]*\).*/\1/p' pubspec.yaml)
+          notes="distribution/$version/testflight.json"
+          if ! jq -e 'length > 0 and all(.language | test("^[a-z]{2}-[A-Z]{2}$"))
+              and all(.text | type == "string" and length > 0 and length <= 4000)' "$notes" >/dev/null; then
+            echo "$notes is missing, names a language without its region (de instead of de-DE), or has an empty text or one over 4000 characters" >&2
+            exit 1
+          fi
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -375,3 +388,13 @@ jobs:
           track: internal
           # whatsnew-<locale> files of this version; without them, no notes.
           whatsNewDirectory: ${{ hashFiles(format('{0}/whatsnew/*', steps.version.outputs.notes)) != '' && format('{0}/whatsnew', steps.version.outputs.notes) || '' }}
+
+  # The same release tag uploads the iOS app to TestFlight (ios.yml).
+  ios-release:
+    name: iOS release
+    needs: [unit]
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/ios.yml
+    with:
+      release: true
+    secrets: inherit
