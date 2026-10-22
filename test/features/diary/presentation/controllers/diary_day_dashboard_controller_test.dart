@@ -8,6 +8,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
@@ -24,7 +25,9 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_home_widget_summary_provider.dart';
 
+import '../../../../helpers/auth_user_data_key_session.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 import '../../../calories/support/fake_planned_entry_repository.dart';
@@ -118,6 +121,71 @@ void main() {
     expect(failed.isRefreshing, isFalse);
     expect(failed.error, isA<StateError>());
   });
+
+  test(
+    'leaves the cached dashboard alone until the data key is ready',
+    () async {
+      final preferences = MemoryAppPreferences();
+      const cacheRepository = DiaryDayDashboardCacheRepository();
+      await cacheRepository.save(
+        preferences: preferences,
+        userId: userId,
+        data: diaryDashboardSnapshotForTest(
+          selectedDay: selectedDay,
+          selectedDayEntries: [_entry(selectedDay, name: 'Cached oats')],
+        ),
+      );
+      // Without the data key every read is empty.
+      final logRepository = FakeCalorieLogRepository();
+      addTearDown(logRepository.dispose);
+      UserDataCipher? dataCipher;
+
+      final container = _dashboardContainer(
+        preferences: preferences,
+        logRepository: logRepository,
+        selectedDay: selectedDay,
+        calendarNow: () => selectedDay.add(const Duration(hours: 12)),
+        dataCipher: () => dataCipher,
+        weekOverviewBuilder: () =>
+            diaryWeekOverviewForTest(selectedDay: selectedDay),
+      );
+      addTearDown(container.dispose);
+      String? cachedEntryName() => cacheRepository
+          .readSync(preferences: preferences, userId: userId, day: selectedDay)
+          ?.selectedDayEntries
+          .singleOrNull
+          ?.name;
+
+      // The app starts the home widget sync during the splash, before the key.
+      final summary = container.listen(
+        diaryHomeWidgetSummaryProvider,
+        (_, _) {},
+      );
+      addTearDown(summary.close);
+      await pumpEventQueue();
+
+      expect(summary.read(), isNull);
+      expect(
+        container.exists(diaryDayDashboardControllerProvider(selectedDay)),
+        isFalse,
+      );
+      expect(cachedEntryName(), 'Cached oats');
+
+      dataCipher = testUserDataCipher;
+      container.invalidate(userDataCipherProvider);
+
+      expect(summary.read(), isNotNull);
+      expect(
+        container
+            .read(diaryDayDashboardControllerProvider(selectedDay))
+            .data
+            ?.selectedDayEntries
+            .single
+            .name,
+        'Cached oats',
+      );
+    },
+  );
 
   test(
     'refresh invalidates stale cached week overview before loading',
@@ -511,6 +579,7 @@ ProviderContainer _dashboardContainer({
   FakeCalorieSettingsRepository? settingsRepository,
   List<ProviderObserver> observers = const <ProviderObserver>[],
   DateTime Function()? calendarNow,
+  UserDataCipher? Function()? dataCipher,
 }) {
   final auth = _MockFirebaseAuth();
   final user = _MockUser();
@@ -535,6 +604,8 @@ ProviderContainer _dashboardContainer({
         FakePlannedEntryRepository(),
       ),
       if (calendarNow != null) clockProvider.overrideWithValue(calendarNow),
+      if (dataCipher != null)
+        userDataCipherProvider.overrideWith((ref) => dataCipher()),
       // Without a builder the real week overview pipeline runs, which is what
       // day type changes have to flow through.
       if (weekOverviewBuilder != null)

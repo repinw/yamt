@@ -173,6 +173,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     bool queueIfInFlight = false,
     bool forceRefresh = false,
   }) async {
+    // The last listener may drop this day before the refresh from build runs.
+    if (!ref.mounted) return;
     final inFlight = _refreshInFlight;
     if (inFlight != null && !forceRefresh) {
       if (queueIfInFlight) {

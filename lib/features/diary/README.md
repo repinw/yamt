@@ -100,7 +100,11 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   and target kcal from the same daily metrics as the balance card, plus the
   macro bars. It hides the calorie-log and Burn Week internals
   `DiaryDayDashboardData` carries; `home_widget` reads only this provider,
-  never the dashboard controller directly.
+  never the dashboard controller directly. It stays `null` until the data key
+  is ready: the app starts the home widget sync during the splash, and
+  without the key today's dashboard would load zeros and save them over the
+  last good numbers. Once signed out it is all zeros, so the widget drops the
+  last account's numbers.
 
 Other features should compose the page or complete widgets instead of wiring
 Diary application providers directly. `diaryHomeWidgetSummaryProvider` above
