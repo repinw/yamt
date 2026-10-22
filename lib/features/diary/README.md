@@ -59,7 +59,9 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   background, or on a new date, the diary page also returns to today; a
   shorter absence, such as a camera photo or a permission prompt, keeps the
   chosen day. A hidden diary pager jumps instead of sliding, since its muted
-  ticker would hold the slide and undo a newer day later.
+  ticker would hold the slide and undo a newer day later. When the earliest
+  selectable day moves, for example when the plan loads after a cold start,
+  the pager starts new pages on the selected day instead of jumping (#817).
 - `presentation/widgets/diary_quick_eat_actions.dart`
   (`diaryQuickEatActions`) is public UI for `features/home`: the quick-eat
   actions for the selected day. The home shell shows them in its action panel

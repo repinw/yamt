@@ -4,6 +4,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/value_animation_handoff.dart';
+import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_placeholder.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_view.dart';
@@ -37,10 +38,57 @@ class DiaryDayPager extends ConsumerStatefulWidget {
 }
 
 class _DiaryDayPagerState extends ConsumerState<DiaryDayPager> {
-  late final PageController _pageController;
-
   /// Shared by the day pages so the weekly check-in section exists once.
   final GlobalKey _weeklyCheckInKey = GlobalKey();
+
+  /// Hands the bar values of one day to the next selected day.
+  final ValueAnimationHandoff _barHandoff = ValueAnimationHandoff();
+
+  @override
+  void dispose() {
+    _barHandoff.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bounds = ref.watch(diaryCalendarBoundsProvider);
+    return ValueAnimationHandoffScope(
+      handoff: _barHandoff,
+      // Moving the earliest day shifts every index, so new pages start on the
+      // selected day. Jumping the old pages there stopped at their last page
+      // while Flutter had not laid out the new page count yet, and that page
+      // selected the wrong day (#817).
+      child: _DayPages(
+        key: ValueKey(bounds.earliestDay),
+        bounds: bounds,
+        showMacroStrip: widget.showMacroStrip,
+        weeklyCheckInKey: _weeklyCheckInKey,
+      ),
+    );
+  }
+}
+
+/// The pages of [bounds], starting on the selected day.
+class _DayPages extends ConsumerStatefulWidget {
+  const new({
+    required this.bounds,
+    required this.showMacroStrip,
+    required this.weeklyCheckInKey,
+    super.key,
+  });
+
+  /// Page 0 shows their earliest day.
+  final DiaryCalendarBounds bounds;
+  final bool showMacroStrip;
+  final GlobalKey weeklyCheckInKey;
+
+  @override
+  ConsumerState<_DayPages> createState() => _DayPagesState();
+}
+
+class _DayPagesState extends ConsumerState<_DayPages> {
+  late final PageController _pageController;
 
   /// Page the pager last came to rest on, or is settling on after the finger
   /// lifted.
@@ -49,15 +97,12 @@ class _DiaryDayPagerState extends ConsumerState<DiaryDayPager> {
   /// Whether the last page movement came from a finger.
   var _isDragging = false;
 
-  /// Hands the bar values of one day to the next selected day.
-  final ValueAnimationHandoff _barHandoff = ValueAnimationHandoff();
-
   @override
   void initState() {
     super.initState();
-    final bounds = ref.read(diaryCalendarBoundsProvider);
+    final bounds = widget.bounds;
     final selectedDay = ref.read(diaryCalendarControllerProvider).selectedDay;
-    final initialPage = bounds.indexOf(selectedDay);
+    final initialPage = bounds.indexOf(bounds.clamp(selectedDay));
     _pageController = PageController(initialPage: initialPage);
     _restingPage = ValueNotifier(initialPage);
   }
@@ -66,24 +111,16 @@ class _DiaryDayPagerState extends ConsumerState<DiaryDayPager> {
   void dispose() {
     _pageController.dispose();
     _restingPage.dispose();
-    _barHandoff.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bounds = ref.watch(diaryCalendarBoundsProvider);
-    ref
-      ..listen(
-        diaryCalendarControllerProvider.select((state) => state.selectedDay),
-        (_, _) => _showSelectedDay(animate: true),
-      )
-      // Moving the earliest day shifts every index, so the page jumps.
-      ..listen(diaryCalendarBoundsProvider, (previous, next) {
-        if (previous?.earliestDay != next.earliestDay) {
-          _showSelectedDay(animate: false);
-        }
-      });
+    final bounds = widget.bounds;
+    ref.listen(
+      diaryCalendarControllerProvider.select((state) => state.selectedDay),
+      (_, _) => _showSelectedDay(),
+    );
 
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
@@ -96,25 +133,22 @@ class _DiaryDayPagerState extends ConsumerState<DiaryDayPager> {
         }
         return false;
       },
-      child: ValueAnimationHandoffScope(
-        handoff: _barHandoff,
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: bounds.dayCount,
-          allowImplicitScrolling: true,
-          onPageChanged: (index) => ref
-              .read(diaryCalendarControllerProvider.notifier)
-              .selectDay(bounds.dayAt(index)),
-          itemBuilder: (context, index) => _SelectedDayVisibility(
-            day: bounds.dayAt(index),
-            child: DiaryRestingDayGate(
-              index: index,
-              restingPage: _restingPage,
-              child: DiaryDayView(
-                day: bounds.dayAt(index),
-                showMacroStrip: widget.showMacroStrip,
-                weeklyCheckInKey: _weeklyCheckInKey,
-              ),
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: bounds.dayCount,
+        allowImplicitScrolling: true,
+        onPageChanged: (index) => ref
+            .read(diaryCalendarControllerProvider.notifier)
+            .selectDay(bounds.dayAt(index)),
+        itemBuilder: (context, index) => _SelectedDayVisibility(
+          day: bounds.dayAt(index),
+          child: DiaryRestingDayGate(
+            index: index,
+            restingPage: _restingPage,
+            child: DiaryDayView(
+              day: bounds.dayAt(index),
+              showMacroStrip: widget.showMacroStrip,
+              weeklyCheckInKey: widget.weeklyCheckInKey,
             ),
           ),
         ),
@@ -163,12 +197,11 @@ class _DiaryDayPagerState extends ConsumerState<DiaryDayPager> {
     });
   }
 
-  /// Moves the pages to the selected day once the new page count is laid
-  /// out.
+  /// Moves the pages to the selected day after the frame.
   ///
   /// While the diary shows, never moves them while the user swipes or a page
   /// settles, since the swipe selects its own day.
-  void _showSelectedDay({required bool animate}) {
+  void _showSelectedDay() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // A hidden diary (another tab, a page on top) jumps, also during a
       // slide: its muted ticker would hold the slide until it shows and then
@@ -182,20 +215,21 @@ class _DiaryDayPagerState extends ConsumerState<DiaryDayPager> {
           (isVisible && isScrolling)) {
         return;
       }
-      final bounds = ref.read(diaryCalendarBoundsProvider);
-      final target = bounds.indexOf(
-        ref.read(diaryCalendarControllerProvider).selectedDay,
-      );
+      // Bounds that moved while the diary was hidden start new pages on the
+      // selected day once it shows.
+      final bounds = widget.bounds;
+      final selectedDay = ref.read(diaryCalendarControllerProvider).selectedDay;
+      if (!bounds.contains(selectedDay)) {
+        return;
+      }
+      final target = bounds.indexOf(selectedDay);
       // A hidden slide stops even on the target, or it would go on later.
       final page = _pageController.page;
       if (page == target && !isScrolling) {
         return;
       }
       final current = page?.round();
-      if (animate &&
-          isVisible &&
-          current != null &&
-          (current - target).abs() == 1) {
+      if (isVisible && current != null && (current - target).abs() == 1) {
         _pageController.animateToPage(
           target,
           duration: AppDurations.diaryDayPageSlide,
