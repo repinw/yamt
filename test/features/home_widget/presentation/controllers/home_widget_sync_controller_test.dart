@@ -1,9 +1,14 @@
+import 'dart:convert';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/app_accent.dart';
 import 'package:yamt/core/theme/app_accent_controller.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
@@ -13,6 +18,7 @@ import 'package:yamt/features/home_widget/presentation/controllers/'
 import 'package:yamt/features/home_widget/presentation/controllers/'
     'home_widget_verbose_mode_controller.dart';
 
+import '../../../../helpers/auth_user_data_key_session.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../diary/support/diary_dashboard_test_support.dart';
 import '../../support/fake_home_widget_plugin_bridge.dart';
@@ -24,10 +30,18 @@ void main() {
   /// Holds a listener on the sync controller, like `lib/app.dart` does.
   ProviderContainer containerWith(
     FakeHomeWidgetPluginBridge bridge,
-    FakeDiaryDayDashboardController dashboard,
-  ) {
+    FakeDiaryDayDashboardController dashboard, {
+    UserDataCipher? Function()? dataCipher,
+  }) {
     final container = ProviderContainer(
       overrides: [
+        userDataCipherProvider.overrideWith(
+          (ref) => dataCipher == null ? testUserDataCipher : dataCipher(),
+        ),
+        // Read only without a data key: then nobody is signed in.
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(null),
+        ),
         clockProvider.overrideWithValue(() => now),
         appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
         homeWidgetPluginBridgeProvider.overrideWithValue(bridge),
@@ -85,6 +99,30 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(bridge.savedSnapshots, hasLength(1));
+  });
+
+  test('writes zeros over the last numbers once signed out', () async {
+    final bridge = FakeHomeWidgetPluginBridge();
+    UserDataCipher? dataCipher = testUserDataCipher;
+    final container = containerWith(
+      bridge,
+      FakeDiaryDayDashboardController(
+        diaryDashboardLoadedStateForTest(selectedDay: normalizedDay),
+      ),
+      dataCipher: () => dataCipher,
+    );
+    await Future<void>.delayed(Duration.zero);
+    Map<String, dynamic> last() =>
+        jsonDecode(bridge.savedSnapshots.last) as Map<String, dynamic>;
+    expect(last()['target_kcal'], isNot(0));
+
+    dataCipher = null;
+    container.invalidate(userDataCipherProvider);
+    await pumpEventQueue();
+
+    expect(bridge.savedSnapshots, hasLength(2));
+    expect(last()['eaten_kcal'], 0);
+    expect(last()['target_kcal'], 0);
   });
 
   test('re-syncs when the verbose preference changes', () async {

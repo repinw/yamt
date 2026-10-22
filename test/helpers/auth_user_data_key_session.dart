@@ -4,6 +4,12 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 
+/// A ready data key of `user-1`, for tests of what waits for the data key.
+final UserDataCipher testUserDataCipher = (
+  uid: 'user-1',
+  cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
+);
+
 /// Follows the auth state like the real session, without key storage: a
 /// signed-in user gets a ready data key at once.
 class AuthUserDataKeySession extends UserDataKeySession {

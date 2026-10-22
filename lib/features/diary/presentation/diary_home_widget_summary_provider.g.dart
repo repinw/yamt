@@ -10,8 +10,8 @@ part of 'diary_home_widget_summary_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// Watches today's diary dashboard and exposes a flat summary for the
 /// home-screen widget feature. Uses the same daily metrics as the Diary
-/// balance card, so the widget shows the same numbers. `null` while today's
-/// dashboard has not loaded yet.
+/// balance card, so the widget shows the same numbers. `null` while the data
+/// key or today's dashboard is not ready yet; all zeros once signed out.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.
@@ -21,8 +21,8 @@ final diaryHomeWidgetSummaryProvider = DiaryHomeWidgetSummaryProvider._();
 
 /// Watches today's diary dashboard and exposes a flat summary for the
 /// home-screen widget feature. Uses the same daily metrics as the Diary
-/// balance card, so the widget shows the same numbers. `null` while today's
-/// dashboard has not loaded yet.
+/// balance card, so the widget shows the same numbers. `null` while the data
+/// key or today's dashboard is not ready yet; all zeros once signed out.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.
@@ -37,8 +37,8 @@ final class DiaryHomeWidgetSummaryProvider
     with $Provider<DiaryHomeWidgetSummary?> {
   /// Watches today's diary dashboard and exposes a flat summary for the
   /// home-screen widget feature. Uses the same daily metrics as the Diary
-  /// balance card, so the widget shows the same numbers. `null` while today's
-  /// dashboard has not loaded yet.
+  /// balance card, so the widget shows the same numbers. `null` while the data
+  /// key or today's dashboard is not ready yet; all zeros once signed out.
   ///
   /// Lives in `presentation/` because it derives from the dashboard
   /// controller's state.
@@ -77,4 +77,4 @@ final class DiaryHomeWidgetSummaryProvider
 }
 
 String _$diaryHomeWidgetSummaryHash() =>
-    r'6e55807993c81f77e62dafee74096a06f7ad0c26';
+    r'e1d2bf31567cc5c4d53a4588e63ac77b99a3eea0';

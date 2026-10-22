@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
@@ -10,6 +11,7 @@ import 'package:yamt/features/diary/presentation/controllers/'
 import 'package:yamt/features/diary/presentation/'
     'diary_home_widget_summary_provider.dart';
 
+import '../../../helpers/auth_user_data_key_session.dart';
 import '../support/diary_dashboard_test_support.dart';
 
 void main() {
@@ -19,6 +21,7 @@ void main() {
   ProviderContainer containerWith(DiaryDayDashboardState state) {
     final container = ProviderContainer(
       overrides: [
+        userDataCipherProvider.overrideWithValue(testUserDataCipher),
         clockProvider.overrideWithValue(() => now),
         diaryDayDashboardControllerProvider(normalizedDay)
             .overrideWith(() => FakeDiaryDayDashboardController(state)),
@@ -74,6 +77,7 @@ void main() {
         );
     final container = ProviderContainer(
       overrides: [
+        userDataCipherProvider.overrideWithValue(testUserDataCipher),
         clockProvider.overrideWithValue(() => clock),
         diaryDayDashboardControllerProvider(normalizedDay).overrideWith(
           () => FakeDiaryDayDashboardController(loaded(normalizedDay, 1200)),
