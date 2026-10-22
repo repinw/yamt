@@ -236,8 +236,8 @@ void main() {
     );
   });
 
-  test('spontaneous training day gets one session more than the other days '
-      'when training weekdays is empty', () {
+  test('spontaneous training day gets one session more and leaves the other '
+      'days when training weekdays is empty', () {
     final settings = const CalorieGoalSettings.empty()
         .applyGoalChange(
           changedAt: DateTime(2026, 2, 24, 6),
@@ -251,13 +251,8 @@ void main() {
 
     final toggled = settings.toggleTrainingDay(day);
     expect(toggled.isTrainingDay(day), isTrue);
-    // One training day in the run: 2000 + 250 * 6 / 7.
-    expect(toggled.goalKcalForDay(day), closeTo(2000 + 250 * 6 / 7, 1e-9));
-    expect(
-      toggled.goalKcalForDay(day) -
-          toggled.goalKcalForDay(day.add(const Duration(days: 1))),
-      closeTo(250, 1e-9),
-    );
+    expect(toggled.goalKcalForDay(day), 2250);
+    expect(toggled.goalKcalForDay(day.add(const Duration(days: 1))), 2000);
   });
 
   test('spontaneous training day falls back to the default session kcal '
@@ -275,10 +270,7 @@ void main() {
 
     final toggled = settings.toggleTrainingDay(day);
     expect(toggled.isTrainingDay(day), isTrue);
-    expect(
-      toggled.goalKcalForDay(day),
-      closeTo(2000 + defaultTrainingDayKcalOffset * 6 / 7, 1e-9),
-    );
+    expect(toggled.goalKcalForDay(day), 2000 + defaultTrainingDayKcalOffset);
   });
 
   test('training day cycling distributes offset across rest days when '
@@ -310,6 +302,107 @@ void main() {
 
     expect(settings.isTrainingDay(tuesday), isFalse);
     expect(settings.goalKcalForDay(tuesday), closeTo(1910, 1e-9));
+  });
+
+  test('a rest day in a week planned full of training gets one session '
+      'less', () {
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 2, 23, 6),
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+        )
+        .copyWith(
+          trainingWeekdays: const <int>[1, 2, 3, 4, 5, 6, 7],
+          trainingDayKcalOffset: 250,
+        );
+    final tuesday = DateTime(2026, 2, 24);
+
+    final toggled = settings.toggleTrainingDay(tuesday);
+
+    expect(settings.goalKcalForDay(tuesday), 2000);
+    expect(toggled.goalKcalForDay(tuesday), 1750);
+    expect(toggled.goalKcalForDay(DateTime(2026, 2, 25)), 2000);
+  });
+
+  group('a day type changed in the diary', () {
+    // Planned: Mo, We, Fr with one session of 250 kcal on a base of 2000.
+    // Rest days 2000 − 3 × 250 / 7, training days 250 more. The run starts
+    // on Monday, 2026-02-23.
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 2, 23, 6),
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+        )
+        .copyWith(
+          trainingWeekdays: const <int>[
+            DateTime.monday,
+            DateTime.wednesday,
+            DateTime.friday,
+          ],
+          trainingDayKcalOffset: 250,
+        );
+    const restKcal = 2000 - 3 * 250 / 7;
+    final runDays = [
+      for (var day = 23; day <= 29; day++) DateTime(2026, 2, day),
+    ];
+    double runTotal(CalorieGoalSettings settings) =>
+        runDays.fold(0, (sum, day) => sum + settings.goalKcalForDay(day));
+
+    test('3 planned → 4: the extra day gets 250 more and the run total '
+        'grows by 250', () {
+      final thursday = DateTime(2026, 2, 26);
+
+      final toggled = settings.toggleTrainingDay(thursday);
+
+      expect(runTotal(settings), closeTo(14000, 1e-9));
+      expect(toggled.isTrainingDay(thursday), isTrue);
+      expect(toggled.goalKcalForDay(thursday), closeTo(restKcal + 250, 1e-9));
+      for (final day in runDays.where((day) => day != thursday)) {
+        expect(toggled.goalKcalForDay(day), settings.goalKcalForDay(day));
+      }
+      expect(runTotal(toggled), closeTo(14250, 1e-9));
+    });
+
+    test('3 planned → 2: the dropped day gets 250 less and the run total '
+        'shrinks by 250', () {
+      final wednesday = DateTime(2026, 2, 25);
+
+      final toggled = settings.toggleTrainingDay(wednesday);
+
+      expect(toggled.isTrainingDay(wednesday), isFalse);
+      expect(toggled.goalKcalForDay(wednesday), closeTo(restKcal, 1e-9));
+      for (final day in runDays.where((day) => day != wednesday)) {
+        expect(toggled.goalKcalForDay(day), settings.goalKcalForDay(day));
+      }
+      expect(runTotal(toggled), closeTo(13750, 1e-9));
+    });
+
+    test('toggling back to the plan drops the change', () {
+      final thursday = DateTime(2026, 2, 26);
+
+      final toggled = settings.toggleTrainingDay(thursday);
+      final back = toggled.toggleTrainingDay(thursday);
+
+      expect(toggled.unplannedTrainingDayOverrides, {'2026-2-26': true});
+      expect(toggled.trainingDayOverrides, isEmpty);
+      expect(back.unplannedTrainingDayOverrides, isEmpty);
+    });
+
+    test('survives a json round trip and a goal change', () {
+      final toggled = settings.toggleTrainingDay(DateTime(2026, 2, 26));
+
+      final decoded = CalorieGoalSettings.fromJson(toggled.toJson());
+      final changed = decoded.applyGoalChange(
+        changedAt: DateTime(2026, 2, 27, 6),
+        dailyKcalGoal: 1900,
+        calculatorProfile: null,
+      );
+
+      expect(decoded.unplannedTrainingDayOverrides, {'2026-2-26': true});
+      expect(changed.unplannedTrainingDayOverrides, {'2026-2-26': true});
+    });
   });
 
   test('goal completion and ending keep the original history entry', () {

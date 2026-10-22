@@ -26,13 +26,13 @@ class DiaryDayTypeStatus {
           : settings.isTrainingDay(day)
           ? DiaryDayType.training
           : DiaryDayType.rest,
-      trainingDayKcalOffset: settings.trainingDayKcalOffset,
+      trainingDayKcalOffset: settings.trainingSessionKcalForDay(day),
     );
   }
 
   /// Current day type.
   final DiaryDayType type;
 
-  /// Extra kcal granted on training days.
+  /// kcal a training day gets more than a rest day: one session.
   final double trainingDayKcalOffset;
 }

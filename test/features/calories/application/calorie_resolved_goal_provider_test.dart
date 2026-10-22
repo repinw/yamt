@@ -151,9 +151,9 @@ void main() {
       resolvedCalorieGoalForDayProvider(tuesday).future,
     );
 
-    // Tuesday is now toggled to a training day: 4 training days in the run,
-    // so it gets 2000 + 210 * 3 / 7 = 2090
-    expect(tuesdayGoal.goalKcal, closeTo(2090, 1e-9));
+    // Tuesday is a training day outside the plan of 3: the rest day goal
+    // 2000 - 210 * 3 / 7 = 1910 plus one session of 210.
+    expect(tuesdayGoal.goalKcal, closeTo(2120, 1e-9));
   });
 
   test('does not clamp a resolved goal above the 1200 floor', () async {

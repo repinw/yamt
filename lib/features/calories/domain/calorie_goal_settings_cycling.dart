@@ -7,14 +7,18 @@ import 'package:yamt/features/calories/domain/training_week_goals.dart';
 
 /// Calorie cycling and training day extension for [CalorieGoalSettings].
 extension CalorieGoalSettingsCycling on CalorieGoalSettings {
-  /// Whether [day] is a training day taking scheduled weekdays and overrides
-  /// into account.
+  /// Whether [day] is a training day: the plan, or the day type the diary
+  /// set outside it.
   bool isTrainingDay(DateTime day) {
-    final dayKey = diaryDayKey(day);
-    if (trainingDayOverrides.containsKey(dayKey)) {
-      return trainingDayOverrides[dayKey]!;
-    }
-    return isScheduledTrainingDay(day);
+    return unplannedTrainingDayOverrides[diaryDayKey(day)] ??
+        isPlannedTrainingDay(day);
+  }
+
+  /// Whether the plan makes [day] a training day: the weekly schedule with
+  /// the planned overrides of single days.
+  bool isPlannedTrainingDay(DateTime day) {
+    return trainingDayOverrides[diaryDayKey(day)] ??
+        isScheduledTrainingDay(day);
   }
 
   /// Whether the weekly training schedule makes [day] a training day,
@@ -36,24 +40,26 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
   ///
   /// The base goal is the daily average and already holds the planned
   /// training sessions. A training day gets one session (the configured
-  /// offset) more than a rest day of the same 7-day run, so the run total
-  /// stays the base goal times seven. The training days are counted in the
-  /// run with the per-day overrides, so a changed day type moves calories
-  /// between the days of its run; the carryover passes on what past days of
-  /// the run got differently.
+  /// offset) more than a rest day. The planned training days of the 7-day run
+  /// split it, so with the plan the run total stays the base goal times
+  /// seven (see `resolveTrainingWeekGoals`). A day type changed outside the
+  /// plan gains or loses one session on that day only, and the other days
+  /// keep their goals.
   double goalKcalForDay(DateTime day) {
     final base = baseGoalKcalForDay(day);
     if (base <= 0) {
       return base;
     }
-    final weekGoals = resolveTrainingWeekGoals(
-      baseGoalKcal: base,
-      trainingDays: _trainingDaysInRun(day),
-      sessionKcal: trainingSessionKcalForDay(day),
-    );
+    final sessionKcal = trainingSessionKcalForDay(day);
+    final restDayKcal =
+        base -
+        trainingKcalPerDay(
+          trainingDays: _plannedTrainingDaysInRun(day),
+          sessionKcal: sessionKcal,
+        );
     final resolvedKcal = isTrainingDay(day)
-        ? weekGoals.trainingDayKcal
-        : weekGoals.restDayKcal;
+        ? restDayKcal + sessionKcal
+        : restDayKcal;
     return resolvedKcal.clamp(minimumDailyCalorieBudgetKcal, double.infinity);
   }
 
@@ -71,9 +77,10 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
     return weekdays.isEmpty ? defaultTrainingDayKcalOffset : 0.0;
   }
 
-  /// Number of training days in the 7-day run of [day]. Before a goal starts
-  /// counting there is no run, and the weekly schedule counts instead.
-  int _trainingDaysInRun(DateTime day) {
+  /// Number of planned training days in the 7-day run of [day]. Before a
+  /// goal starts counting there is no run, and the weekly schedule counts
+  /// instead.
+  int _plannedTrainingDaysInRun(DateTime day) {
     if (countingGoalEntryForDay(day) == null) {
       final activeProfile =
           goalEntryForDay(day)?.calculatorProfile ?? calculatorProfile;
@@ -82,20 +89,25 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
     final runStart = resolveCalorieGoalRunStartDate(settings: this, day: day);
     var count = 0;
     for (var offset = 0; offset < calorieGoalRunLengthDays; offset++) {
-      if (isTrainingDay(addDiaryDays(runStart, offset))) {
+      if (isPlannedTrainingDay(addDiaryDays(runStart, offset))) {
         count++;
       }
     }
     return count;
   }
 
-  /// Toggles training day status for [day].
+  /// Toggles training day status for [day] outside the plan; toggling back
+  /// to the plan drops the change.
   CalorieGoalSettings toggleTrainingDay(DateTime day) {
     final dayKey = diaryDayKey(day);
-    final currentlyTraining = isTrainingDay(day);
-    final nextOverrides = Map<String, bool>.from(trainingDayOverrides);
-    nextOverrides[dayKey] = !currentlyTraining;
-    return copyWith(trainingDayOverrides: nextOverrides);
+    final wantsTraining = !isTrainingDay(day);
+    final nextOverrides = Map<String, bool>.from(unplannedTrainingDayOverrides);
+    if (wantsTraining == isPlannedTrainingDay(day)) {
+      nextOverrides.remove(dayKey);
+    } else {
+      nextOverrides[dayKey] = wantsTraining;
+    }
+    return copyWith(unplannedTrainingDayOverrides: nextOverrides);
   }
 
   /// Sets whether [day] is a pause day.

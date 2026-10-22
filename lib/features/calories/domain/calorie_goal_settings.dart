@@ -41,6 +41,7 @@ class CalorieGoalSettings {
     this.trainingWeekdays = const <int>[],
     this.trainingDayKcalOffset = 0.0,
     this.trainingDayOverrides = const <String, bool>{},
+    this.unplannedTrainingDayOverrides = const <String, bool>{},
     this.pauseDayKeys = const <String>[],
     this.goalOffsetsByDay = const <String, double>{},
   });
@@ -62,6 +63,7 @@ class CalorieGoalSettings {
       trainingWeekdays = const <int>[],
       trainingDayKcalOffset = 0.0,
       trainingDayOverrides = const <String, bool>{},
+      unplannedTrainingDayOverrides = const <String, bool>{},
       pauseDayKeys = const <String>[],
       goalOffsetsByDay = const <String, double>{};
 
@@ -150,8 +152,18 @@ class CalorieGoalSettings {
   @FlexibleDoubleConverter()
   final double trainingDayKcalOffset;
 
-  /// Manual per-day training overrides (dayKey -> isTrainingDay).
+  /// Planned training day changes of single days on top of the weekly
+  /// schedule (dayKey -> isTrainingDay), set by the weekly check-in and the
+  /// profile. Together with the schedule they split the week.
   final Map<String, bool> trainingDayOverrides;
+
+  // Temporary compatibility, added in 3.10.0: removed in 3.13.0. Settings
+  // saved before have no such field and read as empty.
+
+  /// Day type changes outside the plan (dayKey -> isTrainingDay), set in the
+  /// diary. Such a day gains or loses one session and leaves the other days
+  /// as they are.
+  final Map<String, bool> unplannedTrainingDayOverrides;
 
   /// Days marked as pause/exception days (Urlaub, Krankheit, Wettkampf).
   final List<String> pauseDayKeys;
@@ -226,6 +238,7 @@ class CalorieGoalSettings {
       trainingWeekdays: trainingWeekdays,
       trainingDayKcalOffset: trainingDayKcalOffset,
       trainingDayOverrides: trainingDayOverrides,
+      unplannedTrainingDayOverrides: unplannedTrainingDayOverrides,
       pauseDayKeys: pauseDayKeys,
     );
   }
@@ -245,6 +258,7 @@ class CalorieGoalSettings {
     List<int>? trainingWeekdays,
     double? trainingDayKcalOffset,
     Map<String, bool>? trainingDayOverrides,
+    Map<String, bool>? unplannedTrainingDayOverrides,
     List<String>? pauseDayKeys,
     Map<String, double>? goalOffsetsByDay,
   }) {
@@ -260,6 +274,8 @@ class CalorieGoalSettings {
       trainingDayKcalOffset:
           trainingDayKcalOffset ?? this.trainingDayKcalOffset,
       trainingDayOverrides: trainingDayOverrides ?? this.trainingDayOverrides,
+      unplannedTrainingDayOverrides:
+          unplannedTrainingDayOverrides ?? this.unplannedTrainingDayOverrides,
       pauseDayKeys: pauseDayKeys ?? this.pauseDayKeys,
       goalOffsetsByDay: goalOffsetsByDay ?? this.goalOffsetsByDay,
     );
