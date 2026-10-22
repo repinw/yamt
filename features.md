@@ -137,7 +137,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   what it means (the extra kcal of a training day, a pause day does not break
   the streak). The current type has the lime tile. Picking one saves it for
   the shown day and closes the panel. The tool shows only while a calorie
-  goal exists.
+  goal exists. The day type picked here is outside the plan: an extra
+  training day gets one session (250 kcal by default) more, a planned
+  training day picked as rest one session less, and the other days of the
+  week keep their goals, so the week's total moves by one session.
 - A day without logged food shows a short hint that points to the "Essen"
   button. On a future day the hint says that nothing is planned yet.
 - Meal sections for breakfast, lunch, dinner, and snacks.
@@ -298,10 +301,11 @@ and feature description docs. This is product-facing; architecture rules stay in
     one the edit corrects the goal from its start and the calorie goal is
     calculated again.
   - the training tile shows the training days of the current 7-day run.
-    Tapping it picks them for this run only, like a day type in the diary;
-    the editor shows each changed day's calorie goal, the other days that
-    give or take calories, and the run total, which stays the same, before it
-    saves.
+    Tapping it plans them for this run only, like the weekly check-in; the
+    editor shows each changed day's calorie goal, the other days that give
+    or take calories, and the run total before it saves. A plan drops the
+    day types picked in the diary for that run, so the run total is the
+    daily goal times seven again.
 
 ## Calories And Burn Week
 

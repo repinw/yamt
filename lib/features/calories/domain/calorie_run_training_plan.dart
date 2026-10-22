@@ -58,8 +58,10 @@ extension CalorieRunTraining on CalorieGoalSettings {
   /// Returns these settings with [trainingDays] as the training days of the
   /// run that contains [day]. Every other day of the run becomes a rest day.
   ///
-  /// Like a day type change in the diary, this sets per-day overrides: the
-  /// weekly schedule stays for later runs. Pause days keep their type.
+  /// This plans per-day overrides: the weekly schedule stays for later runs.
+  /// Every day of the run joins the plan and drops a day type change from
+  /// the diary, so the run total is the base goal times seven again. Pause
+  /// days keep their type.
   CalorieGoalSettings withRunTrainingDays(
     DateTime day, {
     required Set<DateTime> trainingDays,
@@ -67,12 +69,14 @@ extension CalorieRunTraining on CalorieGoalSettings {
     final plan = runTrainingPlan(day);
     final wanted = {for (final day in trainingDays) diaryDayKey(day)};
     final overrides = Map<String, bool>.of(trainingDayOverrides);
+    final unplanned = Map<String, bool>.of(unplannedTrainingDayOverrides);
     for (final runDay in plan.days) {
       if (plan.pauseDays.contains(runDay)) {
         continue;
       }
       final key = diaryDayKey(runDay);
       final isTraining = wanted.contains(key);
+      unplanned.remove(key);
       if (isTraining == isScheduledTrainingDay(runDay)) {
         overrides.remove(key);
       } else {
@@ -81,6 +85,7 @@ extension CalorieRunTraining on CalorieGoalSettings {
     }
     return copyWith(
       trainingDayOverrides: Map<String, bool>.unmodifiable(overrides),
+      unplannedTrainingDayOverrides: Map<String, bool>.unmodifiable(unplanned),
     );
   }
 

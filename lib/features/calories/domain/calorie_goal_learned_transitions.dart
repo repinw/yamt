@@ -143,6 +143,7 @@ extension CalorieGoalLearnedTransitions on CalorieGoalSettings {
       trainingWeekdays: trainingWeekdays,
       trainingDayKcalOffset: trainingDayKcalOffset,
       trainingDayOverrides: trainingDayOverrides,
+      unplannedTrainingDayOverrides: unplannedTrainingDayOverrides,
       pauseDayKeys: pauseDayKeys,
     );
   }

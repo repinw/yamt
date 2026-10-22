@@ -66,6 +66,34 @@ void main() {
     expect(restored.trainingDayOverrides, isEmpty);
   });
 
+  test('planning the run takes the days changed in the diary into the '
+      'plan', () {
+    final settings = _settings()
+        .toggleTrainingDay(DateTime(2026, 9, 9))
+        .toggleTrainingDay(DateTime(2026, 9, 10));
+    expect(settings.unplannedTrainingDayOverrides, {
+      '2026-9-9': false,
+      '2026-9-10': true,
+    });
+
+    final next = settings.withRunTrainingDays(
+      _now,
+      trainingDays: {
+        DateTime(2026, 9, 9),
+        DateTime(2026, 9, 10),
+        DateTime(2026, 9, 14),
+      },
+    );
+
+    // The 9th is training again by the schedule; the 10th is planned now.
+    expect(next.trainingDayOverrides, {'2026-9-10': true});
+    expect(next.unplannedTrainingDayOverrides, isEmpty);
+    expect(next.isTrainingDay(DateTime(2026, 9, 9)), isTrue);
+    expect(next.isTrainingDay(DateTime(2026, 9, 10)), isTrue);
+    // Three planned days: 2000 + 4 × 210 / 7 on training days.
+    expect(next.goalKcalForDay(DateTime(2026, 9, 10)), closeTo(2120, 1e-9));
+  });
+
   test('an extra training day moves calories only within its run', () {
     final settings = _settings();
     final next = settings.withRunTrainingDays(

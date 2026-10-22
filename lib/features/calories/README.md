@@ -92,24 +92,23 @@ tracked activity never changes TDEE or the daily target.
 
 #### Calorie Cycling & Training Days
 
-Users can configure training days (e.g. Mo, We, Fr) and a kcal offset (+200..+300 kcal).
-The weekly budget is preserved budget-neutrally:
+Users can configure training days (e.g. Mo, We, Fr) and the kcal of one
+session (default 250). The planned training days split the week:
 
 ```text
-N_training = count of training days
-N_rest = 7 - N_training
-offset_rest = (N_training * offset_training) / N_rest
-trainingGoal = baseGoal + offset_training
-restGoal = max(1200, baseGoal - offset_rest)
+N_planned = planned training days of the 7-day run
+restGoal = max(1200, baseGoal - N_planned * session / 7)
+trainingGoal = max(1200, baseGoal - N_planned * session / 7 + session)
 ```
 
-`N_training` counts the training days of the 7-day run of the day, with the
-per-day overrides, so every run keeps the base goal times seven. A day type
-change in the diary or a run training edit on the profile page moves calories
-only between the days of that run; earlier runs keep their goals. When past
-days of the run get a new goal, the carryover passes the difference on to the
-days left. Before a goal starts counting there is no run, and the weekly
-schedule counts instead.
+The plan is the weekly schedule with the planned per-day overrides
+(`trainingDayOverrides`) that the weekly check-in and the profile set, so
+every run keeps the base goal times seven, and a plan edit moves calories
+only between the days of its run. A day type change in the diary is outside
+the plan (`unplannedTrainingDayOverrides`): the day gains or loses one session
+and the other days keep their goals, so the run total moves by one session.
+Before a goal starts counting there is no run, and the weekly schedule counts
+instead.
 
 The diary header includes a toggle (`🏋️ Trainingstag`, `🛋️ Ruhetag`, `⏸️ Pausentag`).
 
@@ -237,10 +236,11 @@ calorie goal and macros before and after an edit and saves it.
 
 #### Run Training Days
 
-`withRunTrainingDays` (`domain/calorie_run_training_plan.dart`) sets the
-training days of the current 7-day run. It writes the same per-day overrides
-as a day type change in the diary, only for the days of that run; pause days
-keep their type, and later runs follow the weekly schedule again.
+`withRunTrainingDays` (`domain/calorie_run_training_plan.dart`) plans the
+training days of the current 7-day run. It writes planned per-day overrides
+for the days of that run and drops their day type changes from the diary, so
+the run total is the base goal times seven again. Pause days keep their type,
+and later runs follow the weekly schedule again.
 `CalorieRunTrainingService` shows each changed day's calorie goal and the run
 total before and after, and the other days whose goal changes, and saves the
 days.

@@ -46,6 +46,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
       trainingDayKcalOffset:
           calculatorProfile?.trainingDayKcalOffset ?? trainingDayKcalOffset,
       trainingDayOverrides: trainingDayOverrides,
+      unplannedTrainingDayOverrides: unplannedTrainingDayOverrides,
       pauseDayKeys: pauseDayKeys,
     );
   }

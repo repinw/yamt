@@ -67,6 +67,17 @@ void main() {
     );
   });
 
+  test('shows the default session kcal without a training schedule', () {
+    final settings = const CalorieGoalSettings.empty().copyWith(
+      dailyKcalGoal: 2200,
+    );
+
+    expect(
+      DiaryDayTypeStatus.fromSettings(settings, _monday).trainingDayKcalOffset,
+      defaultTrainingDayKcalOffset,
+    );
+  });
+
   test('marking a rest day as training toggles training once', () async {
     final (container, controller) = await _setUp();
 

@@ -53,6 +53,10 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
             (k, e) => MapEntry(k, e as bool),
           ) ??
           const <String, bool>{},
+      unplannedTrainingDayOverrides:
+          (json['unplanned_training_day_overrides'] as Map<String, dynamic>?)
+              ?.map((k, e) => MapEntry(k, e as bool)) ??
+          const <String, bool>{},
       pauseDayKeys:
           (json['pause_day_keys'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -79,5 +83,6 @@ Map<String, dynamic> _$CalorieGoalSettingsToJson(
     instance.trainingDayKcalOffset,
   ),
   'training_day_overrides': instance.trainingDayOverrides,
+  'unplanned_training_day_overrides': instance.unplannedTrainingDayOverrides,
   'pause_day_keys': instance.pauseDayKeys,
 };
