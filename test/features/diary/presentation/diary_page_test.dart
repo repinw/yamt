@@ -1088,6 +1088,138 @@ void main() {
     expect(currentDay(), selectedDay);
   });
 
+  group('a plan that loads after the first frames keeps today (#817)', () {
+    // On a cold start the plan arrives after the first frames, and it started
+    // longer ago than the diary looks ahead.
+    final planStart = DateTime(2026, 4, 6);
+    Future<void> loadPlan(FakeCalorieSettingsRepository repository) =>
+        repository.saveSettings(
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 2200,
+            calculatorProfile: null,
+            effectiveDate: planStart,
+          ),
+        );
+    void expectToday(
+      WidgetTester tester,
+      ProviderContainer container, {
+      DateTime? day,
+    }) {
+      final shownDay = day ?? selectedDay;
+      final bounds = container.read(diaryCalendarBoundsProvider);
+      expect(bounds.earliestDay, planStart);
+      expect(
+        container.read(diaryCalendarControllerProvider).selectedDay,
+        shownDay,
+      );
+      expect(
+        tester.widget<PageView>(find.byType(PageView)).controller!.page,
+        bounds.indexOf(shownDay),
+      );
+    }
+
+    testWidgets('while the diary shows', (tester) async {
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final container = await _pumpDiaryPage(
+        tester,
+        selectedDay: selectedDay,
+        settingsRepository: settingsRepository,
+      );
+
+      await loadPlan(settingsRepository);
+      await _pumpFrames(tester, count: 20);
+
+      expectToday(tester, container);
+    });
+
+    testWidgets('while another tab hides the diary', (tester) async {
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final visible = ValueNotifier(true);
+      addTearDown(visible.dispose);
+      final container = await _pumpDiaryPage(
+        tester,
+        selectedDay: selectedDay,
+        settingsRepository: settingsRepository,
+        // How the home shell keeps the tabs it does not show.
+        body: ValueListenableBuilder<bool>(
+          valueListenable: visible,
+          builder: (_, isVisible, child) => Offstage(
+            offstage: !isVisible,
+            child: TickerMode(enabled: isVisible, child: child!),
+          ),
+          child: const DiaryPage(),
+        ),
+      );
+
+      visible.value = false;
+      await _pumpFrames(tester, count: 3);
+      await loadPlan(settingsRepository);
+      await _pumpFrames(tester, count: 5);
+      visible.value = true;
+      await _pumpFrames(tester, count: 20);
+
+      expectToday(tester, container);
+    });
+
+    testWidgets('while a page covers the diary', (tester) async {
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final container = await _pumpDiaryPage(
+        tester,
+        selectedDay: selectedDay,
+        settingsRepository: settingsRepository,
+      );
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator))
+        ..push(MaterialPageRoute<void>(builder: (_) => const Scaffold()));
+      await _pumpFrames(tester, count: 10);
+      await loadPlan(settingsRepository);
+      await _pumpFrames(tester, count: 10);
+      navigator.pop();
+      await _pumpFrames(tester, count: 20);
+
+      expectToday(tester, container);
+    });
+
+    testWidgets('during a swipe', (tester) async {
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final container = await _pumpDiaryPage(
+        tester,
+        selectedDay: selectedDay,
+        settingsRepository: settingsRepository,
+      );
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(PageView)),
+      );
+      await gesture.moveBy(const Offset(-40, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+      await gesture.moveBy(const Offset(-40, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+      await loadPlan(settingsRepository);
+      await tester.pump(const Duration(milliseconds: 16));
+      await gesture.up();
+      await _pumpFrames(tester, count: 20);
+
+      expectToday(tester, container);
+    });
+
+    testWidgets('during a slide to the next day', (tester) async {
+      final settingsRepository = FakeCalorieSettingsRepository();
+      final container = await _pumpDiaryPage(
+        tester,
+        selectedDay: selectedDay,
+        settingsRepository: settingsRepository,
+      );
+
+      container.read(diaryCalendarControllerProvider.notifier).selectNextDay();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      await loadPlan(settingsRepository);
+      await _pumpFrames(tester, count: 20);
+
+      expectToday(tester, container, day: DateTime(2026, 4, 28));
+    });
+  });
+
   testWidgets('a reset while hidden during a slide wins over the slide '
       '(#753)', (tester) async {
     final visible = ValueNotifier(true);
