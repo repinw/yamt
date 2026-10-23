@@ -3,17 +3,22 @@ import 'package:yamt/features/inventory/application/ingredient_stock_match.dart'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
-InventoryItem _item(String id, String name, InventoryAmountUnit unit) =>
-    InventoryItem.create(
-      id: id,
-      name: name,
-      entryDate: DateTime.utc(2026, 10),
-      storeName: 'Store',
-      quantity: 1,
-      initialAmount: 500,
-      currentAmount: 500,
-      amountUnit: unit,
-    );
+InventoryItem _item(
+  String id,
+  String name,
+  InventoryAmountUnit unit, {
+  String? brand,
+}) => InventoryItem.create(
+  id: id,
+  name: name,
+  brand: brand,
+  entryDate: DateTime.utc(2026, 10),
+  storeName: 'Store',
+  quantity: 1,
+  initialAmount: 500,
+  currentAmount: 500,
+  amountUnit: unit,
+);
 
 void main() {
   final items = [
@@ -29,8 +34,8 @@ void main() {
     basePortions: 1,
   );
 
-  test('the first name match is the best match, and the others follow by '
-      'name in a fitting unit', () {
+  test('the best name match is the best match, and the others follow: the '
+      'weaker name matches, then the rest by name in a fitting unit', () {
     final (:matches, :others) = ingredientStockCandidates(
       text: text,
       requirement: requirement,
@@ -47,8 +52,92 @@ void main() {
         localeCode: 'de',
       ),
     );
-    expect(matches.map((item) => item.id), ['carrots', 'carrots-old']);
-    expect(others.map((item) => item.id), ['rice']);
+    expect(matches.map((item) => item.id), ['carrots']);
+    expect(others.map((item) => item.id), ['carrots-old', 'rice']);
+  });
+
+  group('an exact name kept in another unit', () {
+    const rice = '100 g Testreis';
+    final riceRequirement = const TemplateIngredientParser().parseRequirement(
+      ingredient: rice,
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+    // "Reis" in the brand gives a weak name match through the base word.
+    final longGrain = _item(
+      'long-grain',
+      'Langkornreis',
+      InventoryAmountUnit.gram,
+      brand: 'Reis-Fit',
+    );
+
+    test('lets no weaker match stand in for it (#785)', () {
+      final items = [
+        _item('apple', 'Apfel', InventoryAmountUnit.gram),
+        _item('test-rice', 'Testreis', InventoryAmountUnit.piece),
+        longGrain,
+        _item('rice', 'Reis', InventoryAmountUnit.gram),
+      ];
+
+      expect(
+        bestIngredientStockMatch(
+          text: rice,
+          requirement: riceRequirement,
+          items: items,
+          localeCode: 'de',
+        ),
+        isNull,
+      );
+      final (:matches, :others) = ingredientStockCandidates(
+        text: rice,
+        requirement: riceRequirement,
+        items: items,
+        localeCode: 'de',
+      );
+      expect(matches, isEmpty);
+      // The weaker name matches come first, best first, then the rest.
+      expect(others.map((item) => item.id), ['rice', 'long-grain', 'apple']);
+    });
+
+    test('the same food from a brand does not stand in either', () {
+      const carrots = '300 g Karotten';
+      expect(
+        bestIngredientStockMatch(
+          text: carrots,
+          requirement: const TemplateIngredientParser().parseRequirement(
+            ingredient: carrots,
+            selectedPortions: 1,
+            basePortions: 1,
+          ),
+          items: [
+            _item('carrots', 'Karotten', InventoryAmountUnit.piece),
+            _item(
+              'bio-carrots',
+              'Karotten',
+              InventoryAmountUnit.gram,
+              brand: 'Bio',
+            ),
+          ],
+          localeCode: 'de',
+        ),
+        isNull,
+      );
+    });
+
+    test('supplies the line when it fits', () {
+      expect(
+        bestIngredientStockMatch(
+          text: rice,
+          requirement: riceRequirement,
+          items: [
+            longGrain,
+            _item('test-rice', 'Testreis', InventoryAmountUnit.gram),
+          ],
+          localeCode: 'de',
+        )?.id,
+        'test-rice',
+      );
+    });
   });
 
   test('an ingredient that names no amount fits any item of its name', () {
@@ -88,8 +177,8 @@ void main() {
       localeCode: 'de',
     );
 
-    expect(matches.map((item) => item.id), ['carrots', 'carrots-old']);
-    expect(others, isEmpty);
+    expect(matches.map((item) => item.id), ['carrots']);
+    expect(others.map((item) => item.id), ['carrots-old']);
   });
 
   test('an amount the parser cannot read has no candidates', () {

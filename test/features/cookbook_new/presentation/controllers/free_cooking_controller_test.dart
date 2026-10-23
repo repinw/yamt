@@ -13,16 +13,21 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
-InventoryItem _item(String name) {
+InventoryItem _item(
+  String name, {
+  String? brand,
+  InventoryAmountUnit unit = InventoryAmountUnit.gram,
+}) {
   return InventoryItem.create(
     id: name.toLowerCase(),
     name: name,
+    brand: brand,
     entryDate: DateTime.utc(2026, 9, 29),
     storeName: 'Store',
     quantity: 1,
     initialAmount: 600,
     currentAmount: 600,
-    amountUnit: InventoryAmountUnit.gram,
+    amountUnit: unit,
   );
 }
 
@@ -80,11 +85,14 @@ class _FakeCookingService implements PreparedMealCookingService {
   Future<void> discard(String mealId) => throw UnimplementedError();
 }
 
-ProviderContainer _container(_FakeCookingService service) {
+ProviderContainer _container(
+  _FakeCookingService service, {
+  List<InventoryItem>? items,
+}) {
   final container = ProviderContainer(
     overrides: [
       inventoryQuickEatItemsProvider.overrideWith(
-        (ref) => Stream.value([_item('Hähnchen')]),
+        (ref) => Stream.value(items ?? [_item('Hähnchen')]),
       ),
       preparedMealCookingServiceProvider.overrideWithValue(service),
     ],
@@ -193,6 +201,41 @@ void main() {
       '500 g Hähnchen': ['hähnchen'],
     });
     expect(container.read(freeCookingControllerProvider).rows, isEmpty);
+  });
+
+  test('a row cooks from the item it shows, and an exact name in another '
+      'unit lets no weaker match stand in (#785)', () async {
+    // "Reis" in the brand makes Langkornreis a weak match for "Testreis".
+    final longGrain = _item('Langkornreis', brand: 'Reis-Fit');
+    final service = _FakeCookingService();
+    final pieces = _container(
+      service,
+      items: [
+        longGrain,
+        _item('Testreis', unit: InventoryAmountUnit.piece),
+      ],
+    );
+    final notifier = pieces.read(freeCookingControllerProvider.notifier)
+      ..addText('100 g Testreis');
+    final rows = await _rows(pieces);
+
+    expect(rows.single.isInStock, isFalse);
+    await notifier.cook(name: 'Test', rows: rows);
+    expect(service.calls.single.assignments, isEmpty);
+
+    final grams = _container(service, items: [longGrain, _item('Testreis')]);
+    grams
+        .read(freeCookingControllerProvider.notifier)
+        .addText('100 g Testreis');
+    final shown = await _rows(grams);
+
+    expect(shown.single.stockItem?.id, 'testreis');
+    await grams
+        .read(freeCookingControllerProvider.notifier)
+        .cook(name: 'Test', rows: shown);
+    expect(service.calls.last.assignments, {
+      '100 g Testreis': ['testreis'],
+    });
   });
 
   test('cook keeps the rows when saving fails', () async {

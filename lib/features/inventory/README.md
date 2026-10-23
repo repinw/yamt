@@ -76,7 +76,9 @@ Other features may consume these public Inventory entry points:
   the recipe is gone.
 - `application/ingredient_stock_match.dart`: the one rule for which Vorrat
   items can supply a recipe ingredient, best first: a name match whose unit
-  fits the amount, with the recipe's saved unit conversion. A recipe line
+  fits the amount, with the recipe's saved unit conversion. Only the items
+  that match the name best supply a line by default; a weaker match does
+  not stand in when the best one is kept in another unit. A recipe line
   that names no amount ("Salz") takes any item of its name and gives
   nothing when cooked. `ingredientStockPick` takes a recipe's saved items
   among them, else the best match. The recipe page, free cooking (rows with

@@ -845,7 +845,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   "und", so "500 g Hähnchen 40 g Butter" gives two rows. While a row is
   spoken it shows faded. Each row shows a filled square and the amount left
   when the Vorrat holds the food in a fitting unit and the row has an amount,
-  or "fehlt"; the title counts "2 von 3 da".
+  or "fehlt"; the title counts "2 von 3 da". Only the food that matches the
+  name best counts: when "Testreis" is kept in pieces, "100 g Testreis"
+  stays "fehlt" and no other rice stands in.
   A swipe removes a row. "nein" at the start of what was said takes the rows
   added last out again, and "nein, 200 g Sahne" swaps them for the
   correction, as in the Kochhelfer.
@@ -931,7 +933,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   for those portions, and the steps. Each ingredient shows the Vorrat food
   that supplies it with its photo and the amount there, "fehlt", or struck
   through when it is ignored. The food is the one the recipe saved, else
-  the best match in a fitting unit; a tap picks another Vorrat food or
+  the best name match when it is kept in a fitting unit, never a weaker
+  match in its place; a tap picks another Vorrat food or
   "Nicht aus dem Vorrat" for this time.
 - A "Zutaten prüfen" card on the recipe page stands out while an ingredient
   is missing or only partly there and not on the shopping list ("1 fehlt,
