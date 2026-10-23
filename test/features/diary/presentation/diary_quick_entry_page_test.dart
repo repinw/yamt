@@ -219,6 +219,42 @@ void main() {
     expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
   });
 
+  testWidgets('a tap beside the name field closes the keyboard (#827)', (
+    tester,
+  ) async {
+    await openPage(tester);
+    bool nameHasFocus() => tester
+        .widget<TextField>(find.byKey(DiaryQuickEntryPage.nameKey))
+        .focusNode!
+        .hasFocus;
+
+    await tester.showKeyboard(find.byKey(DiaryQuickEntryPage.nameKey));
+    // The field listens for taps outside only once it has built with focus.
+    await tester.pump();
+    expect(nameHasFocus(), isTrue);
+
+    await tester.tap(find.byKey(_confirmHintKey));
+    await tester.pump();
+
+    expect(nameHasFocus(), isFalse);
+
+    // A tap on another field still moves the focus there.
+    await tester.showKeyboard(find.byKey(DiaryQuickEntryPage.nameKey));
+    await tester.pump();
+    expect(nameHasFocus(), isTrue);
+    await tester.tap(valueField(DiaryQuickEntryValue.kcal));
+    await tester.pump();
+
+    expect(nameHasFocus(), isFalse);
+    expect(
+      tester
+          .widget<TextField>(valueField(DiaryQuickEntryValue.kcal))
+          .focusNode!
+          .hasFocus,
+      isTrue,
+    );
+  });
+
   testWidgets('the plan button plans the entry for a picked day', (
     tester,
   ) async {
