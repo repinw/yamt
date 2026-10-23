@@ -220,6 +220,7 @@ class _NameInput extends StatelessWidget {
       style: style,
       onChanged: onChanged,
       onSubmitted: (_) => onSubmitted(),
+      onTapUpOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       decoration: InputDecoration(
         isDense: true,
         hintText: hint,
