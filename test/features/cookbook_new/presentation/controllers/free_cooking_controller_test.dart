@@ -238,6 +238,68 @@ void main() {
     });
   });
 
+  test('the cook picks the item of a row, also for a row without an '
+      'amount, and "Kochen" takes the pick (#837)', () async {
+    final service = _FakeCookingService();
+    final container = _container(
+      service,
+      items: [_item('Hähnchen'), _item('Hähnchenbrust'), _item('Salz')],
+    );
+    final notifier = container.read(freeCookingControllerProvider.notifier)
+      ..addText('500 g Hähnchen, Salz, Pfeffer');
+    var rows = await _rows(container);
+
+    expect(rows.map((row) => row.stockItem?.id), ['hähnchen', null, null]);
+    expect(rows[1].candidates.map((item) => item.id), ['salz']);
+    expect(rows[2].candidates, isEmpty);
+
+    notifier
+      ..pick(0, 'hähnchenbrust')
+      ..pick(1, 'salz');
+    rows = await _rows(container);
+    expect(rows.map((row) => row.stockItem?.id), [
+      'hähnchenbrust',
+      'salz',
+      null,
+    ]);
+
+    notifier.pick(0, null);
+    rows = await _rows(container);
+    expect(rows.first.isInStock, isFalse);
+
+    await notifier.cook(name: 'Pfanne', rows: rows);
+    expect(service.calls.single.assignments, {
+      'Salz': ['salz'],
+    });
+    expect(container.read(freeCookingControllerProvider).picks, isEmpty);
+  });
+
+  test('a pick belongs to its row: it moves when an earlier row goes and '
+      'goes with its own row', () async {
+    final container = _container(_FakeCookingService(), items: [_item('Salz')]);
+    final notifier = container.read(freeCookingControllerProvider.notifier)
+      ..addText('Salz, Pfeffer, Salz')
+      ..pick(2, 'salz');
+    var rows = await _rows(container);
+    expect(rows.map((row) => row.stockItem?.id), [null, null, 'salz']);
+
+    notifier.removeRow(0);
+    rows = await _rows(container);
+    expect(rows.map((row) => row.stockItem?.id), [null, 'salz']);
+
+    notifier
+      ..removeRow(1)
+      ..addText('Salz');
+    rows = await _rows(container);
+    expect(rows.map((row) => row.stockItem?.id), [null, null]);
+
+    notifier
+      ..pick(1, 'salz')
+      ..addText('nein, Salz');
+    rows = await _rows(container);
+    expect(rows.map((row) => row.stockItem?.id), [null, null]);
+  });
+
   test('cook keeps the rows when saving fails', () async {
     final container = _container(_FakeCookingService(succeeds: false));
     final notifier = container.read(freeCookingControllerProvider.notifier)
