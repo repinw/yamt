@@ -82,6 +82,8 @@ class EatInlineAmountField extends StatelessWidget {
             focusNode: focusNode,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             textInputAction: TextInputAction.done,
+            onTapUpOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             cursorColor: colors.ink,
             style: style?.copyWith(fontWeight: FontWeight.w700),
             decoration: InputDecoration(
@@ -130,22 +132,25 @@ class EatInlineAmountField extends StatelessWidget {
             child: Text(unitLabel, style: style),
           )
         else
-          TextButton(
-            key: unitKey,
-            onPressed: onUnit,
-            style: TextButton.styleFrom(
-              foregroundColor: colors.ink,
-              shape: const RoundedRectangleBorder(),
-              side: isUnitMissing
-                  ? BorderSide(
-                      color: colors.accent,
-                      width: AppFoodLabel.outline,
-                    )
-                  : null,
-            ),
-            child: Text(
-              unitLabel,
-              style: style?.copyWith(decoration: TextDecoration.underline),
+          // Switching the unit keeps the keyboard for the amount.
+          TextFieldTapRegion(
+            child: TextButton(
+              key: unitKey,
+              onPressed: onUnit,
+              style: TextButton.styleFrom(
+                foregroundColor: colors.ink,
+                shape: const RoundedRectangleBorder(),
+                side: isUnitMissing
+                    ? BorderSide(
+                        color: colors.accent,
+                        width: AppFoodLabel.outline,
+                      )
+                    : null,
+              ),
+              child: Text(
+                unitLabel,
+                style: style?.copyWith(decoration: TextDecoration.underline),
+              ),
             ),
           ),
       ],

@@ -276,6 +276,32 @@ void main() {
     expect(_hasFocus(tester, ManualProductFormField.sugar), isFalse);
   });
 
+  testWidgets('a tap beside the package size closes the keyboard (#827)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_editor(_Calls()));
+
+    await tester.showKeyboard(
+      find.byKey(ManualProductFormField.weightAmount.key),
+    );
+    expect(_hasFocus(tester, ManualProductFormField.weightAmount), isTrue);
+
+    await tester.tap(find.text('Package size'));
+    await tester.pump();
+
+    expect(_hasFocus(tester, ManualProductFormField.weightAmount), isFalse);
+
+    // Switching the unit keeps the keyboard for the amount.
+    await tester.showKeyboard(
+      find.byKey(ManualProductFormField.weightAmount.key),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(ManualProductEditorHeader.weightUnitKey));
+    await tester.pump();
+
+    expect(_hasFocus(tester, ManualProductFormField.weightAmount), isTrue);
+  });
+
   testWidgets('adds an optional nutrient from the menu', (tester) async {
     final calls = _Calls();
     await tester.pumpWidget(_editor(calls));
