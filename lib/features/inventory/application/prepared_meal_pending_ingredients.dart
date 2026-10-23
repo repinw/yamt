@@ -17,7 +17,9 @@ import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
-/// Consumes inventory to fill one pending template ingredient entry.
+/// Consumes inventory to fill one pending template ingredient entry. A row
+/// that names no amount ("Salz") is done once one of the items stands for
+/// it, and takes nothing, as when a recipe is cooked (#834).
 PreparedMealPendingIngredientFillResult?
 buildPreparedMealPendingIngredientFillResult({
   required List<InventoryItem> currentItems,
@@ -31,7 +33,13 @@ buildPreparedMealPendingIngredientFillResult({
     basePortions: 1,
   );
   if (requirement == null) {
-    return null;
+    return ingredientNamesNoAmount(ingredient) &&
+            currentItems.any((item) => inventoryItemIds.contains(item.id))
+        ? PreparedMealPendingIngredientFillResult(
+            nextItems: currentItems,
+            components: const [],
+          )
+        : null;
   }
 
   final nextItems = List<InventoryItem>.from(currentItems);
@@ -126,29 +134,23 @@ buildPreparedMealPendingIngredientFillResult({
 }
 
 /// The best Vorrat item that can fill the open row [ingredient] with the
-/// row's own amount, or `null` when the row has no amount or no matching
-/// item fits it, by the same rule as the recipe page.
+/// row's own amount, or the item of its name for a row that names no amount,
+/// by the same rule as the recipe page. `null` when no matching item fits.
 InventoryItem? findPendingIngredientStockMatch({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
   required TemplateIngredientParser ingredientParser,
   required String localeCode,
-}) {
-  final requirement = ingredientParser.parseRequirement(
+}) => bestIngredientStockMatch(
+  text: ingredient,
+  requirement: ingredientParser.parseRequirement(
     ingredient: ingredient,
     selectedPortions: 1,
     basePortions: 1,
-  );
-  if (requirement == null) {
-    return null;
-  }
-  return bestIngredientStockMatch(
-    text: ingredient,
-    requirement: requirement,
-    items: inventoryItems,
-    localeCode: localeCode,
-  );
-}
+  ),
+  items: inventoryItems,
+  localeCode: localeCode,
+);
 
 /// The open rows of [currentMeal] that the newly added amounts of
 /// [components] do not fill yet, and [components] with each food that

@@ -143,6 +143,17 @@ void main() {
       expect(world.meal, before.copyWith(updatedAt: _now));
     });
 
+    test('a row that names no amount is done by an item and takes '
+        'nothing (#834)', () async {
+      final world = _World(meal: _cookedMeal(open: const ['Salz']));
+
+      expect(await world.service.fill('Salz', 'rice'), isTrue);
+
+      expect(world.meal.pendingRecipeIngredients, isEmpty);
+      expect(world.meal.components, hasLength(1));
+      expect(world.stock('rice'), 850);
+    });
+
     test('an ignored row can still be filled', () async {
       final world = _World(meal: _cookedMeal(open: const ['200 g Hähnchen']));
       await world.service.ignorePreparedMealPendingIngredient(
