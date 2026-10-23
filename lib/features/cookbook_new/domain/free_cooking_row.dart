@@ -5,9 +5,14 @@ import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dar
 /// One ingredient row of a meal cooked without a recipe.
 @immutable
 class FreeCookingRow {
-  /// Creates a row for [text] with its parsed [requirement] and the Vorrat
-  /// item [stockItem] that supplies it.
-  const new({required this.text, this.requirement, this.stockItem});
+  /// Creates a row for [text] with its parsed [requirement], the Vorrat
+  /// item [stockItem] that supplies it, and the [candidates] to pick from.
+  const new({
+    required this.text,
+    this.requirement,
+    this.stockItem,
+    this.candidates = const <InventoryItem>[],
+  });
 
   /// The row as spoken or typed, for example "500 g Hähnchen".
   final String text;
@@ -16,8 +21,12 @@ class FreeCookingRow {
   /// no amount ("Salz").
   final TemplateIngredientRequirement? requirement;
 
-  /// The best Vorrat match, or `null` when the Vorrat does not hold the food.
+  /// The best Vorrat match or the cook's pick, or `null` when the Vorrat
+  /// does not supply the food.
   final InventoryItem? stockItem;
+
+  /// The Vorrat items the cook can pick for the row, best first.
+  final List<InventoryItem> candidates;
 
   /// Whether the Vorrat holds the food.
   bool get isInStock => stockItem != null;
