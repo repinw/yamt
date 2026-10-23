@@ -22,7 +22,7 @@ List<InventoryItem> resolveInventoryItemsById({
 }
 
 /// Whether [inventoryItems] hold a food that matches [ingredient]: the same
-/// answer as [matchInventoryItemsForIngredient] being non-empty, without
+/// answer as [scoreInventoryItemsForIngredient] being non-empty, without
 /// ranking every item.
 bool hasInventoryItemForIngredient({
   required String ingredient,
@@ -41,21 +41,16 @@ bool hasInventoryItemForIngredient({
   );
 }
 
-/// Match inventory items for ingredient.
-List<InventoryItem> matchInventoryItemsForIngredient({
+/// The items not used up that match [ingredient], best first, with their
+/// match score.
+List<({InventoryItem item, int score})> scoreInventoryItemsForIngredient({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
   String? localeCode,
-}) {
-  return [
-    for (final (:item, :score) in _rankScored(
-      ingredient,
-      inventoryItems,
-      localeCode,
-    ))
-      if (score > 0) item,
-  ];
-}
+}) => [
+  for (final match in _rankScored(ingredient, inventoryItems, localeCode))
+    if (match.score > 0) match,
+];
 
 /// Rank inventory items for ingredient.
 List<InventoryItem> rankInventoryItemsForIngredient({

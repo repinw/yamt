@@ -127,11 +127,14 @@ List<InventoryItem> _matches(
   String text,
   List<InventoryItem> items,
   String? localeCode,
-) => matchInventoryItemsForIngredient(
-  ingredient: text,
-  inventoryItems: items,
-  localeCode: localeCode,
-);
+) => [
+  for (final (:item, score: _) in scoreInventoryItemsForIngredient(
+    ingredient: text,
+    inventoryItems: items,
+    localeCode: localeCode,
+  ))
+    item,
+];
 
 /// Whether the recipe line [text] names no amount at all, like "Salz". A
 /// Vorrat item of its name stands for it and gives nothing. "1 cup Milch",

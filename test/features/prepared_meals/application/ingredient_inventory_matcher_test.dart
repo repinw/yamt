@@ -19,8 +19,21 @@ InventoryItem _item({
   );
 }
 
+List<InventoryItem> _match({
+  required String ingredient,
+  required List<InventoryItem> inventoryItems,
+  String? localeCode,
+}) => [
+  for (final (:item, score: _) in scoreInventoryItemsForIngredient(
+    ingredient: ingredient,
+    inventoryItems: inventoryItems,
+    localeCode: localeCode,
+  ))
+    item,
+];
+
 void main() {
-  test('matchInventoryItemsForIngredient sorts best matches first', () {
+  test('scoreInventoryItemsForIngredient sorts best matches first', () {
     final inventoryItems = <InventoryItem>[
       _item(id: '1', name: 'Kartoffeln'),
       _item(id: '2', name: 'Bio Kartoffeln'),
@@ -28,7 +41,7 @@ void main() {
       _item(id: '4', name: 'Kartoffeln', quantity: 0),
     ];
 
-    final matches = matchInventoryItemsForIngredient(
+    final matches = _match(
       ingredient: 'Kartoffeln',
       inventoryItems: inventoryItems,
     );
@@ -37,7 +50,7 @@ void main() {
   });
 
   test('prefers exact matches over broader partial matches', () {
-    final matches = matchInventoryItemsForIngredient(
+    final matches = _match(
       ingredient: 'Milch',
       inventoryItems: <InventoryItem>[
         _item(id: '1', name: 'Hafermilch'),
@@ -49,7 +62,7 @@ void main() {
   });
 
   test('matches german carrot synonyms with quantities', () {
-    final matches = matchInventoryItemsForIngredient(
+    final matches = _match(
       ingredient: '2 Möhren',
       inventoryItems: <InventoryItem>[
         _item(id: '1', name: 'Karotten'),
@@ -62,7 +75,7 @@ void main() {
   });
 
   test('matches english scallion synonyms with english lexicon', () {
-    final matches = matchInventoryItemsForIngredient(
+    final matches = _match(
       ingredient: '2 spring onions',
       inventoryItems: <InventoryItem>[
         _item(id: '1', name: 'Scallions'),
@@ -165,8 +178,8 @@ void main() {
     expect(rankedItems.map((item) => item.id).first, '1');
   });
 
-  test('matchInventoryItemsForIngredient returns empty for blank input', () {
-    final matches = matchInventoryItemsForIngredient(
+  test('scoreInventoryItemsForIngredient returns empty for blank input', () {
+    final matches = _match(
       ingredient: '   ',
       inventoryItems: <InventoryItem>[_item(id: '1', name: 'Milch')],
     );
@@ -175,9 +188,9 @@ void main() {
   });
 
   test(
-    'matchInventoryItemsForIngredient returns empty for symbols only input',
+    'scoreInventoryItemsForIngredient returns empty for symbols only input',
     () {
-      final matches = matchInventoryItemsForIngredient(
+      final matches = _match(
         ingredient: '!@#',
         inventoryItems: <InventoryItem>[_item(id: '1', name: 'Milch')],
       );
@@ -220,7 +233,7 @@ void main() {
             inventoryItems: inventoryItems,
             localeCode: localeCode,
           ),
-          matchInventoryItemsForIngredient(
+          _match(
             ingredient: ingredient,
             inventoryItems: inventoryItems,
             localeCode: localeCode,
