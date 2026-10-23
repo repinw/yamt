@@ -257,7 +257,12 @@ class _RecipeBody extends ConsumerWidget {
     WidgetRef ref,
     RecipeIngredientLine line,
   ) async {
-    final pick = await showRecipeStockPicker(context: context, line: line);
+    final pick = await showRecipeStockPicker(
+      context: context,
+      foodName: line.row.foodName,
+      candidates: line.candidates,
+      selectedId: line.row.stockItem?.id,
+    );
     if (pick != null && context.mounted) {
       ref
           .read(recipeControllerProvider(view.recipe.id).notifier)
