@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_from_template.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_mutation_models.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_pending_ingredients.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -68,11 +70,31 @@ void main() {
     expect(_match('200 ml Milch', [items.first]), isNull);
   });
 
-  test('offers no match for a row without an amount', () {
-    expect(
-      _match('Milch', [_milk(id: 'ml', unit: InventoryAmountUnit.milliliter)]),
-      isNull,
-    );
+  test('offers the item of its name for a row that names no amount, and '
+      'none for an amount it cannot read', () {
+    final items = [_milk(id: 'ml', unit: InventoryAmountUnit.milliliter)];
+
+    expect(_match('Milch', items)?.id, 'ml');
+    expect(_match('etwas Milch', items), isNull);
+  });
+
+  test('a row that names no amount is done by an item and takes nothing '
+      '(#834)', () {
+    final items = [_rice('salt', grams: 500)];
+    PreparedMealPendingIngredientFillResult? fill(String row) =>
+        buildPreparedMealPendingIngredientFillResult(
+          currentItems: items,
+          ingredient: row,
+          inventoryItemIds: const ['salt'],
+          ingredientParser: const TemplateIngredientParser(),
+        );
+
+    final result = fill('Salz')!;
+
+    expect(result.components, isEmpty);
+    expect(result.nextItems, items);
+    expect(result.remainingIngredient, isNull);
+    expect(fill('etwas Salz'), isNull);
   });
 
   test('a food that fills a whole row is linked to the row', () {
