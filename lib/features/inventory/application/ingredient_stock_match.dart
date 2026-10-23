@@ -7,10 +7,8 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 /// The best Vorrat match for [requirement] of the ingredient [text], or
-/// `null` when no item fits. An ingredient that names no amount, such as
-/// "Salz", fits any item of its name ([ingredientNamesNoAmount]). A recipe's
-/// saved [amountConversion] lets pieces come from an item kept in grams or
-/// milliliters.
+/// `null` when no item fits: the first of the `matches` of
+/// [ingredientStockCandidates].
 InventoryItem? bestIngredientStockMatch({
   required String text,
   required TemplateIngredientRequirement? requirement,
@@ -21,18 +19,28 @@ InventoryItem? bestIngredientStockMatch({
   if (requirement == null && !ingredientNamesNoAmount(text)) {
     return null;
   }
-  return _matches(text, [
-    for (final item in items)
-      if (_itemFits(item, requirement, amountConversion)) item,
-  ], localeCode).firstOrNull;
+  final scored = _scored(text, items, localeCode);
+  return scored
+      .firstWhereOrNull(
+        (match) =>
+            _standsIn(match.score, scored) &&
+            _itemFits(match.item, requirement, amountConversion),
+      )
+      ?.item;
 }
 
 /// The Vorrat items that can supply [requirement] of the ingredient [text]:
-/// the `matches` by name, best first, so the first is
-/// [bestIngredientStockMatch], and the `others` in a fitting unit by name.
-/// A line that names no amount has no unit to fit, so only its name matches
-/// count.
-/// [amountConversion] works as in [bestIngredientStockMatch].
+/// the `matches` that match its name best of all items, and the `others`,
+/// first the weaker name matches, best first, then the rest in a fitting
+/// unit by name. Only the matches supply the line by default, so a weaker
+/// match never stands in for a better one kept in another unit: no other
+/// rice for "100 g Testreis" when Testreis is kept in pieces, and no
+/// "Milchreis" for "300 ml Milch" (#785).
+///
+/// An ingredient that names no amount, such as "Salz", fits any item of its
+/// name ([ingredientNamesNoAmount]), and only its name matches count. A
+/// recipe's saved [amountConversion] lets pieces come from an item kept in
+/// grams or milliliters.
 ({List<InventoryItem> matches, List<InventoryItem> others})
 ingredientStockCandidates({
   required String text,
@@ -44,24 +52,30 @@ ingredientStockCandidates({
   if (requirement == null && !ingredientNamesNoAmount(text)) {
     return (matches: const <InventoryItem>[], others: const <InventoryItem>[]);
   }
-  // The unit check is cheap, the name score is not, so it goes first.
-  final fitting = [
-    for (final item in items)
-      if (!item.isFullyConsumed &&
-          _itemFits(item, requirement, amountConversion))
-        item,
-  ];
-  final matches = _matches(text, fitting, localeCode);
-  if (requirement == null) {
-    return (matches: matches, others: const <InventoryItem>[]);
+  final scored = _scored(text, items, localeCode);
+  final matches = <InventoryItem>[];
+  final weaker = <InventoryItem>[];
+  for (final (:item, :score) in scored) {
+    if (_itemFits(item, requirement, amountConversion)) {
+      (_standsIn(score, scored) ? matches : weaker).add(item);
+    }
   }
-  final matchIds = {for (final item in matches) item.id};
-  final others = fitting.where((item) => !matchIds.contains(item.id)).toList()
-    ..sort(
-      (left, right) =>
-          left.name.toLowerCase().compareTo(right.name.toLowerCase()),
-    );
-  return (matches: matches, others: others);
+  if (requirement == null) {
+    return (matches: matches, others: weaker);
+  }
+  final named = {for (final (:item, score: _) in scored) item.id};
+  final rest =
+      [
+        for (final item in items)
+          if (!item.isFullyConsumed &&
+              !named.contains(item.id) &&
+              _itemFits(item, requirement, amountConversion))
+            item,
+      ]..sort(
+        (left, right) =>
+            left.name.toLowerCase().compareTo(right.name.toLowerCase()),
+      );
+  return (matches: matches, others: [...weaker, ...rest]);
 }
 
 /// The items that supply the ingredient [text] of [recipe] when nobody picks
@@ -89,7 +103,7 @@ List<InventoryItem> ingredientStockPick({
 /// How much of [requirement] the [items] cannot supply, in the unit the
 /// Vorrat counts it in, or `null` when they supply all of it or the
 /// ingredient has no amount. [amountConversion] works as in
-/// [bestIngredientStockMatch].
+/// [ingredientStockCandidates].
 ({int amount, InventoryAmountUnit unit})? ingredientShortfall({
   required TemplateIngredientRequirement? requirement,
   required List<InventoryItem> items,
@@ -123,19 +137,6 @@ int ingredientStockedAmount(
           .where((item) => item.amountUnit == unit)
           .fold(0, (sum, item) => sum + item.availableAmount);
 
-List<InventoryItem> _matches(
-  String text,
-  List<InventoryItem> items,
-  String? localeCode,
-) => [
-  for (final (:item, score: _) in scoreInventoryItemsForIngredient(
-    ingredient: text,
-    inventoryItems: items,
-    localeCode: localeCode,
-  ))
-    item,
-];
-
 /// Whether the recipe line [text] names no amount at all, like "Salz". A
 /// Vorrat item of its name stands for it and gives nothing. "1 cup Milch",
 /// "½ Zwiebel", "eine Dose Tomaten" or "etwas Mehl" name an amount the
@@ -158,6 +159,25 @@ final _amountHint = RegExp(
   r'tbsp|tsp|lb|oz)\b)',
   caseSensitive: false,
 );
+
+// The items not used up that match [text], best first. Every item gets a
+// name score, not only the fitting ones, so a better match in another unit
+// keeps a weaker one from standing in.
+List<({InventoryItem item, int score})> _scored(
+  String text,
+  List<InventoryItem> items,
+  String? localeCode,
+) => scoreInventoryItemsForIngredient(
+  ingredient: text,
+  inventoryItems: items,
+  localeCode: localeCode,
+);
+
+// Whether a name match of [score] matches as well as the best of [scored],
+// so it may supply a line. Compound words make "Milchreis" score more than
+// half of "Milch" (#785), so no weaker match counts.
+bool _standsIn(int score, List<({InventoryItem item, int score})> scored) =>
+    score == scored.first.score;
 
 // Whether [item] is kept in a unit that can supply [requirement], with the
 // recipe's saved [amountConversion] for pieces, whatever it still holds.
