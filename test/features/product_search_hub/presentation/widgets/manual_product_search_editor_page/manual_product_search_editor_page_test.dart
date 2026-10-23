@@ -169,11 +169,15 @@ Future<void> _takeFrontPhoto(WidgetTester tester) async {
 }
 
 /// Types what the AI would have read, as the user does after the error.
-Future<void> _typeProduct(WidgetTester tester) async {
+/// With `barcode: null`, the barcode stays empty.
+Future<void> _typeProduct(
+  WidgetTester tester, {
+  String? barcode = '4006381333931',
+}) async {
   for (final (field, text) in [
     (ManualProductFormField.name, 'Haferflocken zart'),
     (ManualProductFormField.weightAmount, '500'),
-    (ManualProductFormField.barcode, '4006381333931'),
+    if (barcode != null) (ManualProductFormField.barcode, barcode),
     (ManualProductFormField.kcal, '372'),
     (ManualProductFormField.fat, '7'),
     (ManualProductFormField.saturatedFat, '1.3'),
@@ -233,6 +237,31 @@ void main() {
       expect(photos.savedNames.length + photos.savedPrivate.length, 1);
     });
   }
+
+  testWidgets('a product marked as having no barcode is not asked for one '
+      'again (#828)', (tester) async {
+    Object? result;
+    await _pumpEditor(
+      tester,
+      locale: const Locale('de'),
+      photos: _FakePhotoRepository(frontError: const SocketException('unused')),
+      onResult: (value) => result = value,
+    );
+
+    await _typeProduct(tester, barcode: null);
+    await tester.ensureVisible(
+      find.byKey(ManualProductPhotoSection.noBarcodeKey),
+    );
+    await tester.tap(find.byKey(ManualProductPhotoSection.noBarcodeKey));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    final saved = result! as InventoryReceiptManualProductResult;
+    expect(saved.item.normalizedBarcode, isNull);
+    expect(saved.skipMissingBarcodePrompt, isTrue);
+  });
 
   for (final (camera, message) in <(Exception, String)>[
     (

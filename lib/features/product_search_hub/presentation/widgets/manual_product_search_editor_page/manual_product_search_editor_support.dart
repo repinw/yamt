@@ -62,9 +62,11 @@ List<ManualProductMissingField> manualProductMissingFields({
 }
 
 /// Builds an [InventoryReceiptManualProductResult] from a save [payload].
+/// A product the user marked with [hasNoBarcode] is not asked for one again.
 InventoryReceiptManualProductResult buildSaveProductResult({
   required InventoryReceiptManualProductSavePayload payload,
   required InventoryReceiptManualProductAction action,
+  required bool hasNoBarcode,
 }) {
   return InventoryReceiptManualProductResult(
     item: payload.item,
@@ -73,6 +75,7 @@ InventoryReceiptManualProductResult buildSaveProductResult({
     selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
     requiresGlobalPersistence: payload.requiresGlobalPersistence,
     globalPackageWeight: payload.globalPackageWeight,
+    skipMissingBarcodePrompt: hasNoBarcode,
   );
 }
 
@@ -196,6 +199,10 @@ Future<void> executeEditorSave({
   final result = buildSaveProductResult(
     payload: payload,
     action: selectedAction,
+    // Read with the payload, as the chip can change while savePhotos runs.
+    hasNoBarcode: ref
+        .read(inventoryReceiptManualProductControllerProvider(config))
+        .hasNoBarcode,
   );
   onClosePage(result);
 }
