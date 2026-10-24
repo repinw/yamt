@@ -62,4 +62,4 @@ final class PreparedMealReminderPlanServiceProvider
 }
 
 String _$preparedMealReminderPlanServiceHash() =>
-    r'4daf421aa7b6063195f58976a717c9938ef9223e';
+    r'4fb6684f66287f138957d13f475f0c60d93c5365';
