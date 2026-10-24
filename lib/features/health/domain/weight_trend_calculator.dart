@@ -125,7 +125,7 @@ abstract final class WeightTrendCalculator {
     for (var index = 1; index < weighIns.length; index++) {
       final previous = weighIns[index - 1];
       final next = weighIns[index];
-      final gapDays = _dayCount(previous.day, next.day);
+      final gapDays = localDaysBetween(previous.day, next.day);
       var day = previous.day;
       for (var step = 1; step <= gapDays; step++) {
         day = nextLocalDay(day);
@@ -164,14 +164,6 @@ abstract final class WeightTrendCalculator {
       return 0;
     }
     return ((count * sumXY) - (sumX * sumY)) / denominator;
-  }
-
-  static int _dayCount(DateTime from, DateTime to) {
-    var count = 0;
-    for (var day = from; day.isBefore(to); day = nextLocalDay(day)) {
-      count++;
-    }
-    return count;
   }
 
   static double _median(List<double> values) {

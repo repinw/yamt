@@ -26,6 +26,16 @@ DateTime previousLocalDay(DateTime day) {
   return addLocalDays(day, -1);
 }
 
+/// Whole local calendar days from [from] to [to], also across a clock
+/// change.
+int localDaysBetween(DateTime from, DateTime to) {
+  return DateTime.utc(
+    to.year,
+    to.month,
+    to.day,
+  ).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
+}
+
 /// Returns the last visible local day, which defaults to the current day.
 DateTime resolveRollingLocalWindowEnd({DateTime? anchorDay}) {
   return normalizeLocalDay(anchorDay ?? DateTime.now());
@@ -53,6 +63,14 @@ bool isSameLocalDay(DateTime left, DateTime right) {
   return left.year == right.year &&
       left.month == right.month &&
       left.day == right.day;
+}
+
+/// Returns the local day window of [day] (start inclusive, end exclusive).
+({DateTime startInclusive, DateTime endExclusive}) localDayBounds(
+  DateTime day,
+) {
+  final start = normalizeLocalDay(day);
+  return (startInclusive: start, endExclusive: nextLocalDay(start));
 }
 
 /// Returns stable string key for one local calendar day.
