@@ -2,8 +2,7 @@ import 'package:meta/meta.dart';
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_eat_calculator.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_amounts.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_draft.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 
@@ -106,7 +105,7 @@ List<InventoryItemEatMarker> _markers(
     ];
   }
   final unit = calculator.fixedCalorieUnit;
-  final package = packageSizeOf(calculator);
+  final package = calculator.packageSize;
   final named = namedPortions(state, resolution);
   // An unnamed amount the user also named shows under that name.
   final namedAmounts = {
@@ -159,22 +158,6 @@ List<InventoryItemEatMarker> _markers(
     if (!hasOpenStock)
       InventoryItemEatMarker(value: maxAmount.toDouble(), isAll: true),
   ];
-}
-
-/// Size of one package: the calculator's package, else the product's
-/// package weight in the stock unit, or null without one.
-int? packageSizeOf(InventoryItemEatCalculator calculator) {
-  if (calculator.packageAmount case final package?) {
-    return package;
-  }
-  final parsed = const InventoryAmountParser().tryParse(
-    rawWeight: calculator.item.weight,
-    quantity: 1,
-  );
-  return parsed?.unit == calculator.inventoryAmountUnit &&
-          calculator.inventoryAmountScale == 1
-      ? parsed!.amount
-      : null;
 }
 
 EatNutrition? _nutrition(InventoryItemEatSheetState state) {
