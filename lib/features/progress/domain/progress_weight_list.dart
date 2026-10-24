@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
+import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/domain/progress_weight_runs.dart';
 
@@ -106,15 +107,20 @@ class ProgressWeightList {
     required this.goalStarts,
     required this.targetWeightKg,
     required this.kgToTarget,
+    required this.changeKg,
     required this.runs,
   });
 
   /// Groups the weighings of [manualEntries] and [healthSamples] from
   /// [start] to [today] by the runs of [settings].
+  ///
+  /// The trend weights of the runs and the header come from [series], so a
+  /// day before the chart's [trend] still has one.
   factory fromSources({
     required DateTime start,
     required bool startsAtGoal,
     required RecentWeightTrend trend,
+    required DailyWeightSeries series,
     required List<ProgressGoalStart> goalStarts,
     required CalorieGoalSettings settings,
     required List<ManualHealthWeightEntry> manualEntries,
@@ -150,13 +156,6 @@ class ProgressWeightList {
                 (right.at ?? right.day).compareTo(left.at ?? left.day),
           );
 
-    // The trend runs only between weigh-ins, so take the last one on or
-    // before a day.
-    double? trendOnOrBefore(DateTime day) => trend.days
-        .lastWhereOrNull(
-          (entry) => !entry.day.isAfter(day) && entry.trendWeightKg != null,
-        )
-        ?.trendWeightKg;
     final runOfDay = progressWeightRunsByDay(settings, start, today);
     final byRun = groupBy(weighings, (w) => runOfDay[w.day]!);
     final keys = byRun.keys.sorted(
@@ -164,8 +163,8 @@ class ProgressWeightList {
     );
     final runs = <ProgressWeightRun>[];
     for (final key in keys) {
-      final runTrend = trendOnOrBefore(key.end);
-      final before = trendOnOrBefore(addDiaryDays(key.start, -1));
+      final runTrend = series.trendOnOrBefore(key.end);
+      final before = series.trendOnOrBefore(addDiaryDays(key.start, -1));
       runs.add(
         ProgressWeightRun(
           start: key.start,
@@ -188,6 +187,14 @@ class ProgressWeightList {
         : profile?.goalMode == CalorieGoalMode.gain
         ? target - current
         : current - target;
+    // From the day before the range like the runs, so they add up to it.
+    final first =
+        series.trendOnOrBefore(addDiaryDays(start, -1)) ??
+        trend.days
+            .firstWhereOrNull(
+              (day) => !day.day.isBefore(start) && day.trendWeightKg != null,
+            )
+            ?.trendWeightKg;
     return ProgressWeightList(
       start: start,
       startsAtGoal: startsAtGoal,
@@ -195,6 +202,7 @@ class ProgressWeightList {
       goalStarts: goalStarts,
       targetWeightKg: target,
       kgToTarget: left != null && left > 0 ? left : null,
+      changeKg: first == null || current == null ? null : current - first,
       runs: List.unmodifiable(runs.reversed),
     );
   }
@@ -218,6 +226,10 @@ class ProgressWeightList {
   /// without a goal weight or once the trend reached it.
   final double? kgToTarget;
 
+  /// The change of the trend weight since the day before the range, or
+  /// since its first trend day without a weigh-in before the range.
+  final double? changeKg;
+
   /// The runs with weighings, newest first.
   final List<ProgressWeightRun> runs;
 
@@ -227,15 +239,4 @@ class ProgressWeightList {
       for (final weighing in run.weighings)
         if (weighing.isIgnored) weighing,
   ];
-
-  /// The change of the trend weight since the first trend day of the range.
-  double? get changeKg {
-    final first = trend.days
-        .firstWhereOrNull(
-          (day) => !day.day.isBefore(start) && day.trendWeightKg != null,
-        )
-        ?.trendWeightKg;
-    final current = trend.trendWeightKg;
-    return first == null || current == null ? null : current - first;
-  }
 }

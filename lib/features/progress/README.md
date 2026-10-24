@@ -55,7 +55,8 @@ week, and the longer trends are going, so the diary can stay focused on today.
 ## Rules
 
 - A progress photo shows the weight typed with it, else the trend weight of
-  its day. Photos belong to the goal whose start is the latest one on or
+  its day; after the last weigh-in, the trend weight of the last weigh-in
+  before it. A photo before the first weigh-in has no weight. Photos belong to the goal whose start is the latest one on or
   before their day; photos before the first goal form their own group.
 
 - The day bars and the week budget split the eaten kcal by the kcal share of

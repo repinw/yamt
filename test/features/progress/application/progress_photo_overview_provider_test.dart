@@ -97,6 +97,13 @@ void main() {
     expect(overview.weightKg(overview.photos[1]), isNotNull);
   });
 
+  test('a photo before the first weigh-in has no weight', () async {
+    final overview = await _overview(ProgressScope.all);
+
+    // The weigh-ins start on 6 September.
+    expect(overview.weightKg(overview.photos.first), isNull);
+  });
+
   test('a photo of years ago gets the weight of its day', () async {
     final longAgo = DateTime(2024, 3, 4);
     final overview = await _overview(
