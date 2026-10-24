@@ -15,6 +15,7 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
@@ -74,6 +75,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/helpers/auth_user_data_key_session.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 import '../../test/helpers/sheet_launcher.dart';
@@ -199,6 +201,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
     overrides: [
       appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
+      userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
       firebaseAuthProvider.overrideWithValue(auth),
       userProfileProvider.overrideWith((ref) => profileController.stream),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),

@@ -187,6 +187,56 @@ void main() {
     },
   );
 
+  test('does not refresh or save without the data key', () async {
+    final preferences = MemoryAppPreferences();
+    const cacheRepository = DiaryDayDashboardCacheRepository();
+    await cacheRepository.save(
+      preferences: preferences,
+      userId: userId,
+      data: diaryDashboardSnapshotForTest(
+        selectedDay: selectedDay,
+        selectedDayEntries: [_entry(selectedDay, name: 'Cached oats')],
+      ),
+    );
+    final logRepository = FakeCalorieLogRepository();
+    addTearDown(logRepository.dispose);
+    var weekOverviewReads = 0;
+
+    final container = _dashboardContainer(
+      preferences: preferences,
+      logRepository: logRepository,
+      selectedDay: selectedDay,
+      calendarNow: () => selectedDay.add(const Duration(hours: 12)),
+      dataCipher: () => null,
+      weekOverviewBuilder: () {
+        weekOverviewReads += 1;
+        return diaryWeekOverviewForTest(selectedDay: selectedDay);
+      },
+    );
+    addTearDown(container.dispose);
+    final dashboard = container.listen(
+      diaryDayDashboardControllerProvider(selectedDay),
+      (_, _) {},
+    );
+    addTearDown(dashboard.close);
+    await container
+        .read(diaryDayDashboardControllerProvider(selectedDay).notifier)
+        .refreshAfterMutation();
+    await pumpEventQueue();
+
+    expect(weekOverviewReads, 0);
+    expect(dashboard.read().data, isNull);
+    expect(dashboard.read().isRefreshing, isTrue);
+    expect(
+      cacheRepository
+          .readSync(preferences: preferences, userId: userId, day: selectedDay)
+          ?.selectedDayEntries
+          .single
+          .name,
+      'Cached oats',
+    );
+  });
+
   test(
     'refresh invalidates stale cached week overview before loading',
     () async {
@@ -601,8 +651,9 @@ ProviderContainer _dashboardContainer({
         FakePlannedEntryRepository(),
       ),
       if (calendarNow != null) clockProvider.overrideWithValue(calendarNow),
-      if (dataCipher != null)
-        userDataCipherProvider.overrideWith((ref) => dataCipher()),
+      userDataCipherProvider.overrideWith(
+        (ref) => dataCipher == null ? testUserDataCipher : dataCipher(),
+      ),
       // Without a builder the real week overview pipeline runs, which is what
       // day type changes have to flow through.
       if (weekOverviewBuilder != null)

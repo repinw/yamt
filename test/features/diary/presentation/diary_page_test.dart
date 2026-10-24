@@ -16,6 +16,7 @@ import 'package:yamt/features/activity/presentation/widgets/diary_weight_missing
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart';
@@ -76,6 +77,7 @@ import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/inventory/application/inventory_entry_delete_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/auth_user_data_key_session.dart';
 import '../../../helpers/home_shell_test_scope.dart';
 import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';
@@ -1467,6 +1469,7 @@ Future<ProviderContainer> _pumpDiaryPage(
       clockProvider.overrideWithValue(clock ?? () => today ?? selectedDay),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       firebaseAuthProvider.overrideWithValue(auth),
+      userDataCipherProvider.overrideWithValue(testUserDataCipher),
       calorieLogRepositoryProvider.overrideWithValue(resolvedLogRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(
         resolvedSettingsRepository,
