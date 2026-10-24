@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
+import 'package:yamt/core/domain/app_update_status.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/'
     'burn_week_live_mutation_coordinator.dart';
@@ -80,6 +82,23 @@ Object? burnWeekLiveSync(Ref ref) {
     return null;
   }
 
+  final alignedWeekStartDate = storedWeekStartDate == null
+      ? null
+      : alignBurnWeekStartDate(
+          storedWeekStartDate: storedWeekStartDate,
+          balanceStartDate: weekOverviewValue.balanceStartDate,
+        );
+  if (alignedWeekStartDate != null &&
+      !isSameDiaryDay(alignedWeekStartDate, storedWeekStartDate!)) {
+    // An app below the minimum version must not rewrite the run; until the
+    // status is known the sync keeps the shifted weeks as they are.
+    final updateStatus = ref.watch(appUpdateStatusProvider).value;
+    if (updateStatus != null && updateStatus is! AppUpdateRequired) {
+      _queueRunWeekMove(ref, weekStartDate: alignedWeekStartDate);
+      return null;
+    }
+  }
+
   final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
     currentDay: todayOverviewValue.date,
     balanceStartDate: weekOverviewValue.balanceStartDate,
@@ -134,9 +153,7 @@ Object? burnWeekLiveSync(Ref ref) {
       ref
           .watch(
             calorieWeekConsumptionSnapshotForWindowProvider(
-              closedWeekStartDate.add(
-                const Duration(days: burnWeekDaysPerWeek - 1),
-              ),
+              addDiaryDays(closedWeekStartDate, burnWeekDaysPerWeek - 1),
             ),
           )
           .value,
@@ -151,9 +168,7 @@ Object? burnWeekLiveSync(Ref ref) {
         storedWeekSnapshot: closedWeekSnapshots[index]!,
         storedWeekStartDate: closedWeekStartDates[index],
         today: nextDiaryDay(
-          closedWeekStartDates[index].add(
-            const Duration(days: burnWeekDaysPerWeek - 1),
-          ),
+          addDiaryDays(closedWeekStartDates[index], burnWeekDaysPerWeek - 1),
         ),
         settings: settings,
       ),
@@ -220,6 +235,16 @@ void _queueRunRestart(
             runWeekNumber: runWeekNumber,
           );
         },
+      );
+}
+
+void _queueRunWeekMove(Ref ref, {required DateTime weekStartDate}) {
+  final controller = ref.read(burnWeekRunControllerProvider.notifier);
+  ref
+      .read(burnWeekLiveMutationCoordinatorProvider)
+      .queueMutation(
+        key: 'move:${diaryDayKey(normalizeDiaryDay(weekStartDate))}',
+        action: () => controller.moveWeekStartTo(weekStartDate),
       );
 }
 

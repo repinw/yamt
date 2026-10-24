@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_anticipation_calculator.dart';
 
 void main() {
@@ -68,7 +69,7 @@ void main() {
       expect(result!.isAchieved, isFalse);
       expect(result.isMovingAway, isFalse);
       expect(result.daysRemaining, 50);
-      expect(result.projectedDate, today.add(const Duration(days: 50)));
+      expect(result.projectedDate, addDiaryDays(today, 50));
       expect(result.trendSpeedKgPerWeek, closeTo(-0.7, 0.001));
       expect(result.projectionPoints, isNotEmpty);
       expect(result.projectionPoints.first.weightKg, 80);
@@ -87,7 +88,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.isAchieved, isFalse);
       expect(result.daysRemaining, 80);
-      expect(result.projectedDate, today.add(const Duration(days: 80)));
+      expect(result.projectedDate, addDiaryDays(today, 80));
       expect(result.trendSpeedKgPerWeek, closeTo(0.35, 0.001));
     });
   });
