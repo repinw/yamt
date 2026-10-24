@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/application/macro_goal_settings_controlle
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
+import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 
@@ -91,7 +92,7 @@ void main() {
         // Set inactive in macro settings
         await container
             .read(macroGoalSettingsControllerProvider.notifier)
-            .setSportActive(isSportActive: false);
+            .updateSettings(const MacroGoalSettings(isSportActive: false));
 
         final targets = container
             .listen(
@@ -140,7 +141,12 @@ void main() {
       // Custom 2.2 P, 0.8 F
       await container
           .read(macroGoalSettingsControllerProvider.notifier)
-          .setCustomMultipliers(proteinMultiplier: 2.2, fatMultiplier: 0.8);
+          .updateSettings(
+            const MacroGoalSettings(
+              customProteinMultiplier: 2.2,
+              customFatMultiplier: 0.8,
+            ),
+          );
 
       final targets = container
           .listen(

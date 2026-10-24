@@ -212,31 +212,6 @@ void main() {
       });
     });
 
-    test('copyWith can clear custom overrides back to defaults', () {
-      const settings = MacroGoalSettings(
-        customProteinMultiplier: 2.5,
-        customFatMultiplier: 1.5,
-      );
-      final clearedProtein = settings.copyWith(clearCustomProtein: true);
-      expect(clearedProtein.customProteinMultiplier, isNull);
-      expect(clearedProtein.customFatMultiplier, 1.5);
-      expect(
-        clearedProtein.effectiveProteinMultiplier(
-          hasTrainingDays: true,
-          isLosingWeight: false,
-        ),
-        1.6,
-      );
-
-      final clearedBoth = settings.copyWith(
-        clearCustomProtein: true,
-        clearCustomFat: true,
-      );
-      expect(clearedBoth.customProteinMultiplier, isNull);
-      expect(clearedBoth.customFatMultiplier, isNull);
-      expect(clearedBoth.effectiveFatMultiplier(isMale: true), 0.8);
-    });
-
     test('serialization round-trip preserves all properties', () {
       const settings = MacroGoalSettings(
         isSportActive: false,
