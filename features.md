@@ -687,6 +687,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   Vorrat page after it. In the Vorrat its "Planen" and "Ins Tagebuch" icons
   plan or eat the food instead; in the diary "Planen" plans it, also for
   today. "Analyze again" returns to the input.
+- Confirm closes the page right away. The first photo becomes the food's
+  private picture (`users/{uid}/food_photos/`): the food keeps its Storage
+  address, which shows from the local image cache while the photo uploads
+  in the background. A failed upload says so, also after the page closed
+  (#845).
 - An AI food is the user's own meal: saving it adds it to the Vorrat or
   the diary only, not to the shared catalog, so other users do not find
   it (#655). The food keeps a mark "estimated by the AI", so it also

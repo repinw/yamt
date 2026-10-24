@@ -1,7 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'food_estimate_repository.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_photo_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 
 part 'food_estimate_controller.g.dart';
 
@@ -57,12 +60,20 @@ class FoodEstimateController extends _$FoodEstimateController {
     );
   }
 
-  /// Stores the first photo as the user's private food photo and returns
-  /// its address, or null without a photo. Throws when the upload fails.
-  Future<String?> saveFirstPhoto() async {
+  /// Starts storing the first photo as the user's private food photo and
+  /// returns the running upload, or null without a photo. Its address is
+  /// known before the upload ends, so the food can be saved right away
+  /// (#845). Throws when signed out.
+  Future<ProductPhotoUpload?> saveFirstPhoto() async {
     final photo = state.photos.firstOrNull;
     if (photo == null) return null;
-    return await ref.read(foodEstimateRepositoryProvider).saveFoodPhoto(photo);
+    return await ref
+        .read(productPhotoRepositoryProvider)
+        .savePrivateFrontPhoto(
+          // The path is read only to scan a barcode, which a food photo is
+          // never scanned for.
+          ProductPhoto(path: '', bytes: photo.bytes, mimeType: photo.mimeType),
+        );
   }
 
   /// Removes the photo at [index].

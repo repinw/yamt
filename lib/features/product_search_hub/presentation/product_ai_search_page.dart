@@ -17,6 +17,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_chip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -249,31 +250,37 @@ class _ManualProductAiSearchPageState
     popManualProductSearchPage(context, saved);
   }
 
-  /// [result] with the first photo as the item's image. Without the upload
-  /// the food is still saved, only without its image.
+  /// [result] with the first photo as the item's image. The upload runs on
+  /// after the page closes; without it the food is still saved, and the
+  /// user hears of it on the app's messenger.
   Future<ManualProductAiSearchResult> _withFoodPhoto(
     ManualProductAiSearchResult result,
   ) async {
-    final String? imageUrl;
-    try {
-      imageUrl = await ref
-          .read(foodEstimateControllerProvider.notifier)
-          .saveFirstPhoto();
-    } on Object catch (error, stackTrace) {
+    final messenger = ScaffoldMessenger.of(context);
+    final photoNotSaved = AppLocalizations.of(
+      context,
+    )!.foodEstimatePhotoNotSaved;
+    void photoFailed(Object error, StackTrace stackTrace) {
       log(
         'Storing the food photo failed.',
         name: 'ManualProductAiSearchPage',
         error: error,
         stackTrace: stackTrace,
       );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showAppSnackBar(
-          AppLocalizations.of(context)!.foodEstimatePhotoNotSaved,
-          tone: AppSnackBarTone.error,
-        );
-      }
+      messenger.showAppSnackBar(photoNotSaved, tone: AppSnackBarTone.error);
+    }
+
+    final ProductPhotoUpload? upload;
+    try {
+      upload = await ref
+          .read(foodEstimateControllerProvider.notifier)
+          .saveFirstPhoto();
+    } on Object catch (error, stackTrace) {
+      photoFailed(error, stackTrace);
       return result;
     }
+    unawaited(upload?.done.then((_) {}, onError: photoFailed));
+    final imageUrl = upload?.frontAddress;
     if (imageUrl == null) return result;
     return ManualProductAiSearchResult(
       item: result.item.copyWith(imageUrl: imageUrl),

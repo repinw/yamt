@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -15,7 +16,10 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'food_estimate_repository.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_photo_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -90,22 +94,27 @@ class _FakeFoodEstimateRepository implements FoodEstimateRepository {
     sentPhotoCounts.add(photos.length);
     return _onLoad(description);
   }
+}
 
+/// Its upload runs until [upload] completes.
+class _FakePhotoRepository extends Fake implements ProductPhotoRepository {
   Exception? saveError;
-  final List<FoodEstimatePhoto> savedPhotos = <FoodEstimatePhoto>[];
+  final saved = <ProductPhoto>[];
+  final upload = Completer<void>();
 
   @override
-  Future<String> saveFoodPhoto(FoodEstimatePhoto photo) async {
+  Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) async {
     final error = saveError;
     if (error != null) throw error;
-    savedPhotos.add(photo);
-    return _foodPhotoUrl;
+    saved.add(front);
+    return ProductPhotoUpload(
+      frontAddress: _foodPhotoAddress,
+      done: upload.future,
+    );
   }
 }
 
-const _foodPhotoUrl =
-    'https://firebasestorage.googleapis.com/v0/b/yamt/o/'
-    'users%2Fu1%2Ffood_photos%2Fp1.jpg?alt=media';
+const _foodPhotoAddress = 'gs://yamt/users/u1/food_photos/p1.jpg';
 
 const _doener = FoodEstimate(
   name: 'Döner Kebab',
@@ -145,6 +154,7 @@ Future<void> _pumpPage(
   WidgetTester tester, {
   required FoodEstimateRepository repository,
   required ValueChanged<ManualProductAiSearchResult?> onResult,
+  _FakePhotoRepository? photos,
   bool fromDiary = true,
   bool offersEatInstead = false,
   String initialPrompt = '',
@@ -192,6 +202,9 @@ Future<void> _pumpPage(
     ProviderScope(
       overrides: [
         foodEstimateRepositoryProvider.overrideWithValue(repository),
+        productPhotoRepositoryProvider.overrideWithValue(
+          photos ?? _FakePhotoRepository(),
+        ),
         voiceSearchServiceProvider.overrideWithValue(
           voice ?? _FakeVoiceSearchService(),
         ),
@@ -349,14 +362,14 @@ void main() {
     expect(pageResult?.eatSelection?.inventoryAmount, 400);
   });
 
-  testWidgets('the first photo becomes the private image of the item', (
-    tester,
-  ) async {
+  testWidgets('the first photo becomes the private image of the item '
+      'without waiting for its upload (#845)', (tester) async {
     ManualProductAiSearchResult? pageResult;
-    final repository = _FakeFoodEstimateRepository((_) async => _doener);
+    final photos = _FakePhotoRepository();
     await _pumpPage(
       tester,
-      repository: repository,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
+      photos: photos,
       onResult: (result) => pageResult = result,
     );
     await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
@@ -366,17 +379,47 @@ void main() {
     await tester.tap(find.text('To diary'));
     await tester.pumpAndSettle();
 
-    expect(repository.savedPhotos, hasLength(1));
-    expect(pageResult?.item.imageUrl, _foodPhotoUrl);
+    expect(photos.upload.isCompleted, isFalse);
+    expect(photos.saved.single.bytes, _pixel);
+    expect(pageResult?.item.imageUrl, _foodPhotoAddress);
+  });
+
+  testWidgets('an upload that fails after the page closed still tells the '
+      'user (#845)', (tester) async {
+    ManualProductAiSearchResult? pageResult;
+    final photos = _FakePhotoRepository();
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
+      photos: photos,
+      onResult: (result) => pageResult = result,
+    );
+    await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
+    await tester.pumpAndSettle();
+    await _analyze(tester);
+    await tester.tap(find.text('To diary'));
+    await tester.pumpAndSettle();
+    expect(pageResult?.item.imageUrl, _foodPhotoAddress);
+
+    photos.upload.completeError(Exception('offline'));
+    // The first frame delivers the error, the second shows the snack bar.
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.text(
+        'The photo could not be saved. The food is saved without an image.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a failed photo upload still saves the food', (tester) async {
     ManualProductAiSearchResult? pageResult;
-    final repository = _FakeFoodEstimateRepository((_) async => _doener)
-      ..saveError = Exception('offline');
     await _pumpPage(
       tester,
-      repository: repository,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
+      photos: _FakePhotoRepository()..saveError = Exception('offline'),
       onResult: (result) => pageResult = result,
     );
     await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
