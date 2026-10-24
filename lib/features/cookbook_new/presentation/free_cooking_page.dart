@@ -25,6 +25,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_row_list.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'recipe_stock_picker_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Frei kochen": a meal without a recipe. The cook says or types the
@@ -112,6 +114,23 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
     context.pushReplacement(AppRoutes.homeCookedMealPath(mealId));
   }
 
+  Future<void> _pick(int index, FreeCookingRow row) async {
+    // What the cook says while picking is no new row.
+    await stopListening();
+    if (!mounted) {
+      return;
+    }
+    final pick = await showRecipeStockPicker(
+      context: context,
+      foodName: row.foodName,
+      candidates: row.candidates,
+      selectedId: row.stockItem?.id,
+    );
+    if (pick != null && mounted) {
+      ref.read(freeCookingControllerProvider.notifier).pick(index, pick.itemId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -149,6 +168,9 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
                       onRemove: (index) => ref
                           .read(freeCookingControllerProvider.notifier)
                           .removeRow(index),
+                      onPick: isBusy
+                          ? null
+                          : (index) => unawaited(_pick(index, rows[index])),
                     ),
                   ),
                   loading: () => const AppLoadingView(),

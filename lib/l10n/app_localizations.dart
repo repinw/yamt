@@ -9359,6 +9359,12 @@ abstract class AppLocalizations {
   /// **'missing'**
   String get freeCookingMissing;
 
+  /// No description provided for @freeCookingPickStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose'**
+  String get freeCookingPickStock;
+
   /// No description provided for @freeCookingListenTitle.
   ///
   /// In en, this message translates to:

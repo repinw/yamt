@@ -3335,6 +3335,7 @@
     }
   },
   "freeCookingMissing": "missing",
+  "freeCookingPickStock": "Choose",
   "freeCookingListenTitle": "Listening",
   "freeCookingListenHint": "Say the amount and the food. A pause starts a new row. Tap anywhere to stop.",
   "freeCookingIdleTitle": "Tap and speak",
