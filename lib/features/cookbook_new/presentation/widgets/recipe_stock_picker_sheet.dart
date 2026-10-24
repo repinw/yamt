@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_image_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -11,22 +11,34 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// the Vorrat".
 typedef RecipeStockPick = ({String? itemId});
 
-/// Asks which Vorrat item supplies [line]. Returns `null` when the cook
-/// closes the sheet without a pick.
+/// Asks which of the Vorrat [candidates] supplies the food [foodName], now
+/// [selectedId]. Returns `null` when the cook closes the sheet without a
+/// pick.
 Future<RecipeStockPick?> showRecipeStockPicker({
   required BuildContext context,
-  required RecipeIngredientLine line,
+  required String foodName,
+  required List<InventoryItem> candidates,
+  required String? selectedId,
 }) => showModalBottomSheet<RecipeStockPick>(
   context: context,
   isScrollControlled: true,
   showDragHandle: true,
-  builder: (context) => RecipeStockPickerSheet(line: line),
+  builder: (context) => RecipeStockPickerSheet(
+    foodName: foodName,
+    candidates: candidates,
+    selectedId: selectedId,
+  ),
 );
 
-/// The list of [line]'s Vorrat candidates and "Nicht aus dem Vorrat".
+/// The list of a food's Vorrat candidates and "Nicht aus dem Vorrat".
 class RecipeStockPickerSheet extends StatelessWidget {
   /// Creates the sheet.
-  const new({required this.line, super.key});
+  const new({
+    required this.foodName,
+    required this.candidates,
+    required this.selectedId,
+    super.key,
+  });
 
   /// Key of the option for the Vorrat item [itemId].
   static ValueKey<String> optionKey(String itemId) =>
@@ -35,15 +47,20 @@ class RecipeStockPickerSheet extends StatelessWidget {
   /// Key of the "Nicht aus dem Vorrat" option.
   static const noneKey = ValueKey<String>('recipe-stock-option-none');
 
-  /// The ingredient to pick for.
-  final RecipeIngredientLine line;
+  /// The food to pick for.
+  final String foodName;
+
+  /// The Vorrat items to pick from.
+  final List<InventoryItem> candidates;
+
+  /// The item picked now, or `null` for none.
+  final String? selectedId;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final selectedId = line.row.stockItem?.id;
     final check = Icon(Icons.check_rounded, color: colors.ink);
 
     return SafeArea(
@@ -60,12 +77,12 @@ class RecipeStockPickerSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               child: Text(
-                l10n.recipePickTitle(line.row.foodName),
+                l10n.recipePickTitle(foodName),
                 style: textTheme.titleMedium?.copyWith(color: colors.ink),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            for (final item in line.candidates)
+            for (final item in candidates)
               ListTile(
                 key: optionKey(item.id),
                 leading: EatImageTile(

@@ -1,5 +1,6 @@
 import 'dart:developer' show log;
 
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -22,10 +23,15 @@ class FreeCookingDraft {
     this.rows = const <String>[],
     this.isCooking = false,
     this.addedLast = 0,
+    this.picks = const <int, String?>{},
   });
 
   /// The rows as spoken or typed.
   final List<String> rows;
+
+  /// The Vorrat item the cook picked for a row, by row index, or `null` for
+  /// "not from the Vorrat".
+  final Map<int, String?> picks;
 
   /// Whether "Kochen" is saving the meal.
   final bool isCooking;
@@ -39,11 +45,13 @@ class FreeCookingDraft {
     List<String>? rows,
     bool? isCooking,
     int? addedLast,
+    Map<int, String?>? picks,
   }) {
     return FreeCookingDraft(
       rows: rows ?? this.rows,
       isCooking: isCooking ?? this.isCooking,
       addedLast: addedLast ?? this.addedLast,
+      picks: picks ?? this.picks,
     );
   }
 }
@@ -67,11 +75,22 @@ class FreeCookingController extends _$FreeCookingController {
     final kept = correction == null
         ? state.rows
         : state.rows.sublist(0, state.rows.length - state.addedLast);
-    state = state.copyWith(rows: [...kept, ...rows], addedLast: rows.length);
+    state = state.copyWith(
+      rows: [...kept, ...rows],
+      addedLast: rows.length,
+      picks: {
+        for (final MapEntry(:key, :value) in state.picks.entries)
+          if (key < kept.length) key: value,
+      },
+    );
   }
 
   /// Loads the Vorrat again after it failed.
   void retryStock() => ref.invalidate(inventoryQuickEatItemsProvider);
+
+  /// Takes the row at [index] from the Vorrat item [itemId], or from none.
+  void pick(int index, String? itemId) =>
+      state = state.copyWith(picks: {...state.picks, index: itemId});
 
   /// Removes the row at [index].
   void removeRow(int index) {
@@ -81,6 +100,10 @@ class FreeCookingController extends _$FreeCookingController {
       addedLast: index >= firstAddedLast
           ? state.addedLast - 1
           : state.addedLast,
+      picks: {
+        for (final MapEntry(:key, :value) in state.picks.entries)
+          if (key != index) (key > index ? key - 1 : key): value,
+      },
     );
   }
 
@@ -134,19 +157,24 @@ class FreeCookingController extends _$FreeCookingController {
 /// It loads and fails with the Vorrat.
 ///
 /// It is synchronous, so a removed row is gone in the same frame. A row gets
-/// a Vorrat item only when it has an amount in a unit that the item can
-/// supply, because only then does "Kochen" take the row from the Vorrat.
+/// the best Vorrat item on its own only when it has an amount in a unit that
+/// the item can supply, because only then does "Kochen" take the row from
+/// the Vorrat. The cook can pick another item, also for a row that names no
+/// amount, which "Kochen" then counts as done without taking anything.
 @riverpod
 AsyncValue<List<FreeCookingRow>> freeCookingRows(Ref ref, String localeCode) {
   final texts = ref.watch(
     freeCookingControllerProvider.select((draft) => draft.rows),
+  );
+  final picks = ref.watch(
+    freeCookingControllerProvider.select((draft) => draft.picks),
   );
   final parser = ref.watch(templateIngredientParserProvider);
   return ref
       .watch(inventoryQuickEatItemsProvider)
       .whenData(
         (items) => [
-          for (final text in texts)
+          for (final (index, text) in texts.indexed)
             _row(
               text: text,
               requirement: parser.parseRequirement(
@@ -156,6 +184,8 @@ AsyncValue<List<FreeCookingRow>> freeCookingRows(Ref ref, String localeCode) {
               ),
               items: items,
               localeCode: localeCode,
+              picks: picks,
+              index: index,
             ),
         ],
       );
@@ -166,16 +196,25 @@ FreeCookingRow _row({
   required TemplateIngredientRequirement? requirement,
   required List<InventoryItem> items,
   required String localeCode,
-}) => FreeCookingRow(
-  text: text,
-  requirement: requirement,
-  // A row without an amount stays open until the cook gives one.
-  stockItem: requirement == null
-      ? null
-      : bestIngredientStockMatch(
-          text: text,
-          requirement: requirement,
-          items: items,
-          localeCode: localeCode,
-        ),
-);
+  required Map<int, String?> picks,
+  required int index,
+}) {
+  final found = ingredientStockCandidates(
+    text: text,
+    requirement: requirement,
+    items: items,
+    localeCode: localeCode,
+  );
+  final candidates = [...found.matches, ...found.others];
+  return FreeCookingRow(
+    text: text,
+    requirement: requirement,
+    candidates: candidates,
+    stockItem: picks.containsKey(index)
+        ? candidates.firstWhereOrNull((item) => item.id == picks[index])
+        // A row without an amount stays open until the cook picks an item.
+        : requirement == null
+        ? null
+        : found.matches.firstOrNull,
+  );
+}

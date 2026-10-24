@@ -2617,6 +2617,7 @@
   "freeCookingAmountWithUnit": "{amount} {unit}",
   "freeCookingPieces": "{count} Stk.",
   "freeCookingMissing": "fehlt",
+  "freeCookingPickStock": "Wählen",
   "freeCookingListenTitle": "Ich höre zu",
   "freeCookingListenHint": "Menge und Zutat sagen. Eine Pause trennt die Zeilen. Irgendwo tippen beendet.",
   "freeCookingIdleTitle": "Tippen und sprechen",

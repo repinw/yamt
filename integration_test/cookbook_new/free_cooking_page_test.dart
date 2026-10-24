@@ -31,6 +31,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_row_list.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_text_sheet.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'recipe_stock_picker_sheet.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -388,6 +390,53 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(_startKey), findsOneWidget);
+  });
+
+  testWidgets('a row shows its Vorrat item, and "Kochen" takes the pick', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(meals: meals, voice: _FakeVoiceService('200 g Reis')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    final row = find.byKey(FreeCookingRowList.rowKey(0));
+    expect(
+      find.descendant(of: row, matching: find.text('Reis')),
+      findsOneWidget,
+    );
+
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(RecipeStockPickerSheet.noneKey));
+    await tester.pumpAndSettle();
+    expect(find.text('0 OF 1 IN STOCK'), findsOneWidget);
+    expect(
+      find.descendant(of: row, matching: find.text('Choose')),
+      findsOneWidget,
+    );
+
+    // The Vorrat has nothing for salt, so its row offers no pick.
+    await tester.tap(find.byKey(FreeCookingActions.typeKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(FreeCookingTextSheet.fieldKey), 'Salz');
+    await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingRowList.rowKey(1)));
+    await tester.pumpAndSettle();
+    expect(find.byKey(RecipeStockPickerSheet.noneKey), findsNothing);
+
+    await tester.tap(find.byKey(FreeCookingActions.cookKey));
+    await tester.pumpAndSettle();
+    final meal = meals.saved.single;
+    expect(meal.components, isEmpty);
+    expect(meal.pendingRecipeIngredients, hasLength(2));
   });
 }
 

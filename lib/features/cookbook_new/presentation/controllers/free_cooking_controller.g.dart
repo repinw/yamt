@@ -48,7 +48,7 @@ final class FreeCookingControllerProvider
 }
 
 String _$freeCookingControllerHash() =>
-    r'f7c41377d72ac933cd92a9d7f653f3d8c8b541dd';
+    r'c5972e422f47b522c36ff215267ade2bb0c84df4';
 
 /// Holds the rows of a meal cooked without a recipe and saves it as a Vorrat
 /// meal.
@@ -75,8 +75,10 @@ abstract class _$FreeCookingController extends $Notifier<FreeCookingDraft> {
 /// It loads and fails with the Vorrat.
 ///
 /// It is synchronous, so a removed row is gone in the same frame. A row gets
-/// a Vorrat item only when it has an amount in a unit that the item can
-/// supply, because only then does "Kochen" take the row from the Vorrat.
+/// the best Vorrat item on its own only when it has an amount in a unit that
+/// the item can supply, because only then does "Kochen" take the row from
+/// the Vorrat. The cook can pick another item, also for a row that names no
+/// amount, which "Kochen" then counts as done without taking anything.
 
 @ProviderFor(freeCookingRows)
 final freeCookingRowsProvider = FreeCookingRowsFamily._();
@@ -85,8 +87,10 @@ final freeCookingRowsProvider = FreeCookingRowsFamily._();
 /// It loads and fails with the Vorrat.
 ///
 /// It is synchronous, so a removed row is gone in the same frame. A row gets
-/// a Vorrat item only when it has an amount in a unit that the item can
-/// supply, because only then does "Kochen" take the row from the Vorrat.
+/// the best Vorrat item on its own only when it has an amount in a unit that
+/// the item can supply, because only then does "Kochen" take the row from
+/// the Vorrat. The cook can pick another item, also for a row that names no
+/// amount, which "Kochen" then counts as done without taking anything.
 
 final class FreeCookingRowsProvider
     extends
@@ -100,8 +104,10 @@ final class FreeCookingRowsProvider
   /// It loads and fails with the Vorrat.
   ///
   /// It is synchronous, so a removed row is gone in the same frame. A row gets
-  /// a Vorrat item only when it has an amount in a unit that the item can
-  /// supply, because only then does "Kochen" take the row from the Vorrat.
+  /// the best Vorrat item on its own only when it has an amount in a unit that
+  /// the item can supply, because only then does "Kochen" take the row from
+  /// the Vorrat. The cook can pick another item, also for a row that names no
+  /// amount, which "Kochen" then counts as done without taking anything.
   FreeCookingRowsProvider._({
     required FreeCookingRowsFamily super.from,
     required String super.argument,
@@ -156,14 +162,16 @@ final class FreeCookingRowsProvider
   }
 }
 
-String _$freeCookingRowsHash() => r'86867272cfda45bdac1c4d3a0b4174a9035df8e6';
+String _$freeCookingRowsHash() => r'194be8df7a83623d49705b03e12a31c268503ca2';
 
 /// The draft rows with their amount and the Vorrat item that supplies each.
 /// It loads and fails with the Vorrat.
 ///
 /// It is synchronous, so a removed row is gone in the same frame. A row gets
-/// a Vorrat item only when it has an amount in a unit that the item can
-/// supply, because only then does "Kochen" take the row from the Vorrat.
+/// the best Vorrat item on its own only when it has an amount in a unit that
+/// the item can supply, because only then does "Kochen" take the row from
+/// the Vorrat. The cook can pick another item, also for a row that names no
+/// amount, which "Kochen" then counts as done without taking anything.
 
 final class FreeCookingRowsFamily extends $Family
     with $FunctionalFamilyOverride<AsyncValue<List<FreeCookingRow>>, String> {
@@ -180,8 +188,10 @@ final class FreeCookingRowsFamily extends $Family
   /// It loads and fails with the Vorrat.
   ///
   /// It is synchronous, so a removed row is gone in the same frame. A row gets
-  /// a Vorrat item only when it has an amount in a unit that the item can
-  /// supply, because only then does "Kochen" take the row from the Vorrat.
+  /// the best Vorrat item on its own only when it has an amount in a unit that
+  /// the item can supply, because only then does "Kochen" take the row from
+  /// the Vorrat. The cook can pick another item, also for a row that names no
+  /// amount, which "Kochen" then counts as done without taking anything.
 
   FreeCookingRowsProvider call(String localeCode) =>
       FreeCookingRowsProvider._(argument: localeCode, from: this);

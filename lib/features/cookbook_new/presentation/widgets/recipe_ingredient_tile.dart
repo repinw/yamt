@@ -5,6 +5,7 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_amount_labels.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_stock_text.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_stock_lead.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -71,22 +72,7 @@ class RecipeIngredientTile extends StatelessWidget {
                     style: textStyle,
                   ),
                 ),
-                if (!line.isIgnored)
-                  Text(
-                    stock == null
-                        ? l10n.freeCookingMissing
-                        : l10n.freeCookingStockLeft(
-                            ingredientStockLabel(
-                              l10n,
-                              stock.amount,
-                              stock.unit,
-                            ),
-                          ),
-                    style: textTheme.labelMedium?.copyWith(
-                      color: stock == null ? colors.low : colors.muted,
-                      fontWeight: stock == null ? FontWeight.w700 : null,
-                    ),
-                  ),
+                if (!line.isIgnored) IngredientStockText(stock: stock),
               ],
             ),
           ),

@@ -186,7 +186,12 @@ class _IngredientCheckPageState extends ConsumerState<IngredientCheckPage> {
       _controller.choose(key, choice, rest: rest);
 
   Future<void> _pick(RecipeIngredientLine line) async {
-    final pick = await showRecipeStockPicker(context: context, line: line);
+    final pick = await showRecipeStockPicker(
+      context: context,
+      foodName: line.row.foodName,
+      candidates: line.candidates,
+      selectedId: line.row.stockItem?.id,
+    );
     if (pick != null && mounted) {
       _controller.pick(line.key, pick.itemId);
     }
