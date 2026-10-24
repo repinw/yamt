@@ -28,6 +28,8 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'food_estimate_result_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_ai_search_result.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'photo_upload_queued_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'food_estimate_photo_input.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -251,35 +253,38 @@ class _ManualProductAiSearchPageState
   }
 
   /// [result] with the first photo as the item's image. The upload runs on
-  /// after the page closes; without it the food is still saved, and the
-  /// user hears of it on the app's messenger.
+  /// after the page closes; a failed upload waits on the device for a later
+  /// try. The user hears of a failure on the app's messenger.
   Future<ManualProductAiSearchResult> _withFoodPhoto(
     ManualProductAiSearchResult result,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
-    final photoNotSaved = AppLocalizations.of(
-      context,
-    )!.foodEstimatePhotoNotSaved;
-    void photoFailed(Object error, StackTrace stackTrace) {
-      log(
-        'Storing the food photo failed.',
-        name: 'ManualProductAiSearchPage',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      messenger.showAppSnackBar(photoNotSaved, tone: AppSnackBarTone.error);
-    }
-
+    final l10n = AppLocalizations.of(context)!;
     final ProductPhotoUpload? upload;
     try {
       upload = await ref
           .read(foodEstimateControllerProvider.notifier)
           .saveFirstPhoto();
     } on Object catch (error, stackTrace) {
-      photoFailed(error, stackTrace);
+      log(
+        'Storing the food photo failed.',
+        name: 'ManualProductAiSearchPage',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      messenger.showAppSnackBar(
+        l10n.foodEstimatePhotoNotSaved,
+        tone: AppSnackBarTone.error,
+      );
       return result;
     }
-    unawaited(upload?.done.then((_) {}, onError: photoFailed));
+    whenPhotoUploadQueued(
+      upload?.done,
+      () => messenger.showAppSnackBar(
+        l10n.photoUploadQueued,
+        tone: AppSnackBarTone.info,
+      ),
+    );
     final imageUrl = upload?.frontAddress;
     if (imageUrl == null) return result;
     return ManualProductAiSearchResult(

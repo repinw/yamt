@@ -385,8 +385,8 @@ void main() {
     expect(pageResult?.item.imageUrl, _foodPhotoAddress);
   });
 
-  testWidgets('an upload that fails after the page closed still tells the '
-      'user (#845)', (tester) async {
+  testWidgets('an upload that fails after the page closed tells the user '
+      'that the photo goes up later (#845, #849)', (tester) async {
     ManualProductAiSearchResult? pageResult;
     final photos = _FakePhotoRepository();
     await _pumpPage(
@@ -407,12 +407,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(
-      find.text(
-        'The photo could not be saved. The food is saved without an image.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Photos will be uploaded later.'), findsOneWidget);
   });
 
   testWidgets('a failed photo upload still saves the food', (tester) async {

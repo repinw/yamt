@@ -696,8 +696,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Confirm closes the page right away. The first photo becomes the food's
   private picture (`users/{uid}/food_photos/`): the food keeps its Storage
   address, which shows from the local image cache while the photo uploads
-  in the background. A failed upload says so, also after the page closed
-  (#845).
+  in the background. A failed upload waits on the device and says so, also
+  after the page closed (#845, #849).
 - An AI food is the user's own meal: saving it adds it to the Vorrat or
   the diary only, not to the shared catalog, so other users do not find
   it (#655). The food keeps a mark "estimated by the AI", so it also
@@ -760,6 +760,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   (`gs://…`) of the front photo, which shows from the local image cache
   until it is uploaded. A failed upload keeps that address and says so.
   The shared catalog does not get this photo yet (#414).
+- Product and food photos go up through a queue on the device: each photo
+  is kept there until its upload succeeds. A failed or interrupted upload
+  shows "Fotos werden später hochgeladen." and is tried again when the app
+  starts or comes back to the foreground and when the device comes back
+  online, so other household devices get the photo too. A photo that
+  still fails after a week is dropped without a message. Signing out
+  deletes the photos that still wait (#849).
 - When the AI finds no package on the front photo, the photo stays the
   item's picture but is stored as the user's private food photo
   (`users/{uid}/food_photos/`, visible to the household), and no photo goes

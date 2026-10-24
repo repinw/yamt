@@ -377,12 +377,10 @@ void main() {
     expect(item.name, 'Haferflocken zart');
     expect(item.imageUrl, _frontUrl);
 
-    // The upload is no AI read: it fails offline and says so.
+    // The upload is no AI read: it fails offline and says that the photo
+    // waits on the device (#849).
     await _pumpUntil(tester, find.byType(AppSnackBarView), present: true);
-    expect(
-      _snackBarMessage(tester),
-      'The photos could not be stored. The product is saved without them.',
-    );
+    expect(_snackBarMessage(tester), 'Photos will be uploaded later.');
   });
 
   testWidgets('a front photo without a package stays private and the product '
