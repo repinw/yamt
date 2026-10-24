@@ -96,10 +96,9 @@ abstract final class TdeeCycleResolver {
       return null;
     }
     final weeks = (target - profile.weightKg).abs() / speed;
-    return normalizeDiaryDay(
-      entry.effectiveCountingStartDate.add(
-        Duration(days: (weeks * DateTime.daysPerWeek).ceil()),
-      ),
+    return addDiaryDays(
+      normalizeDiaryDay(entry.effectiveCountingStartDate),
+      (weeks * DateTime.daysPerWeek).ceil(),
     );
   }
 
