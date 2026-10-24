@@ -7,13 +7,14 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_row_tile.dart';
 
 /// The ingredient rows, newest last, plus the row that speech recognition is
-/// still writing. A swipe removes a row.
+/// still writing. A swipe removes a row, a tap picks its Vorrat item.
 class FreeCookingRowList extends StatefulWidget {
   /// Creates the list of [rows] with the unfinished [pendingText].
   const new({
     required this.rows,
     required this.pendingText,
     required this.onRemove,
+    this.onPick,
     super.key,
   });
 
@@ -29,6 +30,10 @@ class FreeCookingRowList extends StatefulWidget {
 
   /// Removes the row at an index.
   final ValueChanged<int> onRemove;
+
+  /// Opens the Vorrat picker of the row at an index, or `null` while the
+  /// rows cannot change.
+  final ValueChanged<int>? onPick;
 
   @override
   State<FreeCookingRowList> createState() => _FreeCookingRowListState();
@@ -62,6 +67,7 @@ class _FreeCookingRowListState extends State<FreeCookingRowList> {
     final colors = FoodLabelColors.of(context);
     final rows = widget.rows;
     final pending = widget.pendingText;
+    final onPick = widget.onPick;
     return ListView.builder(
       controller: _controller,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
@@ -84,6 +90,9 @@ class _FreeCookingRowListState extends State<FreeCookingRowList> {
           child: FreeCookingRowTile(
             key: FreeCookingRowList.rowKey(index),
             row: row,
+            onTap: onPick == null || row.candidates.isEmpty
+                ? null
+                : () => onPick(index),
           ),
         );
       },

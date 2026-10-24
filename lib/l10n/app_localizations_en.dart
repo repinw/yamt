@@ -5600,6 +5600,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeCookingMissing => 'missing';
 
   @override
+  String get freeCookingPickStock => 'Choose';
+
+  @override
   String get freeCookingListenTitle => 'Listening';
 
   @override
