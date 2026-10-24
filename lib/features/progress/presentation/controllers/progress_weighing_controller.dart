@@ -6,7 +6,6 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/health_app_weight_service.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
-import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/progress/domain/progress_weight_list.dart';
 
@@ -91,11 +90,12 @@ class ProgressWeighingController extends _$ProgressWeighingController {
   /// Leaves the Health weighing [sample] out of every count, or counts it
   /// again, on all devices.
   Future<bool> setIgnored(HealthWeightSample sample, {required bool ignored}) {
-    final repository = ref.read(healthWeightSampleRepositoryProvider);
-    return _run([sample.recordedAt], () async {
-      await repository.setIgnored(sample, ignored: ignored);
-      return true;
-    });
+    final entries = ref.read(
+      manualHealthWeightEntriesControllerProvider.notifier,
+    );
+    return _run([
+      sample.recordedAt,
+    ], () => entries.setIgnored(sample, ignored: ignored));
   }
 
   /// Opens the Health app.

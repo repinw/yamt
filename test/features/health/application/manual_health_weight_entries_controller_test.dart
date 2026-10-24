@@ -213,6 +213,18 @@ class _RecordingSampleRepository extends Fake
   Future<void> deleteSample(HealthWeightSample sample) async {
     deleted.add(sample);
   }
+
+  final ignored = <(HealthWeightSample, bool)>[];
+  bool failIgnore = false;
+
+  @override
+  Future<void> setIgnored(
+    HealthWeightSample sample, {
+    required bool ignored,
+  }) async {
+    if (failIgnore) throw StateError('ignore failed');
+    this.ignored.add((sample, ignored));
+  }
 }
 
 void main() {
@@ -546,6 +558,37 @@ void main() {
       expect(deleted, isTrue);
       expect(health.deletedSamples.single.uuid, 'health-1');
       expect(cloud.deleted, [own]);
+    });
+
+    test('setIgnored flags the cloud copy, and clears the flag', () async {
+      final cloud = _RecordingSampleRepository();
+      final container = buildContainer(
+        repository: _FakeManualHealthWeightRepository(),
+        sampleRepository: cloud,
+      );
+      addTearDown(container.dispose);
+      final controller = container.read(
+        manualHealthWeightEntriesControllerProvider.notifier,
+      );
+
+      expect(await controller.setIgnored(own, ignored: true), isTrue);
+      expect(await controller.setIgnored(own, ignored: false), isTrue);
+      expect(cloud.ignored, [(own, true), (own, false)]);
+    });
+
+    test('setIgnored is false when the cloud copy fails', () async {
+      final cloud = _RecordingSampleRepository()..failIgnore = true;
+      final container = buildContainer(
+        repository: _FakeManualHealthWeightRepository(),
+        sampleRepository: cloud,
+      );
+      addTearDown(container.dispose);
+
+      final done = await container
+          .read(manualHealthWeightEntriesControllerProvider.notifier)
+          .setIgnored(own, ignored: true);
+
+      expect(done, isFalse);
     });
 
     test('deleteAppWeight is false when Health refuses or lacks it', () async {

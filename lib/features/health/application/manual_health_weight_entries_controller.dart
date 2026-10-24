@@ -7,6 +7,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/health/application/health_app_weight_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -18,7 +19,7 @@ part 'manual_health_weight_entries_controller.g.dart';
 const _logName = 'ManualHealthWeightEntriesController';
 
 /// The manual weight entries, and the weighings that the user adds, changes,
-/// or deletes: in Health when it is ready, else as manual entries.
+/// deletes, or ignores: in Health when it is ready, else as manual entries.
 @riverpod
 class ManualHealthWeightEntriesController
     extends _$ManualHealthWeightEntriesController {
@@ -107,6 +108,28 @@ class ManualHealthWeightEntriesController
     } on Object catch (error, stackTrace) {
       log(
         'Failed to delete a Health weight.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  /// Leaves the Health weighing [sample] out of every count, or counts it
+  /// again, on all devices.
+  Future<bool> setIgnored(
+    HealthWeightSample sample, {
+    required bool ignored,
+  }) async {
+    try {
+      await ref
+          .read(healthWeightSampleRepositoryProvider)
+          .setIgnored(sample, ignored: ignored);
+      return true;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to ignore a Health weight.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
