@@ -8,14 +8,10 @@ import 'package:yamt/features/calories/application/calorie_overview_revision_pro
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/'
-    'calorie_weekly_checkin_daily_tdee.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_weekly_checkin_input_hash.dart';
-import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_intake_resolver.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/'
-    'calorie_weekly_checkin_weight_resolver.dart';
+    'calorie_weekly_checkin_window_evaluator.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_window_resolver.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -151,63 +147,18 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  final weightData = mergeWeeklyCheckInWeights(
-    dates: dates,
-    anchorEntry: dates.anchorEntry,
-    dailyWeightByDay: weightSeries.rawByDay,
-  );
-  final windowIntakeData = resolveWeeklyWindowIntakeData(
-    days: dates.windowDays,
-    calorieEntriesByDay: calorieEntriesByDay,
+  final evaluation = evaluateWeeklyCheckInWindow(
     settings: settings,
-    weightByDay: weightData.weightByDay,
-  );
-  if (windowIntakeData.blockedReason != null) {
-    return CalorieWeeklyCheckInDayData(
-      days: windowIntakeData.days,
-      calculation: null,
-      blockedReason: windowIntakeData.blockedReason,
-      missingIntakeDays: windowIntakeData.missingIntakeDays,
-      missingWeightDays: const <DateTime>[],
-      lowConfidence: false,
-      inputHash: null,
-    );
-  }
-
-  final weightBlockedData = validateWeeklyCheckInWeightData(
     dates: dates,
-    weightData: weightData,
-    windowDays: windowIntakeData.days,
-    missingIntakeDays: windowIntakeData.missingIntakeDays,
-  );
-  if (weightBlockedData != null) {
-    return weightBlockedData;
-  }
-
-  final dailyTdee = weeklyCheckInDailyTdee(
-    settings: settings,
-    learningStartDate: dates.learningStartDate,
-    endDate: pendingWeeklyCheckIn.windowEndDate,
     entriesByDay: calorieEntriesByDay,
     weights: weightSeries,
   );
-  final calculation = calculateWeeklyCheckInFromDailyTdee(
-    settings: settings,
-    window: pendingWeeklyCheckIn,
-    dailyTdee: dailyTdee,
-    windowDays: windowIntakeData.days,
-  );
-  final inputHash = weeklyCheckInInputHash(
-    weeklyCheckIn: pendingWeeklyCheckIn,
-    dates: dates,
-    previousGoalKcal: calculation.previousGoalKcal,
-    calorieEntriesByDay: calorieEntriesByDay,
-    settings: settings,
-    weightData: weightData,
-    calculatedTdeeKcal: calculation.calculatedTdeeKcal,
-  );
+  final dayData = evaluation.dayData;
+  if (dayData.calculation == null) {
+    return dayData;
+  }
   if (!kReleaseMode) {
-    final daysLabel = windowIntakeData.days
+    final daysLabel = dayData.days
         .map((day) {
           return '${diaryDayKey(day.day)}'
               ':logged=${day.loggedIntakeKcal.toStringAsFixed(2)}'
@@ -228,23 +179,5 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     log(message, name: _weeklyCheckInProviderLogName);
   }
 
-  return CalorieWeeklyCheckInDayData(
-    days: windowIntakeData.days,
-    calculation: calculation,
-    blockedReason: null,
-    missingIntakeDays: windowIntakeData.missingIntakeDays,
-    missingWeightDays: const <DateTime>[],
-    lowConfidence: isWeeklyCheckInLowConfidence(
-      window: pendingWeeklyCheckIn,
-      dailyTdee: dailyTdee,
-      recentWeightPointCount: recentWeeklyCheckInWeightPoints(
-        dates: dates,
-        weightData: weightData,
-      ).length,
-    ),
-    inputHash: inputHash,
-    macroWeightKg: weightSeries.trendOnOrBefore(
-      pendingWeeklyCheckIn.windowEndDate,
-    ),
-  );
+  return dayData;
 }
