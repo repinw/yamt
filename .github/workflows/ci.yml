@@ -78,6 +78,8 @@ jobs:
         run: >-
           flutter test test/features/calories/clock_change
           test/features/calories/application/calorie_week_overview_provider_test.dart
+          test/features/health/clock_change
+          test/core/domain/local_day_window_test.dart
         env:
           TZ: Europe/Berlin
 

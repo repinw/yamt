@@ -65,5 +65,27 @@ void main() {
       );
       expect(localDayKey(DateTime(2026, 5, 14, 23, 59)), '2026-5-14');
     });
+
+    test('counts whole local days, also across a clock change', () {
+      expect(
+        localDaysBetween(DateTime(2026, 10, 24), DateTime(2026, 10, 27)),
+        3,
+      );
+      expect(
+        localDaysBetween(DateTime(2026, 3, 28, 23), DateTime(2026, 3, 30)),
+        2,
+      );
+      expect(
+        localDaysBetween(DateTime(2026, 5, 14), DateTime(2026, 5, 12)),
+        -2,
+      );
+    });
+
+    test('bounds a local day from midnight to the next midnight', () {
+      final bounds = localDayBounds(DateTime(2026, 10, 25, 14));
+
+      expect(bounds.startInclusive, DateTime(2026, 10, 25));
+      expect(bounds.endExclusive, DateTime(2026, 10, 26));
+    });
   });
 }
