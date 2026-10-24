@@ -381,7 +381,7 @@ void main() {
     'saveCalculatedGoal allows a future goal start for onboarding saves',
     () async {
       final today = normalizeDiaryDay(DateTime.now());
-      final futureGoalStart = today.add(const Duration(days: 2));
+      final futureGoalStart = addDiaryDays(today, 2);
       final initialSettings = CalorieGoalSettings.single(
         dailyKcalGoal: 1900,
         calculatorProfile: null,
@@ -939,7 +939,7 @@ void main() {
 
     await container.read(calorieGoalControllerProvider.future);
 
-    final futureGoalStart = today.add(const Duration(days: 2));
+    final futureGoalStart = addDiaryDays(today, 2);
     final saved = await container
         .read(calorieGoalControllerProvider.notifier)
         .shiftGoalStart(goalStartDate: futureGoalStart);
