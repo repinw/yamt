@@ -7,6 +7,7 @@ import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/cookbook_new/domain/free_cooking_row.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'ingredient_amount_labels.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_stock_text.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// One ingredient row: a square that is filled when the Vorrat holds the
@@ -103,22 +104,7 @@ class FreeCookingRowTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (!isPending)
-                  Text(
-                    stock == null
-                        ? l10n.freeCookingMissing
-                        : l10n.freeCookingStockLeft(
-                            ingredientStockLabel(
-                              l10n,
-                              stock.amount,
-                              stock.unit,
-                            ),
-                          ),
-                    style: textTheme.labelMedium?.copyWith(
-                      color: stock == null ? colors.low : colors.muted,
-                      fontWeight: stock == null ? FontWeight.w700 : null,
-                    ),
-                  ),
+                if (!isPending) IngredientStockText(stock: stock),
               ],
             ),
           ),
