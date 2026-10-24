@@ -1232,4 +1232,10 @@ class _RecordingReminderPlanService implements PreparedMealReminderPlanService {
 
   @override
   Future<void> refresh(String mealId) async => mealIds.add(mealId);
+
+  @override
+  Future<void> refreshRecipes(
+    List<PreparedMeal> templates,
+    List<InventoryItem> items,
+  ) async {}
 }

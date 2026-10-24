@@ -998,7 +998,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   as a full pack when the Vorrat holds less); a Vorlage keeps its own
   values. A
   recipe with an ingredient that has no Vorrat food is planned as a
-  reminder ("kcal offen", counts nowhere). Accepting a recipe plan logs it
+  reminder ("kcal offen", counts nowhere). As soon as the recipe changes
+  so that each ingredient has a Vorrat food, on this phone or another one
+  of the household, the reminder gets the recipe's values and counts like
+  any plan. Accepting a recipe plan logs it
   without taking stock ("Eingetragen – Vorrat nicht abgezogen"); a
   reminder takes the recipe's Vorrat foods then (saved, else the best
   match), or says "Erst alle
