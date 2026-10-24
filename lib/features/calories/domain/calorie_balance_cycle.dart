@@ -73,12 +73,12 @@ DateTime resolveCalorieGoalRunStartDate({
   }
 
   final cycleStart = normalizeDiaryDay(anchorEntry.effectiveCountingStartDate);
-  final elapsedDays = normalizedDay.difference(cycleStart).inDays;
+  final elapsedDays = diaryDaysBetween(cycleStart, normalizedDay);
   if (elapsedDays <= 0) {
     return cycleStart;
   }
   final runOffset = elapsedDays % calorieGoalRunLengthDays;
-  return normalizedDay.subtract(Duration(days: runOffset));
+  return addDiaryDays(normalizedDay, -runOffset);
 }
 
 /// Number of the 7-day run of the current goal that holds [day], starting
@@ -93,7 +93,7 @@ int? resolveCalorieGoalRunNumber({
   final anchorEntry =
       settings.cycleAnchorEntryForDay(normalizedDay) ?? countingGoalEntry;
   final cycleStart = normalizeDiaryDay(anchorEntry.effectiveCountingStartDate);
-  final elapsedDays = normalizedDay.difference(cycleStart).inDays;
+  final elapsedDays = diaryDaysBetween(cycleStart, normalizedDay);
   if (elapsedDays < 0) return null;
   return elapsedDays ~/ calorieGoalRunLengthDays + 1;
 }
@@ -114,7 +114,7 @@ int resolveRemainingCalorieGoalRunDays({
 }) {
   final normalizedDay = normalizeDiaryDay(day);
   final runEnd = resolveCalorieGoalRunEndDate(settings: settings, day: day);
-  return runEnd.difference(normalizedDay).inDays + 1;
+  return diaryDaysBetween(normalizedDay, runEnd) + 1;
 }
 
 /// Resolve where carryover starts for the current 7-day run.
