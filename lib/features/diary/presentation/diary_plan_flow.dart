@@ -10,7 +10,7 @@ import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart'
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_copy_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
-import 'package:yamt/features/inventory/application/inventory_plan_accept_service.dart';
+import 'package:yamt/features/inventory/domain/inventory_exceptions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the details of [plan] and runs what the user picks there. With
@@ -201,11 +201,12 @@ Future<void> acceptDiaryPlanFlow(
   }
   final result = await controller.accept(plan);
   if (result == null) {
+    final error = container.read(diaryPlanControllerProvider).error;
     messenger.showAppSnackBar(
-      _acceptFailedMessage(container, l10n, plan),
+      _acceptFailedMessage(error, l10n, plan),
       tone: AppSnackBarTone.error,
       // A reminder of a meal that is gone can only be removed.
-      action: _isMealGone(container)
+      action: error is PlanSourceGoneException
           ? (
               label: l10n.diaryPlanRemoveAction,
               onPressed: () {
@@ -271,29 +272,21 @@ Future<void> acceptAllDiaryPlansFlow(
   );
 }
 
-/// Why the last accept of [plan] failed, for a meal or a recipe.
+/// Why the accept of [plan] failed with [error], for a meal or a recipe.
 String _acceptFailedMessage(
-  ProviderContainer container,
+  Object? error,
   AppLocalizations l10n,
   CalorieEntry plan,
 ) {
   final isRecipe = plan.bundleSourceTemplateId != null;
-  return switch (container.read(diaryPlanControllerProvider).error) {
-    InventoryPlanAcceptException(isMealInPot: true) =>
-      l10n.diaryPlanAcceptMealInPot,
-    InventoryPlanAcceptException(isMealGone: true) =>
+  return switch (error) {
+    PlanMealInPotException() => l10n.diaryPlanAcceptMealInPot,
+    PlanSourceGoneException() =>
       isRecipe ? l10n.diaryPlanAcceptRecipeGone : l10n.diaryPlanAcceptMealGone,
-    InventoryPlanAcceptException(isNutritionPending: true) =>
+    PlanNutritionPendingException() =>
       isRecipe
           ? l10n.diaryPlanAcceptRecipePending
           : l10n.diaryPlanAcceptNutritionPending,
     _ => l10n.diaryPlanAcceptFailed,
   };
 }
-
-/// Whether the last accept failed because the reminder's meal is gone.
-bool _isMealGone(ProviderContainer container) =>
-    switch (container.read(diaryPlanControllerProvider).error) {
-      InventoryPlanAcceptException(:final isMealGone) => isMealGone,
-      _ => false,
-    };

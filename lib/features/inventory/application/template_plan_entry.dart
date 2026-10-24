@@ -63,6 +63,33 @@ CalorieEntry? buildTemplatePlanEntry({
   );
 }
 
+/// [plan] of the Kochbuch [template] planned again from the Vorrat [items]
+/// now ([templatePlanAssignments]), for the plan's cooked and eaten
+/// portions. It keeps the plan's id, user, day, meal, and times; null when
+/// the recipe has nothing to eat.
+CalorieEntry? replanTemplatePlan(
+  CalorieEntry plan,
+  PreparedMeal template, {
+  required List<InventoryItem> items,
+  required TemplateIngredientParser parser,
+}) =>
+    buildTemplatePlanEntry(
+      template: template,
+      cookedPortions: plan.bundleTotalPortions ?? template.totalPortions,
+      assignments: templatePlanAssignments(template, items, parser: parser),
+      items: items,
+      parser: parser,
+      mealType: plan.mealType,
+      loggedDay: plan.loggedAt,
+      now: () => plan.updatedAt,
+      nextEntryId: () => plan.id,
+      portions: plan.bundleConsumedPortions ?? 1,
+    )?.copyWith(
+      userId: plan.userId,
+      loggedAt: plan.loggedAt,
+      createdAt: plan.createdAt,
+    );
+
 /// The Vorrat items in [items] that supply each ingredient of [recipe], as
 /// the recipe page picks them ([ingredientStockPick]). A plan cooks from
 /// full packs, so a saved item stays even when it is used up.
