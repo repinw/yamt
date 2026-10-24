@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
+import 'package:yamt/features/product_search_hub/domain/food_estimate_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_eat_now_nutrition.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -257,9 +258,7 @@ class InventoryReceiptManualProductController
     final hasOwnBarcode =
         state.hasBarcode &&
         state.barcodeOrigin != ManualProductBarcodeOrigin.ai;
-    if (hasOwnBarcode || state.hasNoBarcode) {
-      return;
-    }
+    if (hasOwnBarcode || state.hasNoBarcode) return;
     state = state.copyWith(
       barcode: barcode,
       barcodeOrigin: ManualProductBarcodeOrigin.photo,
@@ -355,7 +354,10 @@ class InventoryReceiptManualProductController
     // AI estimate, and an AI food picked from the recent items stays one.
     final aiEstimated =
         state.selectedProduct?.aiEstimated ?? config.item.aiEstimated;
-    final updatedItem = config.item
+    final source = selectedProduct == null
+        ? config.item
+        : config.item.withoutAiEstimate;
+    final updatedItem = source
         .withPackageWeight(
           weight: inventoryWeight,
           package: resolvedWeightInput.parsedAmount,
@@ -469,9 +471,7 @@ class InventoryReceiptManualProductController
     }
 
     final barcode = normalizeManualProductText(selection.barcode);
-    if (barcode == null) {
-      return null;
-    }
+    if (barcode == null) return null;
 
     final updatedItem = config.item
         .copyWith(

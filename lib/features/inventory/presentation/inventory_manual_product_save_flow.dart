@@ -170,6 +170,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     // A private food photo stays on the user's own item only.
     imageUrl: normalizeProductImageUrl(promptResult.item.imageUrl),
     aiEstimated: promptResult.item.aiEstimated,
+    aiEstimate: promptResult.item.productSnapshot.aiEstimate,
     // Only a picked catalog product has its catalog id at once. A new one
     // gets it once the catalog write succeeded (#698, #806).
     inCatalog: result.selectedGlobalFoodItemId != null,
