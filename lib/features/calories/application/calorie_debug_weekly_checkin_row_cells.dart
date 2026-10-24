@@ -16,6 +16,7 @@ List<CalorieDebugDumpRow> calorieDebugReadyWeeklyCheckInRows({
   required List<CalorieWeeklyCheckInWindowDay> windowDays,
   required List<double> intakeKcalByDay,
   required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
+  required bool lowConfidence,
 }) {
   final weightTrend = calorieDebugWeightTrend(weightPoints: weightPoints);
   return [
@@ -28,6 +29,7 @@ List<CalorieDebugDumpRow> calorieDebugReadyWeeklyCheckInRows({
       windowDays: windowDays,
       intakeKcalByDay: intakeKcalByDay,
       weightPoints: weightPoints,
+      lowConfidence: lowConfidence,
       order: 0,
     ),
     _plannedVsEatenWeeklyRow(
@@ -43,6 +45,7 @@ List<CalorieDebugDumpRow> calorieDebugReadyWeeklyCheckInRows({
       calculation: calculation,
       weightTrend: weightTrend,
       weightPoints: weightPoints,
+      lowConfidence: lowConfidence,
       order: 2,
     ),
     _measuredTotalTdeeWeeklyRow(
@@ -71,6 +74,7 @@ CalorieDebugDumpRow _readyWeeklyCheckInSummaryRow({
   required List<CalorieWeeklyCheckInWindowDay> windowDays,
   required List<double> intakeKcalByDay,
   required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
+  required bool lowConfidence,
   required int order,
 }) {
   final trendWeightChangePerDay = calculation.trendWeightChangePerDay
@@ -89,7 +93,7 @@ CalorieDebugDumpRow _readyWeeklyCheckInSummaryRow({
       calorieDebugNamedNumber('measured_tdee', calculation.measuredTdeeKcal),
       calorieDebugNamedNumber('learned_tdee', calculation.calculatedTdeeKcal),
       calorieDebugNamedNumber('new_target', calculation.newGoalKcal),
-      'low_confidence=${weightPoints.length <= 2}',
+      'low_confidence=$lowConfidence',
       'intake=[${formatCalorieDebugDoubleList(intakeKcalByDay)}]',
       'weight_points=[${formatCalorieDebugWeightPoints(weightPoints)}]',
       'days=[${formatCalorieDebugWindowDays(windowDays)}]',
@@ -136,6 +140,7 @@ CalorieDebugDumpRow _weightTrendWeeklyRow({
   required CalorieWeeklyCheckInCalculation calculation,
   required CalorieDebugWeightTrend weightTrend,
   required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
+  required bool lowConfidence,
   required int order,
 }) {
   final trendPerDay = calculation.trendWeightChangePerDay.toStringAsFixed(5);
@@ -154,7 +159,7 @@ CalorieDebugDumpRow _weightTrendWeeklyRow({
         'trend_kg_per_week',
         calculation.trendWeightChangePerDay * 7,
       ),
-      'low_confidence=${weightPoints.length <= 2}',
+      'low_confidence=$lowConfidence',
       'weight_points=[${formatCalorieDebugWeightPoints(weightPoints)}]',
     ].join('; '),
   );

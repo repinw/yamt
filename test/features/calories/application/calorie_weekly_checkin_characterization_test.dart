@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_debug_dump_formatting.dart';
+import 'package:yamt/features/calories/application/calorie_debug_weekly_checkin_inputs.dart';
+import 'package:yamt/features/calories/application/calorie_debug_weekly_checkin_rows.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
@@ -15,6 +18,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -25,7 +29,8 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import '../support/fake_calories_repositories.dart';
 
 // Pins the whole check-in result of two windows, so a change to the pipeline
-// that moves any number shows up here.
+// that moves any number shows up here. Each case also checks that the debug
+// dump shows the same result.
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   const new();
@@ -40,8 +45,8 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 
 final _goalStart = DateTime(2026, 4, 8);
 
-CalorieEntry _entry(int index, double kcal) {
-  final loggedAt = _goalStart.add(Duration(days: index, hours: 8));
+CalorieEntry _entry(int index, double kcal, {DateTime? from}) {
+  final loggedAt = (from ?? _goalStart).add(Duration(days: index, hours: 8));
   return CalorieEntry.create(
     id: 'entry-$index',
     userId: 'user-1',
@@ -120,9 +125,57 @@ Future<CalorieWeeklyCheckInData> _build({
     ],
   );
   addTearDown(container.dispose);
-  return await container
+  final data = await container
       .listen(calorieWeeklyCheckInDataProvider.future, (_, _) {})
       .read();
+  final debug = await buildCalorieDebugWeeklyCheckInRows(
+    settings: settings,
+    calorieEntries: entries,
+    manualWeightEntries: weights,
+    healthWeightSamples: const [],
+    today: today,
+  );
+  _expectDebugShows(data, debug.rows);
+  return data;
+}
+
+void _expectDebugShows(
+  CalorieWeeklyCheckInData data,
+  List<CalorieDebugDumpRow> rows,
+) {
+  final windowEnd = data.cacheWeeklyCheckIn!.windowEndDate;
+  final rowsByName = {
+    for (final row in rows)
+      if (!row.sortAt.isBefore(windowEnd) &&
+          row.sortAt.isBefore(nextDiaryDay(windowEnd)))
+        row.cells[3]: row,
+  };
+  final calculation = data.calculation;
+  if (calculation == null) {
+    expect(rowsByName.keys, ['blocked']);
+    final extra = rowsByName['blocked']!.cells.last;
+    expect(
+      extra,
+      contains('blocked=${calorieDebugBlockedReasonName(data.blockedReason!)}'),
+    );
+    expect(
+      extra,
+      contains(
+        'missing_weight=[${formatCalorieDebugDayKeys(data.missingWeightDays)}]',
+      ),
+    );
+    return;
+  }
+  final summary = rowsByName['learned_tdee']!;
+  expect(
+    summary.cells[4],
+    formatCalorieDebugNumber(calculation.calculatedTdeeKcal),
+  );
+  expect(summary.cells.last, contains('low_confidence=${data.lowConfidence}'));
+  expect(
+    rowsByName['new_target']!.cells[4],
+    formatCalorieDebugNumber(calculation.newGoalKcal),
+  );
 }
 
 String? _fixed(double? value) => value?.toStringAsFixed(6);
@@ -321,6 +374,77 @@ void main() {
         '4-19 2900.000000 2900.000000 null false false',
         '4-20 2900.000000 2900.000000 null false false',
         '4-21 2900.000000 2900.000000 null false false',
+      ],
+    });
+  });
+
+  test('a long goal with weigh-ins only in its first weeks', () async {
+    final goalStart = DateTime(2026, 3, 2);
+    final data = await _build(
+      today: DateTime(2026, 4, 22),
+      // Six decided windows, so the seventh, 13 to 19 April, is pending.
+      settings:
+          [
+            for (var week = 1; week <= 6; week++)
+              addDiaryDays(goalStart, week * 7),
+          ].fold(
+            CalorieGoalSettings.single(
+              dailyKcalGoal: 2400,
+              calculatorProfile: null,
+              effectiveDate: goalStart,
+            ),
+            (settings, dueDate) => settings.applyGoalChange(
+              changedAt: dueDate,
+              dailyKcalGoal: 2500,
+              calculatorProfile: null,
+              source: CalorieGoalSource.weeklyCheckIn,
+              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+                windowStartDate: addDiaryDays(dueDate, -7),
+                windowEndDate: addDiaryDays(dueDate, -1),
+                trendWeightChangePerDay: 0,
+                calculatedTdeeKcal: 2500,
+                lowConfidence: false,
+                inputHash: 'v1:${diaryDayKey(dueDate)}',
+              ),
+            ),
+          ),
+      entries: [
+        for (var index = 0; index < 51; index++)
+          _entry(index, 2500, from: goalStart),
+      ],
+      weights: [
+        for (var day = 2; day <= 12; day += 2)
+          ManualHealthWeightEntry(
+            day: DateTime(2026, 3, day),
+            weightKg: 84 - day * 0.1,
+          ),
+      ],
+    );
+
+    expect(_pin(data), <String, Object?>{
+      'window': '4-13..4-19',
+      'blockedReason': 'missingWindowStartWeight',
+      'missingIntakeDays': [],
+      'missingWeightDays': ['3-23'],
+      'lowConfidence': false,
+      'inputHash': null,
+      'macroWeightKg': null,
+      'trendWeightChangePerDay': null,
+      'averageIntakeKcal': null,
+      'measuredTdeeKcal': null,
+      'calculatedTdeeKcal': null,
+      'previousTdeeKcal': null,
+      'previousGoalKcal': null,
+      'newGoalKcal': null,
+      'dynamicGoalTodayKcal': null,
+      'days': [
+        '4-13 2500.000000 2500.000000 null false false',
+        '4-14 2500.000000 2500.000000 null false false',
+        '4-15 2500.000000 2500.000000 null false false',
+        '4-16 2500.000000 2500.000000 null false false',
+        '4-17 2500.000000 2500.000000 null false false',
+        '4-18 2500.000000 2500.000000 null false false',
+        '4-19 2500.000000 2500.000000 null false false',
       ],
     });
   });

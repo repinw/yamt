@@ -1,5 +1,3 @@
-import 'package:yamt/features/calories/application/'
-    'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -48,45 +46,6 @@ List<PendingCalorieGoalWeeklyCheckIn> resolveCalorieDebugWeeklyCheckInWindows({
     windowStartDate = nextDiaryDay(windowEndDate);
   }
   return List<PendingCalorieGoalWeeklyCheckIn>.unmodifiable(windows);
-}
-
-/// The missing weight that blocks a window, or `null`.
-CalorieDebugMissingWeightData? validateCalorieDebugWeeklyWeightData({
-  required CalorieWeeklyCheckInWindowDates dates,
-  required CalorieWeeklyCheckInWeightData weightData,
-}) {
-  final hasLearningStartWeight =
-      weightData.weightByDay[diaryDayKey(dates.learningStartDate)] != null;
-  final hasWindowEndWeight =
-      weightData.weightByDay[diaryDayKey(
-        dates.pendingWeeklyCheckIn.windowEndDate,
-      )] !=
-      null;
-  if (weightData.weightPoints.length < 2 && !hasLearningStartWeight) {
-    return CalorieDebugMissingWeightData(
-      reason: 'missing_window_start_weight',
-      missingWeightDays: [dates.learningStartDate],
-    );
-  }
-  if (weightData.weightPoints.length < 2 && !hasWindowEndWeight) {
-    return CalorieDebugMissingWeightData(
-      reason: 'missing_window_end_weight',
-      missingWeightDays: [dates.pendingWeeklyCheckIn.windowEndDate],
-    );
-  }
-  return null;
-}
-
-/// Why a window lacks weight data and which days are missing.
-class CalorieDebugMissingWeightData {
-  /// Creates missing weight data.
-  const new({required this.reason, required this.missingWeightDays});
-
-  /// The blocked reason name.
-  final String reason;
-
-  /// The days without weight.
-  final List<DateTime> missingWeightDays;
 }
 
 /// The snake-case name of a blocked reason.

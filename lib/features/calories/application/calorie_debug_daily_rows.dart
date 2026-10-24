@@ -82,7 +82,7 @@ List<CalorieDebugDumpRow> calorieDebugDailyWeightRows({
   required DateTime endExclusive,
 }) {
   final healthWeightsByDay = <String, List<double>>{};
-  final manualWeightByDay = <String, double>{};
+  final manualWeightsByDay = <String, List<double>>{};
   final daysByKey = <String, DateTime>{};
   for (final sample in healthWeightSamples) {
     if (sample.isIgnored) {
@@ -97,7 +97,7 @@ List<CalorieDebugDumpRow> calorieDebugDailyWeightRows({
     final day = normalizeDiaryDay(entry.day);
     final key = diaryDayKey(day);
     daysByKey[key] = day;
-    manualWeightByDay[key] = entry.weightKg;
+    manualWeightsByDay.putIfAbsent(key, () => <double>[]).add(entry.weightKg);
   }
 
   final days = daysByKey.values.toList(growable: false)..sort();
@@ -108,7 +108,8 @@ List<CalorieDebugDumpRow> calorieDebugDailyWeightRows({
           _isDebugGoalWindowDay(settings: settings, day: day))
         _dailyWeightRow(
           day: day,
-          manualWeightKg: manualWeightByDay[diaryDayKey(day)],
+          manualWeightsKg:
+              manualWeightsByDay[diaryDayKey(day)] ?? const <double>[],
           healthWeightsKg:
               healthWeightsByDay[diaryDayKey(day)] ?? const <double>[],
         ),
@@ -143,16 +144,16 @@ CalorieDebugDumpRow _weightRow({
 
 CalorieDebugDumpRow _dailyWeightRow({
   required DateTime day,
-  required double? manualWeightKg,
+  required List<double> manualWeightsKg,
   required List<double> healthWeightsKg,
 }) {
-  // Manual and Health weights of a day count together, as in the trend.
+  // Every manual and Health weight of a day counts, as in the trend.
   final weightKg = CalorieDomainMath.median([
-    ?manualWeightKg,
+    ...manualWeightsKg,
     ...healthWeightsKg,
   ]);
-  final source = switch ((manualWeightKg, healthWeightsKg.isEmpty)) {
-    (null, _) => 'health',
+  final source = switch ((manualWeightsKg.isEmpty, healthWeightsKg.isEmpty)) {
+    (true, _) => 'health',
     (_, true) => 'manual_fallback',
     _ => 'manual_and_health',
   };
