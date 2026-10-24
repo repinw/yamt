@@ -65,15 +65,18 @@ Other features may consume these public Inventory entry points:
   fails; `undo` deletes the entry with its stock and saves the plan again.
   A reminder (`CalorieEntry.nutritionPending`, a plan of a meal with open
   rows, built with no kcal by `buildConsumedPreparedMealCalorieEntry`)
-  throws `InventoryPlanAcceptException.isNutritionPending` while its meal
-  still has open rows and `isMealGone` without its meal, instead of
-  logging an entry without kcal. Once the meal is filled, a reminder eats
-  it, or, without portions left, logs the meal's values without stock.
+  throws `PlanNutritionPendingException` while its meal still has open
+  rows and `PlanSourceGoneException` without its meal, instead of logging
+  an entry without kcal. Every failure is one of the sealed
+  `InventoryException`s
+  (`domain/inventory_exceptions.dart`). Once the meal is
+  filled, a reminder eats it, or, without portions left, logs the meal's
+  values without stock.
   A plan of a Kochbuch recipe or Vorlage (`CalorieEntry.bundleSourceTemplateId`)
   is logged without stock; its reminder takes the recipe's Vorrat items
   (the saved ones in a fitting unit, used up or not, else the best match
-  that fits) and its planned portions when accepted and throws the same flags while one is missing or
-  the recipe is gone.
+  that fits) and its planned portions when accepted and throws the same
+  exceptions while one is missing or the recipe is gone.
 - `application/ingredient_stock_match.dart`: the one rule for which Vorrat
   items can supply a recipe ingredient, best first: a name match whose unit
   fits the amount, with the recipe's saved unit conversion. Only the items
@@ -90,7 +93,11 @@ Other features may consume these public Inventory entry points:
   plans in step with its rows (reminders while a row is open, the meal's values once
   none is). The meals controller runs it after every change of the rows
   (fill, ignore, unignore, take a food out, edit, undo of an edit); a
-  failure there is logged and leaves the saved rows alone.
+  failure there is logged and leaves the saved rows alone. It also gives
+  the reminders of a Kochbuch recipe the recipe's values once each
+  ingredient has a Vorrat item (`replanTemplatePlan`); the
+  `RecipeReminderPlanListener` around the app runs that through
+  `RecipeReminderPlanController` whenever the household's recipes change.
 - `application/inventory_quick_eat_application.dart` for eating prepared
   meals from integrating features. Callers pass the `PreparedMeal` they
   show, so no server read delays the save. The calorie entry commit stores
@@ -144,6 +151,10 @@ already documented as a reusable presentation surface.
   `core/device/local_notifications.dart` and, on a tap, offers the missing
   ingredients through `ShoppingPlanNeedsFlow.offer`. Reminder ids are
   `100000000 + yyyymmdd` of the plan day (`domain/plan_shortage_reminders.dart`).
+- `presentation/widgets/recipe_reminder_plan_listener.dart`
+  (`RecipeReminderPlanListener`) wraps the app in `lib/app.dart`: when the
+  household's Kochbuch recipes change, the own recipe reminders that can
+  count now get their values.
 - `presentation/inventory_manual_product_save_flow.dart`:
   `saveManualProductResultToInventory` saves a product picked in the product
   search hub to the Vorrat.

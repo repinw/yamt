@@ -15,6 +15,7 @@ import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.da
 import 'package:yamt/features/inventory/application/template_plan_entry.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
+import 'package:yamt/features/inventory/domain/inventory_exceptions.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
@@ -27,35 +28,6 @@ part 'inventory_plan_accept_service.g.dart';
 /// An accepted plan: the diary entry, and whether the plan meant to take
 /// stock that the Vorrat no longer had.
 typedef InventoryPlanAcceptResult = ({CalorieEntry entry, bool missedStock});
-
-/// Thrown when a plan could not be eaten or its eat could not be undone.
-class InventoryPlanAcceptException implements Exception {
-  /// Creates the exception for [message].
-  const new(
-    this.message, {
-    this.isMealInPot = false,
-    this.isNutritionPending = false,
-    this.isMealGone = false,
-  });
-
-  /// What failed.
-  final String message;
-
-  /// Whether the planned meal is still in the pot, so it can be eaten once
-  /// "Gekocht" has given it its portions.
-  final bool isMealInPot;
-
-  /// Whether the planned meal still has open rows, so the plan is a
-  /// reminder that can be eaten once every row is filled.
-  final bool isNutritionPending;
-
-  /// Whether the planned meal of a reminder is gone, so the plan can only
-  /// be removed.
-  final bool isMealGone;
-
-  @override
-  String toString() => 'InventoryPlanAcceptException: $message';
-}
 
 /// The plan accept service.
 @riverpod
@@ -100,8 +72,8 @@ class InventoryPlanAcceptService {
   final TemplateIngredientParser _parser;
 
   /// Accepts [plan] on its own day and meal, taking the stock from [items]
-  /// or the portions from [meals]. Throws when nothing was saved; the plan
-  /// then stays.
+  /// or the portions from [meals]. Throws an [InventoryException]
+  /// when nothing was saved; the plan then stays.
   Future<InventoryPlanAcceptResult> accept(
     CalorieEntry plan, {
     required List<InventoryItem> items,
@@ -127,7 +99,7 @@ class InventoryPlanAcceptService {
         entry.bundleSourcePreparedMealId != null;
     final deleted = await _deleter.delete(entry, restoreToInventory: tookStock);
     if (!deleted.isSuccess) {
-      throw InventoryPlanAcceptException(
+      throw PlanAcceptFailedException(
         'The entry ${entry.id} was not deleted: ${deleted.failureReason}.',
       );
     }
@@ -143,10 +115,7 @@ class InventoryPlanAcceptService {
     if (plan.bundleSourcePreparedMealId case final mealId?) {
       final meal = meals.firstWhereOrNull((meal) => meal.id == mealId);
       if (meal != null && meal.isInPot) {
-        throw InventoryPlanAcceptException(
-          'The meal $mealId is still in the pot.',
-          isMealInPot: true,
-        );
+        throw PlanMealInPotException('The meal $mealId is still in the pot.');
       }
       final portions = meal == null ? 0 : preparedMealPlanShare(plan, meal);
       if (meal != null &&
@@ -158,7 +127,7 @@ class InventoryPlanAcceptService {
           loggedDay: plan.loggedAt,
         );
         if (eaten == null) {
-          throw InventoryPlanAcceptException('The meal $mealId was not eaten.');
+          throw PlanAcceptFailedException('The meal $mealId was not eaten.');
         }
         return (entry: eaten.entry, missedStock: false);
       }
@@ -174,11 +143,16 @@ class InventoryPlanAcceptService {
                 now: () => plan.updatedAt,
               );
         if (counted == null) {
-          throw InventoryPlanAcceptException(
-            'The meal $mealId has no nutrition to eat.',
-            isNutritionPending: meal?.hasPendingRecipeIngredients ?? false,
-            isMealGone: meal == null,
-          );
+          throw switch (meal) {
+            null => PlanSourceGoneException('The meal $mealId is gone.'),
+            PreparedMeal(hasPendingRecipeIngredients: true) =>
+              PlanNutritionPendingException(
+                'The meal $mealId still has open rows.',
+              ),
+            _ => PlanAcceptFailedException(
+              'The meal $mealId has no nutrition to eat.',
+            ),
+          };
         }
         return await _saveWithoutStock(counted);
       }
@@ -219,7 +193,7 @@ class InventoryPlanAcceptService {
     }
     // The calorie editor keeps the stock reserved; accepting has no editor.
     await _pendings.discard(pending.id);
-    throw InventoryPlanAcceptException('The plan ${plan.id} was not eaten.');
+    throw PlanAcceptFailedException('The plan ${plan.id} was not eaten.');
   }
 
   /// The reminder [plan] of the Kochbuch recipe [templateId] with the values
@@ -234,36 +208,25 @@ class InventoryPlanAcceptService {
     final template = templates.firstWhereOrNull(
       (template) => template.id == templateId,
     );
-    final counted = template == null
-        ? null
-        : buildTemplatePlanEntry(
-            template: template,
-            cookedPortions: plan.bundleTotalPortions ?? template.totalPortions,
-            assignments: templatePlanAssignments(
-              template,
-              items,
-              parser: _parser,
-            ),
-            items: items,
-            parser: _parser,
-            mealType: plan.mealType,
-            loggedDay: plan.loggedAt,
-            now: () => plan.updatedAt,
-            nextEntryId: () => plan.id,
-            portions: plan.bundleConsumedPortions ?? 1,
-          );
-    if (counted == null || counted.nutritionPending) {
-      throw InventoryPlanAcceptException(
-        'The recipe $templateId has no nutrition to eat.',
-        isNutritionPending: counted?.nutritionPending ?? false,
-        isMealGone: template == null,
-      );
+    if (template == null) {
+      throw PlanSourceGoneException('The recipe $templateId is gone.');
     }
-    return counted.copyWith(
-      userId: plan.userId,
-      loggedAt: plan.loggedAt,
-      createdAt: plan.createdAt,
+    final counted = replanTemplatePlan(
+      plan,
+      template,
+      items: items,
+      parser: _parser,
     );
+    if (counted == null || counted.nutritionPending) {
+      throw counted == null
+          ? PlanAcceptFailedException(
+              'The recipe $templateId has nothing to eat.',
+            )
+          : PlanNutritionPendingException(
+              'The recipe $templateId has no nutrition to eat.',
+            );
+    }
+    return counted;
   }
 
   Future<InventoryPlanAcceptResult> _saveWithoutStock(
@@ -276,7 +239,7 @@ class InventoryPlanAcceptService {
       bundleSourcePreparedMealId: null,
     );
     if (!await _saver(entry)) {
-      throw InventoryPlanAcceptException('The plan ${plan.id} was not saved.');
+      throw PlanAcceptFailedException('The plan ${plan.id} was not saved.');
     }
     return (entry: entry, missedStock: missedStock);
   }
