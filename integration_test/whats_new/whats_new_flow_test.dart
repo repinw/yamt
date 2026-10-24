@@ -40,7 +40,7 @@ void main() {
     // A device where the onboarding was finished: the app was used before.
     final container = ProviderContainer(
       overrides: [
-        appVersionProvider.overrideWith((ref) async => '3.8.1+70'),
+        appVersionProvider.overrideWith((ref) async => '3.9.0+70'),
         appPreferencesProvider.overrideWithValue(
           MemoryAppPreferences(
             completedCalorieGoalOnboardingUserIds: {'user-1'},
