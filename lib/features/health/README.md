@@ -40,7 +40,8 @@ photos. From the platform it reads only weight.
   `application/`. Both are state-holding controllers that later features read
   and mutate: the connection state carries the connect, install, permission
   settings, and disconnect actions; the manual weight entries carry add, update,
-  and delete per entry, which fall back to manual storage when Health is not ready.
+  and delete per entry, which fall back to manual storage when Health is not ready,
+  and the ignore of a Health weighing (`setIgnored`).
 
 - Progress photos: body photos per day and pose, end-to-end encrypted. Each
   file has its own key, kept in the sealed photo document.
