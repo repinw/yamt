@@ -210,6 +210,28 @@ typedef InventoryReceiptManualProductSavePayload = ({
   String? globalPackageWeight,
 });
 
+/// The editor's result for a save payload, so a new result field is added
+/// in one place.
+extension InventoryReceiptManualProductSavePayloadResult
+    on InventoryReceiptManualProductSavePayload {
+  /// The result that saves this payload with [action]. A product the user
+  /// marked as having no barcode passes [skipMissingBarcodePrompt].
+  inventory_models.InventoryReceiptManualProductResult toResult(
+    InventoryReceiptManualProductAction action, {
+    bool skipMissingBarcodePrompt = false,
+  }) {
+    return inventory_models.InventoryReceiptManualProductResult(
+      item: item,
+      action: action,
+      selectedProduct: selectedProduct,
+      selectedGlobalFoodItemId: selectedGlobalFoodItemId,
+      requiresGlobalPersistence: requiresGlobalPersistence,
+      globalPackageWeight: globalPackageWeight,
+      skipMissingBarcodePrompt: skipMissingBarcodePrompt,
+    );
+  }
+}
+
 String? _normalizeReusableGlobalFoodItemId(String? value) {
   final normalized = value?.trim();
   if (normalized == null || normalized.isEmpty) {

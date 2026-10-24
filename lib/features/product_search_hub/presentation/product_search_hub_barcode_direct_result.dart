@@ -50,21 +50,9 @@ productSearchHubDirectProductResult({
   final controller = container.read(
     inventoryReceiptManualProductControllerProvider(config).notifier,
   );
-  final payload = controller.buildDirectSearchResultPayload(
-    product: product,
-    action: action,
-  );
-  if (payload == null) {
-    return null;
-  }
-  return inventory_models.InventoryReceiptManualProductResult(
-    item: payload.item,
-    action: action,
-    selectedProduct: payload.selectedProduct,
-    selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
-    requiresGlobalPersistence: payload.requiresGlobalPersistence,
-    globalPackageWeight: payload.globalPackageWeight,
-  );
+  return controller
+      .buildDirectSearchResultPayload(product: product, action: action)
+      ?.toResult(action);
 }
 
 /// Builds a direct diary eat result for inventory-backed items.
