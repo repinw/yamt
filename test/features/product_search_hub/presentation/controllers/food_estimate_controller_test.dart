@@ -33,9 +33,6 @@ class _FakeFoodEstimateRepository implements FoodEstimateRepository {
     lastPhotos = photos;
     return _onLoad();
   }
-
-  @override
-  Future<String> saveFoodPhoto(FoodEstimatePhoto photo) async => 'saved';
 }
 
 const _estimate = FoodEstimate(

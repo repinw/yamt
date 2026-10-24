@@ -83,9 +83,6 @@ class _Estimates implements FoodEstimateRepository {
       ],
     );
   }
-
-  @override
-  Future<String> saveFoodPhoto(FoodEstimatePhoto photo) async => '';
 }
 
 /// Opens the AI page as the Vorrat's own add sheet does, and records what
