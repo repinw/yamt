@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_plan_accept_service.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/domain/inventory_exceptions.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
@@ -30,7 +31,7 @@ class _FakeAcceptService implements InventoryPlanAcceptService {
     required List<PreparedMeal> meals,
   }) async {
     if (fails) {
-      throw const InventoryPlanAcceptException('Accept failed.');
+      throw const PlanAcceptFailedException('Accept failed.');
     }
     accepted.add(plan);
     return (entry: plan.copyWith(id: 'entry'), missedStock: false);
@@ -39,7 +40,7 @@ class _FakeAcceptService implements InventoryPlanAcceptService {
   @override
   Future<void> undo(CalorieEntry entry, CalorieEntry plan) async {
     if (fails) {
-      throw const InventoryPlanAcceptException('Undo failed.');
+      throw const PlanAcceptFailedException('Undo failed.');
     }
     undone.add(plan);
   }

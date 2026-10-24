@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_plan_accept_service.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/domain/inventory_exceptions.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -21,7 +22,7 @@ import '../../calories/support/fake_planned_entry_repository.dart';
 class _FakeAcceptService implements InventoryPlanAcceptService {
   new([this.error]);
 
-  final InventoryPlanAcceptException? error;
+  final InventoryException? error;
 
   @override
   Future<InventoryPlanAcceptResult> accept(
@@ -53,10 +54,7 @@ final CalorieEntry _recipePlan = buildQuickCalorieEntry(
 
 /// Accepts [_recipePlan] through the diary flow, with an accept service
 /// that throws [error] when it is set.
-Future<void> _accept(
-  WidgetTester tester, [
-  InventoryPlanAcceptException? error,
-]) async {
+Future<void> _accept(WidgetTester tester, [InventoryException? error]) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -102,10 +100,7 @@ void main() {
   testWidgets('a recipe reminder with an open ingredient says so', (
     tester,
   ) async {
-    await _accept(
-      tester,
-      const InventoryPlanAcceptException('open', isNutritionPending: true),
-    );
+    await _accept(tester, const PlanNutritionPendingException('open'));
 
     expect(
       find.text('Erst alle Zutaten des Rezepts einem Vorrat zuordnen'),
@@ -117,10 +112,7 @@ void main() {
   testWidgets('a reminder of a removed recipe offers to remove it', (
     tester,
   ) async {
-    await _accept(
-      tester,
-      const InventoryPlanAcceptException('gone', isMealGone: true),
-    );
+    await _accept(tester, const PlanSourceGoneException('gone'));
 
     expect(find.text('Das Rezept ist nicht mehr im Kochbuch'), findsOneWidget);
     expect(find.text('Aus Plan entfernen'), findsOneWidget);
