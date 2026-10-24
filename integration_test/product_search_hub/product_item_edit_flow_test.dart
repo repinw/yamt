@@ -114,10 +114,11 @@ typedef _Harness = ({
   List<InventoryReceiptManualProductResult?> results,
 });
 
-/// Opens the editor of the stock item [_oatMilk] on its route, as the item
+/// Opens the editor of the stock item [item] on its route, as the item
 /// hub's "Bearbeiten" does, and records what the route returns.
-Future<_Harness> _openEditor(WidgetTester tester) async {
-  final items = _MemoryItems([_oatMilk]);
+Future<_Harness> _openEditor(WidgetTester tester, {InventoryItem? item}) async {
+  final stockItem = item ?? _oatMilk;
+  final items = _MemoryItems([stockItem]);
   final photos = _Photos();
   final results = <InventoryReceiptManualProductResult?>[];
   final router = GoRouter(
@@ -130,7 +131,7 @@ Future<_Harness> _openEditor(WidgetTester tester) async {
               key: _openKey,
               onPressed: () async => results.add(
                 await context.push<InventoryReceiptManualProductResult>(
-                  AppRoutes.homeInventoryItemEditPath(_oatMilk.id),
+                  AppRoutes.homeInventoryItemEditPath(stockItem.id),
                 ),
               ),
               child: const Text('open'),
@@ -241,6 +242,24 @@ void main() {
     expect(edited.id, _oatMilk.id);
     expect(edited.nutrition?.per100Kcal, 52);
     expect(edited.name, 'Haferdrink');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a saved food without a barcode is not asked for one again '
+      '(#828)', (tester) async {
+    final harness = await _openEditor(
+      tester,
+      item: _oatMilk.copyWith(barcode: ''),
+    );
+
+    expect(_buttonLabel('Fertig'), findsOneWidget);
+    await _enter(tester, ManualProductFormField.kcal, '52');
+    await _tapButton(tester);
+
+    expect(find.byKey(_openKey), findsOneWidget);
+    final result = harness.results.single!;
+    expect(result.item.nutrition?.per100Kcal, 52);
+    expect(result.skipMissingBarcodePrompt, isTrue);
     expect(tester.takeException(), isNull);
   });
 }

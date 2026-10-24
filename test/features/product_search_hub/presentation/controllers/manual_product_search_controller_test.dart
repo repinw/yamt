@@ -884,6 +884,89 @@ void main() {
     expect(state.hasBarcodeDecision, isTrue);
   });
 
+  test('an edited food without a barcode counts as having none (#828)', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    InventoryReceiptManualProductState open({
+      required bool isEdit,
+      String barcode = '',
+    }) {
+      final provider = inventoryReceiptManualProductControllerProvider(
+        InventoryReceiptManualProductConfig(
+          item: _item().copyWith(barcode: barcode),
+          isEdit: isEdit,
+        ),
+      );
+      final subscription = container.listen(provider, (_, _) {});
+      addTearDown(subscription.close);
+      return container.read(provider);
+    }
+
+    final edited = open(isEdit: true);
+    expect(edited.hasNoBarcode, isTrue);
+    expect(edited.hasBarcodeDecision, isTrue);
+    expect(edited.isChanged, isFalse);
+    expect(open(isEdit: false).hasNoBarcode, isFalse);
+    expect(open(isEdit: true, barcode: '4006381333931').hasNoBarcode, isFalse);
+  });
+
+  test('a barcode found on a photo replaces the mark an edited food opened '
+      'with (#828)', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(
+        item: _item().copyWith(barcode: ''),
+        isEdit: true,
+      ),
+    );
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+
+    container.read(provider.notifier).applyPhotoBarcode('4006381333931');
+
+    final state = container.read(provider);
+    expect(state.barcode, '4006381333931');
+    expect(state.hasNoBarcode, isFalse);
+  });
+
+  test('a mark the user set keeps refusing a photo barcode', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: _item().copyWith(barcode: '')),
+    );
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+    container.read(provider.notifier)
+      ..updateHasNoBarcode(value: true)
+      ..applyPhotoBarcode('4006381333931');
+
+    expect(container.read(provider).barcode, isEmpty);
+    expect(container.read(provider).hasNoBarcode, isTrue);
+  });
+
+  test('an edited food keeps refusing a photo barcode once the user sets the '
+      'mark again', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(
+        item: _item().copyWith(barcode: ''),
+        isEdit: true,
+      ),
+    );
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+    container.read(provider.notifier)
+      ..updateHasNoBarcode(value: false)
+      ..updateHasNoBarcode(value: true)
+      ..applyPhotoBarcode('4006381333931');
+
+    expect(container.read(provider).barcode, isEmpty);
+    expect(container.read(provider).hasNoBarcode, isTrue);
+  });
+
   test('a stored package photo becomes the image of a product without one', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

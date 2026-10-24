@@ -745,7 +745,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   nutrition table (`nutrition-label-template`). The barcode scanner looks at
   both photos first; only without a result does the barcode the AI read on
   the front count, marked "please check". Otherwise the user scans the
-  barcode or marks "has none". Saving needs a barcode or that mark.
+  barcode or marks "has none". Saving needs a barcode or that mark. Editing
+  a saved food without a barcode, such as one saved with "has none" or an AI
+  meal, opens with the mark set, so it is not asked again; a barcode the
+  scanner or the AI finds on a new photo still replaces that mark (#828).
 - The front photo is first of all the product's picture, so the AI says
   nothing about it (#659). A front without a package or a readable name, or
   one the AI cannot read at all (offline, a failed or throttled request, a
