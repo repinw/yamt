@@ -122,7 +122,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         error: error,
         stackTrace: stackTrace,
       );
-      return const <CalorieEntry>[];
+      rethrow;
     }
   }
 
@@ -150,7 +150,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         error: error,
         stackTrace: stackTrace,
       );
-      return null;
+      rethrow;
     }
   }
 

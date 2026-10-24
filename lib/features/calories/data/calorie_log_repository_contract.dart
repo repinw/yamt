@@ -13,13 +13,13 @@ abstract interface class CalorieLogRepositoryContract {
   /// Read entries for day.
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day);
 
-  /// Read entries in range.
+  /// Read entries in range. A failed read throws, never returns an empty list.
   Future<List<CalorieEntry>> readEntriesInRange({
     required DateTime startInclusive,
     required DateTime endExclusive,
   });
 
-  /// Read first entry date.
+  /// Read first entry date, or `null` without entries. A failed read throws.
   Future<DateTime?> readFirstEntryDate();
 
   /// Save entry.

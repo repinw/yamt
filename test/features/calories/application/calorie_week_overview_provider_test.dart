@@ -534,118 +534,57 @@ void main() {
     },
   );
 
-  test(
-    'calorieWeekOverview falls back when visible range read throws',
-    () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final failingDay = today.subtract(const Duration(days: 2));
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _entry(
-            'today',
-            loggedAt: today.add(const Duration(hours: 8)),
-            totalKcal: 600,
-          ),
-          _entry(
-            'failing-day',
-            loggedAt: failingDay.add(const Duration(hours: 12)),
-            totalKcal: 900,
-          ),
-        ],
-      );
-      logRepository
-        ..onReadEntriesInRange = (startInclusive, endExclusive) async {
-          throw StateError('range read failed');
-        }
-        ..onReadEntriesForDay = (day) async {
-          if (day == failingDay) {
-            throw StateError('day read failed');
-          }
-          return await _readLogEntriesForDay(logRepository, day);
-        };
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: today.subtract(const Duration(days: 6)),
-        ),
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+  test('calorieWeekOverview fails when a diary read fails', () async {
+    final logRepository = FakeCalorieLogRepository()
+      ..onReadEntriesInRange = (startInclusive, endExclusive) async {
+        throw StateError('range read failed');
+      };
+    addTearDown(logRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      final container = ProviderContainer(
-        overrides: [
-          calorieLogRepositoryProvider.overrideWithValue(logRepository),
-          calorieSettingsRepositoryProvider.overrideWithValue(
-            settingsRepository,
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+    // Zeros for a failed read would be saved over the last good numbers.
+    await expectLater(
+      _readWeekOverviewForWindow(container, DateTime(2026, 3, 20)),
+      throwsA(isA<StateError>()),
+    );
+  });
 
-      await container.read(calorieGoalControllerProvider.future);
-      final overview = await _readVisibleWeekOverview(container);
+  test('calorieWeekOverview reads the first entry date while the visible days '
+      'load', () async {
+    final releaseRangeReads = Completer<void>();
+    var firstEntryDateRead = false;
+    final logRepository = FakeCalorieLogRepository()
+      ..onReadEntriesInRange = (startInclusive, endExclusive) async {
+        await releaseRangeReads.future;
+        return const <CalorieEntry>[];
+      }
+      ..onReadFirstEntryDate = () async {
+        firstEntryDateRead = true;
+        return null;
+      };
+    addTearDown(logRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      expect(overview.days, hasLength(diaryVisibleDayCount));
-      expect(
-        overview.days.firstWhere((day) => day.date == failingDay).totalKcal,
-        0,
-      );
-      expect(overview.totalConsumedKcal, 600);
-      expect(overview.totalGoalKcal, 6000);
-      expect(overview.remainingKcal, 5400);
-    },
-  );
+    final overview = _readWeekOverviewForWindow(
+      container,
+      DateTime(2026, 3, 20),
+    );
+    await pumpEventQueue();
 
-  test(
-    'calorieWeekConsumptionSnapshot fallback reads visible days concurrently',
-    () async {
-      final today = DateTime(2026, 3, 20);
-      final releaseDayReads = Completer<void>();
-      final allDayReadsStarted = Completer<void>();
-      var startedDayReads = 0;
-      var activeDayReads = 0;
-      var maxActiveDayReads = 0;
-      final logRepository = FakeCalorieLogRepository()
-        ..onReadEntriesInRange = (startInclusive, endExclusive) async {
-          throw StateError('range read failed');
-        }
-        ..onReadEntriesForDay = (day) async {
-          startedDayReads += 1;
-          activeDayReads += 1;
-          if (activeDayReads > maxActiveDayReads) {
-            maxActiveDayReads = activeDayReads;
-          }
-          if (startedDayReads == diaryVisibleDayCount &&
-              !allDayReadsStarted.isCompleted) {
-            allDayReadsStarted.complete();
-          }
-          await releaseDayReads.future;
-          activeDayReads -= 1;
-          return const <CalorieEntry>[];
-        };
-      addTearDown(logRepository.dispose);
-
-      final container = ProviderContainer(
-        overrides: [
-          calorieLogRepositoryProvider.overrideWithValue(logRepository),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final snapshotFuture = container.read(
-        calorieWeekConsumptionSnapshotForWindowProvider(today).future,
-      );
-      await allDayReadsStarted.future.timeout(const Duration(seconds: 1));
-
-      expect(startedDayReads, diaryVisibleDayCount);
-      expect(maxActiveDayReads, diaryVisibleDayCount);
-
-      releaseDayReads.complete();
-      final snapshot = await snapshotFuture;
-      expect(snapshot.days, hasLength(diaryVisibleDayCount));
-    },
-  );
+    expect(firstEntryDateRead, isTrue);
+    releaseRangeReads.complete();
+    expect((await overview).days, hasLength(diaryVisibleDayCount));
+  });
 
   test(
     'calorieWeekConsumptionSnapshot follows visible window controller',

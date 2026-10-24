@@ -38,6 +38,9 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
     );
     final repository = ref.watch(calorieLogRepositoryProvider);
+    // Started with the others to save a server round trip; an error still
+    // surfaces at its await below.
+    final firstEntryDateFuture = repository.readFirstEntryDate()..ignore();
     final settingsFuture = ref.watch(calorieBudgetSettingsProvider.future);
     final resolvedGoalsFuture = ref.watch(
       resolvedCalorieGoalsForDaysProvider(
@@ -78,7 +81,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
         .toList(growable: false);
     final today = snapshot.days.last.date;
     final visibleWindowStart = snapshot.days.first.date;
-    final firstEntryDate = await repository.readFirstEntryDate();
+    final firstEntryDate = await firstEntryDateFuture;
     if (!ref.mounted) {
       throw StateError('Calorie week overview disposed.');
     }
@@ -93,7 +96,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       day: today,
       balanceStartDate: balanceStartDate,
     );
-    final historicalEntries = await readEntriesInRangeSafely(
+    final historicalEntries = await readEntriesInRangeOrEmpty(
       repository: repository,
       startInclusive: carryoverStartDate,
       endExclusive: visibleWindowStart,
@@ -135,7 +138,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
     if (!ref.mounted) {
       throw StateError('Calorie week day overview disposed.');
     }
-    final entries = await readEntriesForDaySafely(repository, normalizedDay);
+    final entries = await repository.readEntriesForDay(normalizedDay);
     if (!ref.mounted) {
       throw StateError('Calorie week day overview disposed.');
     }

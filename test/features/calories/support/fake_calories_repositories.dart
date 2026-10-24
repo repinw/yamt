@@ -38,6 +38,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
     DateTime endExclusive,
   )?
   onReadEntriesInRange;
+  Future<DateTime?> Function()? onReadFirstEntryDate;
 
   List<CalorieEntry> get entries => List<CalorieEntry>.unmodifiable(_entries);
 
@@ -128,6 +129,10 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<DateTime?> readFirstEntryDate() async {
+    final customReader = onReadFirstEntryDate;
+    if (customReader != null) {
+      return await customReader();
+    }
     if (_entries.isEmpty) {
       return null;
     }

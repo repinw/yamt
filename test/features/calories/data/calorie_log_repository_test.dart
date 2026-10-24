@@ -349,6 +349,26 @@ void main() {
     expect(firstEntryDate, isNull);
   });
 
+  test(
+    'readFirstEntryDate throws when a read fails, never answers null',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      final repository = FirestoreCalorieLogRepository(
+        dataCipher: signedIn,
+        firestore: firestore,
+      );
+      await repository.saveEntry(
+        _entry('a', loggedAt: DateTime(2026, 2, 25, 8)),
+      );
+      await pumpEventQueue();
+      await firestore.doc('users/user-1/calorie_entries/a').update({
+        'logged_at': 'not a timestamp',
+      });
+
+      await expectLater(repository.readFirstEntryDate(), throwsA(anything));
+    },
+  );
+
   test('cachedById returns entries the repository saved or watched', () async {
     final firestore = FakeFirebaseFirestore();
     final writer = FirestoreCalorieLogRepository(

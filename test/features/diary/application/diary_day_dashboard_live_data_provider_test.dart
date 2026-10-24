@@ -102,6 +102,41 @@ void main() {
     expect(observer.failures, isEmpty);
   });
 
+  test(
+    'a failed day read fails the live data without an unhandled error',
+    () async {
+      final selectedDay = DateTime(2026, 4, 27, 18);
+      final normalizedDay = normalizeDiaryDay(selectedDay);
+      final weekOverview = Completer<CalorieWeekOverview>();
+      final repository = FakeCalorieLogRepository()
+        ..onReadEntriesForDay = (_) async =>
+            throw StateError('day read failed');
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(repository),
+          plannedEntryRepositoryProvider.overrideWithValue(
+            FakePlannedEntryRepository(),
+          ),
+          calorieWeekOverviewForWindowProvider(normalizedDay)
+              .overrideWith((ref) => weekOverview.future),
+          burnWeekRunControllerProvider.overrideWith(
+            () => _FakeBurnWeekRunController(const BurnWeekRunState.initial()),
+          ),
+        ],
+      );
+      addTearDown(repository.dispose);
+      addTearDown(container.dispose);
+
+      final dataFuture = container.read(
+        diaryDayDashboardLiveDataProvider(selectedDay).future,
+      );
+      await container.pump();
+      weekOverview.complete(_weekOverview(selectedDay: normalizedDay));
+
+      await expectLater(dataFuture, throwsA(isA<StateError>()));
+    },
+  );
+
   group('plans', () {
     final selectedDay = DateTime(2026, 4, 28);
     final eaten = _entry(id: 'eaten', day: selectedDay);

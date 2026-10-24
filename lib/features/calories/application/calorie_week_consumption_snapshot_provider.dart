@@ -30,7 +30,7 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshotForWindow(
   ref.watch(calorieOverviewRevisionProvider);
   final repository = ref.watch(calorieLogRepositoryProvider);
   final days = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
-  final entriesByDay = await readVisibleEntriesByDaySafely(
+  final entriesByDay = await readVisibleEntriesByDay(
     repository: repository,
     days: days,
   );

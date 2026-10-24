@@ -72,7 +72,7 @@ final class DiaryDayDashboardLiveDataProvider
 }
 
 String _$diaryDayDashboardLiveDataHash() =>
-    r'a66937d528b7dc1b7b1e3f0586908fa391ae4731';
+    r'794a25045bac9cb1869d46060cdbbc910fa4abf2';
 
 /// Loads live dashboard inputs through Diary's application boundary.
 
