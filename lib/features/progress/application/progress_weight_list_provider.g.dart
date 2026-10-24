@@ -74,7 +74,7 @@ final class ProgressWeightListProvider
 }
 
 String _$progressWeightListHash() =>
-    r'a4ad8e165f67f78b70beed21c5bc90117a462cca';
+    r'ec998a057dd1a872d53479fed9804571fdbdb3ad';
 
 /// Every weighing of [range] with the trend, the goal starts, and the goal
 /// weight.

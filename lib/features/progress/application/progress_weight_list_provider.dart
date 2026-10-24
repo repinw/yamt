@@ -3,8 +3,8 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
-import 'package:yamt/features/health/application/recent_weight_trend_provider.dart';
 import 'package:yamt/features/health/application/weight_series_provider.dart';
+import 'package:yamt/features/health/domain/recent_weight_trend.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/domain/progress_weight_list.dart';
 
@@ -40,12 +40,8 @@ Future<ProgressWeightList> progressWeightList(
   final chartStart = period.chartStart;
   // A goal that starts later still lists the weights of the last days.
   final startsLater = period.start.isAfter(today);
-  final (trend, manualEntries, healthSamples) = await (
-    ref.watch(
-      recentWeightTrendProvider(
-        dayCount: diaryDaysBetween(chartStart, today) + 1,
-      ).future,
-    ),
+  final (series, manualEntries, healthSamples) = await (
+    ref.watch(weightSeriesProvider.future),
     ref.watch(manualHealthWeightEntriesControllerProvider.future),
     ref.watch(healthWeightSamplesProvider.future),
   ).wait;
@@ -55,7 +51,12 @@ Future<ProgressWeightList> progressWeightList(
         range == ProgressWeightRange.goal &&
         period.goalStarts.isNotEmpty &&
         !startsLater,
-    trend: trend,
+    trend: RecentWeightTrend.fromSeries(
+      series,
+      today: today,
+      dayCount: diaryDaysBetween(chartStart, today) + 1,
+    ),
+    series: series,
     goalStarts: [
       for (final start in period.goalStarts)
         if (start.day.isAfter(chartStart)) start,

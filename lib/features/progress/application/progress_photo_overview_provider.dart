@@ -2,7 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/application/recent_weight_trend_provider.dart';
+import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/domain/progress_photo_overview.dart';
@@ -18,6 +18,7 @@ Future<ProgressPhotoOverview> progressPhotoOverview(
 ) async {
   final today = normalizeDiaryDay(ref.watch(clockProvider)());
   final photosFuture = ref.watch(progressPhotosProvider.future);
+  final seriesFuture = ref.watch(weightSeriesProvider.future);
   final settings = await ref.watch(calorieGoalControllerProvider.future);
   final allPhotos = await photosFuture;
   final period = ProgressPeriod.of(
@@ -36,11 +37,7 @@ Future<ProgressPhotoOverview> progressPhotoOverview(
           )
           .toList(),
   };
-  final oldest = photos.firstOrNull?.day ?? today;
-  final dayCount = diaryDaysBetween(oldest, today) + 1;
-  final trend = await ref.watch(
-    recentWeightTrendProvider(dayCount: dayCount < 1 ? 1 : dayCount).future,
-  );
+  final series = await seriesFuture;
   return ProgressPhotoOverview(
     photos: List.unmodifiable(photos),
     goalStarts: ProgressPeriod.of(
@@ -48,6 +45,9 @@ Future<ProgressPhotoOverview> progressPhotoOverview(
       scope: ProgressScope.all,
       today: today,
     ).goalStarts,
-    dayWeightsKg: {for (final day in trend.days) day.day: ?day.trendWeightKg},
+    // A photo after the last weigh-in shows the last trend weight.
+    dayWeightsKg: {
+      for (final photo in photos) photo.day: ?series.trendOnOrBefore(photo.day),
+    },
   );
 }
