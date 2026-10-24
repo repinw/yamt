@@ -24,6 +24,43 @@ DateTime? tryParseBurnWeekDayKey(String? dayKey) {
   return normalizeDiaryDay(DateTime(year, month, day));
 }
 
+/// [storedWeekStartDate] moved forward onto the seven-day grid that starts on
+/// [balanceStartDate], when it sits one or two days before a grid day and a
+/// clock change lies in between.
+///
+/// Temporary migration, added in 3.9.0: removed in 3.11.0. Up to 3.8.1 a
+/// week start plus seven days of 24 hours crossed an autumn clock change as
+/// 23:00 of the day before, so stored week starts can be one or two days
+/// early.
+DateTime alignBurnWeekStartDate({
+  required DateTime storedWeekStartDate,
+  required DateTime balanceStartDate,
+}) {
+  final storedDay = normalizeDiaryDay(storedWeekStartDate);
+  final balanceDay = normalizeDiaryDay(balanceStartDate);
+  final daysSinceBalanceStart = diaryDaysBetween(balanceDay, storedDay);
+  // A start before the cycle belongs to an older goal; the sync restarts it.
+  if (daysSinceBalanceStart <= 0) {
+    return storedDay;
+  }
+  final daysOffGrid = daysSinceBalanceStart % burnWeekDaysPerWeek;
+  if (daysOffGrid < burnWeekDaysPerWeek - 2) {
+    return storedDay;
+  }
+  final gridDay = addDiaryDays(storedDay, burnWeekDaysPerWeek - daysOffGrid);
+  // Without a clock change in between, an off-grid start was stored on purpose.
+  for (
+    var day = balanceDay;
+    !day.isAfter(gridDay);
+    day = addDiaryDays(day, burnWeekDaysPerWeek)
+  ) {
+    if (day.timeZoneOffset != balanceDay.timeZoneOffset) {
+      return gridDay;
+    }
+  }
+  return storedDay;
+}
+
 /// Whether a persisted week start still belongs to the active cycle.
 bool shouldUseStoredBurnWeekStartDate({
   required DateTime storedWeekStartDate,
@@ -33,8 +70,9 @@ bool shouldUseStoredBurnWeekStartDate({
   final normalizedStoredWeekStart = normalizeDiaryDay(storedWeekStartDate);
   final normalizedCurrentDay = normalizeDiaryDay(currentDay);
   final normalizedBalanceStartDate = normalizeDiaryDay(balanceStartDate);
-  final storedWeekEnd = normalizedStoredWeekStart.add(
-    const Duration(days: burnWeekDaysPerWeek),
+  final storedWeekEnd = addDiaryDays(
+    normalizedStoredWeekStart,
+    burnWeekDaysPerWeek,
   );
   return !normalizedStoredWeekStart.isAfter(normalizedCurrentDay) &&
       !normalizedStoredWeekStart.isBefore(normalizedBalanceStartDate) &&
@@ -62,7 +100,7 @@ DateTime resolveBurnWeekLiveWeekStartDate({
     balanceStartDate: balanceStartDate,
   );
   final dayOffset = elapsedDays % burnWeekDaysPerWeek;
-  return normalizedCurrentDay.subtract(Duration(days: dayOffset));
+  return addDiaryDays(normalizedCurrentDay, -dayOffset);
 }
 
 /// Resolves sync anchor for current live Burn Week.
@@ -73,11 +111,9 @@ DateTime resolveBurnWeekLiveSyncWeekStartDate({
   var syncWeekStartDate = normalizeDiaryDay(currentWeekStartDate);
   final normalizedCurrentDay = normalizeDiaryDay(currentDay);
   while (!normalizedCurrentDay.isBefore(
-    syncWeekStartDate.add(const Duration(days: burnWeekDaysPerWeek)),
+    addDiaryDays(syncWeekStartDate, burnWeekDaysPerWeek),
   )) {
-    syncWeekStartDate = syncWeekStartDate.add(
-      const Duration(days: burnWeekDaysPerWeek),
-    );
+    syncWeekStartDate = addDiaryDays(syncWeekStartDate, burnWeekDaysPerWeek);
   }
   return syncWeekStartDate;
 }
@@ -87,10 +123,10 @@ int resolveBurnWeekLiveElapsedDays({
   required DateTime currentDay,
   required DateTime balanceStartDate,
 }) {
-  return normalizeDiaryDay(currentDay)
-      .difference(normalizeDiaryDay(balanceStartDate))
-      .inDays
-      .clamp(0, 1000000);
+  return diaryDaysBetween(
+    normalizeDiaryDay(balanceStartDate),
+    normalizeDiaryDay(currentDay),
+  ).clamp(0, 1000000);
 }
 
 /// Resolves whether tracking miss already happened this week.
@@ -225,8 +261,9 @@ List<DateTime> resolveBurnWeekClosedWeekStartDates({
       : storedWeekStartDate ?? balanceStartDate;
   while (closedWeekStartDate.isBefore(syncWeekStartDate)) {
     closedWeekStartDates.add(closedWeekStartDate);
-    closedWeekStartDate = closedWeekStartDate.add(
-      const Duration(days: burnWeekDaysPerWeek),
+    closedWeekStartDate = addDiaryDays(
+      closedWeekStartDate,
+      burnWeekDaysPerWeek,
     );
   }
   return closedWeekStartDates;

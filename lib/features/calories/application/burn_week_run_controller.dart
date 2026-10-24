@@ -41,19 +41,19 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     );
     final currentWeekStartDate = tryParseBurnWeekDayKey(currentWeekStartDayKey);
     final closedWeekCount = missedTrackingForClosedWeeks?.length ?? 0;
+    final firstClosedWeekKey = diaryDayKey(
+      addDiaryDays(
+        normalizedWeekStartDate,
+        -burnWeekDaysPerWeek * closedWeekCount,
+      ),
+    );
     var next = current;
 
     if (currentWeekStartDayKey == null) {
       if (closedWeekCount == 0) {
         next = current.copyWith(currentWeekStartDayKey: weekStartDayKey);
       } else {
-        next = current.copyWith(
-          currentWeekStartDayKey: diaryDayKey(
-            normalizedWeekStartDate.subtract(
-              Duration(days: burnWeekDaysPerWeek * closedWeekCount),
-            ),
-          ),
-        );
+        next = current.copyWith(currentWeekStartDayKey: firstClosedWeekKey);
         next = _advanceToSyncedWeek(
           current: next,
           weekStartDayKey: weekStartDayKey,
@@ -67,13 +67,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       weekStartDayKey: weekStartDayKey,
       closedWeekCount: closedWeekCount,
     )) {
-      next = current.copyWith(
-        currentWeekStartDayKey: diaryDayKey(
-          normalizedWeekStartDate.subtract(
-            Duration(days: burnWeekDaysPerWeek * closedWeekCount),
-          ),
-        ),
-      );
+      next = current.copyWith(currentWeekStartDayKey: firstClosedWeekKey);
       next = _advanceToSyncedWeek(
         current: next,
         weekStartDayKey: weekStartDayKey,
@@ -148,6 +142,14 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       advancedWeekCount += 1;
     }
     return next;
+  }
+
+  /// Moves the current week to start on [weekStartDate], without closing it.
+  Future<bool> moveWeekStartTo(DateTime weekStartDate) async {
+    final current = await future;
+    final weekStartDayKey = diaryDayKey(normalizeDiaryDay(weekStartDate));
+    final next = current.copyWith(currentWeekStartDayKey: weekStartDayKey);
+    return await _save(next, previous: current);
   }
 
   /// Resets whole Burn Week run back to fresh state.
@@ -230,9 +232,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     if (currentWeekStartDate == null) {
       return currentWeekStartDayKey;
     }
-    return diaryDayKey(
-      currentWeekStartDate.add(const Duration(days: burnWeekDaysPerWeek)),
-    );
+    return diaryDayKey(addDiaryDays(currentWeekStartDate, burnWeekDaysPerWeek));
   }
 
   /// Shows and stores [next]; a failed or throwing save restores the run.
