@@ -10,7 +10,7 @@ import 'package:yamt/features/inventory/domain/'
 /// Defines inventory receipt manual product config.
 class InventoryReceiptManualProductConfig {
   /// The inventory receipt manual product config.
-  const new({required this.item, this.selectedProduct});
+  const new({required this.item, this.selectedProduct, this.isEdit = false});
 
   /// The item.
   final InventoryItem item;
@@ -18,17 +18,23 @@ class InventoryReceiptManualProductConfig {
   /// The selected product.
   final OffProductSearchResult? selectedProduct;
 
+  /// Whether the editor changes a food that exists. Its save already
+  /// answered the barcode question, so a food without one counts as having
+  /// none.
+  final bool isEdit;
+
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         other is InventoryReceiptManualProductConfig &&
             other.item == item &&
+            other.isEdit == isEdit &&
             _selectedProductEquals(other.selectedProduct, selectedProduct);
   }
 
   @override
   int get hashCode {
-    return Object.hash(item, _selectedProductHash(selectedProduct));
+    return Object.hash(item, isEdit, _selectedProductHash(selectedProduct));
   }
 
   static bool _selectedProductEquals(

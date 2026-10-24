@@ -54,6 +54,7 @@ Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
         config: InventoryReceiptManualProductConfig(
           item: args.item,
           selectedProduct: args.selectedProduct,
+          isEdit: args.isEdit,
         ),
         quickEatConfig: args.quickEatConfig,
         showEatImmediatelyOption: args.showEatImmediatelyOption,

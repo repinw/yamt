@@ -107,6 +107,7 @@ Future<InventoryReceiptManualProductResult?> _openProductSearchHubEditor({
       config: manual_product_models.InventoryReceiptManualProductConfig(
         item: draftItem,
         selectedProduct: selectedProduct,
+        isEdit: isEdit,
       ),
       showEatImmediatelyOption: args.isDiary,
       initialAction: args.initialManualProductAction,

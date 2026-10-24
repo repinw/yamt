@@ -32,10 +32,14 @@ part 'manual_product_search_controller.g.dart';
 @riverpod
 class InventoryReceiptManualProductController
     extends _$InventoryReceiptManualProductController {
+  // Whether the user set "Hat keinen" here, not an edited food opening with it.
+  var _userMarkedNoBarcode = false;
+
   @override
   InventoryReceiptManualProductState build(
     InventoryReceiptManualProductConfig config,
   ) {
+    _userMarkedNoBarcode = false;
     final nutrition =
         config.item.nutrition ?? config.selectedProduct?.nutrition;
     final weightInput = resolveManualProductWeightInput(
@@ -43,11 +47,13 @@ class InventoryReceiptManualProductController
       fallbackUnit: config.item.amountUnit,
     );
 
+    final barcode =
+        config.item.normalizedBarcode ?? config.selectedProduct?.code ?? '';
     final opened = InventoryReceiptManualProductState(
       nameText: config.selectedProduct?.name ?? config.item.name,
       brandText: config.selectedProduct?.brand ?? config.item.brand ?? '',
-      barcode:
-          config.item.normalizedBarcode ?? config.selectedProduct?.code ?? '',
+      barcode: barcode,
+      hasNoBarcode: config.isEdit && barcode.isEmpty,
       weightAmount: weightInput.amount,
       selectedWeightUnit: weightInput.amount.isEmpty
           ? config.item.amountUnit
@@ -88,6 +94,7 @@ class InventoryReceiptManualProductController
 
   /// Marks the product as having no barcode and clears the barcode.
   void updateHasNoBarcode({required bool value}) {
+    _userMarkedNoBarcode = value;
     state = state.copyWith(
       hasNoBarcode: value,
       barcode: value ? '' : state.barcode,
@@ -236,7 +243,7 @@ class InventoryReceiptManualProductController
     );
     final aiBarcode = details.barcode;
     final takesAiBarcode =
-        aiBarcode != null && !state.hasBarcode && !state.hasNoBarcode;
+        aiBarcode != null && !state.hasBarcode && !_refusesFoundBarcode;
     state = state.copyWith(
       nameText: details.name,
       brandText: details.brand ?? state.brandText,
@@ -245,6 +252,7 @@ class InventoryReceiptManualProductController
       servings: state.servings.withFront(front),
       pieceWeightText: _frontPieceWeight(front),
       barcode: takesAiBarcode ? aiBarcode : null,
+      hasNoBarcode: takesAiBarcode ? false : null,
       barcodeOrigin: takesAiBarcode
           ? ManualProductBarcodeOrigin.ai
           : state.barcodeOrigin,
@@ -258,13 +266,18 @@ class InventoryReceiptManualProductController
     final hasOwnBarcode =
         state.hasBarcode &&
         state.barcodeOrigin != ManualProductBarcodeOrigin.ai;
-    if (hasOwnBarcode || state.hasNoBarcode) return;
+    if (hasOwnBarcode || _refusesFoundBarcode) return;
     state = state.copyWith(
       barcode: barcode,
+      hasNoBarcode: false,
       barcodeOrigin: ManualProductBarcodeOrigin.photo,
       error: null,
     );
   }
+
+  /// Whether "Hat keinen" refuses a barcode found on a photo: only when the
+  /// user set it, not when an edited food opened with it (#828).
+  bool get _refusesFoundBarcode => state.hasNoBarcode && _userMarkedNoBarcode;
 
   ManualProductResolvedWeightInput get _resolvedManualWeightInput {
     return resolveManualProductWeightInput(

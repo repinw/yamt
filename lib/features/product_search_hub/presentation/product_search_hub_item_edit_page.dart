@@ -32,7 +32,7 @@ class ProductSearchHubItemEditPage extends ConsumerWidget {
       // The editor reads the item once; later stock changes do not reset
       // the form.
       key: ValueKey(item.id),
-      config: InventoryReceiptManualProductConfig(item: item),
+      config: InventoryReceiptManualProductConfig(item: item, isEdit: true),
       showEatImmediatelyOption: false,
       initialAction: InventoryReceiptManualProductAction.addToInventory,
       showActionSelector: false,
