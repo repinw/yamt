@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -257,10 +258,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryPlanDetailsPage.copyKey));
     await tester.pumpAndSettle();
-    final days = [
-      today.add(const Duration(days: 1)),
-      today.add(const Duration(days: 3)),
-    ];
+    final days = [addLocalDays(today, 1), addLocalDays(today, 3)];
     for (final day in days) {
       await tester.tap(find.byKey(DiaryPlanDaysGrid.dayKey(day)));
       await tester.pump();
@@ -328,7 +326,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryMealCopySheet.mealKey(MealType.lunch)));
     await tester.pump();
-    final day = today.add(const Duration(days: 2));
+    final day = addLocalDays(today, 2);
     await tester.ensureVisible(find.byKey(DiaryPlanDaysGrid.dayKey(day)));
     await tester.tap(find.byKey(DiaryPlanDaysGrid.dayKey(day)));
     await tester.pump();
