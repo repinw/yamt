@@ -10,6 +10,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
@@ -30,6 +31,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_kcal_ruler.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../helpers/auth_user_data_key_session.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 import '../../../calories/support/fake_planned_entry_repository.dart';
@@ -885,6 +887,7 @@ Future<void> _pumpBalanceCard(
           (ref) => Stream<User?>.value(null),
         ),
         firebaseAuthProvider.overrideWithValue(auth),
+        userDataCipherProvider.overrideWithValue(testUserDataCipher),
         calorieLogRepositoryProvider.overrideWithValue(repository),
         plannedEntryRepositoryProvider.overrideWithValue(
           FakePlannedEntryRepository(plans: plans),

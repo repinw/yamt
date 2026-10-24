@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
@@ -40,9 +40,9 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   @override
   DiaryDayDashboardState build(DateTime selectedDay) {
     final normalizedDay = normalizeDiaryDay(selectedDay);
-    final userId =
-        ref.watch(authStateChangesProvider).asData?.value?.uid ??
-        ref.watch(firebaseAuthProvider).currentUser?.uid;
+    // Without the data key every read is empty, so a refresh would save zeros
+    // over the last good numbers.
+    final userId = ref.watch(userDataCipherProvider)?.uid;
     final preferences = ref.watch(appPreferencesProvider);
     final cacheRepository = ref.watch(diaryDayDashboardCacheRepositoryProvider);
     // A planned day may be today now, and then it gets its carryover.
@@ -155,9 +155,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   }) {
     return _refresh(
       normalizedDay: normalizeDiaryDay(selectedDay),
-      userId:
-          ref.read(authStateChangesProvider).asData?.value?.uid ??
-          ref.read(firebaseAuthProvider).currentUser?.uid,
+      userId: ref.read(userDataCipherProvider)?.uid,
       preferences: ref.read(appPreferencesProvider),
       cacheRepository: ref.read(diaryDayDashboardCacheRepositoryProvider),
       queueIfInFlight: queueIfInFlight,
@@ -174,7 +172,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     bool forceRefresh = false,
   }) async {
     // The last listener may drop this day before the refresh from build runs.
-    if (!ref.mounted) return;
+    if (!ref.mounted || userId == null) return;
     final inFlight = _refreshInFlight;
     if (inFlight != null && !forceRefresh) {
       if (queueIfInFlight) {
@@ -206,7 +204,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
 
   Future<void> _runRefresh({
     required DateTime normalizedDay,
-    required String? userId,
+    required String userId,
     required AppPreferences preferences,
     required DiaryDayDashboardCacheRepository cacheRepository,
     required int generation,
@@ -259,13 +257,11 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         error: null,
       );
 
-      if (userId != null) {
-        await cacheRepository.save(
-          preferences: preferences,
-          userId: userId,
-          data: snapshot,
-        );
-      }
+      await cacheRepository.save(
+        preferences: preferences,
+        userId: userId,
+        data: snapshot,
+      );
       if (_isCurrentRefresh(generation)) {
         ref.read(burnWeekLiveSyncProvider);
       }

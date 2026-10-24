@@ -10,6 +10,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -32,6 +33,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/helpers/auth_user_data_key_session.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
@@ -91,6 +93,7 @@ Widget _buildApp(
       appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       clockProvider.overrideWithValue(() => _now),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
+      userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
       firebaseAuthProvider.overrideWithValue(auth),
       calorieSettingsRepositoryProvider.overrideWithValue(settings),
       calorieLogRepositoryProvider.overrideWithValue(log),
