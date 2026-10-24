@@ -49,11 +49,11 @@ Future<DiaryDayDashboardLiveData> diaryDayDashboardLiveData(
       calorieWeekOverviewForWindowProvider(normalizedDay).future,
     );
     final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
-    final entriesFuture = ref
-        .watch(calorieLogRepositoryProvider)
-        .readEntriesForDay(normalizedDay);
     // Awaited below; ignore() only keeps an early failure from being
     // reported as unhandled while the other inputs still load.
+    final entriesFuture =
+        ref.watch(calorieLogRepositoryProvider).readEntriesForDay(normalizedDay)
+          ..ignore();
     final plannedEntriesFuture =
         ref
             .watch(plannedEntryRepositoryProvider)
