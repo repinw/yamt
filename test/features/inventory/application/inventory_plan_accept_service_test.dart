@@ -18,6 +18,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
+import 'package:yamt/features/inventory/domain/inventory_exceptions.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
@@ -338,13 +339,7 @@ void main() {
           _meal().copyWith(pendingRecipeIngredients: ['Salz']),
         ],
       ),
-      throwsA(
-        isA<InventoryPlanAcceptException>().having(
-          (error) => error.isNutritionPending,
-          'isNutritionPending',
-          isTrue,
-        ),
-      ),
+      throwsA(isA<PlanNutritionPendingException>()),
     );
     // No entry without kcal; the plan stays.
     expect(saved, isEmpty);
@@ -374,15 +369,7 @@ void main() {
         items: const [],
         meals: const [],
       ),
-      throwsA(
-        isA<InventoryPlanAcceptException>()
-            .having(
-              (error) => error.isNutritionPending,
-              'isNutritionPending',
-              isFalse,
-            )
-            .having((error) => error.isMealGone, 'isMealGone', isTrue),
-      ),
+      throwsA(isA<PlanSourceGoneException>()),
     );
     expect(saved, isEmpty);
   });
@@ -434,13 +421,7 @@ void main() {
 
     await expectLater(
       service.accept(_recipeReminder(), items: const [], meals: const []),
-      throwsA(
-        isA<InventoryPlanAcceptException>().having(
-          (error) => error.isNutritionPending,
-          'isNutritionPending',
-          isTrue,
-        ),
-      ),
+      throwsA(isA<PlanNutritionPendingException>()),
     );
     expect(saved, isEmpty);
     expect(plans.plans.map((plan) => plan.id), contains('plan-2'));
@@ -451,13 +432,7 @@ void main() {
 
     await expectLater(
       service.accept(_recipeReminder(), items: const [], meals: const []),
-      throwsA(
-        isA<InventoryPlanAcceptException>().having(
-          (error) => error.isMealGone,
-          'isMealGone',
-          isTrue,
-        ),
-      ),
+      throwsA(isA<PlanSourceGoneException>()),
     );
     expect(saved, isEmpty);
   });
@@ -479,7 +454,7 @@ void main() {
         items: [_oats(id: 'oats-1')],
         meals: const [],
       ),
-      throwsA(isA<InventoryPlanAcceptException>()),
+      throwsA(isA<PlanAcceptFailedException>()),
     );
 
     expect(plans.plans.map((plan) => plan.id), contains('plan-1'));
@@ -564,13 +539,7 @@ void main() {
         items: const [],
         meals: [_meal().copyWith(inPot: true)],
       ),
-      throwsA(
-        isA<InventoryPlanAcceptException>().having(
-          (error) => error.isMealInPot,
-          'isMealInPot',
-          isTrue,
-        ),
-      ),
+      throwsA(isA<PlanMealInPotException>()),
     );
     expect(plans.plans.map((plan) => plan.id), contains('plan-2'));
   });
