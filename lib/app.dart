@@ -29,6 +29,8 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/plan_shortage_reminder_listener.dart';
 import 'package:yamt/features/inventory/presentation/widgets/recipe_reminder_plan_listener.dart';
+import 'package:yamt/features/product_search_hub/application/'
+    'pending_photo_upload_retry.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/scanner/presentation/shared/shared_receipt_listener.dart';
@@ -54,6 +56,7 @@ class _YAMTState extends ConsumerState<YAMT> {
   ProviderSubscription<void>? _homeWidgetSyncSubscription;
   ProviderSubscription<ThemeMode>? _nativeThemeModeSubscription;
   ProviderSubscription<AsyncValue<void>>? _clientVersionSubscription;
+  ProviderSubscription<AsyncValue<void>>? _photoUploadRetrySubscription;
 
   @override
   void initState() {
@@ -63,6 +66,11 @@ class _YAMTState extends ConsumerState<YAMT> {
     // Saves the app version of this device for every signed-in user.
     _clientVersionSubscription ??= ref.listenManual<AsyncValue<void>>(
       appClientVersionRecordProvider,
+      _keepProviderWarm,
+    );
+    // Uploads the photos that an earlier upload left on this device.
+    _photoUploadRetrySubscription ??= ref.listenManual<AsyncValue<void>>(
+      pendingPhotoUploadRetryProvider,
       _keepProviderWarm,
     );
     // Once at start, for a choice saved before the launch screen followed it,
@@ -82,6 +90,7 @@ class _YAMTState extends ConsumerState<YAMT> {
     _homeWidgetSyncSubscription?.close();
     _nativeThemeModeSubscription?.close();
     _clientVersionSubscription?.close();
+    _photoUploadRetrySubscription?.close();
     super.dispose();
   }
 

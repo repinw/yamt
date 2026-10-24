@@ -20,6 +20,7 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/manual_product_missing_field.dart';
+import 'package:yamt/features/product_search_hub/presentation/photo_upload_queued_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -139,8 +140,9 @@ InventoryReceiptManualProductResult? tryBuildDirectEatResultFromInventoryItem({
 ///
 /// The save does not wait for the photo upload: the product keeps the
 /// Storage address of the front photo, which shows from the image cache
-/// until it is uploaded. When the upload fails or cannot start,
-/// [onPhotosNotSaved] tells the user, also after the page closed.
+/// until it is uploaded. When the upload cannot start, [onPhotosNotSaved]
+/// tells the user; when it fails, the photos wait on the device for a later
+/// try and [onPhotosQueued] tells the user. Both work after the page closed.
 Future<void> executeEditorSave({
   required WidgetRef ref,
   required InventoryReceiptManualProductConfig config,
@@ -148,6 +150,7 @@ Future<void> executeEditorSave({
   required InventoryReceiptManualProductAction selectedAction,
   required bool Function() isMounted,
   required VoidCallback onPhotosNotSaved,
+  required VoidCallback onPhotosQueued,
   required void Function(InventoryReceiptManualProductResult) onClosePage,
 }) async {
   final state = ref.read(
@@ -158,16 +161,6 @@ Future<void> executeEditorSave({
       !canSaveManualProduct(state: state, selectedAction: selectedAction)) {
     return;
   }
-  void photosFailed(Object error, StackTrace stackTrace) {
-    log(
-      'Storing the package photos failed.',
-      name: 'ManualProductEditor',
-      error: error,
-      stackTrace: stackTrace,
-    );
-    onPhotosNotSaved();
-  }
-
   // Validate before the upload starts, so a form that cannot be saved leaves
   // no photos in Storage; Storage rules forbid deleting them afterwards.
   // Today the save gate above already rules this out; this keeps it so if
@@ -181,9 +174,15 @@ Future<void> executeEditorSave({
         .read(photos.notifier)
         .savePhotos(barcode: state.barcode, name: state.nameText.trim());
   } on Object catch (error, stackTrace) {
-    photosFailed(error, stackTrace);
+    log(
+      'Storing the package photos failed.',
+      name: 'ManualProductEditor',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    onPhotosNotSaved();
   }
-  unawaited(upload?.done.then((_) {}, onError: photosFailed));
+  whenPhotoUploadQueued(upload?.done, onPhotosQueued);
   if (!isMounted()) return;
   // Built again with the photo address, which can change how the product is
   // stored. Null means the form changed while savePhotos started the upload:

@@ -19,6 +19,22 @@ class FakeFirebaseStorage extends Fake implements FirebaseStorage {
   /// The content types of the uploaded files by path.
   final contentTypes = <String, String?>{};
 
+  /// The custom metadata of the uploaded files by path.
+  final customMetadata = <String, Map<String, String>?>{};
+
+  /// The error that every upload fails with, such as a lost connection.
+  Object? uploadError;
+
+  /// Whether an upload to a stored file fails as unauthorized, like the
+  /// `isNewFile` rule in `storage.rules`.
+  bool refuseOverwrites = false;
+
+  /// The paths of every upload, in order.
+  final uploads = <String>[];
+
+  /// Futures that hold the next uploads until they complete, one each.
+  final uploadGates = <Future<void>>[];
+
   @override
   Reference ref([String? path]) => _FakeReference(this, path ?? '');
 }
@@ -41,10 +57,29 @@ class _FakeReference extends Fake implements Reference {
 
   @override
   UploadTask putData(Uint8List data, [SettableMetadata? metadata]) {
+    final error =
+        _storage.uploadError ??
+        (_storage.refuseOverwrites && _storage.files.contains(fullPath)
+            ? FirebaseException(plugin: 'storage', code: 'unauthorized')
+            : null);
+    if (error != null) return _FakeUploadTask(Future.error(error));
+    _storage.uploads.add(fullPath);
     _storage.files.add(fullPath);
     _storage.contents[fullPath] = data;
     _storage.contentTypes[fullPath] = metadata?.contentType;
-    return _FakeUploadTask(Future.value(_FakeTaskSnapshot()));
+    _storage.customMetadata[fullPath] = metadata?.customMetadata;
+    final gate = _storage.uploadGates.isEmpty
+        ? Future<void>.value()
+        : _storage.uploadGates.removeAt(0);
+    return _FakeUploadTask(gate.then((_) => _FakeTaskSnapshot()));
+  }
+
+  @override
+  Future<FullMetadata> getMetadata() async {
+    if (!_storage.files.contains(fullPath)) {
+      throw FirebaseException(plugin: 'storage', code: 'object-not-found');
+    }
+    return FullMetadata({'fullPath': fullPath});
   }
 
   @override

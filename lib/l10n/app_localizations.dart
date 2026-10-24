@@ -572,6 +572,12 @@ abstract class AppLocalizations {
   /// **'The photos could not be stored. The product is saved without them.'**
   String get productEditorPhotosNotSaved;
 
+  /// No description provided for @photoUploadQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos will be uploaded later.'**
+  String get photoUploadQueued;
+
   /// No description provided for @productEditorTakeNutritionTablePhoto.
   ///
   /// In en, this message translates to:

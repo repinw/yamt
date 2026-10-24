@@ -296,6 +296,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Fotos konnten nicht gespeichert werden. Das Produkt wird ohne sie gespeichert.';
 
   @override
+  String get photoUploadQueued => 'Fotos werden später hochgeladen.';
+
+  @override
   String get productEditorTakeNutritionTablePhoto =>
       'Nährwerttabelle fotografieren';
 

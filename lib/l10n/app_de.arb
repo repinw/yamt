@@ -114,6 +114,7 @@
   "productEditorCameraFailed": "Das Foto konnte nicht aufgenommen werden.",
   "productEditorCameraUnsupported": "Auf diesem Gerät gehen keine Fotos.",
   "productEditorPhotosNotSaved": "Die Fotos konnten nicht gespeichert werden. Das Produkt wird ohne sie gespeichert.",
+  "photoUploadQueued": "Fotos werden später hochgeladen.",
   "productEditorTakeNutritionTablePhoto": "Nährwerttabelle fotografieren",
   "productSearchHubCreateProductAction": "Produkt erstellen",
   "productSearchHubStoredInVorrat": "{name} ist im Vorrat",

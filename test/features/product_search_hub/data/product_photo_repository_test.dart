@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' as io;
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
@@ -7,6 +8,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'photo_upload_repository.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'product_photo_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
@@ -106,10 +109,22 @@ ProductPhotoRepository _repository({
     },
     barcodeReader: (_) async => scannedBarcode,
     imageCache: imageCache ?? _FakeImageCache(),
+    uploads: PhotoUploadRepository(
+      storage: storage,
+      ownerId: storage == null ? null : 'user-1',
+      folder: () async => _uploadFolder,
+    ),
   );
 }
 
+late io.Directory _uploadFolder;
+
 void main() {
+  setUp(() async {
+    _uploadFolder = await io.Directory.systemTemp.createTemp('photo_uploads');
+    addTearDown(() => _uploadFolder.delete(recursive: true));
+  });
+
   test('sends the photo and reads the package front', () async {
     Map<String, Object?>? sent;
     final repository = _repository(
@@ -225,7 +240,10 @@ void main() {
       );
       expect(cache.files[upload.frontAddress], _photo.bytes);
       await upload.done;
-      expect(storage.uploads, ['nutrition_table.jpg', 'front.jpg']);
+      expect(
+        storage.uploads,
+        unorderedEquals(['nutrition_table.jpg', 'front.jpg']),
+      );
     },
   );
 

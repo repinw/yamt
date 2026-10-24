@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' show log;
+import 'dart:io' show File;
 
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -16,6 +17,7 @@ import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/photo_jpeg.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/product_search_hub/data/photo_upload_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_exceptions.dart';
@@ -59,6 +61,7 @@ ProductPhotoRepository productPhotoRepository(Ref ref) {
     },
     barcodeReader: _readBarcodeWithScanner,
     imageCache: storageImageCacheManager,
+    uploads: ref.watch(photoUploadRepositoryProvider),
   );
 }
 
@@ -91,6 +94,7 @@ class ProductPhotoRepository {
     required this._templateClient,
     required this._barcodeReader,
     required this._imageCache,
+    required this._uploads,
   });
 
   final ImagePicker _imagePicker;
@@ -99,6 +103,7 @@ class ProductPhotoRepository {
   final ProductFrontTemplateClient _templateClient;
   final ProductBarcodeImageReader _barcodeReader;
   final BaseCacheManager _imageCache;
+  final PhotoUploadRepository _uploads;
 
   /// Scans the package with the document scanner, which crops it to its
   /// edges. Returns null when the user cancels.
@@ -179,11 +184,12 @@ class ProductPhotoRepository {
   ///
   /// The address is known before the upload, so the product can be saved
   /// right away. The front photo goes into the image cache under its
-  /// address and shows from there until it is downloaded. Other users see
-  /// it as the product image. Both photos carry the barcode and the name,
-  /// so they can be checked later. A failed nutrition table upload is only
-  /// logged; [ProductPhotoUpload.done] fails when the front photo fails.
-  /// Throws a [StateError] when signed out.
+  /// address and shows from there until it is downloaded. Both photos carry
+  /// the barcode and the name, so they can be checked later. A failed
+  /// nutrition table upload is only logged; [ProductPhotoUpload.done] fails
+  /// when the front photo fails. A failed upload stays in the
+  /// [PhotoUploadRepository] queue for a later try. Throws a [StateError]
+  /// when signed out.
   Future<ProductPhotoUpload> saveProductPhotos({
     required ProductPhoto? front,
     required ProductPhoto? nutritionTable,
@@ -192,21 +198,20 @@ class ProductPhotoRepository {
   }) async {
     final (:storage, :ownerId) = _signedIn();
     final folder = storage.ref('product_images/$ownerId/${_uuid.v4()}');
-    Future<void> upload(ProductPhoto photo, String kind) => _put(
+    Future<File> keep(ProductPhoto photo, String kind) => _keep(
       folder.child('$kind.jpg'),
       photo,
       {'kind': kind, 'barcode': barcode, 'name': name},
     );
 
-    // ponytail: the upload lives in memory; a closed app loses it. A
-    // lasting upload queue comes with #349.
     final uploads = <Future<void>>[];
     if (nutritionTable != null) {
+      final nutritionTableUpload = keep(
+        nutritionTable,
+        'nutrition_table',
+      ).then(_uploads.uploadPendingPhoto);
       uploads.add(
-        upload(nutritionTable, 'nutrition_table').catchError((
-          Object error,
-          StackTrace stackTrace,
-        ) {
+        nutritionTableUpload.catchError((Object error, StackTrace stackTrace) {
           log(
             'Storing the nutrition table photo failed.',
             name: _logName,
@@ -219,7 +224,7 @@ class ProductPhotoRepository {
     String? frontAddress;
     if (front != null) {
       frontAddress = await _cache(folder.child('front.jpg'), front);
-      uploads.add(upload(front, 'front'));
+      uploads.add(_uploads.uploadPendingPhoto(await keep(front, 'front')));
     }
     return ProductPhotoUpload(
       frontAddress: frontAddress,
@@ -241,9 +246,11 @@ class ProductPhotoRepository {
     final photoRef = storage.ref(
       'users/$ownerId/$privateFoodPhotoFolder/${_uuid.v4()}.jpg',
     );
+    final frontAddress = await _cache(photoRef, front);
+    final photo = await _keep(photoRef, front);
     return ProductPhotoUpload(
-      frontAddress: await _cache(photoRef, front),
-      done: _put(photoRef, front),
+      frontAddress: frontAddress,
+      done: _uploads.uploadPendingPhoto(photo),
     );
   }
 
@@ -265,23 +272,18 @@ class ProductPhotoRepository {
     return address;
   }
 
-  /// Uploads [photo] to [photoRef].
-  ///
-  /// Awaited, so the future is a plain `Future<void>` and not the SDK's
-  /// [UploadTask], whose catchError needs a [TaskSnapshot] back.
-  Future<void> _put(
+  /// Keeps [photo] on the device for an upload to [photoRef] and returns
+  /// its place in the upload queue.
+  Future<File> _keep(
     Reference photoRef,
     ProductPhoto photo, [
     Map<String, String>? customMetadata,
-  ]) async {
-    await photoRef.putData(
-      photo.bytes,
-      SettableMetadata(
-        contentType: photo.mimeType,
-        customMetadata: customMetadata,
-      ),
-    );
-  }
+  ]) => _uploads.addPendingPhoto(
+    path: photoRef.fullPath,
+    bytes: photo.bytes,
+    contentType: photo.mimeType,
+    customMetadata: customMetadata,
+  );
 
   static String? _text(Object? value) {
     final text = (value as String?)?.trim();

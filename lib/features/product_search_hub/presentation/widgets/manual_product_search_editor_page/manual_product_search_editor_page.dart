@@ -189,8 +189,7 @@ class _InventoryReceiptManualProductEditorPageState
     // The upload can fail after the page closed, so the snack bar goes to
     // the app's messenger.
     final messenger = ScaffoldMessenger.of(context);
-    final photosNotSaved = AppLocalizations.of(context)!
-        .productEditorPhotosNotSaved;
+    final l10n = AppLocalizations.of(context)!;
     unawaited(
       executeEditorSave(
         ref: ref,
@@ -199,8 +198,12 @@ class _InventoryReceiptManualProductEditorPageState
         selectedAction: _selectedAction,
         isMounted: () => mounted,
         onPhotosNotSaved: () => messenger.showAppSnackBar(
-          photosNotSaved,
+          l10n.productEditorPhotosNotSaved,
           tone: AppSnackBarTone.error,
+        ),
+        onPhotosQueued: () => messenger.showAppSnackBar(
+          l10n.photoUploadQueued,
+          tone: AppSnackBarTone.info,
         ),
         onClosePage: _closePage,
       ),

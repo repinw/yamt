@@ -291,6 +291,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'The photos could not be stored. The product is saved without them.';
 
   @override
+  String get photoUploadQueued => 'Photos will be uploaded later.';
+
+  @override
   String get productEditorTakeNutritionTablePhoto =>
       'Photograph the nutrition table';
 
