@@ -79,10 +79,39 @@ void main() {
     expect(result.table, contains('weight_change=0'));
     expect(result.table, isNot(contains('activity_day')));
     expect(result.table, isNot(contains('activity_total')));
-    expect(result.table, isNot(contains('manual_fallback')));
+    expect(result.table, isNot(contains('manual')));
     expect(result.table, contains('health'));
     expect(result.table, isNot(contains('2026-04-09')));
     expect(result.rowCount, 5);
+  });
+
+  test('a day with several manual weights shows their median', () async {
+    final day = DateTime(2026, 4, 10);
+    final result = await buildCalorieDebugDump(
+      calorieLogRepository: FakeCalorieLogRepository(),
+      healthWeightSamplesFuture: Future.value(const <HealthWeightSample>[]),
+      manualWeightRepository: FakeManualHealthWeightRepository(
+        <ManualHealthWeightEntry>[
+          ManualHealthWeightEntry(day: day, weightKg: 80),
+          ManualHealthWeightEntry(day: day, weightKg: 82),
+        ],
+      ),
+      healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
+      settingsFuture: Future<CalorieGoalSettings>.value(
+        CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: const CalorieCalculatorProfile.defaults(),
+          effectiveDate: day,
+        ),
+      ),
+      now: day.add(const Duration(hours: 20)),
+    );
+
+    final weightRow = result.table
+        .split('\n')
+        .singleWhere((line) => line.contains('body_weight'));
+    expect(weightRow, contains('| 81 |'));
+    expect(weightRow, contains('| manual |'));
   });
 
   test('buildCalorieDebugDump hides rows before first goal window', () async {
