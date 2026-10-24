@@ -8,53 +8,6 @@ part of 'calorie_week_overview_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Calorie week overview.
-
-@ProviderFor(calorieWeekOverview)
-final calorieWeekOverviewProvider = CalorieWeekOverviewProvider._();
-
-/// Calorie week overview.
-
-final class CalorieWeekOverviewProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<CalorieWeekOverview>,
-          CalorieWeekOverview,
-          FutureOr<CalorieWeekOverview>
-        >
-    with
-        $FutureModifier<CalorieWeekOverview>,
-        $FutureProvider<CalorieWeekOverview> {
-  /// Calorie week overview.
-  CalorieWeekOverviewProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'calorieWeekOverviewProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$calorieWeekOverviewHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<CalorieWeekOverview> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<CalorieWeekOverview> create(Ref ref) {
-    return calorieWeekOverview(ref);
-  }
-}
-
-String _$calorieWeekOverviewHash() =>
-    r'b225b1492e2e058c035ea73a9ae7890fbe23693d';
-
 /// Calorie week overview for window.
 
 @ProviderFor(calorieWeekOverviewForWindow)

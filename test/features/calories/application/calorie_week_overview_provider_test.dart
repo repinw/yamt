@@ -9,7 +9,6 @@ import 'package:yamt/features/calories/application/calorie_entry_day_change.dart
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/application/calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_consumption_snapshot_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
@@ -141,15 +140,6 @@ ProviderContainer _futureDaysContainer({
   return container;
 }
 
-Future<CalorieWeekOverview> _readVisibleWeekOverview(
-  ProviderContainer container,
-) {
-  final subscription = container.listen(calorieWeekOverviewProvider, (_, _) {});
-  addTearDown(subscription.close);
-
-  return container.read(calorieWeekOverviewProvider.future);
-}
-
 Future<CalorieWeekOverview> _readWeekOverviewForWindow(
   ProviderContainer container,
   DateTime visibleWindowEnd,
@@ -241,7 +231,7 @@ void main() {
     addTearDown(container.dispose);
 
     await container.read(calorieGoalControllerProvider.future);
-    final overview = await _readVisibleWeekOverview(container);
+    final overview = await _readWeekOverviewForWindow(container, today);
 
     expect(overview.days, hasLength(diaryVisibleDayCount));
     expect(overview.days.last.date, today);
@@ -481,7 +471,7 @@ void main() {
   });
 
   test(
-    'calorieWeekOverview anchors the visible window to window controller',
+    'calorieWeekOverview anchors the visible window to its end day',
     () async {
       final today = normalizeDiaryDay(DateTime.now());
       final selectedDay = addDiaryDays(today, -1);
@@ -524,11 +514,8 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      container
-          .read(calorieVisibleWindowControllerProvider.notifier)
-          .setWindowEnd(selectedDay);
       await container.read(calorieGoalControllerProvider.future);
-      final overview = await _readVisibleWeekOverview(container);
+      final overview = await _readWeekOverviewForWindow(container, selectedDay);
 
       expect(overview.days, hasLength(diaryVisibleDayCount));
       expect(overview.days.last.date, selectedDay);
@@ -590,7 +577,7 @@ void main() {
   });
 
   test(
-    'calorieWeekConsumptionSnapshot follows visible window controller',
+    'calorieWeekConsumptionSnapshot covers the seven days up to its end day',
     () async {
       final windowEnd = DateTime(2026, 3, 20);
       final firstVisibleDay = addDiaryDays(windowEnd, -6);
@@ -637,13 +624,12 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      container
-          .read(calorieVisibleWindowControllerProvider.notifier)
-          .setWindowEnd(windowEnd);
-
-      final snapshot = await container.read(
-        calorieWeekConsumptionSnapshotProvider.future,
+      final provider = calorieWeekConsumptionSnapshotForWindowProvider(
+        windowEnd,
       );
+      final subscription = container.listen(provider, (_, _) {});
+      addTearDown(subscription.close);
+      final snapshot = await container.read(provider.future);
 
       expect(snapshot.days.first.date, firstVisibleDay);
       expect(snapshot.days.last.date, windowEnd);
@@ -731,21 +717,16 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final windowSubscription = container.listen(
-        calorieVisibleWindowControllerProvider,
-        (_, _) {},
-      );
-      addTearDown(windowSubscription.close);
-      container
-          .read(calorieVisibleWindowControllerProvider.notifier)
-          .setWindowEnd(windowEnd);
       await container.read(calorieGoalControllerProvider.future);
 
       final initialDayOverview = await _readDayOverviewForDate(
         container,
         mutatedDay,
       );
-      final initialWeekOverview = await _readVisibleWeekOverview(container);
+      final initialWeekOverview = await _readWeekOverviewForWindow(
+        container,
+        windowEnd,
+      );
 
       expect(initialDayOverview.totalKcal, 400);
       expect(initialWeekOverview.totalConsumedKcal, 400);
@@ -764,7 +745,10 @@ void main() {
         container,
         mutatedDay,
       );
-      final updatedWeekOverview = await _readVisibleWeekOverview(container);
+      final updatedWeekOverview = await _readWeekOverviewForWindow(
+        container,
+        windowEnd,
+      );
 
       expect(updatedDayOverview.totalKcal, 900);
       expect(updatedDayOverview.entryCount, 2);
@@ -779,7 +763,10 @@ void main() {
         container,
         mutatedDay,
       );
-      final deletedWeekOverview = await _readVisibleWeekOverview(container);
+      final deletedWeekOverview = await _readWeekOverviewForWindow(
+        container,
+        windowEnd,
+      );
 
       expect(deletedDayOverview.totalKcal, 400);
       expect(deletedDayOverview.entryCount, 1);
@@ -831,7 +818,7 @@ void main() {
     addTearDown(container.dispose);
 
     await container.read(calorieGoalControllerProvider.future);
-    final overview = await _readVisibleWeekOverview(container);
+    final overview = await _readWeekOverviewForWindow(container, today);
 
     expect(
       overview.days.firstWhere((day) => day.date == threeDaysAgo).goalKcal,
@@ -889,11 +876,8 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container
-        .read(calorieVisibleWindowControllerProvider.notifier)
-        .setWindowEnd(today);
     await container.read(calorieGoalControllerProvider.future);
-    final overview = await _readVisibleWeekOverview(container);
+    final overview = await _readWeekOverviewForWindow(container, today);
 
     expect(overview.balanceStartDate, cycleStartDay);
     expect(overview.carryoverBeforeTodayKcal, 0);
@@ -1014,11 +998,8 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      container
-          .read(calorieVisibleWindowControllerProvider.notifier)
-          .setWindowEnd(today);
       await container.read(calorieGoalControllerProvider.future);
-      final overview = await _readVisibleWeekOverview(container);
+      final overview = await _readWeekOverviewForWindow(container, today);
 
       expect(overview.balanceStartDate, cycleStartDay);
       expect(overview.carryoverBeforeTodayKcal, 0);
@@ -1067,13 +1048,13 @@ void main() {
     addTearDown(container.dispose);
 
     final subscription = container.listen(
-      calorieWeekOverviewProvider,
+      calorieWeekOverviewForWindowProvider(today),
       (_, _) {},
       fireImmediately: true,
     );
     addTearDown(subscription.close);
 
-    final initialOverview = await _readVisibleWeekOverview(container);
+    final initialOverview = await _readWeekOverviewForWindow(container, today);
 
     expect(initialOverview.totalConsumedKcal, 600);
     expect(initialOverview.totalGoalKcal, 2500);
@@ -1081,18 +1062,18 @@ void main() {
     expect(dayReadCount, 0);
 
     final updatedOverview = Completer<CalorieWeekOverview>();
-    final updatedSubscription = container.listen(calorieWeekOverviewProvider, (
-      _,
-      next,
-    ) {
-      final overview = next.asData?.value;
-      if (overview == null || updatedOverview.isCompleted) {
-        return;
-      }
-      if (overview.totalGoalKcal == 1800) {
-        updatedOverview.complete(overview);
-      }
-    });
+    final updatedSubscription = container.listen(
+      calorieWeekOverviewForWindowProvider(today),
+      (_, next) {
+        final overview = next.asData?.value;
+        if (overview == null || updatedOverview.isCompleted) {
+          return;
+        }
+        if (overview.totalGoalKcal == 1800) {
+          updatedOverview.complete(overview);
+        }
+      },
+    );
     addTearDown(updatedSubscription.close);
 
     settingsRepository.emit(
@@ -1141,7 +1122,7 @@ void main() {
     addTearDown(container.dispose);
 
     await container.read(calorieGoalControllerProvider.future);
-    final overview = await _readVisibleWeekOverview(container);
+    final overview = await _readWeekOverviewForWindow(container, today);
 
     expect(overview.goalStartsInFuture, isTrue);
     expect(overview.nextGoalStartDate, tomorrow);
@@ -1189,11 +1170,8 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      container
-          .read(calorieVisibleWindowControllerProvider.notifier)
-          .setWindowEnd(startDay);
       await container.read(calorieGoalControllerProvider.future);
-      final overview = await _readVisibleWeekOverview(container);
+      final overview = await _readWeekOverviewForWindow(container, startDay);
 
       expect(overview.balanceStartDate, startDay);
       expect(overview.totalConsumedKcal, 0);
@@ -1268,11 +1246,8 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      container
-          .read(calorieVisibleWindowControllerProvider.notifier)
-          .setWindowEnd(today);
       await container.read(calorieGoalControllerProvider.future);
-      final overview = await _readVisibleWeekOverview(container);
+      final overview = await _readWeekOverviewForWindow(container, today);
 
       expect(overview.totalConsumedKcal, 9238);
       expect(overview.totalGoalKcal, 8400);

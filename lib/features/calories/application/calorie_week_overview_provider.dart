@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
-import 'package:yamt/features/calories/application/calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_consumption_snapshot_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_builder.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_log_loader.dart';
@@ -15,15 +14,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_week_overview_provider.g.dart';
-
-/// Calorie week overview.
-@riverpod
-Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
-  final visibleWindowEnd = ref.watch(calorieVisibleWindowControllerProvider);
-  return await ref.watch(
-    calorieWeekOverviewForWindowProvider(visibleWindowEnd).future,
-  );
-}
 
 /// Calorie week overview for window.
 @riverpod
