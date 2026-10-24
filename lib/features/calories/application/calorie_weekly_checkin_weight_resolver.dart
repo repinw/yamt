@@ -7,8 +7,8 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Merges daily weights and the goal-anchor weight for a check-in.
 ///
-/// [dailyWeightByDay] holds one measured weight per day, with manual entries
-/// already preferred over Health samples.
+/// [dailyWeightByDay] holds one measured weight per day, the median of the
+/// day's manual and Health weighings.
 CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
   required CalorieWeeklyCheckInWindowDates dates,
   required CalorieGoalHistoryEntry? anchorEntry,
