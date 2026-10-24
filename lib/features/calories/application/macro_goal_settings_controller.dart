@@ -46,22 +46,4 @@ class MacroGoalSettingsController extends _$MacroGoalSettingsController {
         .read(appPreferencesProvider)
         .setString(_macroGoalSettingsKey, nextSettings.toJsonString());
   }
-
-  /// Sets sport activity status.
-  Future<void> setSportActive({required bool isSportActive}) async {
-    final next = state.copyWith(isSportActive: isSportActive);
-    await updateSettings(next);
-  }
-
-  /// Sets custom multipliers.
-  Future<void> setCustomMultipliers({
-    double? proteinMultiplier,
-    double? fatMultiplier,
-  }) async {
-    final next = state.copyWith(
-      customProteinMultiplier: proteinMultiplier,
-      customFatMultiplier: fatMultiplier,
-    );
-    await updateSettings(next);
-  }
 }

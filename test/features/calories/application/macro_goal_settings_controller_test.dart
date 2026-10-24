@@ -45,50 +45,28 @@ void main() {
       expect(settings.customFatMultiplier, 0.9);
     });
 
-    test('setSportActive updates state and persists to preferences', () async {
+    test('updateSettings changes the state and stores it', () async {
       final preferences = MemoryAppPreferences();
       final container = ProviderContainer(
         overrides: [appPreferencesProvider.overrideWithValue(preferences)],
       );
       addTearDown(container.dispose);
-
-      final controller = container.read(
-        macroGoalSettingsControllerProvider.notifier,
-      );
-      await controller.setSportActive(isSportActive: false);
-
-      final current = container.read(macroGoalSettingsControllerProvider);
-      expect(current.isSportActive, isFalse);
-
-      final storedJson = preferences.getStringSync('macro_goal_settings_v1');
-      expect(storedJson, isNotNull);
-      final restored = MacroGoalSettings.fromJsonString(storedJson);
-      expect(restored?.isSportActive, isFalse);
-    });
-
-    test('setCustomMultipliers updates state and persists', () async {
-      final preferences = MemoryAppPreferences();
-      final container = ProviderContainer(
-        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
-      );
-      addTearDown(container.dispose);
-
-      final controller = container.read(
-        macroGoalSettingsControllerProvider.notifier,
-      );
-      await controller.setCustomMultipliers(
-        proteinMultiplier: 2.4,
-        fatMultiplier: 1.1,
+      const next = MacroGoalSettings(
+        isSportActive: true,
+        customProteinMultiplier: 2,
       );
 
-      final current = container.read(macroGoalSettingsControllerProvider);
-      expect(current.customProteinMultiplier, 2.4);
-      expect(current.customFatMultiplier, 1.1);
+      await container
+          .read(macroGoalSettingsControllerProvider.notifier)
+          .updateSettings(next);
 
-      final storedJson = preferences.getStringSync('macro_goal_settings_v1');
-      final restored = MacroGoalSettings.fromJsonString(storedJson);
-      expect(restored?.customProteinMultiplier, 2.4);
-      expect(restored?.customFatMultiplier, 1.1);
+      expect(container.read(macroGoalSettingsControllerProvider), next);
+      expect(
+        MacroGoalSettings.fromJsonString(
+          await preferences.getString('macro_goal_settings_v1'),
+        ),
+        next,
+      );
     });
   });
 }

@@ -157,25 +157,6 @@ class MacroGoalSettings {
         MacroCalculationDefaults.defaultFatMultiplier(isMale: isMale);
   }
 
-  /// Creates a copy with optionally replaced fields.
-  MacroGoalSettings copyWith({
-    bool? isSportActive,
-    double? customProteinMultiplier,
-    double? customFatMultiplier,
-    bool clearCustomProtein = false,
-    bool clearCustomFat = false,
-  }) {
-    return MacroGoalSettings(
-      isSportActive: isSportActive ?? this.isSportActive,
-      customProteinMultiplier: clearCustomProtein
-          ? null
-          : (customProteinMultiplier ?? this.customProteinMultiplier),
-      customFatMultiplier: clearCustomFat
-          ? null
-          : (customFatMultiplier ?? this.customFatMultiplier),
-    );
-  }
-
   /// Converts to JSON map.
   Map<String, dynamic> toJson() => {
     'is_sport_active': ?isSportActive,
