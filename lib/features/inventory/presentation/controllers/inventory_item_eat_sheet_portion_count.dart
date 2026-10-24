@@ -1,4 +1,5 @@
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
@@ -51,8 +52,11 @@ double eatenCount(InventoryItemEatSheetState state) {
   final set = parsePositiveDecimalInput(state.portionCountText);
   if (counted != null &&
       set != null &&
-      (state.enteredAmount == 0 ||
-          (set * counted.value - state.enteredAmount).abs() <= 0.05 + 0.001)) {
+      portionCountGivesAmount(
+        count: set,
+        portion: counted.value,
+        amount: state.enteredAmount,
+      )) {
     return set;
   }
   return state.portionCount ?? 1;
@@ -103,12 +107,9 @@ double portionWeight(InventoryItemEatSheetState state) {
 /// portion mode, else the portions of the counted weight; 1 without a
 /// weight.
 double wheelMaxCount(InventoryItemEatSheetState state) {
-  final calculator = state.calculator;
-  if (state.usesPortionMode) {
-    return calculator.maxAmount / calculator.inventoryAmountScale;
-  }
-  final weight = portionWeight(state);
-  return weight <= 0 ? 1 : calculator.maxAmount / weight;
+  return state.usesPortionMode
+      ? state.calculator.maxPieces
+      : state.calculator.maxPortionsOf(portionWeight(state));
 }
 
 /// [state] with the entered amount named [label] as a portion, or the

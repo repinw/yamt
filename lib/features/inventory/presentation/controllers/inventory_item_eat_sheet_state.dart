@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/domain/eat_amount_step.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_amounts.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_calculator.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 
@@ -196,13 +197,8 @@ class InventoryItemEatSheetState {
 
   /// Number of whole packages in the entered amount, or null when the item
   /// has no package to count.
-  int? get packageCount {
-    final package = calculator.packageAmount;
-    if (package == null || usesPortionMode) {
-      return null;
-    }
-    return ((enteredAmount + 0.001) / package).floor();
-  }
+  int? get packageCount =>
+      usesPortionMode ? null : calculator.packageCountOf(enteredAmount);
 
   /// Value of the amount field on the ruler, or 0 when it cannot be parsed.
   double get amountValue => usesPortionMode

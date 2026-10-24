@@ -1,6 +1,5 @@
-import 'dart:math' as math;
-
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_amounts.dart';
 
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
@@ -121,7 +120,7 @@ InventoryItemEatMarker? _startPortion(
     final smallest = named.reduce((a, b) => b.amount < a.amount ? b : a);
     return mark(smallest.amount, smallest.label);
   }
-  final package = packageSizeOf(calculator);
+  final package = calculator.packageSize;
   return package == null ? null : mark(package.toDouble(), null);
 }
 
@@ -141,14 +140,12 @@ InventoryItemEatSheetState withRulerAmount(
       !state.calculator.takesDecimalWeight) {
     return withAmountText(state, _format(state, value.round()));
   }
-  final half = counted.value / 2;
-  final halves = math.min(
-    math.max(1, (value / half).round()),
-    (state.calculator.maxAmount / half).floor(),
-  );
   return withAmountText(
     state,
-    formatEatenAmount(state, halves * half),
+    formatEatenAmount(
+      state,
+      state.calculator.halfPortionAmount(value, counted.value),
+    ),
   ).copyWith(countedPortion: () => counted);
 }
 
@@ -163,12 +160,12 @@ InventoryItemEatSheetState? withSteppedPortions(
   if (marker == null || state.portionCount == null) {
     return null;
   }
-  final size = marker.value;
-  final count = state.enteredAmount / size;
-  final next = up
-      ? ((count + 0.001).floor() + 1) * size
-      : math.max(0, (count - 0.001).ceil() - 1) * size;
-  if (next > state.calculator.maxAmount) {
+  final next = state.calculator.steppedPortionAmount(
+    state.enteredAmount,
+    marker.value,
+    up: up,
+  );
+  if (next == null) {
     return null;
   }
   return withAmountText(
@@ -184,15 +181,11 @@ InventoryItemEatSheetState? withSteppedPackages(
   InventoryItemEatSheetState state, {
   required bool up,
 }) {
-  final package = state.calculator.packageAmount;
-  if (package == null) {
-    return null;
-  }
-  final amount = state.enteredAmount;
-  final next = up
-      ? ((amount + 0.001) / package).floor() + 1
-      : math.max(0, ((amount - 0.001) / package).ceil() - 1);
-  return withAmountText(state, _format(state, next * package));
+  final next = state.calculator.steppedPackageAmount(
+    state.enteredAmount,
+    up: up,
+  );
+  return next == null ? null : withAmountText(state, _format(state, next));
 }
 
 String _format(InventoryItemEatSheetState state, int amount) {
@@ -203,12 +196,7 @@ String _format(InventoryItemEatSheetState state, int amount) {
 /// stock that keeps parts, such as "1.25", else whole, such as "2". A count
 /// over the stock is all of it, so rounding never takes more than is left.
 String formatPieceCount(InventoryItemEatSheetState state, double count) {
-  final calculator = state.calculator;
-  final amount = math.min(
-    count * calculator.inventoryAmountScale,
-    calculator.maxAmount.toDouble(),
-  );
-  return _format(state, amount.round());
+  return _format(state, state.calculator.stockAmountOfPieces(count));
 }
 
 /// The amount of [marker] as the amount field shows it: in pieces in
