@@ -73,6 +73,12 @@ jobs:
       - name: Unit and widget tests
         run: flutter test
 
+      # The runner is in UTC, which has no clock change.
+      - name: Clock change tests in Europe/Berlin
+        run: flutter test test/features/calories/clock_change
+        env:
+          TZ: Europe/Berlin
+
       # A stale provider hash compiles and passes every test, so only this
       # step catches it. It runs last because it regenerates the code, and
       # the steps above must check the generated code that the commits hold.
