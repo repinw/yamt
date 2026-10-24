@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_manual_add_product_factory.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
@@ -208,6 +211,56 @@ void main() {
 
       expect(matches, isEmpty, reason: text);
       expect(others, isEmpty, reason: text);
+    }
+  });
+
+  test('a food that speech writes apart still finds its own item (#785)', () {
+    // Rebuilt as on the phone: a self-made food with its package weight, and
+    // a rice whose brand holds the word "Reis".
+    final now = DateTime.utc(2026, 10, 23);
+    InventoryItem ownFood(
+      String id,
+      String name,
+      String weight,
+      String? brand,
+    ) => buildInventoryManualAddSavedItem(
+      id: id,
+      globalProduct: GlobalFoodItem.create(
+        id: 'food-$id',
+        name: name,
+        now: now,
+        brand: brand,
+        packageWeight: weight,
+      ),
+      now: now,
+      storeName: 'Store',
+      inventoryWeight: weight,
+      inCatalog: false,
+    );
+    final items = [
+      ownFood('long-grain', 'Langkornreis', '1000 g', 'Reis-Fit'),
+      ownFood('test-rice', 'Testreis', '785 g', null),
+    ];
+
+    for (final text in [
+      '100 g Test Reis',
+      '100 g Test-Reis',
+      '100 g Testreis',
+    ]) {
+      expect(
+        bestIngredientStockMatch(
+          text: text,
+          requirement: const TemplateIngredientParser().parseRequirement(
+            ingredient: text,
+            selectedPortions: 1,
+            basePortions: 1,
+          ),
+          items: items,
+          localeCode: 'de',
+        )?.id,
+        'test-rice',
+        reason: text,
+      );
     }
   });
 }

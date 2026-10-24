@@ -133,13 +133,20 @@ int _ingredientInventoryMatchScoreWithLexicon({
     return 0;
   }
 
+  final normalizedName = normalizeIngredientMatchText(item.name);
   var bestScore = 0;
   for (final normalizedIngredient in ingredientCandidates) {
-    final score = _scoreMatchTexts(
+    var score = _scoreMatchTexts(
       normalizedIngredient: normalizedIngredient,
       normalizedItem: normalizedItem,
       lexicon: lexicon,
     );
+    // The bare name matches too, also as "Test Reis" for "Testreis" (#785).
+    if (normalizedIngredient != normalizedItem &&
+        normalizedIngredient.replaceAll(' ', '') ==
+            normalizedName.replaceAll(' ', '')) {
+      score += 100;
+    }
     if (score > bestScore) {
       bestScore = score;
     }

@@ -257,4 +257,51 @@ void main() {
       isFalse,
     );
   });
+
+  test('a compound written as two words matches the item written as one, '
+      'and the other way round, but joins no words into other foods', () {
+    List<String> ids(String ingredient, List<InventoryItem> items) => [
+      for (final item in _match(
+        ingredient: ingredient,
+        inventoryItems: items,
+        localeCode: 'de',
+      ))
+        item.id,
+    ];
+
+    expect(
+      ids('100 g Test Reis', [
+        _item(id: 'long-grain', name: 'Langkornreis', brand: 'Reis-Fit'),
+        _item(id: 'test-rice', name: 'Testreis'),
+      ]).first,
+      'test-rice',
+    );
+    expect(
+      ids('1 Dose Kidneybohnen', [
+        _item(id: 'beans', name: 'Bohnen'),
+        _item(id: 'kidney', name: 'Kidney Bohnen'),
+      ]).first,
+      'kidney',
+    );
+    // With brands, the exact spelling still comes first.
+    expect(
+      ids('1 Dose Kidney Bohnen', [
+        _item(id: 'compact', name: 'Kidneybohnen', brand: 'Rewe'),
+        _item(id: 'spaced', name: 'Kidney Bohnen', brand: 'Edeka'),
+      ]).first,
+      'spaced',
+    );
+    // "heringintomatensoße" holds "gin", "rotelinsen" holds no "rotwein".
+    expect(
+      ids('200 g Hering in Tomatensoße', [
+        _item(id: 'gin', name: 'Gin'),
+        _item(id: 'herring', name: 'Heringsfilet'),
+      ]),
+      ['herring'],
+    );
+    expect(
+      ids('200 g Rote Linsen', [_item(id: 'wine', name: 'Rotwein')]),
+      isEmpty,
+    );
+  });
 }
