@@ -1,0 +1,36 @@
+{
+  "de": {
+    "new": [
+      "Erinnerung am Vortag, wenn für geplantes Essen Zutaten fehlen",
+      "Gewichtsliste: jede Wägung einzeln, bearbeiten, löschen oder ignorieren",
+      "Belege und Packungsfotos mit dem Dokumentenscanner, auch mehrseitig"
+    ],
+    "improved": [
+      "Salz, Pfeffer und andere Zutaten ohne Menge zählen als da, wenn sie im Vorrat sind",
+      "Frei kochen zeigt je Zeile den Vorrat-Artikel und lässt einen anderen wählen",
+      "Vorlagen öffnen auf der Rezeptseite und kochen mit ihren eigenen Mengen"
+    ],
+    "fixed": [
+      "Das Tagebuch zeigt nach dem Start sofort die Zahlen, ohne kurzes 0 kcal",
+      "Burn Week und Läufe verrutschen nach der Zeitumstellung nicht mehr",
+      "Kochen nimmt die richtige Zutat aus dem Vorrat"
+    ]
+  },
+  "en": {
+    "new": [
+      "A reminder the day before when planned food lacks ingredients",
+      "Weight list: every weighing on its own, edit, delete, or ignore it",
+      "Receipts and package photos with the document scanner, also several pages"
+    ],
+    "improved": [
+      "Salt, pepper, and other ingredients without an amount count as there when they are in the pantry",
+      "Free cooking shows the pantry item of each row and lets you pick another",
+      "Templates open on the recipe page and cook with their own amounts"
+    ],
+    "fixed": [
+      "The diary shows its numbers right after the start, without a brief 0 kcal",
+      "Burn Week and runs no longer shift after the clock change",
+      "Cooking takes the right ingredient from the pantry"
+    ]
+  }
+}
