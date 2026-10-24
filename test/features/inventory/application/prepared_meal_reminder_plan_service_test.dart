@@ -8,8 +8,13 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_reminder_plan_service.dart';
+import 'package:yamt/features/inventory/application/template_plan_entry.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
@@ -33,6 +38,76 @@ CalorieEntry _reminder(PreparedMeal meal, {String id = 'plan'}) =>
       nextEntryId: () => id,
       loggedDay: DateTime(2026, 10, 16),
     )!;
+
+/// A Kochbuch recipe of two portions with 200 g oats.
+final _recipe = PreparedMeal(
+  id: 'recipe',
+  name: 'Porridge',
+  totalPortions: 2,
+  remainingPortions: 2,
+  totalKcal: 0,
+  totalProtein: 0,
+  totalCarbs: 0,
+  totalFat: 0,
+  createdAt: DateTime(2026, 10, 5),
+  updatedAt: DateTime(2026, 10, 5),
+  components: const <PreparedMealComponent>[],
+  recipeIngredients: const ['200 g Oats'],
+);
+
+final _oats = InventoryItem.create(
+  id: 'oats',
+  name: 'Oats',
+  nutrition: const GlobalFoodNutrition(
+    qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+    per100Kcal: 400,
+    per100Protein: 10,
+    per100Carbs: 60,
+    per100Fat: 12,
+  ),
+  entryDate: DateTime(2026, 9),
+  storeName: 'Rewe',
+  quantity: 1,
+  initialAmount: 500,
+  currentAmount: 500,
+  amountUnit: InventoryAmountUnit.gram,
+);
+
+/// A plan of one portion of [_recipe], planned while the Vorrat had no oats.
+CalorieEntry _recipeReminder() => buildTemplatePlanEntry(
+  template: _recipe,
+  cookedPortions: 2,
+  assignments: const {},
+  items: const [],
+  parser: const TemplateIngredientParser(),
+  mealType: MealType.breakfast,
+  loggedDay: DateTime(2026, 10, 16),
+  now: () => _now,
+  nextEntryId: () => 'recipe-plan',
+)!;
+
+/// Holds a plan until the first read, then [changed] in its place, as if
+/// the user changed the plan while a refresh ran.
+class _ChangedDuringRefresh extends FakePlannedEntryRepository {
+  new(CalorieEntry plan, this.changed) : super(plans: [plan]);
+
+  final CalorieEntry changed;
+  var _reads = 0;
+
+  @override
+  Future<List<CalorieEntry>> loadPlannedEntries(
+    DateTime first,
+    DateTime last,
+  ) async {
+    final loaded = await super.loadPlannedEntries(first, last);
+    if (_reads++ == 0) {
+      plans
+        ..clear()
+        ..add(changed);
+    }
+    return loaded;
+  }
+}
 
 void main() {
   late FakePlannedEntryRepository plans;
@@ -118,5 +193,62 @@ void main() {
 
     expect(plans.plans.single.nutritionPending, isTrue);
     expect(plans.plans.single.totalKcal, 0);
+  });
+
+  group('recipe reminders', () {
+    Future<void> refreshRecipes(List<InventoryItem> items) => container
+        .read(preparedMealReminderPlanServiceProvider)
+        .refreshRecipes([_recipe], items);
+
+    test('get the values once each ingredient has an item', () async {
+      final reminder = _recipeReminder();
+      expect(reminder.nutritionPending, isTrue);
+      plans.plans.add(reminder);
+      final revision = container.read(calorieOverviewRevisionProvider);
+
+      await refreshRecipes([_oats]);
+
+      final counted = plans.plans.single;
+      expect(counted.id, reminder.id);
+      expect(counted.nutritionPending, isFalse);
+      // One of two portions of 200 g oats: 100 g at 400 kcal.
+      expect(counted.totalKcal, closeTo(400, 0.01));
+      expect(counted.loggedAt, reminder.loggedAt);
+      expect(counted.bundleSourceTemplateId, 'recipe');
+      expect(container.read(calorieOverviewRevisionProvider), isNot(revision));
+    });
+
+    test('wait while an ingredient has no item', () async {
+      plans.plans.add(_recipeReminder());
+      final revision = container.read(calorieOverviewRevisionProvider);
+
+      await refreshRecipes(const []);
+
+      expect(plans.plans.single.nutritionPending, isTrue);
+      expect(container.read(calorieOverviewRevisionProvider), revision);
+    });
+
+    test('leave a plan alone that changed while they were counted', () async {
+      final reminder = _recipeReminder();
+      final changed = reminder.copyWith(
+        mealType: MealType.dinner,
+        updatedAt: _now.add(const Duration(minutes: 1)),
+      );
+      final changing = _ChangedDuringRefresh(reminder, changed);
+      final scoped = ProviderContainer(
+        overrides: [
+          plannedEntryRepositoryProvider.overrideWithValue(changing),
+          preparedMealRepositoryProvider.overrideWithValue(meals),
+          clockProvider.overrideWithValue(() => _now),
+        ],
+      );
+      addTearDown(scoped.dispose);
+
+      await scoped
+          .read(preparedMealReminderPlanServiceProvider)
+          .refreshRecipes([_recipe], [_oats]);
+
+      expect(changing.plans.single, changed);
+    });
   });
 }
