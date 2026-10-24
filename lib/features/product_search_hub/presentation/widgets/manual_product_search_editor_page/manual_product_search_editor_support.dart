@@ -62,24 +62,6 @@ List<ManualProductMissingField> manualProductMissingFields({
   ];
 }
 
-/// Builds an [InventoryReceiptManualProductResult] from a save [payload].
-/// A product the user marked with [hasNoBarcode] is not asked for one again.
-InventoryReceiptManualProductResult buildSaveProductResult({
-  required InventoryReceiptManualProductSavePayload payload,
-  required InventoryReceiptManualProductAction action,
-  required bool hasNoBarcode,
-}) {
-  return InventoryReceiptManualProductResult(
-    item: payload.item,
-    action: action,
-    selectedProduct: payload.selectedProduct,
-    selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
-    requiresGlobalPersistence: payload.requiresGlobalPersistence,
-    globalPackageWeight: payload.globalPackageWeight,
-    skipMissingBarcodePrompt: hasNoBarcode,
-  );
-}
-
 /// Formats localized error message for [error].
 String? resolveManualProductErrorText(
   AppLocalizations l10n,
@@ -100,21 +82,10 @@ InventoryReceiptManualProductResult? tryBuildDirectEatResultFromSearchResult({
   required OffProductSearchResult product,
   required InventoryReceiptManualProductController controller,
 }) {
-  final payload = controller.buildDirectSearchResultPayload(
-    product: product,
-    action: InventoryReceiptManualProductAction.eatNow,
-  );
-  if (payload == null) {
-    return null;
-  }
-  return InventoryReceiptManualProductResult(
-    item: payload.item,
-    action: InventoryReceiptManualProductAction.eatNow,
-    selectedProduct: payload.selectedProduct,
-    selectedGlobalFoodItemId: payload.selectedGlobalFoodItemId,
-    requiresGlobalPersistence: payload.requiresGlobalPersistence,
-    globalPackageWeight: payload.globalPackageWeight,
-  );
+  const action = InventoryReceiptManualProductAction.eatNow;
+  return controller
+      .buildDirectSearchResultPayload(product: product, action: action)
+      ?.toResult(action);
 }
 
 /// Builds a direct eat result from an [InventoryItem] if possible.
@@ -195,15 +166,15 @@ Future<void> executeEditorSave({
     return;
   }
 
-  final result = buildSaveProductResult(
-    payload: payload,
-    action: selectedAction,
-    // Read with the payload, as the chip can change while savePhotos runs.
-    hasNoBarcode: ref
-        .read(inventoryReceiptManualProductControllerProvider(config))
-        .hasNoBarcode,
+  onClosePage(
+    payload.toResult(
+      selectedAction,
+      // Read with the payload, as the chip can change while savePhotos runs.
+      skipMissingBarcodePrompt: ref
+          .read(inventoryReceiptManualProductControllerProvider(config))
+          .hasNoBarcode,
+    ),
   );
-  onClosePage(result);
 }
 
 /// Takes a photo of the package front. The photo is first of all the
