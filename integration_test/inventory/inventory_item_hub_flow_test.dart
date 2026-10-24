@@ -433,8 +433,6 @@ void main() {
     final field = find.byKey(EatCombineSection.amountFieldKey(_rice.id));
     expect(tester.widget<TextField>(field).focusNode?.hasFocus, isTrue);
 
-    // The field keeps the focus until the end: a test cannot focus a field
-    // again once the keyboard closed.
     await tester.enterText(field, '137');
     await _pumpVisibleStep(tester);
     expect(_rulerValue(tester), 137);
@@ -455,6 +453,15 @@ void main() {
     final dragged = _rulerValue(tester).round();
     expect(dragged, lessThan(137));
     expect(_fieldText(tester, field), '$dragged');
+
+    // Dragging the ruler is a tap beside the field, which closes the
+    // keyboard (#827); a tap on the field opens it again.
+    expect(tester.widget<TextField>(field).focusNode?.hasFocus, isFalse);
+    await tester.ensureVisible(field);
+    await _pumpVisibleStep(tester);
+    await tester.tap(field);
+    await _pumpVisibleStep(tester);
+    expect(tester.widget<TextField>(field).focusNode?.hasFocus, isTrue);
 
     // More than the 250 g in stock keeps the amount.
     await tester.enterText(field, '300');
