@@ -5684,6 +5684,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get freeCookingMissing => 'fehlt';
 
   @override
+  String get freeCookingPickStock => 'Wählen';
+
+  @override
   String get freeCookingListenTitle => 'Ich höre zu';
 
   @override
