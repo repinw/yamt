@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'closed_day_repository.g.dart';
@@ -14,15 +14,16 @@ const _closedDayKeyPrefix = 'calorie_closed_day_v1';
 /// value matters until midnight only.
 class ClosedDayRepository {
   /// Creates the repository on the device preferences for [userId], or for
-  /// nobody while signed out.
+  /// nobody while signed out or the data key is not ready.
   const new(this._preferences, this.userId);
 
   final AppPreferences _preferences;
 
-  /// The signed-in user, or null while signed out.
+  /// The signed-in user, or null while signed out or the data key is not
+  /// ready.
   final String? userId;
 
-  /// The closed day, or null when no day is closed or nobody is signed in.
+  /// The closed day, or null when no day is closed or there is no user.
   DateTime? readClosedDay() {
     final userId = this.userId;
     if (userId == null) {
@@ -32,7 +33,7 @@ class ClosedDayRepository {
     return stored == null ? null : DateTime.parse(stored);
   }
 
-  /// Saves [day] as closed. Throws while signed out or when the device does
+  /// Saves [day] as closed. Throws without a user or when the device does
   /// not save it.
   Future<void> saveClosedDay(DateTime day) async {
     final saved = await _preferences.setString(
@@ -44,7 +45,7 @@ class ClosedDayRepository {
     }
   }
 
-  /// Deletes the closed day. Throws while signed out or when the device does
+  /// Deletes the closed day. Throws without a user or when the device does
   /// not save it.
   Future<void> deleteClosedDay() async {
     if (!await _preferences.remove(_key(_requireUserId()))) {
@@ -53,14 +54,16 @@ class ClosedDayRepository {
   }
 
   String _requireUserId() =>
-      userId ?? (throw StateError('No signed-in user for the closed day.'));
+      userId ??
+      (throw StateError('No user with a ready data key for the closed day.'));
 
   static String _key(String userId) => '$_closedDayKeyPrefix:$userId';
 }
 
-/// Closed day repository of the signed-in user.
+/// Closed day repository of the signed-in user, once their data key is
+/// ready, so it reads the same user as the calorie logs.
 @riverpod
 ClosedDayRepository closedDayRepository(Ref ref) => ClosedDayRepository(
   ref.watch(appPreferencesProvider),
-  ref.watch(authStateChangesProvider).asData?.value?.uid,
+  ref.watch(userDataCipherProvider)?.uid,
 );

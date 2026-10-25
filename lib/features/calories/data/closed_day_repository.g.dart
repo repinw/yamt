@@ -8,12 +8,14 @@ part of 'closed_day_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Closed day repository of the signed-in user.
+/// Closed day repository of the signed-in user, once their data key is
+/// ready, so it reads the same user as the calorie logs.
 
 @ProviderFor(closedDayRepository)
 final closedDayRepositoryProvider = ClosedDayRepositoryProvider._();
 
-/// Closed day repository of the signed-in user.
+/// Closed day repository of the signed-in user, once their data key is
+/// ready, so it reads the same user as the calorie logs.
 
 final class ClosedDayRepositoryProvider
     extends
@@ -23,7 +25,8 @@ final class ClosedDayRepositoryProvider
           ClosedDayRepository
         >
     with $Provider<ClosedDayRepository> {
-  /// Closed day repository of the signed-in user.
+  /// Closed day repository of the signed-in user, once their data key is
+  /// ready, so it reads the same user as the calorie logs.
   ClosedDayRepositoryProvider._()
     : super(
         from: null,
@@ -59,4 +62,4 @@ final class ClosedDayRepositoryProvider
 }
 
 String _$closedDayRepositoryHash() =>
-    r'cb6fcd4afda2160a21c1fe7519d689aa3ff726db';
+    r'9c4087412ed64fc5d892a24771a76d4f9a3c3e9b';
