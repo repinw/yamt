@@ -46,7 +46,6 @@ class DiaryDailyBudgetCarryoverFormulaBox extends StatelessWidget {
       return '$sign${numberFormat.format(rounded)} ${l10n.caloriesUnitGram}';
     }
 
-    final proteinStr = gramsDelta(data.carryoverProteinDeltaGrams);
     final carbsStr = gramsDelta(data.carryoverCarbsDeltaGrams);
     final fatStr = gramsDelta(data.carryoverFatDeltaGrams);
 
@@ -112,11 +111,7 @@ class DiaryDailyBudgetCarryoverFormulaBox extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    l10n.diaryBudgetDetailsMacroAdjustment(
-                      proteinStr,
-                      carbsStr,
-                      fatStr,
-                    ),
+                    l10n.diaryBudgetDetailsMacroAdjustment(carbsStr, fatStr),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: colors.onSurfaceVariant,
                       fontWeight: FontWeight.w600,

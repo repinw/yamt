@@ -128,10 +128,6 @@ class DiaryDailyBudgetDetailsData {
   /// Carbs delta in grams from the carryover.
   double get carryoverCarbsDeltaGrams => carryoverMacroDelta.carbs;
 
-  /// Protein change in grams from the carryover; protein follows the goal
-  /// alone, so the carryover leaves it as it is.
-  double get carryoverProteinDeltaGrams => carryoverMacroDelta.protein;
-
   /// Fat delta in grams from the carryover.
   double get carryoverFatDeltaGrams => carryoverMacroDelta.fat;
 }

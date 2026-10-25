@@ -5333,12 +5333,8 @@ abstract class AppLocalizations {
   /// No description provided for @diaryBudgetDetailsMacroAdjustment.
   ///
   /// In en, this message translates to:
-  /// **'Macro impact: Protein {protein} · Carbs {carbs} · Fat {fat}'**
-  String diaryBudgetDetailsMacroAdjustment(
-    String protein,
-    String carbs,
-    String fat,
-  );
+  /// **'Macro impact: Carbs {carbs} · Fat {fat}'**
+  String diaryBudgetDetailsMacroAdjustment(String carbs, String fat);
 
   /// No description provided for @diaryBudgetDetailsSafetyCapActive.
   ///

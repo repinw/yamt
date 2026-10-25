@@ -3230,12 +3230,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String diaryBudgetDetailsMacroAdjustment(
-    String protein,
-    String carbs,
-    String fat,
-  ) {
-    return 'Makro-Anpassung: Protein $protein · Carbs $carbs · Fett $fat';
+  String diaryBudgetDetailsMacroAdjustment(String carbs, String fat) {
+    return 'Makro-Anpassung: Carbs $carbs · Fett $fat';
   }
 
   @override
