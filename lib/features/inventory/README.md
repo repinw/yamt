@@ -137,6 +137,17 @@ already documented as a reusable presentation surface.
 
 ## Public UI
 
+- `presentation/widgets/prepared_meals/prepared_meal_pending_fill_sheet.dart`
+  (`PreparedMealPendingFillSheet.show`) offers the ways to fill an open row
+  and returns a `PreparedMealPendingFillChoice`. With `inDraft`, for a draft
+  that is not cooked yet, it offers only the best Vorrat match, "Aus Vorrat
+  wählen", and "Nicht aus dem Vorrat" (`PreparedMealPendingFillIgnore`).
+  Frei kochen in cookbook_new uses it for its rows.
+- `presentation/widgets/prepared_meals/prepared_meal_pending_ingredient_sheet.dart`
+  (`showPendingIngredientSelectionSheet`) lets the cook check one or more
+  Vorrat items for a row from a `PendingIngredientStock`
+  (`application/pending_ingredient_stock.dart`) and returns their ids in the
+  order checked.
 - `presentation/widgets/plan_shortage_reminder_settings_builder.dart`
   (`PlanShortageReminderSettingsBuilder`) gives another feature's surface the
   day-before reminder's on/off and time with their setters, whether the

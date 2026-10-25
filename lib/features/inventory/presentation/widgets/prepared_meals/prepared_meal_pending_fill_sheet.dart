@@ -48,7 +48,8 @@ final class PreparedMealPendingFillShoppingList
   const new();
 }
 
-/// Leave the row out of the meal.
+/// Leave the row out of the meal, or in a draft, take it from no Vorrat
+/// item.
 final class PreparedMealPendingFillIgnore
     extends PreparedMealPendingFillChoice {
   /// Creates the choice.
@@ -57,13 +58,16 @@ final class PreparedMealPendingFillIgnore
 
 /// Bottom sheet that offers the ways to fill the open or ignored row
 /// [ingredient]: the best Vorrat match first, then the Vorrat, search,
-/// barcode, AI, the shopping list, and ignoring an open row.
+/// barcode, AI, the shopping list, and ignoring an open row. A row of a
+/// draft that is not cooked yet ("Frei kochen") gets only the Vorrat and
+/// "Nicht aus dem Vorrat".
 class PreparedMealPendingFillSheet extends StatelessWidget {
   /// Creates the sheet.
   const new({
     required this.ingredient,
     required this.match,
     this.canIgnore = true,
+    this.inDraft = false,
     super.key,
   });
 
@@ -80,7 +84,7 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
   /// Key of "Auf die Einkaufsliste".
   static const shoppingListKey = ValueKey<String>('pending-fill-shopping-list');
 
-  /// Key of "Zeile ignorieren".
+  /// Key of "Zeile ignorieren", or of "Nicht aus dem Vorrat" in a draft.
   static const ignoreKey = ValueKey<String>('pending-fill-ignore');
 
   /// The open row.
@@ -92,12 +96,16 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
   /// Whether the sheet offers "Zeile ignorieren"; not for an ignored row.
   final bool canIgnore;
 
+  /// Whether the row belongs to a draft that is not cooked yet.
+  final bool inDraft;
+
   /// Shows the sheet and returns the choice, or `null` when it is closed.
   static Future<PreparedMealPendingFillChoice?> show(
     BuildContext context, {
     required String ingredient,
     required InventoryItem? match,
     bool canIgnore = true,
+    bool inDraft = false,
   }) {
     return showModalBottomSheet<PreparedMealPendingFillChoice>(
       context: context,
@@ -108,6 +116,7 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
         ingredient: ingredient,
         match: match,
         canIgnore: canIgnore,
+        inDraft: inDraft,
       ),
     );
   }
@@ -171,58 +180,65 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
                       Navigator.of(context)
                           .pop(const PreparedMealPendingFillPickStock()),
                 ),
-                PreparedMealPendingFillOption(
-                  key: sourceKey(PreparedMealFoodSource.search),
-                  icon: const Icon(Icons.search_rounded),
-                  title: l10n.preparedMealFillSearch,
-                  description: l10n.preparedMealFillSearchDescription,
-                  onTap: () => Navigator.of(context).pop(
-                    const PreparedMealPendingFillFind(
-                      PreparedMealFoodSource.search,
+                // A draft has no meal yet that a new food could join.
+                if (!inDraft) ...[
+                  PreparedMealPendingFillOption(
+                    key: sourceKey(PreparedMealFoodSource.search),
+                    icon: const Icon(Icons.search_rounded),
+                    title: l10n.preparedMealFillSearch,
+                    description: l10n.preparedMealFillSearchDescription,
+                    onTap: () => Navigator.of(context).pop(
+                      const PreparedMealPendingFillFind(
+                        PreparedMealFoodSource.search,
+                      ),
                     ),
                   ),
-                ),
-                PreparedMealPendingFillOption(
-                  key: sourceKey(PreparedMealFoodSource.barcode),
-                  icon: const BarcodeIcon(),
-                  title: l10n.preparedMealFillBarcode,
-                  description: l10n.preparedMealFillBarcodeDescription,
-                  onTap: () => Navigator.of(context).pop(
-                    const PreparedMealPendingFillFind(
-                      PreparedMealFoodSource.barcode,
+                  PreparedMealPendingFillOption(
+                    key: sourceKey(PreparedMealFoodSource.barcode),
+                    icon: const BarcodeIcon(),
+                    title: l10n.preparedMealFillBarcode,
+                    description: l10n.preparedMealFillBarcodeDescription,
+                    onTap: () => Navigator.of(context).pop(
+                      const PreparedMealPendingFillFind(
+                        PreparedMealFoodSource.barcode,
+                      ),
                     ),
                   ),
-                ),
-                PreparedMealPendingFillOption(
-                  key: sourceKey(PreparedMealFoodSource.ai),
-                  icon: const Icon(Icons.auto_awesome_rounded),
-                  title: l10n.preparedMealFillAi,
-                  description: l10n.preparedMealFillAiDescription,
-                  onTap: () => Navigator.of(context).pop(
-                    const PreparedMealPendingFillFind(
-                      PreparedMealFoodSource.ai,
+                  PreparedMealPendingFillOption(
+                    key: sourceKey(PreparedMealFoodSource.ai),
+                    icon: const Icon(Icons.auto_awesome_rounded),
+                    title: l10n.preparedMealFillAi,
+                    description: l10n.preparedMealFillAiDescription,
+                    onTap: () => Navigator.of(context).pop(
+                      const PreparedMealPendingFillFind(
+                        PreparedMealFoodSource.ai,
+                      ),
                     ),
                   ),
-                ),
-                PreparedMealPendingFillOption(
-                  key: shoppingListKey,
-                  icon: const Icon(Icons.add_shopping_cart_rounded),
-                  title: l10n.preparedMealFillShoppingList,
-                  description: l10n.preparedMealFillShoppingListDescription,
-                  onTap: () =>
-                      Navigator.of(context)
-                          .pop(const PreparedMealPendingFillShoppingList()),
-                ),
+                  PreparedMealPendingFillOption(
+                    key: shoppingListKey,
+                    icon: const Icon(Icons.add_shopping_cart_rounded),
+                    title: l10n.preparedMealFillShoppingList,
+                    description: l10n.preparedMealFillShoppingListDescription,
+                    onTap: () =>
+                        Navigator.of(context)
+                            .pop(const PreparedMealPendingFillShoppingList()),
+                  ),
+                ],
               ],
             ),
-            if (canIgnore)
+            if (canIgnore || inDraft)
               Center(
                 child: TextButton(
                   key: ignoreKey,
                   onPressed: () =>
                       Navigator.of(context)
                           .pop(const PreparedMealPendingFillIgnore()),
-                  child: Text(l10n.preparedMealFillIgnore),
+                  child: Text(
+                    inDraft
+                        ? l10n.recipeNotFromStock
+                        : l10n.preparedMealFillIgnore,
+                  ),
                 ),
               ),
           ],

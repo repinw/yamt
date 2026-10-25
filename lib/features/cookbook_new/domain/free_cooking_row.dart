@@ -6,11 +6,11 @@ import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dar
 @immutable
 class FreeCookingRow {
   /// Creates a row for [text] with its parsed [requirement], the Vorrat
-  /// item [stockItem] that supplies it, and the [candidates] to pick from.
+  /// items [stockItems] that supply it, and the [candidates] to pick from.
   const new({
     required this.text,
     this.requirement,
-    this.stockItem,
+    this.stockItems = const <InventoryItem>[],
     this.candidates = const <InventoryItem>[],
   });
 
@@ -21,9 +21,12 @@ class FreeCookingRow {
   /// no amount ("Salz").
   final TemplateIngredientRequirement? requirement;
 
-  /// The best Vorrat match or the cook's pick, or `null` when the Vorrat
-  /// does not supply the food.
-  final InventoryItem? stockItem;
+  /// The best Vorrat match or the cook's picks, in the order cooking takes
+  /// from them; empty when the Vorrat does not supply the food.
+  final List<InventoryItem> stockItems;
+
+  /// The first of [stockItems], or `null`.
+  InventoryItem? get stockItem => stockItems.firstOrNull;
 
   /// The Vorrat items the cook can pick for the row, best first.
   final List<InventoryItem> candidates;
@@ -34,12 +37,25 @@ class FreeCookingRow {
   /// The food name without the amount.
   String get foodName => requirement?.name ?? text;
 
-  /// The amount left in [stockItem], in grams, milliliters, or pieces.
+  /// The amount left in [stockItems] that count in the unit of the first,
+  /// in grams, milliliters, or pieces.
   ({int amount, InventoryAmountUnit unit})? get stockAmount {
-    final item = stockItem;
-    if (item == null) {
+    final amounts = stockItems.map(_amountLeft);
+    final first = amounts.firstOrNull;
+    if (first == null) {
       return null;
     }
+    return (
+      amount: amounts
+          .where((left) => left.unit == first.unit)
+          .fold(0, (sum, left) => sum + left.amount),
+      unit: first.unit,
+    );
+  }
+
+  static ({int amount, InventoryAmountUnit unit}) _amountLeft(
+    InventoryItem item,
+  ) {
     final unit = item.amountUnit;
     if (!item.usesAmountProgress || unit == null) {
       return (amount: item.quantity, unit: InventoryAmountUnit.piece);

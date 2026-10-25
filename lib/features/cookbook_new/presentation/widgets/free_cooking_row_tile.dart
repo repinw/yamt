@@ -12,8 +12,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// One ingredient row: a square that is filled when the Vorrat holds the
 /// food, the amount in bold, the food, and how much the Vorrat has left.
-/// When the Vorrat has items for the food, the name of the one that supplies
-/// it, or "Wählen", stands under the food and a tap picks another one.
+/// When the Vorrat has items for the food, the names of the ones that supply
+/// it, or "Wählen", stand under the food and a tap opens "Zeile füllen".
 class FreeCookingRowTile extends StatelessWidget {
   /// Creates the tile for [row].
   const new({required this.row, this.isPending = false, this.onTap, super.key});
@@ -24,7 +24,7 @@ class FreeCookingRowTile extends StatelessWidget {
   /// Whether speech recognition is still writing the row; it shows no stock.
   final bool isPending;
 
-  /// Opens the Vorrat picker.
+  /// Opens "Zeile füllen".
   final VoidCallback? onTap;
 
   @override
@@ -88,8 +88,11 @@ class FreeCookingRowTile extends StatelessWidget {
                           children: [
                             Flexible(
                               child: Text(
-                                row.stockItem?.name ??
-                                    l10n.freeCookingPickStock,
+                                row.stockItems.isEmpty
+                                    ? l10n.freeCookingPickStock
+                                    : row.stockItems
+                                          .map((item) => item.name)
+                                          .join(', '),
                                 overflow: TextOverflow.ellipsis,
                                 style: pickStyle,
                               ),

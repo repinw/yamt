@@ -7,7 +7,7 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_row_tile.dart';
 
 /// The ingredient rows, newest last, plus the row that speech recognition is
-/// still writing. A swipe removes a row, a tap picks its Vorrat item.
+/// still writing. A swipe removes a row, a tap opens "Zeile füllen".
 class FreeCookingRowList extends StatefulWidget {
   /// Creates the list of [rows] with the unfinished [pendingText].
   const new({
@@ -31,7 +31,7 @@ class FreeCookingRowList extends StatefulWidget {
   /// Removes the row at an index.
   final ValueChanged<int> onRemove;
 
-  /// Opens the Vorrat picker of the row at an index, or `null` while the
+  /// Opens "Zeile füllen" for the row at an index, or `null` while the
   /// rows cannot change.
   final ValueChanged<int>? onPick;
 

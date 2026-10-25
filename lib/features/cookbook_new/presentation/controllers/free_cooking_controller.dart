@@ -8,6 +8,7 @@ import 'package:yamt/features/cookbook_new/domain/free_cooking_row.dart';
 import 'package:yamt/features/cookbook_new/domain/free_cooking_transcript.dart';
 import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/application/pending_ingredient_stock.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_cooking_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
@@ -23,16 +24,16 @@ class FreeCookingDraft {
     this.rows = const <String>[],
     this.isCooking = false,
     this.addedLast = 0,
-    this.picks = const <String, String?>{},
+    this.picks = const <String, List<String>>{},
   });
 
   /// The rows as spoken or typed.
   final List<String> rows;
 
-  /// The Vorrat item the cook picked for the rows with a text, or `null` for
-  /// "not from the Vorrat". "Kochen" assigns items by row text, so rows with
-  /// the same text share their pick.
-  final Map<String, String?> picks;
+  /// The Vorrat items the cook picked for the rows with a text, in the order
+  /// "Kochen" takes from them, or none for "not from the Vorrat". "Kochen"
+  /// assigns items by row text, so rows with the same text share their pick.
+  final Map<String, List<String>> picks;
 
   /// Whether "Kochen" is saving the meal.
   final bool isCooking;
@@ -46,7 +47,7 @@ class FreeCookingDraft {
     List<String>? rows,
     bool? isCooking,
     int? addedLast,
-    Map<String, String?>? picks,
+    Map<String, List<String>>? picks,
   }) {
     return FreeCookingDraft(
       rows: rows ?? this.rows,
@@ -86,9 +87,20 @@ class FreeCookingController extends _$FreeCookingController {
   /// Loads the Vorrat again after it failed.
   void retryStock() => ref.invalidate(inventoryQuickEatItemsProvider);
 
-  /// Takes the rows with [text] from the Vorrat item [itemId], or from none.
-  void pick(String text, String? itemId) =>
-      state = state.copyWith(picks: {...state.picks, text: itemId});
+  /// Takes the rows with [text] from the Vorrat items [itemIds], or from
+  /// none.
+  void pick(String text, List<String> itemIds) =>
+      state = state.copyWith(picks: {...state.picks, text: itemIds});
+
+  /// The Vorrat items that can fill the row [text], as the "Zeile füllen"
+  /// sheet of a cooked meal offers them.
+  PendingIngredientStock stockFor(String text, String localeCode) =>
+      findPendingIngredientStock(
+        ingredient: text,
+        inventoryItems: ref.read(inventoryQuickEatItemsProvider).value ?? [],
+        ingredientParser: ref.read(templateIngredientParserProvider),
+        localeCode: localeCode,
+      );
 
   /// Removes the row at [index].
   void removeRow(int index) {
@@ -104,7 +116,7 @@ class FreeCookingController extends _$FreeCookingController {
   }
 
   /// The picks of [rows]; a pick goes with the last row of its text.
-  Map<String, String?> _picksOf(List<String> rows) => {
+  Map<String, List<String>> _picksOf(List<String> rows) => {
     for (final MapEntry(:key, :value) in state.picks.entries)
       if (rows.contains(key)) key: value,
   };
@@ -129,7 +141,8 @@ class FreeCookingController extends _$FreeCookingController {
             ingredients: [for (final row in rows) row.text],
             assignments: {
               for (final row in rows)
-                if (row.stockItem case final item?) row.text: [item.id],
+                if (row.stockItems.isNotEmpty)
+                  row.text: [for (final item in row.stockItems) item.id],
             },
           );
       if (ref.mounted) {
@@ -197,7 +210,7 @@ FreeCookingRow _row({
   required TemplateIngredientRequirement? requirement,
   required List<InventoryItem> items,
   required String localeCode,
-  required Map<String, String?> picks,
+  required Map<String, List<String>> picks,
 }) {
   final found = ingredientStockCandidates(
     text: text,
@@ -210,11 +223,14 @@ FreeCookingRow _row({
     text: text,
     requirement: requirement,
     candidates: candidates,
-    stockItem: picks.containsKey(text)
-        ? candidates.firstWhereOrNull((item) => item.id == picks[text])
-        // A row without an amount stays open until the cook picks an item.
-        : requirement == null
-        ? null
-        : found.matches.firstOrNull,
+    stockItems: switch (picks[text]) {
+      final ids? => [
+        for (final id in ids)
+          ?candidates.firstWhereOrNull((item) => item.id == id),
+      ],
+      // A row without an amount stays open until the cook picks an item.
+      null when requirement == null => const <InventoryItem>[],
+      null => [?found.matches.firstOrNull],
+    },
   );
 }

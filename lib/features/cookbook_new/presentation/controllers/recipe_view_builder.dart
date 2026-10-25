@@ -176,7 +176,7 @@ RecipeIngredientLine _line({
     row: FreeCookingRow(
       text: ingredient,
       requirement: requirement,
-      stockItem: stock.firstOrNull,
+      stockItems: [?stock.firstOrNull],
     ),
     // An added ingredient is cooked even when its text is an ignored one.
     isIgnored: !isAdded && recipe.ignoredRecipeIngredients.contains(ingredient),
