@@ -66,6 +66,14 @@ void main() {
     expect(cheese.halfPortionAmount(500, 40), 200);
   });
 
+  test('a portion over twice the stock leaves the ruler amount free', () {
+    final cheese = _cheese();
+
+    // No half of 500 g fits into the 200 g left.
+    expect(cheese.halfPortionAmount(150, 500), 150);
+    expect(cheese.halfPortionAmount(300, 500), 200);
+  });
+
   test('portion steps go to the next whole portion', () {
     final cheese = _cheese();
 
