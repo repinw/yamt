@@ -272,10 +272,11 @@ Generated Riverpod files. They should not be edited manually.
 - `features/auth`: The data key session supplies the user ID for completion
   markers; the auth repository signs in the guest when onboarding finishes.
 - `core/preferences`: Stores the user-scoped onboarding completion marker.
+- `core/domain`: Local day math for the tracking start day.
 - `features/calories`: Only through its public edge. Domain types
   (`CalorieCalculatorProfile`, `CalorieGoalSettings`,
   `CalorieGoalCalculationResult`, `CalorieActivityLevelOption`, the age
-  calculator, diary day helpers) and the legacy `provider/` controllers the
+  calculator) and the legacy `provider/` controllers the
   calories README lists for onboarding (calculator form controller, goal
   controller, Burn Week run controller). No calories widgets: the intro draws
   its own result and warning cards.

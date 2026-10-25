@@ -157,7 +157,7 @@ Main application adapters and mappers:
 
 ## Accepted Dependencies
 
-- `core` for diary day normalization, routes, theme tokens, and shared widgets.
+- `core` for local day math, routes, theme tokens, and shared widgets.
 - `features/activity` for the complete activity and weight diary section, the
   missing-weight prompt, and the Activity-owned weight tracking flow.
 - `features/calories` for calorie log data, goal settings, Burn Week state, and
