@@ -8,7 +8,7 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Discards a combined meal from its "Gekocht" step.
-abstract final class CombinedMealDiscardFlow {
+abstract final class CookedMealDiscardFlow {
   const new _();
 
   /// Asks before discarding the meal [mealId], then gives its foods back to
