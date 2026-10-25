@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
@@ -35,10 +35,10 @@ const _demoIntakeWobble = 2.3;
 const calorieDemoWindowDays = 7;
 
 PendingCalorieGoalWeeklyCheckIn _demoWindow(DateTime today) {
-  final day = normalizeDiaryDay(today);
+  final day = normalizeLocalDay(today);
   return PendingCalorieGoalWeeklyCheckIn(
-    windowStartDate: addDiaryDays(day, -calorieDemoWindowDays),
-    windowEndDate: addDiaryDays(day, -1),
+    windowStartDate: addLocalDays(day, -calorieDemoWindowDays),
+    windowEndDate: addLocalDays(day, -1),
     dueDate: day,
   );
 }
@@ -62,7 +62,7 @@ CalorieWeeklyCheckInData calorieWeeklyCheckInDemoData({
   final days = [
     for (var offset = 0; offset < calorieDemoWindowDays; offset++)
       CalorieWeeklyCheckInWindowDay(
-        day: addDiaryDays(window.windowStartDate, offset),
+        day: addLocalDays(window.windowStartDate, offset),
         hasEntries: true,
         loggedIntakeKcal:
             _demoIntakeKcal +
@@ -114,10 +114,10 @@ CalorieWeeklyCheckInPlan calorieWeeklyCheckInDemoPlan({
   required CalorieCalculatorProfile? profile,
 }) {
   final window = _demoWindow(today);
-  final startDate = addDiaryDays(window.windowEndDate, 1 - _demoGoalDays);
+  final startDate = addLocalDays(window.windowEndDate, 1 - _demoGoalDays);
   final nextRunDays = [
     for (var offset = 0; offset < calorieDemoWindowDays; offset++)
-      addDiaryDays(window.dueDate, offset),
+      addLocalDays(window.dueDate, offset),
   ];
   return CalorieWeeklyCheckInPlan(
     reviewedRunNumber: _demoRunNumber,
@@ -146,7 +146,7 @@ CalorieWeeklyCheckInPlan calorieWeeklyCheckInDemoPlan({
       weights: [
         for (var index = 0; index < _demoGoalDays; index++)
           (
-            day: addDiaryDays(startDate, index),
+            day: addLocalDays(startDate, index),
             scaleWeightKg: index % 3 == 1 ? null : _demoScaleOn(index),
             trendWeightKg: _demoTrendOn(index),
           ),
@@ -154,7 +154,7 @@ CalorieWeeklyCheckInPlan calorieWeeklyCheckInDemoPlan({
       tdeePoints: [
         for (final (index, tdeeKcal) in _demoRunTdeeKcal.indexed)
           (
-            runEndDate: addDiaryDays(
+            runEndDate: addLocalDays(
               startDate,
               (index + 2) * calorieDemoWindowDays - 1,
             ),

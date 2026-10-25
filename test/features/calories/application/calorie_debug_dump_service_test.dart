@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -180,7 +180,7 @@ void main() {
           _entry(
             id: 'food-$index',
             name: 'Day $index food',
-            loggedAt: addDiaryDays(start, index).add(const Duration(hours: 12)),
+            loggedAt: addLocalDays(start, index).add(const Duration(hours: 12)),
             kcal: 2002,
           ),
       ],
@@ -188,7 +188,7 @@ void main() {
     final healthWeightSamples = <HealthWeightSample>[
       for (var index = 0; index < 14; index += 1)
         HealthWeightSample(
-          recordedAt: addDiaryDays(start, index).add(const Duration(hours: 7)),
+          recordedAt: addLocalDays(start, index).add(const Duration(hours: 7)),
           weightKg: 84,
         ),
     ];
@@ -275,7 +275,7 @@ void main() {
           _entry(
             id: 'food-$index',
             name: 'Day $index food',
-            loggedAt: addDiaryDays(start, index).add(const Duration(hours: 12)),
+            loggedAt: addLocalDays(start, index).add(const Duration(hours: 12)),
             kcal: 2000,
           ),
       ],
@@ -284,7 +284,7 @@ void main() {
       <ManualHealthWeightEntry>[
         for (var index = 0; index < 7; index += 1)
           ManualHealthWeightEntry(
-            day: addDiaryDays(start, index),
+            day: addLocalDays(start, index),
             weightKg: 84,
           ),
       ],

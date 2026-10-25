@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -210,4 +210,4 @@ String _cacheKey(String userId, DateTime day) {
   return 'diary_day_dashboard_v5:$userId:${_dayKey(day)}';
 }
 
-String _dayKey(DateTime day) => diaryDayKey(day);
+String _dayKey(DateTime day) => localDayKey(day);

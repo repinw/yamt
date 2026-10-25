@@ -8,6 +8,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
@@ -28,7 +29,6 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -1412,9 +1412,9 @@ class _StaticDiaryCalendarController extends DiaryCalendarController {
 
   @override
   DiaryCalendarState build() {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     return DiaryCalendarState(
-      today: normalizeDiaryDay(today ?? day),
+      today: normalizeLocalDay(today ?? day),
       selectedDay: normalizedDay,
     );
   }

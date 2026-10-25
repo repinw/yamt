@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/domain/diary_day_type.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_toggle.dart';
 import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
@@ -25,7 +25,7 @@ final CalorieGoalSettings _settings = const CalorieGoalSettings.empty()
       dailyKcalGoal: 2200,
       trainingWeekdays: const [DateTime.monday],
       trainingDayKcalOffset: 300,
-      pauseDayKeys: [diaryDayKey(_wednesday)],
+      pauseDayKeys: [localDayKey(_wednesday)],
     );
 
 void main() {

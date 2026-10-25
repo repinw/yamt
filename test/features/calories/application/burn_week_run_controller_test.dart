@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   new(this.state);
@@ -294,9 +294,9 @@ void main() {
 
     expect(
       repository.state.currentWeekStartDayKey,
-      diaryDayKey(cappedWeekStartDate),
+      localDayKey(cappedWeekStartDate),
     );
-    expect(repository.state.lastActiveDayKey, diaryDayKey(cappedWeekStartDate));
+    expect(repository.state.lastActiveDayKey, localDayKey(cappedWeekStartDate));
     expect(repository.state.runWeekNumber, 1001);
   });
 

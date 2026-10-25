@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'diary_weekly_checkin_sheet_controller.g.dart';
 
@@ -90,7 +90,7 @@ class DiaryWeeklyCheckInSheetController
       return null;
     }
     if (windowStart != null &&
-        plan.reviewedDays.start != normalizeDiaryDay(windowStart)) {
+        plan.reviewedDays.start != normalizeLocalDay(windowStart)) {
       return previous;
     }
     if (previous != null) {

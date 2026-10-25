@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/app_accent.dart';
 import 'package:yamt/core/theme/app_accent_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
 import 'package:yamt/features/home_widget/data/home_widget_plugin_bridge.dart';
@@ -25,7 +25,7 @@ import '../../support/fake_home_widget_plugin_bridge.dart';
 
 void main() {
   final now = DateTime(2026, 9, 22, 12);
-  final normalizedDay = normalizeDiaryDay(now);
+  final normalizedDay = normalizeLocalDay(now);
 
   /// Holds a listener on the sync controller, like `lib/app.dart` does.
   ProviderContainer containerWith(

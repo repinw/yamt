@@ -2,9 +2,9 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_facts.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_number_format.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_progress_chart.dart';
@@ -31,7 +31,7 @@ class DiaryWeeklyCheckInGoalReachedStep extends StatelessWidget {
         ? 1
         : math.max(
             1,
-            (diaryDaysBetween(progress.startDate, progress.weights.last.day) /
+            (localDaysBetween(progress.startDate, progress.weights.last.day) /
                     DateTime.daysPerWeek)
                 .ceil(),
           );

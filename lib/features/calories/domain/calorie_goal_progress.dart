@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Weight of one day since the goal start.
 typedef CalorieGoalProgressWeight = ({
@@ -72,20 +72,20 @@ List<CalorieGoalProgressTdee> calorieGoalTdeePoints({
   required DateTime startDate,
   required DateTime endDate,
 }) {
-  final start = normalizeDiaryDay(startDate);
-  final end = normalizeDiaryDay(endDate);
+  final start = normalizeLocalDay(startDate);
+  final end = normalizeLocalDay(endDate);
   final byRunEnd = <DateTime, double>{};
   for (final entry in settings.sortedGoalHistory) {
     final snapshot = entry.weeklyCheckInSnapshot;
     if (snapshot == null) {
       continue;
     }
-    final runEnd = normalizeDiaryDay(snapshot.windowEndDate);
+    final runEnd = normalizeLocalDay(snapshot.windowEndDate);
     if (runEnd.isBefore(start) || runEnd.isAfter(end)) {
       continue;
     }
     byRunEnd[runEnd] =
-        dailyTdeeKcalByDay[diaryDayKey(runEnd)] ?? snapshot.calculatedTdeeKcal;
+        dailyTdeeKcalByDay[localDayKey(runEnd)] ?? snapshot.calculatedTdeeKcal;
   }
   final runEnds = byRunEnd.keys.toList()..sort();
   return [

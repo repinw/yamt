@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
@@ -10,7 +11,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_tdee_offsets.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/daily_tdee_estimator.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 
@@ -34,7 +34,7 @@ WeeklyCheckInDailyTdee weeklyCheckInDailyTdee({
       startDate: learningStartDate,
       endDate: endDate,
       // The windows are complete, so the last day counts too.
-      today: nextDiaryDay(endDate),
+      today: nextLocalDay(endDate),
       settings: settings,
       entriesByDay: entriesByDay,
       weights: weights,
@@ -54,7 +54,7 @@ CalorieWeeklyCheckInCalculation calculateWeeklyCheckInFromDailyTdee({
   required WeeklyCheckInDailyTdee dailyTdee,
   required List<CalorieWeeklyCheckInWindowDay> windowDays,
 }) {
-  final atWindowEnd = dailyTdee.estimates[diaryDayKey(window.windowEndDate)];
+  final atWindowEnd = dailyTdee.estimates[localDayKey(window.windowEndDate)];
   if (atWindowEnd == null) {
     throw StateError('The daily TDEE does not reach the check-in window.');
   }
@@ -66,7 +66,7 @@ CalorieWeeklyCheckInCalculation calculateWeeklyCheckInFromDailyTdee({
     atWindowEnd: atWindowEnd,
     previousTdeeKcal:
         dailyTdee
-            .estimates[diaryDayKey(previousDiaryDay(window.windowStartDate))]
+            .estimates[localDayKey(previousLocalDay(window.windowStartDate))]
             ?.tdeeKcal ??
         dailyTdee.seedKcal,
     averageIntakeKcal: CalorieDomainMath.average([
@@ -97,6 +97,6 @@ bool isWeeklyCheckInLowConfidence({
   required int recentWeightPointCount,
 }) {
   final isHolding =
-      dailyTdee.estimates[diaryDayKey(window.windowEndDate)]?.isHolding ?? true;
+      dailyTdee.estimates[localDayKey(window.windowEndDate)]?.isHolding ?? true;
   return isHolding || recentWeightPointCount <= 2;
 }

@@ -2,9 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/progress/application/progress_intake_provider.dart';
 import 'package:yamt/features/progress/domain/progress_intake.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
@@ -27,7 +27,7 @@ class ProgressWeekSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final today = normalizeDiaryDay(ref.watch(clockProvider)());
+    final today = normalizeLocalDay(ref.watch(clockProvider)());
     return ref
         .watch(progressIntakeProvider(ProgressScope.goal))
         .when(

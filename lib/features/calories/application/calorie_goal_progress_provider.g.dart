@@ -74,7 +74,7 @@ final class CalorieGoalProgressProvider
 }
 
 String _$calorieGoalProgressHash() =>
-    r'e0d33a8066e6d2f4816266562d68d97c01054538';
+    r'13834afb9925e958fb910d88a4f2b1839d945545';
 
 /// Weight and learned TDEE of the goal that is active on [endDate], from its
 /// start up to [endDate]. `null` without a goal on [endDate].

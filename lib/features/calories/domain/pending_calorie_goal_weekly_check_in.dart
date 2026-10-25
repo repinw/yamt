@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'pending_calorie_goal_weekly_check_in.g.dart';
 
@@ -46,7 +46,7 @@ class PendingCalorieGoalWeeklyCheckIn {
 
   /// The window key.
   String get windowKey {
-    return '${diaryDayKey(windowStartDate)}:${diaryDayKey(windowEndDate)}';
+    return '${localDayKey(windowStartDate)}:${localDayKey(windowEndDate)}';
   }
 
   /// Copy with.

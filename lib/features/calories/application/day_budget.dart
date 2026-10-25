@@ -1,7 +1,7 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Grams of carbs, protein and fat.
 typedef MacroGrams = ({double carbs, double protein, double fat});
@@ -35,7 +35,7 @@ DayBudget resolveDayBudget({
   required CalorieWeekOverview week,
   required DailyNutritionTargetResolver nutrition,
 }) {
-  final day = normalizeDiaryDay(week.days.last.date);
+  final day = normalizeLocalDay(week.days.last.date);
   final goalKcal = dayGoalKcal(week);
   final target = nutrition.resolveTarget(
     day: day,
@@ -61,7 +61,7 @@ bool isPracticeDay({required CalorieWeekOverview week, required DateTime day}) {
   if (!week.goalStartsInFuture || startDate == null) {
     return false;
   }
-  return normalizeDiaryDay(day).isBefore(normalizeDiaryDay(startDate));
+  return normalizeLocalDay(day).isBefore(normalizeLocalDay(startDate));
 }
 
 /// The goal the last day of [week] is measured against.

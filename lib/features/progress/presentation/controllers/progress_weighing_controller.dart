@@ -1,8 +1,8 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_weight_state_refresh.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/health_app_weight_service.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -122,7 +122,7 @@ class ProgressWeighingController extends _$ProgressWeighingController {
       final done = await action();
       if (done && ref.mounted) {
         await ref.read(calorieWeightStateRefreshProvider)(
-          day: normalizeDiaryDay(
+          day: normalizeLocalDay(
             days.reduce((left, right) => left.isBefore(right) ? left : right),
           ),
         );

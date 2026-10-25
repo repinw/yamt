@@ -1,7 +1,7 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Reads visible entries grouped by diary day key.
 Future<Map<String, List<CalorieEntry>>> readVisibleEntriesByDay({
@@ -13,7 +13,7 @@ Future<Map<String, List<CalorieEntry>>> readVisibleEntriesByDay({
   }
   final entries = await repository.readEntriesInRange(
     startInclusive: days.first,
-    endExclusive: nextDiaryDay(days.last),
+    endExclusive: nextLocalDay(days.last),
   );
   return entries.groupByDiaryDayKey();
 }

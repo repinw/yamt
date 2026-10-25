@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/app_version_config_repository.dart';
 import 'package:yamt/core/domain/app_update_status.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
@@ -17,7 +18,6 @@ import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart'
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 class _MemoryRunStateRepository implements BurnWeekRunStateRepository {
   new(this.state);
@@ -67,7 +67,7 @@ Future<BurnWeekRunState> _syncEarlyWeekStart(AppUpdateStatus status) async {
   final days = [
     for (var offset = -6; offset <= 0; offset++)
       CalorieWeekDayOverview(
-        date: addDiaryDays(today, offset),
+        date: addLocalDays(today, offset),
         totalKcal: 1000,
         goalKcal: 2000,
         entryCount: 1,

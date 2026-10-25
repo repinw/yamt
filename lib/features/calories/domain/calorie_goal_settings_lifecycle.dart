@@ -1,7 +1,7 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Goal lifecycle mutations (reached, prompt handled, ended) for
 /// [CalorieGoalSettings].
@@ -19,7 +19,7 @@ extension CalorieGoalSettingsLifecycle on CalorieGoalSettings {
     return _replaceEntry(
       active,
       active.copyWith(
-        reachedAt: normalizeDiaryDay(reachedAt),
+        reachedAt: normalizeLocalDay(reachedAt),
         reachedWeightKg: weightKg,
       ),
       updatedAt: reachedAt,
@@ -53,7 +53,7 @@ extension CalorieGoalSettingsLifecycle on CalorieGoalSettings {
     return _replaceEntry(
       active,
       active.copyWith(
-        endedAt: normalizeDiaryDay(endedAt),
+        endedAt: normalizeLocalDay(endedAt),
         endedWeightKg: weightKg,
       ),
       updatedAt: endedAt,

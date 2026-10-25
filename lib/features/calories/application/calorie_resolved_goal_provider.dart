@@ -1,11 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_resolved_goal_provider.g.dart';
 
@@ -45,8 +45,8 @@ class ResolvedCalorieGoalDaysRequest {
   factory fromDays(Iterable<DateTime> days) {
     final daysByKey = <String, DateTime>{};
     for (final day in days) {
-      final normalizedDay = normalizeDiaryDay(day);
-      daysByKey[diaryDayKey(normalizedDay)] = normalizedDay;
+      final normalizedDay = normalizeLocalDay(day);
+      daysByKey[localDayKey(normalizedDay)] = normalizedDay;
     }
     return ResolvedCalorieGoalDaysRequest._(
       List<DateTime>.unmodifiable(daysByKey.values),
@@ -89,8 +89,8 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
     final goalsByDay = <String, ResolvedCalorieGoalData>{};
 
     for (final day in request.days) {
-      final normalizedDay = normalizeDiaryDay(day);
-      final dayKey = diaryDayKey(normalizedDay);
+      final normalizedDay = normalizeLocalDay(day);
+      final dayKey = localDayKey(normalizedDay);
       final storedGoalKcal = settings.baseGoalKcalForDay(normalizedDay);
       final goalKcal = settings.goalKcalForDay(normalizedDay);
 
@@ -118,7 +118,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
   final keepAliveLink = ref.keepAlive();
   try {
     ref.watch(calorieOverviewRevisionProvider);
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     final settings = await ref.watch(calorieBudgetSettingsProvider.future);
     final storedGoalKcal = settings.baseGoalKcalForDay(normalizedDay);
     final goalKcal = settings.goalKcalForDay(normalizedDay);

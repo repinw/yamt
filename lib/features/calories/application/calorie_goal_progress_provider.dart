@@ -1,9 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 
 part 'calorie_goal_progress_provider.g.dart';
@@ -15,7 +15,7 @@ Future<CalorieGoalProgress?> calorieGoalProgress(
   Ref ref,
   DateTime endDate,
 ) async {
-  final end = normalizeDiaryDay(endDate);
+  final end = normalizeLocalDay(endDate);
   final settings = await ref.watch(calorieGoalControllerProvider.future);
   if (!ref.mounted) {
     throw StateError('Calorie goal progress was disposed.');
@@ -24,22 +24,20 @@ Future<CalorieGoalProgress?> calorieGoalProgress(
   if (anchor == null) {
     return null;
   }
-  final startDate = normalizeDiaryDay(anchor.effectiveCountingStartDate);
+  final startDate = normalizeLocalDay(anchor.effectiveCountingStartDate);
   // The goal of [endDate], which a newer goal may have replaced since.
   final cycle = TdeeCycleResolver.resolveGoalCycles(settings)
       .where(
         (cycle) =>
             !cycle.isAllGoals &&
-            normalizeDiaryDay(cycle.startDate) == startDate,
+            normalizeLocalDay(cycle.startDate) == startDate,
       )
       .firstOrNull;
   if (cycle == null) {
     return null;
   }
   final analytics = await ref.watch(
-    tdeeAnalyticsProvider(
-      TdeeAnalyticsQuery(cycleIds: {cycle.id}),
-    ).future,
+    tdeeAnalyticsProvider(TdeeAnalyticsQuery(cycleIds: {cycle.id})).future,
   );
 
   return CalorieGoalProgress(
@@ -61,7 +59,7 @@ Future<CalorieGoalProgress?> calorieGoalProgress(
         // Held days and days without an estimate keep the saved TDEE.
         for (final point in analytics.points)
           if (!point.isHolding)
-            diaryDayKey(point.day): ?point.learnedBaseTdeeKcal,
+            localDayKey(point.day): ?point.learnedBaseTdeeKcal,
       },
       startDate: startDate,
       endDate: end,

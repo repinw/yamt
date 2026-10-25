@@ -1,9 +1,9 @@
 import 'dart:developer' as developer;
 
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 /// Builds debug dump text from dump result.
@@ -13,7 +13,7 @@ String calorieDebugDumpText({
 }) {
   final rangeLabel =
       '${formatDebugDumpDate(result.startInclusive)}'
-      '..${formatDebugDumpDate(previousDiaryDay(result.endExclusive))}';
+      '..${formatDebugDumpDate(previousLocalDay(result.endExclusive))}';
   return [
     'YAMT diary debug dump',
     'Generated: ${generatedAt.toLocal().toIso8601String()}',
@@ -66,7 +66,7 @@ Map<String, Object?> weeklyCheckInDataDebugJson(
   required DateTime now,
 }) {
   return <String, Object?>{
-    'today': diaryDayKey(now),
+    'today': localDayKey(now),
     'has_pending': checkInData.hasPending,
     'should_auto_open': checkInData.shouldAutoOpen,
     'show_diary_hint': checkInData.showDiaryHint,
@@ -74,10 +74,10 @@ Map<String, Object?> weeklyCheckInDataDebugJson(
     'is_blocked': checkInData.isBlocked,
     'blocked_reason': checkInData.blockedReason?.name,
     'missing_intake_days': checkInData.missingIntakeDays
-        .map(diaryDayKey)
+        .map(localDayKey)
         .toList(growable: false),
     'missing_weight_days': checkInData.missingWeightDays
-        .map(diaryDayKey)
+        .map(localDayKey)
         .toList(growable: false),
     'freshness': checkInData.freshness.name,
     'latest_learned_tdee_at': checkInData.latestLearnedTdeeAt
@@ -103,9 +103,9 @@ Map<String, Object?>? pendingWeeklyCheckInDebugJson(
     return null;
   }
   return <String, Object?>{
-    'window_start_date': diaryDayKey(pending.windowStartDate),
-    'window_end_date': diaryDayKey(pending.windowEndDate),
-    'due_date': diaryDayKey(pending.dueDate),
+    'window_start_date': localDayKey(pending.windowStartDate),
+    'window_end_date': localDayKey(pending.windowEndDate),
+    'due_date': localDayKey(pending.dueDate),
     'dismissed_at': pending.dismissedAt?.toIso8601String(),
     'window_key': pending.windowKey,
   };
@@ -131,7 +131,7 @@ Map<String, Object?>? calculationDebugJson(
 /// Converts window day to debug JSON map.
 Map<String, Object?> windowDayDebugJson(CalorieWeeklyCheckInWindowDay day) {
   return <String, Object?>{
-    'day': diaryDayKey(day.day),
+    'day': localDayKey(day.day),
     'has_entries': day.hasEntries,
     'logged_intake_kcal': day.loggedIntakeKcal,
     'resolved_intake_kcal': day.resolvedIntakeKcal,

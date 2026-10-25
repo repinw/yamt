@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/domain/progress_tdee.dart';
 
 void main() {
   final start = DateTime(2026, 9, 7);
-  final today = addDiaryDays(start, 9);
+  final today = addLocalDays(start, 9);
 
   ProgressTdee tdeeFor({required List<double> values}) {
     return ProgressTdee.fromPoints(
@@ -24,7 +24,7 @@ void main() {
       points: [
         for (final (index, kcal) in values.indexed)
           TdeeAnalyticsPoint(
-            day: addDiaryDays(start, index),
+            day: addLocalDays(start, index),
             learnedBaseTdeeKcal: kcal,
             totalTdeeKcal: kcal + 100,
           ),
@@ -48,8 +48,8 @@ void main() {
       values: [for (var i = 0; i < 9; i++) 2400.0 + i, 2408],
     );
 
-    expect(tdee.runStartDay, addDiaryDays(start, 7));
-    expect(tdee.nextCheckInDay, addDiaryDays(start, 14));
+    expect(tdee.runStartDay, addLocalDays(start, 7));
+    expect(tdee.nextCheckInDay, addLocalDays(start, 14));
     expect(tdee.changeSinceYesterdayKcal, 1);
     // The running week started on day 7; day 6 ended the week before.
     expect(tdee.changeThisWeekKcal, 2);
@@ -78,7 +78,7 @@ void main() {
   });
 
   test('stops at the end of a past goal', () {
-    final end = addDiaryDays(start, 4);
+    final end = addLocalDays(start, 4);
     final tdee = ProgressTdee.fromPoints(
       settings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
@@ -93,7 +93,7 @@ void main() {
       points: [
         for (var i = 0; i < 10; i++)
           TdeeAnalyticsPoint(
-            day: addDiaryDays(start, i),
+            day: addLocalDays(start, i),
             learnedBaseTdeeKcal: 2400.0 + i,
           ),
       ],

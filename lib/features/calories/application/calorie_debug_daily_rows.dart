@@ -1,9 +1,9 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_debug_dump_formatting.dart';
 import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
@@ -33,16 +33,16 @@ List<CalorieDebugDumpRow> calorieDebugDailyEatenRows({
   final kcalByDay = <DateTime, double>{};
   final entryCountByDay = <DateTime, int>{};
   for (final entry in entries) {
-    final day = normalizeDiaryDay(entry.loggedAt.toLocal());
+    final day = normalizeLocalDay(entry.loggedAt.toLocal());
     kcalByDay[day] = (kcalByDay[day] ?? 0) + entry.totalKcal;
     entryCountByDay[day] = (entryCountByDay[day] ?? 0) + 1;
   }
 
   final rows = <CalorieDebugDumpRow>[];
   for (
-    var day = normalizeDiaryDay(startInclusive);
+    var day = normalizeLocalDay(startInclusive);
     day.isBefore(endExclusive);
-    day = nextDiaryDay(day)
+    day = nextLocalDay(day)
   ) {
     if (!_isDebugGoalWindowDay(settings: settings, day: day)) {
       continue;
@@ -88,14 +88,14 @@ List<CalorieDebugDumpRow> calorieDebugDailyWeightRows({
     if (sample.isIgnored) {
       continue;
     }
-    final day = normalizeDiaryDay(sample.recordedAt);
-    final key = diaryDayKey(day);
+    final day = normalizeLocalDay(sample.recordedAt);
+    final key = localDayKey(day);
     daysByKey[key] = day;
     healthWeightsByDay.putIfAbsent(key, () => <double>[]).add(sample.weightKg);
   }
   for (final entry in manualWeightEntries) {
-    final day = normalizeDiaryDay(entry.day);
-    final key = diaryDayKey(day);
+    final day = normalizeLocalDay(entry.day);
+    final key = localDayKey(day);
     daysByKey[key] = day;
     manualWeightsByDay.putIfAbsent(key, () => <double>[]).add(entry.weightKg);
   }
@@ -109,9 +109,9 @@ List<CalorieDebugDumpRow> calorieDebugDailyWeightRows({
         _dailyWeightRow(
           day: day,
           manualWeightsKg:
-              manualWeightsByDay[diaryDayKey(day)] ?? const <double>[],
+              manualWeightsByDay[localDayKey(day)] ?? const <double>[],
           healthWeightsKg:
-              healthWeightsByDay[diaryDayKey(day)] ?? const <double>[],
+              healthWeightsByDay[localDayKey(day)] ?? const <double>[],
         ),
   ];
 }
@@ -169,7 +169,7 @@ Map<String, double> calorieDebugDailyRowKcalByDay({
   return <String, double>{
     for (final row in rows)
       if (row.cells[2] == type && row.cells[3] == name)
-        diaryDayKey(row.sortAt): _parseDebugNumber(row.cells[4]) ?? 0,
+        localDayKey(row.sortAt): _parseDebugNumber(row.cells[4]) ?? 0,
   };
 }
 
@@ -184,7 +184,7 @@ Map<String, double> calorieDebugDailyRowWeightByDay(
     }
     final weightKg = _parseDebugNumber(row.cells[10]);
     if (weightKg != null) {
-      weightByDay[diaryDayKey(row.sortAt)] = weightKg;
+      weightByDay[localDayKey(row.sortAt)] = weightKg;
     }
   }
   return weightByDay;

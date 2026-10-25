@@ -1,12 +1,12 @@
 // Internal split models are public only so the legacy provider can import them.
 // ignore_for_file: public_member_api_docs
 
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 class CalorieWeeklyCheckInDayData {
@@ -61,7 +61,7 @@ class CalorieWeeklyCheckInWindowDates {
   final DateTime nextBoundaryDay;
 
   int dayIndexFor(DateTime day) {
-    return normalizeDiaryDay(day).difference(learningStartDate).inDays;
+    return normalizeLocalDay(day).difference(learningStartDate).inDays;
   }
 }
 

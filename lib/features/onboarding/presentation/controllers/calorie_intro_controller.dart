@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/onboarding/application/'
     'calorie_goal_onboarding_finish_flow.dart';
@@ -50,7 +50,7 @@ class CalorieIntroController extends _$CalorieIntroController {
 
   /// Selects the day the first tracked week starts.
   void selectStartDate(DateTime day) {
-    state = state.copyWith(startDate: normalizeDiaryDay(day));
+    state = state.copyWith(startDate: normalizeLocalDay(day));
   }
 
   /// Moves to the next page. Returns the target index when it changed.

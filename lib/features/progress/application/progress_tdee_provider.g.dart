@@ -68,7 +68,7 @@ final class ProgressTdeeProvider
   }
 }
 
-String _$progressTdeeHash() => r'b27984fd5cb3738e1ac4effcdf11d5f3e8921d5f';
+String _$progressTdeeHash() => r'2c9d7cb09d31178ba80b3ffda6f3a52eb634a5e9';
 
 /// Daily TDEE of the period of [scope] with its check-ins.
 

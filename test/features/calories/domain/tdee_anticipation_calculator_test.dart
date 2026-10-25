@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_anticipation_calculator.dart';
 
 void main() {
@@ -66,7 +66,7 @@ void main() {
       );
       expect(result, isNotNull);
       expect(result!.isAchieved, isFalse);
-      expect(result.projectedDate, addDiaryDays(today, 50));
+      expect(result.projectedDate, addLocalDays(today, 50));
     });
 
     test('projects future date accurately for weight gain', () {
@@ -80,7 +80,7 @@ void main() {
       );
       expect(result, isNotNull);
       expect(result!.isAchieved, isFalse);
-      expect(result.projectedDate, addDiaryDays(today, 80));
+      expect(result.projectedDate, addLocalDays(today, 80));
     });
   });
 }

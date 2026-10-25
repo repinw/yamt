@@ -98,7 +98,7 @@ final class DiaryCalendarControllerProvider
 }
 
 String _$diaryCalendarControllerHash() =>
-    r'90e3069f6f341b58a35c688dbb4d900792f8bde9';
+    r'66e8175ebf555db272dc2d1a2c3f0a9de7a093f9';
 
 /// Stores the diary calendar selection shared by the shell app bar and page.
 

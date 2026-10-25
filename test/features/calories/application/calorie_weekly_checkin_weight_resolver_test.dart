@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/'
@@ -8,7 +9,6 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 void main() {
@@ -19,10 +19,10 @@ void main() {
     final data = mergeWeeklyCheckInWeights(
       dates: dates,
       anchorEntry: null,
-      dailyWeightByDay: {diaryDayKey(start): 80.4},
+      dailyWeightByDay: {localDayKey(start): 80.4},
     );
 
-    expect(data.weightByDay[diaryDayKey(start)], 80.4);
+    expect(data.weightByDay[localDayKey(start)], 80.4);
     expect(data.weightPoints.single.weightKg, 80.4);
   });
 
@@ -34,12 +34,12 @@ void main() {
     final data = mergeWeeklyCheckInWeights(
       dates: dates,
       anchorEntry: anchorEntry,
-      dailyWeightByDay: {diaryDayKey(dates.nextBoundaryDay): 79},
+      dailyWeightByDay: {localDayKey(dates.nextBoundaryDay): 79},
     );
 
-    expect(data.weightByDay[diaryDayKey(start)], 80);
+    expect(data.weightByDay[localDayKey(start)], 80);
     expect(
-      data.weightByDay[diaryDayKey(dates.pendingWeeklyCheckIn.windowEndDate)],
+      data.weightByDay[localDayKey(dates.pendingWeeklyCheckIn.windowEndDate)],
       79,
     );
     expect(data.weightPoints.map((point) => point.dayIndex), [0, 7]);
@@ -72,7 +72,7 @@ void main() {
     final missingEnd = validateWeeklyCheckInWeightData(
       dates: dates,
       weightData: CalorieWeeklyCheckInWeightData(
-        weightByDay: {diaryDayKey(start): 80},
+        weightByDay: {localDayKey(start): 80},
         weightPoints: const [
           CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
         ],
@@ -94,22 +94,22 @@ void main() {
   test('allows Sunday and Monday weights to co-exist in weightPoints '
       'without key collision', () {
     final start = DateTime(2026, 4, 2);
-    final end = addDiaryDays(start, 6);
+    final end = addLocalDays(start, 6);
     final sunday = end;
-    final monday = nextDiaryDay(end);
+    final monday = nextLocalDay(end);
 
     final dates = CalorieWeeklyCheckInWindowDates(
       pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
         windowStartDate: start,
         windowEndDate: end,
-        dueDate: nextDiaryDay(end),
+        dueDate: nextLocalDay(end),
       ),
       anchorEntry: null,
       anchorWeightSourceDay: null,
       learningStartDate: start,
       learningDays: [start, sunday],
       windowDays: [start, sunday],
-      learningPreviousBoundaryDay: previousDiaryDay(start),
+      learningPreviousBoundaryDay: previousLocalDay(start),
       shouldUseLearningPreviousBoundary: false,
       isFirstWindow: false,
       previousBoundaryDay: null,
@@ -119,10 +119,10 @@ void main() {
     final data = mergeWeeklyCheckInWeights(
       dates: dates,
       anchorEntry: null,
-      dailyWeightByDay: {diaryDayKey(sunday): 80.0, diaryDayKey(monday): 79.5},
+      dailyWeightByDay: {localDayKey(sunday): 80.0, localDayKey(monday): 79.5},
     );
 
-    expect(data.weightByDay[diaryDayKey(sunday)], 80.0);
+    expect(data.weightByDay[localDayKey(sunday)], 80.0);
     expect(data.weightPoints.length, 2);
     final indices = data.weightPoints.map((pt) => pt.dayIndex).toList();
     expect(indices.contains(dates.dayIndexFor(sunday)), isTrue);
@@ -146,8 +146,8 @@ void main() {
       dates: dates,
       weightData: CalorieWeeklyCheckInWeightData(
         weightByDay: {
-          diaryDayKey(goalStart): 82,
-          diaryDayKey(nextDiaryDay(goalStart)): 81.8,
+          localDayKey(goalStart): 82,
+          localDayKey(nextLocalDay(goalStart)): 81.8,
         },
         weightPoints: const [
           CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 82),
@@ -163,7 +163,7 @@ void main() {
       CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
     );
     // The missing day is the start of the 28 days, not the first goal day.
-    expect(blocked?.missingWeightDays, [addDiaryDays(start, 6 - 27)]);
+    expect(blocked?.missingWeightDays, [addLocalDays(start, 6 - 27)]);
   });
 }
 
@@ -180,22 +180,22 @@ CalorieWeeklyCheckInWindowDates _dates(
   bool isFirstWindow = false,
   DateTime? learningStartDate,
 }) {
-  final end = addDiaryDays(start, 6);
+  final end = addLocalDays(start, 6);
   return CalorieWeeklyCheckInWindowDates(
     pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: start,
       windowEndDate: end,
-      dueDate: nextDiaryDay(end),
+      dueDate: nextLocalDay(end),
     ),
     anchorEntry: null,
     anchorWeightSourceDay: null,
     learningStartDate: learningStartDate ?? start,
     learningDays: [start],
     windowDays: [start],
-    learningPreviousBoundaryDay: previousDiaryDay(start),
+    learningPreviousBoundaryDay: previousLocalDay(start),
     shouldUseLearningPreviousBoundary: false,
     isFirstWindow: isFirstWindow,
     previousBoundaryDay: null,
-    nextBoundaryDay: nextDiaryDay(end),
+    nextBoundaryDay: nextLocalDay(end),
   );
 }

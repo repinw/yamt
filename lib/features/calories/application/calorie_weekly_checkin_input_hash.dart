@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/'
@@ -11,7 +12,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 /// Stable non-cryptographic hash for weekly check-in calculation inputs.
@@ -41,9 +41,9 @@ String weeklyCheckInInputHash({
       ),
     )
     ..write('|learning=')
-    ..write(diaryDayKey(dates.learningStartDate))
+    ..write(localDayKey(dates.learningStartDate))
     ..write(':')
-    ..write(diaryDayKey(weeklyCheckIn.windowEndDate))
+    ..write(localDayKey(weeklyCheckIn.windowEndDate))
     ..write('|math=')
     ..write(settings.calorieMathVersion)
     ..write('|prevGoal=')
@@ -58,7 +58,7 @@ String weeklyCheckInInputHash({
     ..write(_hashDouble(calculatorProfile?.goalSpeedKgPerWeek ?? 0));
 
   for (final day in dates.learningDays) {
-    final dayKey = diaryDayKey(day);
+    final dayKey = localDayKey(day);
     final entries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
     final isPauseDay = settings.isPauseDay(day);
     buffer

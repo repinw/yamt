@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -221,7 +221,7 @@ void main() {
       nextEntryId: () => 'entry-1',
       loggedDay: DateTime(2026, 3, 30),
     )!;
-    expect(normalizeDiaryDay(entry.loggedAt), DateTime(2026, 3, 30));
+    expect(normalizeLocalDay(entry.loggedAt), DateTime(2026, 3, 30));
     expect(entry.loggedAt.hour, 18);
     expect(entry.loggedAt.minute, 45);
     expect(entry.createdAt, DateTime(2026, 4, 2, 18, 45, 30));

@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
@@ -11,7 +12,6 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_week_overview_provider.g.dart';
 
@@ -23,7 +23,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
-    final visibleDays = buildDiaryVisibleDays(anchorDay: visibleWindowEnd);
+    final visibleDays = buildRollingLocalDays(anchorDay: visibleWindowEnd);
     final snapshotFuture = ref.watch(
       calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
     );
@@ -58,7 +58,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
         .asMap()
         .entries
         .map((entry) {
-          final goal = resolvedGoalsByDay[diaryDayKey(entry.value.date)]!;
+          final goal = resolvedGoalsByDay[localDayKey(entry.value.date)]!;
           return CalorieWeekDayOverview(
             date: entry.value.date,
             totalKcal: entry.value.totalKcal,
@@ -118,7 +118,7 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
   try {
     // Trigger recompute when calorie logs mutate through overview revision.
     ref.watch(calorieOverviewRevisionProvider);
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     final repository = ref.watch(calorieLogRepositoryProvider);
     final settingsFuture = ref.watch(calorieBudgetSettingsProvider.future);
     final resolvedGoalFuture = ref.watch(

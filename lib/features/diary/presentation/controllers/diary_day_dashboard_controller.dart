@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
@@ -12,7 +13,6 @@ import 'package:yamt/features/calories/application/daily_nutrition_target_resolv
 import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/'
@@ -39,7 +39,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
 
   @override
   DiaryDayDashboardState build(DateTime selectedDay) {
-    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final normalizedDay = normalizeLocalDay(selectedDay);
     // Without the data key every read is empty, so a refresh would save zeros
     // over the last good numbers.
     final userId = ref.watch(userDataCipherProvider)?.uid;
@@ -82,7 +82,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     ) {
       // Every day of the week up to this one counts: their types and goals
       // add up to the carryover this day starts with.
-      final weekDays = buildDiaryVisibleDays(anchorDay: normalizedDay);
+      final weekDays = buildRollingLocalDays(anchorDay: normalizedDay);
       List<Object?>? signatures(CalorieGoalSettings? settings) =>
           settings == null
           ? null
@@ -154,7 +154,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     bool forceRefresh = false,
   }) {
     return _refresh(
-      normalizedDay: normalizeDiaryDay(selectedDay),
+      normalizedDay: normalizeLocalDay(selectedDay),
       userId: ref.read(userDataCipherProvider)?.uid,
       preferences: ref.read(appPreferencesProvider),
       cacheRepository: ref.read(diaryDayDashboardCacheRepositoryProvider),

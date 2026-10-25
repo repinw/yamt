@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -16,7 +17,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
@@ -380,8 +380,8 @@ void main() {
   test(
     'saveCalculatedGoal allows a future goal start for onboarding saves',
     () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final futureGoalStart = addDiaryDays(today, 2);
+      final today = normalizeLocalDay(DateTime.now());
+      final futureGoalStart = addLocalDays(today, 2);
       final initialSettings = CalorieGoalSettings.single(
         dailyKcalGoal: 1900,
         calculatorProfile: null,
@@ -586,7 +586,7 @@ void main() {
 
   test('saveCalculatedGoal with unchanged date updates window only '
       'and preserves pending dismissal', () async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final dismissedAt = today.add(const Duration(hours: 9));
     final pending = PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: today.subtract(
@@ -639,7 +639,7 @@ void main() {
 
   test('saveCalculatedGoal drops copied learned snapshot '
       'on same-day calculator edits', () async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
       windowStartDate: DateTime(2026, 4, 8),
       windowEndDate: DateTime(2026, 4, 14),
@@ -699,7 +699,7 @@ void main() {
   });
 
   test('saveCalculatedGoal can count same-day start as tracked', () async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     final container = ProviderContainer(
@@ -736,7 +736,7 @@ void main() {
   });
 
   test('saveCalculatedGoal can keep same-day start as starter day', () async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     final container = ProviderContainer(
@@ -771,12 +771,12 @@ void main() {
     expect(settings.goalHistory.single.effectiveDate, today);
     expect(settings.goalHistory.single.effectiveCountingStartDate, today);
     expect(settings.goalHistory.single.changedAt, isNot(today));
-    expect(isSameDiaryDay(settings.goalHistory.single.changedAt!, today), true);
+    expect(isSameLocalDay(settings.goalHistory.single.changedAt!, today), true);
   });
 
   test('saveCalculatedGoal does not reattach stale learned snapshot '
       'from older history', () async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
       windowStartDate: DateTime(2026, 4, 8),
       windowEndDate: DateTime(2026, 4, 14),
@@ -902,18 +902,18 @@ void main() {
     expect(saved, isTrue);
     final settings = await repository.readSettings();
     expect(settings.goalKcalForDay(today), 1900);
-    expect(settings.goalHistory.single.effectiveDate, normalizeDiaryDay(today));
+    expect(settings.goalHistory.single.effectiveDate, normalizeLocalDay(today));
     expect(
       settings.goalHistory.single.effectiveCountingStartDate,
-      normalizeDiaryDay(futureGoalStart),
+      normalizeLocalDay(futureGoalStart),
     );
     expect(
       settings.nextGoalStartAfterDay(today),
-      normalizeDiaryDay(futureGoalStart),
+      normalizeLocalDay(futureGoalStart),
     );
     expect(settings.goalHistory, hasLength(1));
     expect(
-      isSameDiaryDay(settings.goalHistory.single.changedAt!, today),
+      isSameLocalDay(settings.goalHistory.single.changedAt!, today),
       isTrue,
     );
   });
@@ -939,7 +939,7 @@ void main() {
 
     await container.read(calorieGoalControllerProvider.future);
 
-    final futureGoalStart = addDiaryDays(today, 2);
+    final futureGoalStart = addLocalDays(today, 2);
     final saved = await container
         .read(calorieGoalControllerProvider.notifier)
         .shiftGoalStart(goalStartDate: futureGoalStart);
@@ -948,16 +948,16 @@ void main() {
     final settings = await repository.readSettings();
     expect(settings.goalHistory, hasLength(1));
     expect(
-      isSameDiaryDay(settings.goalHistory.single.changedAt!, today),
+      isSameLocalDay(settings.goalHistory.single.changedAt!, today),
       isTrue,
     );
     expect(
       settings.goalHistory.single.effectiveCountingStartDate,
-      normalizeDiaryDay(futureGoalStart),
+      normalizeLocalDay(futureGoalStart),
     );
     expect(
       settings.nextGoalStartAfterDay(today),
-      normalizeDiaryDay(futureGoalStart),
+      normalizeLocalDay(futureGoalStart),
     );
   });
 
@@ -1495,7 +1495,7 @@ void main() {
   );
 
   test('goal reached prompt remains due until user answers it', () async {
-    final day = normalizeDiaryDay(DateTime.now());
+    final day = normalizeLocalDay(DateTime.now());
     final profile = const CalorieCalculatorProfile.defaults().copyWith(
       goalMode: CalorieGoalMode.lose,
       goalSpeedKgPerWeek: 0.5,
@@ -1538,7 +1538,7 @@ void main() {
   });
 
   test('weight above a lose target does not mark the goal reached', () async {
-    final day = normalizeDiaryDay(DateTime.now());
+    final day = normalizeLocalDay(DateTime.now());
     final profile = const CalorieCalculatorProfile.defaults().copyWith(
       goalMode: CalorieGoalMode.lose,
       goalSpeedKgPerWeek: 0.5,
@@ -1572,7 +1572,7 @@ void main() {
   });
 
   test('saveCalculatedGoal archives the current goal on request', () async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final oldProfile = const CalorieCalculatorProfile.defaults().copyWith(
       goalMode: CalorieGoalMode.lose,
       goalSpeedKgPerWeek: 0.5,

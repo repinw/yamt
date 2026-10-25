@@ -1,7 +1,7 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -89,7 +89,7 @@ DateTime _resolveLoggedAt({
     return now;
   }
 
-  final normalizedDay = normalizeDiaryDay(loggedDay);
+  final normalizedDay = normalizeLocalDay(loggedDay);
   return DateTime(
     normalizedDay.year,
     normalizedDay.month,

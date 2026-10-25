@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/app_version_config_repository.dart';
 import 'package:yamt/core/domain/app_update_status.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/'
     'burn_week_live_mutation_coordinator.dart';
@@ -13,7 +14,6 @@ import 'package:yamt/features/calories/application/calorie_goal_controller.dart'
 import 'package:yamt/features/calories/application/calorie_week_consumption_snapshot_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'burn_week_live_sync_provider.g.dart';
 
@@ -37,7 +37,7 @@ Object? burnWeekLiveSync(Ref ref) {
     ref.onDispose(ticker.cancel);
   }
 
-  final today = normalizeDiaryDay(ref.watch(clockProvider)());
+  final today = normalizeLocalDay(ref.watch(clockProvider)());
   final weekOverview = ref.watch(calorieWeekOverviewForWindowProvider(today));
   final todayOverview = ref.watch(calorieWeekDayOverviewForDateProvider(today));
   final settings = ref.watch(calorieGoalControllerProvider).asData?.value;
@@ -62,7 +62,7 @@ Object? burnWeekLiveSync(Ref ref) {
   if (weekOverviewValue.goalStartsInFuture) {
     final nextGoalStartDate = weekOverviewValue.nextGoalStartDate;
     if (settings.hasLearnedTdee && nextGoalStartDate != null) {
-      final normalizedGoalStartDate = normalizeDiaryDay(nextGoalStartDate);
+      final normalizedGoalStartDate = normalizeLocalDay(nextGoalStartDate);
       if (!isScheduledFutureFreshBurnWeekRun(
         runState: runState,
         storedWeekStartDate: storedWeekStartDate,
@@ -89,7 +89,7 @@ Object? burnWeekLiveSync(Ref ref) {
           balanceStartDate: weekOverviewValue.balanceStartDate,
         );
   if (alignedWeekStartDate != null &&
-      !isSameDiaryDay(alignedWeekStartDate, storedWeekStartDate!)) {
+      !isSameLocalDay(alignedWeekStartDate, storedWeekStartDate!)) {
     // An app below the minimum version must not rewrite the run; until the
     // status is known the sync keeps the shifted weeks as they are.
     final updateStatus = ref.watch(appUpdateStatusProvider).value;
@@ -137,8 +137,8 @@ Object? burnWeekLiveSync(Ref ref) {
     today: todayOverviewValue.date,
     syncWeekStartDate: syncWeekStartDate,
   );
-  final expectedWeekStartDayKey = diaryDayKey(syncWeekStartDate);
-  final expectedCurrentDayKey = diaryDayKey(todayOverviewValue.date);
+  final expectedWeekStartDayKey = localDayKey(syncWeekStartDate);
+  final expectedCurrentDayKey = localDayKey(todayOverviewValue.date);
   final isAlreadySynced =
       closedWeekStartDates.isEmpty &&
       runState.currentWeekStartDayKey == expectedWeekStartDayKey &&
@@ -153,7 +153,7 @@ Object? burnWeekLiveSync(Ref ref) {
       ref
           .watch(
             calorieWeekConsumptionSnapshotForWindowProvider(
-              addDiaryDays(closedWeekStartDate, burnWeekDaysPerWeek - 1),
+              addLocalDays(closedWeekStartDate, burnWeekDaysPerWeek - 1),
             ),
           )
           .value,
@@ -167,8 +167,8 @@ Object? burnWeekLiveSync(Ref ref) {
       resolveBurnWeekLiveMissedTrackingForStoredWeek(
         storedWeekSnapshot: closedWeekSnapshots[index]!,
         storedWeekStartDate: closedWeekStartDates[index],
-        today: nextDiaryDay(
-          addDiaryDays(closedWeekStartDates[index], burnWeekDaysPerWeek - 1),
+        today: nextLocalDay(
+          addLocalDays(closedWeekStartDates[index], burnWeekDaysPerWeek - 1),
         ),
         settings: settings,
       ),
@@ -195,7 +195,7 @@ void _queueRunSync(
       .map((value) => value ? '1' : '0')
       .join();
   final mutationKey =
-      'sync:${diaryDayKey(normalizeDiaryDay(weekStartDate))}'
+      'sync:${localDayKey(normalizeLocalDay(weekStartDate))}'
       ':${missedTrackingThisWeek ? '1' : '0'}:$closedWeeksKey';
 
   ref
@@ -221,7 +221,7 @@ void _queueRunRestart(
   final controller = ref.read(burnWeekRunControllerProvider.notifier);
   final mutationKey = [
     'restart',
-    diaryDayKey(normalizeDiaryDay(weekStartDate)),
+    localDayKey(normalizeLocalDay(weekStartDate)),
     if (runWeekNumber != null) runWeekNumber.toString(),
   ].join(':');
 
@@ -243,7 +243,7 @@ void _queueRunWeekMove(Ref ref, {required DateTime weekStartDate}) {
   ref
       .read(burnWeekLiveMutationCoordinatorProvider)
       .queueMutation(
-        key: 'move:${diaryDayKey(normalizeDiaryDay(weekStartDate))}',
+        key: 'move:${localDayKey(normalizeLocalDay(weekStartDate))}',
         action: () => controller.moveWeekStartTo(weekStartDate),
       );
 }

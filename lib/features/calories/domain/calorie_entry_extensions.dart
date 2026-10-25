@@ -1,5 +1,5 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Shared helpers for calorie-entry collections.
 extension CalorieEntryIterableX on Iterable<CalorieEntry> {
@@ -8,7 +8,7 @@ extension CalorieEntryIterableX on Iterable<CalorieEntry> {
     final entriesByDay = <String, List<CalorieEntry>>{};
     for (final entry in this) {
       entriesByDay
-          .putIfAbsent(diaryDayKey(entry.loggedAt), () => <CalorieEntry>[])
+          .putIfAbsent(localDayKey(entry.loggedAt), () => <CalorieEntry>[])
           .add(entry);
     }
     return entriesByDay;

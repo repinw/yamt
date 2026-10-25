@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -21,7 +22,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -95,7 +95,7 @@ ProviderContainer _futureDaysContainer({
   required DateTime today,
   DateTime? goalStart,
 }) {
-  final yesterday = addDiaryDays(today, -1);
+  final yesterday = addLocalDays(today, -1);
   final logRepository = FakeCalorieLogRepository(
     initialEntries: <CalorieEntry>[
       _entry(
@@ -190,9 +190,9 @@ void main() {
   });
 
   test('calorieWeekOverview aggregates rolling seven-day totals', () async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final fourDaysAgo = addDiaryDays(today, -4);
-    final eightDaysAgo = addDiaryDays(today, -8);
+    final today = normalizeLocalDay(DateTime.now());
+    final fourDaysAgo = addLocalDays(today, -4);
+    final eightDaysAgo = addLocalDays(today, -8);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(
@@ -216,7 +216,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
         calculatorProfile: null,
-        effectiveDate: addDiaryDays(today, -6),
+        effectiveDate: addLocalDays(today, -6),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -233,9 +233,9 @@ void main() {
     await container.read(calorieGoalControllerProvider.future);
     final overview = await _readWeekOverviewForWindow(container, today);
 
-    expect(overview.days, hasLength(diaryVisibleDayCount));
+    expect(overview.days, hasLength(localVisibleDayCount));
     expect(overview.days.last.date, today);
-    expect(overview.days.first.date, addDiaryDays(today, -6));
+    expect(overview.days.first.date, addLocalDays(today, -6));
     expect(overview.totalConsumedKcal, 1000);
     expect(overview.totalGoalKcal, 14000);
     expect(overview.remainingKcal, 13000);
@@ -243,14 +243,14 @@ void main() {
 
   test('calorieWeekOverview treats pause day as goal-perfect', () async {
     final today = DateTime(2026, 4, 10);
-    final firstVisibleDay = addDiaryDays(today, -6);
+    final firstVisibleDay = addLocalDays(today, -6);
     final pauseDay = DateTime(2026, 4, 8);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         for (var index = 0; index < 6; index += 1)
           _entry(
             'entry-$index',
-            loggedAt: addDiaryDays(
+            loggedAt: addLocalDays(
               firstVisibleDay,
               index,
             ).add(const Duration(hours: 8)),
@@ -295,7 +295,7 @@ void main() {
     'calorieWeekOverview spreads past under-eating into carryover',
     () async {
       final today = DateTime(2026, 4, 10);
-      final yesterday = addDiaryDays(today, -1);
+      final yesterday = addLocalDays(today, -1);
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
           _entry(
@@ -339,8 +339,8 @@ void main() {
   );
 
   final planToday = DateTime(2026, 4, 10);
-  final planTomorrow = addDiaryDays(planToday, 1);
-  final planDayAfterTomorrow = addDiaryDays(planToday, 2);
+  final planTomorrow = addLocalDays(planToday, 1);
+  final planDayAfterTomorrow = addLocalDays(planToday, 2);
 
   group('calorie settings', () {
     final today = DateTime(2026, 4, 10);
@@ -373,7 +373,7 @@ void main() {
         CalorieGoalSettings.single(
           dailyKcalGoal: 2000,
           calculatorProfile: null,
-          effectiveDate: addDiaryDays(today, -6),
+          effectiveDate: addLocalDays(today, -6),
         ).setPauseDay(day: pauseDay, isPause: true),
       );
 
@@ -459,7 +459,7 @@ void main() {
     // The run started six days ago, so today is its last day.
     final container = _futureDaysContainer(
       today: planToday,
-      goalStart: addDiaryDays(planToday, -6),
+      goalStart: addLocalDays(planToday, -6),
     );
     await _setClosedDay(container, planToday);
 
@@ -473,9 +473,9 @@ void main() {
   test(
     'calorieWeekOverview anchors the visible window to its end day',
     () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final selectedDay = addDiaryDays(today, -1);
-      final firstVisibleDay = addDiaryDays(selectedDay, -6);
+      final today = normalizeLocalDay(DateTime.now());
+      final selectedDay = addLocalDays(today, -1);
+      final firstVisibleDay = addLocalDays(selectedDay, -6);
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
           _entry(
@@ -517,7 +517,7 @@ void main() {
       await container.read(calorieGoalControllerProvider.future);
       final overview = await _readWeekOverviewForWindow(container, selectedDay);
 
-      expect(overview.days, hasLength(diaryVisibleDayCount));
+      expect(overview.days, hasLength(localVisibleDayCount));
       expect(overview.days.last.date, selectedDay);
       expect(overview.days.first.date, firstVisibleDay);
       expect(overview.totalConsumedKcal, 1000);
@@ -573,14 +573,14 @@ void main() {
 
     expect(firstEntryDateRead, isTrue);
     releaseRangeReads.complete();
-    expect((await overview).days, hasLength(diaryVisibleDayCount));
+    expect((await overview).days, hasLength(localVisibleDayCount));
   });
 
   test(
     'calorieWeekConsumptionSnapshot covers the seven days up to its end day',
     () async {
       final windowEnd = DateTime(2026, 3, 20);
-      final firstVisibleDay = addDiaryDays(windowEnd, -6);
+      final firstVisibleDay = addLocalDays(windowEnd, -6);
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
           _entry(
@@ -701,7 +701,7 @@ void main() {
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2000,
           calculatorProfile: null,
-          effectiveDate: addDiaryDays(windowEnd, -6),
+          effectiveDate: addLocalDays(windowEnd, -6),
         ),
       );
       addTearDown(logRepository.dispose);
@@ -776,9 +776,9 @@ void main() {
 
   test('calorieWeekOverview uses day-specific goals and resets buffer '
       'on the latest goal change', () async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final yesterday = addDiaryDays(today, -1);
-    final threeDaysAgo = addDiaryDays(today, -3);
+    final today = normalizeLocalDay(DateTime.now());
+    final yesterday = addLocalDays(today, -1);
+    final threeDaysAgo = addLocalDays(today, -3);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(
@@ -839,7 +839,7 @@ void main() {
 
   test('calorieWeekOverview resets previous-run carryover', () async {
     final today = DateTime(2026, 4, 10);
-    final cycleStartDay = addDiaryDays(today, -9);
+    final cycleStartDay = addLocalDays(today, -9);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(
@@ -850,7 +850,7 @@ void main() {
         for (var offset = 1; offset <= 8; offset += 1)
           _entry(
             'balanced-$offset',
-            loggedAt: addDiaryDays(
+            loggedAt: addLocalDays(
               cycleStartDay,
               offset,
             ).add(const Duration(hours: 12)),
@@ -927,7 +927,7 @@ void main() {
       final overview = await container.read(provider.future);
 
       expect(overview.days.last.date, today);
-      expect(overview.days.first.date, addDiaryDays(today, -6));
+      expect(overview.days.first.date, addLocalDays(today, -6));
 
       expect(overview.balanceStartDate, today);
       expect(overview.carryoverBeforeTodayKcal, 0);
@@ -939,8 +939,8 @@ void main() {
     'calorieWeekOverview keeps the same balance cycle through weekly check-ins',
     () async {
       final today = DateTime(2026, 4, 10);
-      final yesterday = addDiaryDays(today, -1);
-      final cycleStartDay = addDiaryDays(today, -9);
+      final yesterday = addLocalDays(today, -1);
+      final cycleStartDay = addLocalDays(today, -9);
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
           _entry(
@@ -951,7 +951,7 @@ void main() {
           for (var offset = 1; offset <= 7; offset += 1)
             _entry(
               'balanced-before-checkin-$offset',
-              loggedAt: addDiaryDays(
+              loggedAt: addLocalDays(
                 cycleStartDay,
                 offset,
               ).add(const Duration(hours: 12)),
@@ -1009,7 +1009,7 @@ void main() {
 
   test('calorieWeekOverview does not reload visible range when goal '
       'resolves later', () async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(
@@ -1092,8 +1092,8 @@ void main() {
   });
 
   test('calorieWeekOverview ignores days before a future goal start', () async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final tomorrow = addDiaryDays(today, 1);
+    final today = normalizeLocalDay(DateTime.now());
+    final tomorrow = addLocalDays(today, 1);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(

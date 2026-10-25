@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -14,7 +15,6 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -274,7 +274,7 @@ void main() {
     tester,
   ) async {
     _useTallView(tester);
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final goalStartDate = today.subtract(const Duration(days: 2));
     final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
       windowStartDate: goalStartDate.subtract(const Duration(days: 7)),
@@ -305,10 +305,10 @@ void main() {
     );
     final logRepository = FakeCalorieLogRepository();
     final initialRunState = BurnWeekRunState(
-      currentWeekStartDayKey: diaryDayKey(
+      currentWeekStartDayKey: localDayKey(
         goalStartDate.subtract(const Duration(days: 7)),
       ),
-      lastActiveDayKey: diaryDayKey(today),
+      lastActiveDayKey: localDayKey(today),
       runWeekNumber: 3,
       starCount: 2,
       starBrokeThisWeek: true,
@@ -351,7 +351,7 @@ void main() {
     tester,
   ) async {
     _useTallView(tester);
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final goalStartDate = today.subtract(const Duration(days: 6));
     final initialSettings = _learnedTdeeSettings(goalStartDate: goalStartDate);
     final settingsRepository = FakeCalorieSettingsRepository(
@@ -360,10 +360,10 @@ void main() {
     final logRepository = FakeCalorieLogRepository();
     final runStateRepository = _FakeBurnWeekRunStateRepository(
       BurnWeekRunState(
-        currentWeekStartDayKey: diaryDayKey(
+        currentWeekStartDayKey: localDayKey(
           goalStartDate.subtract(const Duration(days: 49)),
         ),
-        lastActiveDayKey: diaryDayKey(today),
+        lastActiveDayKey: localDayKey(today),
         runWeekNumber: 8,
         starCount: 7,
         starBrokeThisWeek: false,
@@ -414,7 +414,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(runStateRepository.saveCallCount, 1);
-    expect(runStateRepository.state.currentWeekStartDayKey, diaryDayKey(today));
+    expect(runStateRepository.state.currentWeekStartDayKey, localDayKey(today));
     expect(
       runStateRepository.state.runWeekNumber,
       burnWeekLearningRunWeekNumber,
@@ -426,7 +426,7 @@ void main() {
     tester,
   ) async {
     _useTallView(tester);
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final initialSettings = _learnedTdeeSettings(
       goalStartDate: today.subtract(const Duration(days: 6)),
     );
@@ -599,7 +599,7 @@ void main() {
   testWidgets('a failed Burn Week restart closes the saved goal and says so '
       '(#710)', (tester) async {
     _useTallView(tester);
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final goalStartDate = today.subtract(const Duration(days: 6));
     final initialSettings = _learnedTdeeSettings(goalStartDate: goalStartDate);
     final settingsRepository = FakeCalorieSettingsRepository(
@@ -684,7 +684,7 @@ void main() {
     tester,
   ) async {
     _useTallView(tester);
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final initialSettings = _learnedTdeeSettings(
       goalStartDate: today.subtract(const Duration(days: 20)),
     );
@@ -708,8 +708,8 @@ void main() {
           burnWeekRunStateRepositoryProvider.overrideWithValue(
             _FakeBurnWeekRunStateRepository(
               BurnWeekRunState(
-                currentWeekStartDayKey: diaryDayKey(today),
-                lastActiveDayKey: diaryDayKey(today),
+                currentWeekStartDayKey: localDayKey(today),
+                lastActiveDayKey: localDayKey(today),
                 runWeekNumber: 1,
                 starCount: 0,
                 starBrokeThisWeek: false,

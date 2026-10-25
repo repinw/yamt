@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -16,7 +17,6 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/'
@@ -54,11 +54,11 @@ void main() {
     final settings = await harness.settingsRepository.readSettings();
     expect(
       settings.goalHistory.single.effectiveDate,
-      normalizeDiaryDay(_today),
+      normalizeLocalDay(_today),
     );
     expect(
       harness.runStateRepository.state.currentWeekStartDayKey,
-      diaryDayKey(normalizeDiaryDay(_today)),
+      localDayKey(normalizeLocalDay(_today)),
     );
     expect(harness.currentLocation, '/');
   });
@@ -77,7 +77,7 @@ void main() {
     await _tapFinish(tester);
 
     final settings = await harness.settingsRepository.readSettings();
-    final tomorrow = nextDiaryDay(normalizeDiaryDay(_today));
+    final tomorrow = nextLocalDay(normalizeLocalDay(_today));
     expect(settings.goalHistory.single.effectiveCountingStartDate, tomorrow);
     expect(settings.nextGoalStartAfterDay(_today), tomorrow);
     expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);

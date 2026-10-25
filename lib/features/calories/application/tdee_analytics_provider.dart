@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
@@ -7,7 +8,6 @@ import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
@@ -83,7 +83,7 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
 
     final entries = await logRepo.readEntriesInRange(
       startInclusive: loadStart,
-      endExclusive: nextDiaryDay(window.end),
+      endExclusive: nextLocalDay(window.end),
     );
     if (!ref.mounted) {
       throw StateError('TdeeAnalytics provider was disposed.');
@@ -97,7 +97,7 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
       tdeeByDay: DailyTdeeSeries.estimate(
         startDate: estimateStart,
         endDate: window.end,
-        today: normalizeDiaryDay(now),
+        today: normalizeLocalDay(now),
         settings: settings,
         entriesByDay: entriesByDay,
         weights: weights,

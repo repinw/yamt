@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
@@ -45,7 +45,7 @@ String planSavedMessage(
   required DateTime day,
   required DateTime today,
 }) {
-  final days = diaryDaysBetween(dateOnly(today), dateOnly(day));
+  final days = localDaysBetween(dateOnly(today), dateOnly(day));
   return l10n.diaryPlanSavedFor(switch (days) {
     0 => l10n.diaryPlanSavedToday,
     1 => l10n.diaryPlanSavedTomorrow,

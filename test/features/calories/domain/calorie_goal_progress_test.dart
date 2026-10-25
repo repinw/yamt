@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 void main() {
   final goalStart = DateTime(2026, 4, 8);
@@ -16,15 +16,15 @@ void main() {
       effectiveDate: goalStart,
     );
     for (final week in [0, 1]) {
-      final windowStart = addDiaryDays(goalStart, 7 * week);
+      final windowStart = addLocalDays(goalStart, 7 * week);
       settings = settings.applyGoalChange(
-        changedAt: addDiaryDays(windowStart, 7),
+        changedAt: addLocalDays(windowStart, 7),
         dailyKcalGoal: 2400,
         calculatorProfile: null,
         source: CalorieGoalSource.weeklyCheckIn,
         weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
           windowStartDate: windowStart,
-          windowEndDate: addDiaryDays(windowStart, 6),
+          windowEndDate: addLocalDays(windowStart, 6),
           trendWeightChangePerDay: 0,
           calculatedTdeeKcal: 2500,
           lowConfidence: false,
@@ -37,13 +37,13 @@ void main() {
   test('shows the daily TDEE at each run end over the saved value', () {
     final points = calorieGoalTdeePoints(
       settings: settingsWithCheckIns(),
-      dailyTdeeKcalByDay: {diaryDayKey(addDiaryDays(goalStart, 6)): 2610},
+      dailyTdeeKcalByDay: {localDayKey(addLocalDays(goalStart, 6)): 2610},
       startDate: goalStart,
-      endDate: addDiaryDays(goalStart, 20),
+      endDate: addLocalDays(goalStart, 20),
     );
 
     expect(points.map((point) => point.tdeeKcal), [2610, 2500]);
-    expect(points.first.runEndDate, addDiaryDays(goalStart, 6));
+    expect(points.first.runEndDate, addLocalDays(goalStart, 6));
   });
 
   test('the weight of a day is its trend, else its weigh-in', () {
@@ -54,7 +54,7 @@ void main() {
       weights: [
         (day: goalStart, scaleWeightKg: 80.4, trendWeightKg: 80.1),
         (
-          day: addDiaryDays(goalStart, 1),
+          day: addLocalDays(goalStart, 1),
           scaleWeightKg: 79.9,
           trendWeightKg: null,
         ),
@@ -63,7 +63,7 @@ void main() {
     );
 
     expect(progress.weightKgOn(goalStart), 80.1);
-    expect(progress.weightKgOn(addDiaryDays(goalStart, 1)), 79.9);
-    expect(progress.weightKgOn(addDiaryDays(goalStart, 2)), isNull);
+    expect(progress.weightKgOn(addLocalDays(goalStart, 1)), 79.9);
+    expect(progress.weightKgOn(addLocalDays(goalStart, 2)), isNull);
   });
 }

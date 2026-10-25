@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
@@ -28,7 +29,6 @@ import 'package:yamt/features/calories/application/calorie_week_overview_provide
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_debug_keys.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_weekly_checkin_preview_flow.dart';
@@ -157,10 +157,10 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
 
   @override
   DiaryCalendarState build() {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     return DiaryCalendarState(
       today: today,
-      selectedDay: normalizeDiaryDay(selectedDay),
+      selectedDay: normalizeLocalDay(selectedDay),
     );
   }
 }
@@ -247,7 +247,7 @@ PreparedMeal _preparedMeal(String id) {
 }
 
 CalorieWeekOverview _weekOverview(DateTime selectedDay) {
-  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
+  final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final balanceStartDate = normalizedSelectedDay.subtract(
     const Duration(days: 6),
   );
@@ -364,10 +364,10 @@ Widget _buildHarness({
   ThemeData? theme,
   ValueChanged<Object?>? onHubRouteExtra,
 }) {
-  final today = normalizeDiaryDay(DateTime.now());
+  final today = normalizeLocalDay(DateTime.now());
   final dashboardDay = selectedDiaryDay == null
       ? today
-      : normalizeDiaryDay(selectedDiaryDay);
+      : normalizeLocalDay(selectedDiaryDay);
   final firebaseAuth = _MockFirebaseAuth();
   when(() => firebaseAuth.currentUser).thenReturn(null);
   final routeObserver = RouteObserver<ModalRoute<void>>();
@@ -457,7 +457,7 @@ Widget _buildHarness({
       ),
       calorieWeekOverviewForWindowProvider(today)
           .overrideWith((ref) => _weekOverview(today)),
-      if (!isSameDiaryDay(dashboardDay, today))
+      if (!isSameLocalDay(dashboardDay, today))
         calorieWeekOverviewForWindowProvider(dashboardDay)
             .overrideWith((ref) => _weekOverview(dashboardDay)),
       burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
@@ -573,7 +573,7 @@ void main() {
   ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final oldDay = today.subtract(const Duration(days: 2));
 
     await tester.pumpWidget(

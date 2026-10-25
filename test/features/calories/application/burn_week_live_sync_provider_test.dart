@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
@@ -12,7 +13,6 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 class _FakeCalorieGoalController extends CalorieGoalController {
   new(this.settings);
@@ -54,7 +54,7 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
     required DateTime weekStartDate,
     int? runWeekNumber,
   }) async {
-    restartCalls.add(normalizeDiaryDay(weekStartDate));
+    restartCalls.add(normalizeLocalDay(weekStartDate));
     restartRunWeekNumbers.add(runWeekNumber);
     await restartBlocker?.future;
     return true;
@@ -75,8 +75,8 @@ class _RecordingBurnWeekRunController extends BurnWeekRunController {
   }) async {
     syncCalls.add(
       _SyncCall(
-        currentDay: normalizeDiaryDay(currentDay),
-        weekStartDate: normalizeDiaryDay(weekStartDate),
+        currentDay: normalizeLocalDay(currentDay),
+        weekStartDate: normalizeLocalDay(weekStartDate),
         missedTrackingThisWeek: missedTrackingThisWeek,
         missedTrackingForClosedWeeks: missedTrackingForClosedWeeks == null
             ? null
@@ -146,7 +146,7 @@ CalorieWeekOverview _weekOverview({
   double? futureGoalKcal,
   Set<DateTime> missingDays = const <DateTime>{},
 }) {
-  final normalizedToday = normalizeDiaryDay(today);
+  final normalizedToday = normalizeLocalDay(today);
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
@@ -172,7 +172,7 @@ CalorieWeekOverview _weekOverview({
     totalConsumedKcal: days.fold<double>(0, (sum, day) => sum + day.totalKcal),
     totalGoalKcal: 2000 * 7,
     remainingKcal: 0,
-    balanceStartDate: normalizeDiaryDay(balanceStartDate),
+    balanceStartDate: normalizeLocalDay(balanceStartDate),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: 2000,
     goalStartsInFuture: goalStartsInFuture,
@@ -185,7 +185,7 @@ CalorieWeekConsumptionSnapshot _snapshotForWeek({
   required DateTime weekStartDate,
   Set<DateTime> missingDays = const <DateTime>{},
 }) {
-  final normalizedWeekStartDate = normalizeDiaryDay(weekStartDate);
+  final normalizedWeekStartDate = normalizeLocalDay(weekStartDate);
   final days = [
     for (var offset = 0; offset < 7; offset += 1)
       CalorieWeekConsumptionDaySnapshot(
@@ -276,7 +276,7 @@ CalorieGoalSettings _learnedGoalSettings(DateTime effectiveDate) {
 void main() {
   group('burnWeekLiveSyncProvider', () {
     test('does nothing when the run state is already synchronized', () async {
-      final today = normalizeDiaryDay(DateTime.now());
+      final today = normalizeLocalDay(DateTime.now());
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
         today: today,
@@ -287,10 +287,10 @@ void main() {
         todayOverview: _defaultTodayOverview(today),
         settings: _activeGoalSettings(today.subtract(const Duration(days: 6))),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: diaryDayKey(
+          currentWeekStartDayKey: localDayKey(
             today.subtract(const Duration(days: 6)),
           ),
-          lastActiveDayKey: diaryDayKey(today),
+          lastActiveDayKey: localDayKey(today),
           runWeekNumber: 1,
           starCount: 0,
           starBrokeThisWeek: false,
@@ -307,8 +307,8 @@ void main() {
     });
 
     test('returns early when stored week start is in the future', () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final tomorrow = nextDiaryDay(today);
+      final today = normalizeLocalDay(DateTime.now());
+      final tomorrow = nextLocalDay(today);
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
         today: today,
@@ -319,8 +319,8 @@ void main() {
         todayOverview: _defaultTodayOverview(today),
         settings: _activeGoalSettings(today.subtract(const Duration(days: 6))),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: diaryDayKey(tomorrow),
-          lastActiveDayKey: diaryDayKey(today),
+          currentWeekStartDayKey: localDayKey(tomorrow),
+          lastActiveDayKey: localDayKey(today),
           runWeekNumber: 1,
           starCount: 0,
           starBrokeThisWeek: false,
@@ -337,7 +337,7 @@ void main() {
     });
 
     test('catches up closed weeks when no run start is stored', () async {
-      final today = normalizeDiaryDay(DateTime.now());
+      final today = normalizeLocalDay(DateTime.now());
       final cycleStart = today.subtract(const Duration(days: 18));
       final currentWeekStart = today.subtract(const Duration(days: 4));
       late _RecordingBurnWeekRunController controller;
@@ -373,7 +373,7 @@ void main() {
     test(
       'repairs fresh current-week state that skipped backfilled weeks',
       () async {
-        final today = normalizeDiaryDay(DateTime.now());
+        final today = normalizeLocalDay(DateTime.now());
         final cycleStart = today.subtract(const Duration(days: 18));
         final currentWeekStart = today.subtract(const Duration(days: 4));
         late _RecordingBurnWeekRunController controller;
@@ -386,8 +386,8 @@ void main() {
           todayOverview: _defaultTodayOverview(today),
           settings: _activeGoalSettings(cycleStart),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: diaryDayKey(currentWeekStart),
-            lastActiveDayKey: diaryDayKey(today),
+            currentWeekStartDayKey: localDayKey(currentWeekStart),
+            lastActiveDayKey: localDayKey(today),
             runWeekNumber: 1,
             starCount: 0,
             starBrokeThisWeek: false,
@@ -418,8 +418,8 @@ void main() {
     );
 
     test('does nothing while the goal starts in the future', () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final tomorrow = nextDiaryDay(today);
+      final today = normalizeLocalDay(DateTime.now());
+      final tomorrow = nextLocalDay(today);
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
         today: today,
@@ -451,8 +451,8 @@ void main() {
     test(
       'keeps scheduled fresh week while the goal starts in the future',
       () async {
-        final today = normalizeDiaryDay(DateTime.now());
-        final tomorrow = nextDiaryDay(today);
+        final today = normalizeLocalDay(DateTime.now());
+        final tomorrow = nextLocalDay(today);
         late _RecordingBurnWeekRunController controller;
         final container = _buildContainer(
           today: today,
@@ -470,7 +470,7 @@ void main() {
           ),
           settings: _learnedGoalSettings(tomorrow),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: diaryDayKey(tomorrow),
+            currentWeekStartDayKey: localDayKey(tomorrow),
             runWeekNumber: burnWeekLearningRunWeekNumber,
             starCount: 0,
             starBrokeThisWeek: false,
@@ -489,8 +489,8 @@ void main() {
     );
 
     test('schedules learned future goal start as first run week', () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final tomorrow = nextDiaryDay(today);
+      final today = normalizeLocalDay(DateTime.now());
+      final tomorrow = nextLocalDay(today);
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
         today: today,
@@ -508,10 +508,10 @@ void main() {
         ),
         settings: _learnedGoalSettings(tomorrow),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: diaryDayKey(
+          currentWeekStartDayKey: localDayKey(
             today.subtract(const Duration(days: 6)),
           ),
-          lastActiveDayKey: diaryDayKey(today),
+          lastActiveDayKey: localDayKey(today),
           runWeekNumber: 3,
           starCount: 2,
           starBrokeThisWeek: true,
@@ -532,8 +532,8 @@ void main() {
     });
 
     test('reschedules stale learned future goal start', () async {
-      final today = normalizeDiaryDay(DateTime.now());
-      final tomorrow = nextDiaryDay(today);
+      final today = normalizeLocalDay(DateTime.now());
+      final tomorrow = nextLocalDay(today);
       final staleStart = tomorrow.add(const Duration(days: 2));
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
@@ -552,7 +552,7 @@ void main() {
         ),
         settings: _learnedGoalSettings(tomorrow),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: diaryDayKey(staleStart),
+          currentWeekStartDayKey: localDayKey(staleStart),
           runWeekNumber: burnWeekLearningRunWeekNumber,
           starCount: 0,
           starBrokeThisWeek: false,
@@ -575,7 +575,7 @@ void main() {
     test(
       'restarts when stored week start is outside the active cycle',
       () async {
-        final today = normalizeDiaryDay(DateTime.now());
+        final today = normalizeLocalDay(DateTime.now());
         late _RecordingBurnWeekRunController controller;
         final container = _buildContainer(
           today: today,
@@ -583,10 +583,10 @@ void main() {
           todayOverview: _defaultTodayOverview(today),
           settings: _activeGoalSettings(today),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: diaryDayKey(
+            currentWeekStartDayKey: localDayKey(
               today.subtract(const Duration(days: 8)),
             ),
-            lastActiveDayKey: diaryDayKey(today),
+            lastActiveDayKey: localDayKey(today),
             runWeekNumber: 2,
             starCount: 1,
             starBrokeThisWeek: false,
@@ -607,7 +607,7 @@ void main() {
     );
 
     test('restarts learned stale cycle as first run week', () async {
-      final today = normalizeDiaryDay(DateTime.now());
+      final today = normalizeLocalDay(DateTime.now());
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
         today: today,
@@ -615,10 +615,10 @@ void main() {
         todayOverview: _defaultTodayOverview(today),
         settings: _learnedGoalSettings(today),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: diaryDayKey(
+          currentWeekStartDayKey: localDayKey(
             today.subtract(const Duration(days: 8)),
           ),
-          lastActiveDayKey: diaryDayKey(today),
+          lastActiveDayKey: localDayKey(today),
           runWeekNumber: 3,
           starCount: 2,
           starBrokeThisWeek: true,
@@ -640,7 +640,7 @@ void main() {
     test(
       'syncs current week with missed tracking for an earlier empty day',
       () async {
-        final today = normalizeDiaryDay(DateTime.now());
+        final today = normalizeLocalDay(DateTime.now());
         final missingDay = today.subtract(const Duration(days: 2));
         late _RecordingBurnWeekRunController controller;
         final container = _buildContainer(
@@ -655,10 +655,10 @@ void main() {
             today.subtract(const Duration(days: 6)),
           ),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: diaryDayKey(
+            currentWeekStartDayKey: localDayKey(
               today.subtract(const Duration(days: 6)),
             ),
-            lastActiveDayKey: diaryDayKey(today),
+            lastActiveDayKey: localDayKey(today),
             runWeekNumber: 1,
             starCount: 0,
             starBrokeThisWeek: false,
@@ -686,7 +686,7 @@ void main() {
     );
 
     test('syncs closed weeks with missed tracking flags', () async {
-      final today = normalizeDiaryDay(DateTime.now());
+      final today = normalizeLocalDay(DateTime.now());
       final closedWeekStart = today.subtract(const Duration(days: 7));
       final missingClosedWeekDay = closedWeekStart.add(const Duration(days: 3));
       late _RecordingBurnWeekRunController controller;
@@ -699,8 +699,8 @@ void main() {
         todayOverview: _defaultTodayOverview(today),
         settings: _activeGoalSettings(closedWeekStart),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: diaryDayKey(closedWeekStart),
-          lastActiveDayKey: diaryDayKey(
+          currentWeekStartDayKey: localDayKey(closedWeekStart),
+          lastActiveDayKey: localDayKey(
             today.subtract(const Duration(days: 1)),
           ),
           runWeekNumber: 1,
@@ -733,7 +733,7 @@ void main() {
     test(
       'dedupes identical queued sync work while sync is in flight',
       () async {
-        final today = normalizeDiaryDay(DateTime.now());
+        final today = normalizeLocalDay(DateTime.now());
         final syncBlocker = Completer<void>();
         late _RecordingBurnWeekRunController controller;
         final container = _buildContainer(
@@ -748,10 +748,10 @@ void main() {
             today.subtract(const Duration(days: 6)),
           ),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: diaryDayKey(
+            currentWeekStartDayKey: localDayKey(
               today.subtract(const Duration(days: 6)),
             ),
-            lastActiveDayKey: diaryDayKey(today),
+            lastActiveDayKey: localDayKey(today),
             runWeekNumber: 1,
             starCount: 0,
             starBrokeThisWeek: false,
@@ -786,7 +786,7 @@ void main() {
     test(
       'dedupes identical queued restart work while restart is in flight',
       () async {
-        final today = normalizeDiaryDay(DateTime.now());
+        final today = normalizeLocalDay(DateTime.now());
         final restartBlocker = Completer<void>();
         late _RecordingBurnWeekRunController controller;
         final container = _buildContainer(
@@ -795,10 +795,10 @@ void main() {
           todayOverview: _defaultTodayOverview(today),
           settings: _activeGoalSettings(today),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: diaryDayKey(
+            currentWeekStartDayKey: localDayKey(
               today.subtract(const Duration(days: 8)),
             ),
-            lastActiveDayKey: diaryDayKey(today),
+            lastActiveDayKey: localDayKey(today),
             runWeekNumber: 2,
             starCount: 1,
             starBrokeThisWeek: false,
@@ -833,8 +833,8 @@ void main() {
     test(
       'dedupes identical queued reset work while reset is in flight',
       () async {
-        final today = normalizeDiaryDay(DateTime.now());
-        final tomorrow = nextDiaryDay(today);
+        final today = normalizeLocalDay(DateTime.now());
+        final tomorrow = nextLocalDay(today);
         final resetBlocker = Completer<void>();
         late _RecordingBurnWeekRunController controller;
         final container = _buildContainer(
@@ -853,10 +853,10 @@ void main() {
           ),
           settings: _activeGoalSettings(tomorrow),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: diaryDayKey(
+            currentWeekStartDayKey: localDayKey(
               today.subtract(const Duration(days: 6)),
             ),
-            lastActiveDayKey: diaryDayKey(today),
+            lastActiveDayKey: localDayKey(today),
             runWeekNumber: 2,
             starCount: 1,
             starBrokeThisWeek: false,

@@ -44,7 +44,7 @@ final class ProgressWeighingControllerProvider
 }
 
 String _$progressWeighingControllerHash() =>
-    r'05e0b7cf5fffbcc86d09d723cae5a7a5d2a9e3eb';
+    r'8d32155e22a7fc53abf687ee7ef3453f100bbe23';
 
 /// Changes, deletes, and ignores one weighing of the weight list. Each
 /// action returns whether it worked and refreshes what depends on the

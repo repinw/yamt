@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_week_cycle_totals.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
@@ -9,7 +10,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Builds the week overview of the visible days [overviews], whose last day
 /// is the selected day.
@@ -35,7 +35,7 @@ CalorieWeekOverview buildCalorieWeekOverview({
     endExclusive: visibleWindowStart,
   );
   final historicalGoalKcals = historicalDays
-      .map((day) => settings.goalKcalForDay(normalizeDiaryDay(day)))
+      .map((day) => settings.goalKcalForDay(normalizeLocalDay(day)))
       .toList(growable: false);
   final historicalCarryoverDays = buildCalorieCarryoverDays(
     days: historicalDays,
@@ -73,7 +73,7 @@ CalorieWeekOverview buildCalorieWeekOverview({
   // Tomorrow can plan with today's carryover once today is closed, unless
   // it starts a new run or is a pause day.
   final previousDayCarryoverKcal =
-      isSameDiaryDay(today, nextDiaryDay(realToday)) &&
+      isSameLocalDay(today, nextLocalDay(realToday)) &&
           isBeforeDay(carryoverStartDate, today) &&
           !overviews.last.isPauseDay
       ? distributedCarryoverKcal
@@ -82,7 +82,7 @@ CalorieWeekOverview buildCalorieWeekOverview({
   // the other days.
   final closedDay = previousDayCarryoverKcal == null ? null : readClosedDay();
   final isPreviousDayClosed =
-      closedDay != null && isSameDiaryDay(closedDay, realToday);
+      closedDay != null && isSameLocalDay(closedDay, realToday);
   // Any other future day gets no carryover: the days before it are not
   // finished yet, so a carryover from them would be made up.
   final carryoverBeforeTodayKcal =

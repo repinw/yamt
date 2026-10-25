@@ -49,7 +49,7 @@ final class DiaryTodayProvider extends $NotifierProvider<DiaryToday, DateTime> {
   }
 }
 
-String _$diaryTodayHash() => r'be4539c23a5cf997e2170844167f3d51fd04771b';
+String _$diaryTodayHash() => r'50d503690777a688951256715a27af16c60cd722';
 
 /// Today's diary day from [clockProvider]. It moves on when
 /// [DiaryToday.refresh] reads the clock again, at midnight and when the app

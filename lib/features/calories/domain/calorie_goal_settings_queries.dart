@@ -1,6 +1,6 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Goal resolution and querying extension for [CalorieGoalSettings].
 extension CalorieGoalSettingsQueries on CalorieGoalSettings {
@@ -11,7 +11,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
       if (!entry.hasGoal || entry.isWeeklyCheckIn) {
         continue;
       }
-      final start = normalizeDiaryDay(entry.effectiveCountingStartDate);
+      final start = normalizeLocalDay(entry.effectiveCountingStartDate);
       if (earliest == null || start.isBefore(earliest)) {
         earliest = start;
       }
@@ -21,7 +21,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// Learned TDEE entry effective for the given day.
   CalorieGoalHistoryEntry? learnedTdeeEntryForDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     CalorieGoalHistoryEntry? resolvedEntry;
     for (final entry in sortedGoalHistory) {
       if (entry.effectiveDate.isAfter(normalizedDay)) {
@@ -36,7 +36,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// Cycle anchor entry for day.
   CalorieGoalHistoryEntry? cycleAnchorEntryForDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     CalorieGoalHistoryEntry? anchorEntry;
     for (final entry in sortedGoalHistory) {
       if (entry.effectiveDate.isAfter(normalizedDay)) {
@@ -55,7 +55,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// Goal entry for day.
   CalorieGoalHistoryEntry? goalEntryForDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     CalorieGoalHistoryEntry? resolvedEntry;
     for (final entry in sortedGoalHistory) {
       if (entry.effectiveDate.isAfter(normalizedDay)) {
@@ -87,7 +87,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
   /// The goal history entry that set the macro weight of [day], or `null`
   /// when the calculator profile weight applies.
   CalorieGoalHistoryEntry? macroWeightEntryForDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     CalorieGoalHistoryEntry? source;
     for (final entry in sortedGoalHistory) {
       if (entry.effectiveDate.isAfter(normalizedDay)) {
@@ -112,7 +112,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// Goal entry that is already counted for the given day.
   CalorieGoalHistoryEntry? countingGoalEntryForDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     final entry = goalEntryForDay(normalizedDay);
     if (entry?.hasGoal != true) {
       return null;
@@ -125,7 +125,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// Whether the day is a consequence-free practice day for an active goal.
   bool isGoalPracticeDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     final entry = goalEntryForDay(normalizedDay);
     if (entry?.hasGoal != true) {
       return nextGoalStartAfterDay(normalizedDay) != null;
@@ -135,7 +135,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// Next official counting start after day.
   DateTime? nextGoalStartAfterDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     for (final entry in sortedGoalHistory) {
       if (!entry.hasGoal || entry.isWeeklyCheckIn) {
         continue;
@@ -150,7 +150,7 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// The latest entry with a goal, check-ins included, in effect on [day].
   CalorieGoalHistoryEntry? baseGoalEntryForDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     CalorieGoalHistoryEntry? latest;
     for (final entry in sortedGoalHistory) {
       if (entry.effectiveDate.isAfter(normalizedDay)) {
@@ -165,11 +165,11 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// Base goal kcal for day: the stored goal plus the day's goal offset.
   double baseGoalKcalForDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     final latest = baseGoalEntryForDay(normalizedDay);
     if (latest?.dailyKcalGoal != null) {
       return latest!.dailyKcalGoal! +
-          (goalOffsetsByDay[diaryDayKey(normalizedDay)] ?? 0);
+          (goalOffsetsByDay[localDayKey(normalizedDay)] ?? 0);
     }
     return nextGoalStartAfterDay(normalizedDay) == null
         ? defaultDailyCalorieGoalKcal
@@ -178,10 +178,10 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
 
   /// Balance start for window.
   DateTime balanceStartForWindow(Iterable<DateTime> days) {
-    final normalizedDays = days.map(normalizeDiaryDay).toList(growable: false)
+    final normalizedDays = days.map(normalizeLocalDay).toList(growable: false)
       ..sort();
     if (normalizedDays.isEmpty) {
-      return normalizeDiaryDay(DateTime.now());
+      return normalizeLocalDay(DateTime.now());
     }
     final windowStart = normalizedDays.first;
     final windowEnd = normalizedDays.last;

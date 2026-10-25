@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 part 'calorie_goal_weekly_check_in_snapshot.g.dart';
@@ -38,7 +38,7 @@ class CalorieGoalWeeklyCheckInSnapshot {
     return PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: windowStartDate,
       windowEndDate: windowEndDate,
-      dueDate: nextDiaryDay(windowEndDate),
+      dueDate: nextLocalDay(windowEndDate),
     );
   }
 

@@ -1,9 +1,9 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// History mutation extension for [CalorieGoalSettings].
 extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
@@ -18,7 +18,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
     bool replaceFutureHistory = false,
     bool preserveSameDayGoalEntries = false,
   }) {
-    final effectiveDate = normalizeDiaryDay(changedAt);
+    final effectiveDate = normalizeLocalDay(changedAt);
     final normalizedCountingStartDate = resolveNormalizedCountingStartDate(
       effectiveDate: changedAt,
       countingStartDate: countingStartDate,
@@ -106,7 +106,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
 
   /// Whether [day] was marked as a skipped intake day.
   bool isSkippedIntakeDay(DateTime day) {
-    return skippedIntakeDayKeys.contains(diaryDayKey(day));
+    return skippedIntakeDayKeys.contains(localDayKey(day));
   }
 
   /// Dismisses the pending weekly check in.
@@ -123,7 +123,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
     required DateTime day,
     required bool isSkipped,
   }) {
-    final dayKey = diaryDayKey(day);
+    final dayKey = localDayKey(day);
     final nextKeys = List<String>.from(skippedIntakeDayKeys);
     if (isSkipped && !nextKeys.contains(dayKey)) {
       nextKeys.add(dayKey);
@@ -139,7 +139,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
     required DateTime day,
     required DateTime invalidatedAt,
   }) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     var didInvalidate = false;
     final nextEntries = <CalorieGoalHistoryEntry>[
       for (final entry in goalHistory)
@@ -175,7 +175,7 @@ bool _shouldKeepGoalHistoryEntry({
   required bool replaceFutureHistory,
   required bool preserveSameDayGoalEntries,
 }) {
-  if (isSameDiaryDay(entry.effectiveDate, effectiveDate)) {
+  if (isSameLocalDay(entry.effectiveDate, effectiveDate)) {
     if (preserveSameDayGoalEntries && entry.hasGoal && !entry.isWeeklyCheckIn) {
       return true;
     }
@@ -202,8 +202,8 @@ bool _sameWeeklyCheckInWindow(
   CalorieGoalWeeklyCheckInSnapshot left,
   CalorieGoalWeeklyCheckInSnapshot right,
 ) {
-  return isSameDiaryDay(left.windowStartDate, right.windowStartDate) &&
-      isSameDiaryDay(left.windowEndDate, right.windowEndDate);
+  return isSameLocalDay(left.windowStartDate, right.windowStartDate) &&
+      isSameLocalDay(left.windowEndDate, right.windowEndDate);
 }
 
 CalorieGoalHistoryEntry _dirtyGoalHistoryEntrySnapshot({
@@ -214,8 +214,8 @@ CalorieGoalHistoryEntry _dirtyGoalHistoryEntrySnapshot({
 }) {
   final snapshot = entry.weeklyCheckInSnapshot;
   if (snapshot == null || snapshot.isInputDirty) return entry;
-  final windowStartDate = normalizeDiaryDay(snapshot.windowStartDate);
-  final windowEndDate = normalizeDiaryDay(snapshot.windowEndDate);
+  final windowStartDate = normalizeLocalDay(snapshot.windowStartDate);
+  final windowEndDate = normalizeLocalDay(snapshot.windowEndDate);
   if (day.isBefore(windowStartDate) || day.isAfter(windowEndDate)) {
     return entry;
   }

@@ -1,7 +1,7 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -26,7 +26,7 @@ DiaryDayDashboardState diaryDashboardLoadedStateForTest({
   bool isFromCache = false,
   bool isRefreshing = false,
 }) {
-  final normalizedDay = normalizeDiaryDay(selectedDay);
+  final normalizedDay = normalizeLocalDay(selectedDay);
   return DiaryDayDashboardState(
     data: DiaryDayDashboardData(
       selectedDay: normalizedDay,
@@ -56,7 +56,7 @@ DiaryDayDashboardSnapshot diaryDashboardSnapshotForTest({
   required DateTime selectedDay,
   List<CalorieEntry> selectedDayEntries = const <CalorieEntry>[],
 }) {
-  final normalizedDay = normalizeDiaryDay(selectedDay);
+  final normalizedDay = normalizeLocalDay(selectedDay);
   return DiaryDayDashboardSnapshot(
     selectedDay: normalizedDay,
     refreshedAt: DateTime(2026),
@@ -87,7 +87,7 @@ CalorieWeekOverview diaryWeekOverviewForTest({
   double goalKcal = 2000,
   bool isPreviousDayClosed = false,
 }) {
-  final normalizedDay = normalizeDiaryDay(selectedDay);
+  final normalizedDay = normalizeLocalDay(selectedDay);
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(

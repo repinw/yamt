@@ -1,8 +1,8 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_learned_transitions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 /// The settings after the user decided the weekly check-in [pending], so the
@@ -94,11 +94,11 @@ Iterable<CalorieGoalWeeklyCheckInSnapshot> _windowSnapshots(
       .nonNulls
       .where(
         (snapshot) =>
-            isSameDiaryDay(
+            isSameLocalDay(
               snapshot.windowStartDate,
               weeklyCheckIn.windowStartDate,
             ) &&
-            isSameDiaryDay(snapshot.windowEndDate, weeklyCheckIn.windowEndDate),
+            isSameLocalDay(snapshot.windowEndDate, weeklyCheckIn.windowEndDate),
       );
 }
 
@@ -180,8 +180,8 @@ bool _sameWeeklyCheckInSnapshot(
   CalorieGoalWeeklyCheckInSnapshot left,
   CalorieGoalWeeklyCheckInSnapshot right,
 ) {
-  return isSameDiaryDay(left.windowStartDate, right.windowStartDate) &&
-      isSameDiaryDay(left.windowEndDate, right.windowEndDate);
+  return isSameLocalDay(left.windowStartDate, right.windowStartDate) &&
+      isSameLocalDay(left.windowEndDate, right.windowEndDate);
 }
 
 bool _sameDouble(double? left, double? right) {

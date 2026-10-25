@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weight_state_refresh.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 
 part 'diary_weight_actions.g.dart';
@@ -27,7 +27,7 @@ DiaryWeightActions diaryWeightActions(Ref ref) {
       if (!ref.mounted) {
         return;
       }
-      if (day != null && !isSameDiaryDay(day, selectedDay)) {
+      if (day != null && !isSameLocalDay(day, selectedDay)) {
         ref.invalidate(diaryActivityWeightDataProvider(day));
       }
     },

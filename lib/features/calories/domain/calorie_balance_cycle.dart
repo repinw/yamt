@@ -1,6 +1,6 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Days in one goal run/carryover redistribution segment.
 const int calorieGoalRunLengthDays = 7;
@@ -12,14 +12,14 @@ DateTime resolveCalorieBalanceCycleStartDate({
   DateTime? fallbackStartDate,
   DateTime? firstEntryDate,
 }) {
-  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedDay = normalizeLocalDay(day);
   DateTime resolvedStartDate;
   final activeGoalEntry = settings.countingGoalEntryForDay(normalizedDay);
   if (activeGoalEntry?.hasGoal == true) {
     final resolvedAnchor =
         settings.cycleAnchorEntryForDay(normalizedDay) ?? activeGoalEntry;
     if (resolvedAnchor != null) {
-      resolvedStartDate = normalizeDiaryDay(
+      resolvedStartDate = normalizeLocalDay(
         resolvedAnchor.effectiveCountingStartDate,
       );
       return _clampBalanceStartToFirstEntry(
@@ -31,7 +31,7 @@ DateTime resolveCalorieBalanceCycleStartDate({
   }
   resolvedStartDate =
       settings.nextGoalStartAfterDay(normalizedDay) ??
-      normalizeDiaryDay(fallbackStartDate ?? normalizedDay);
+      normalizeLocalDay(fallbackStartDate ?? normalizedDay);
   return _clampBalanceStartToFirstEntry(
     startDate: resolvedStartDate,
     day: normalizedDay,
@@ -44,11 +44,11 @@ DateTime _clampBalanceStartToFirstEntry({
   required DateTime day,
   required DateTime? firstEntryDate,
 }) {
-  final normalizedStartDate = normalizeDiaryDay(startDate);
+  final normalizedStartDate = normalizeLocalDay(startDate);
   if (firstEntryDate == null) {
     return normalizedStartDate;
   }
-  final normalizedFirstEntryDate = normalizeDiaryDay(firstEntryDate);
+  final normalizedFirstEntryDate = normalizeLocalDay(firstEntryDate);
   if (normalizedFirstEntryDate.isAfter(day)) {
     return day;
   }
@@ -63,7 +63,7 @@ DateTime resolveCalorieGoalRunStartDate({
   required CalorieGoalSettings settings,
   required DateTime day,
 }) {
-  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedDay = normalizeLocalDay(day);
   final countingGoalEntry = settings.countingGoalEntryForDay(normalizedDay);
   final anchorEntry = countingGoalEntry == null
       ? null
@@ -72,13 +72,13 @@ DateTime resolveCalorieGoalRunStartDate({
     return normalizedDay;
   }
 
-  final cycleStart = normalizeDiaryDay(anchorEntry.effectiveCountingStartDate);
-  final elapsedDays = diaryDaysBetween(cycleStart, normalizedDay);
+  final cycleStart = normalizeLocalDay(anchorEntry.effectiveCountingStartDate);
+  final elapsedDays = localDaysBetween(cycleStart, normalizedDay);
   if (elapsedDays <= 0) {
     return cycleStart;
   }
   final runOffset = elapsedDays % calorieGoalRunLengthDays;
-  return addDiaryDays(normalizedDay, -runOffset);
+  return addLocalDays(normalizedDay, -runOffset);
 }
 
 /// Number of the 7-day run of the current goal that holds [day], starting
@@ -87,13 +87,13 @@ int? resolveCalorieGoalRunNumber({
   required CalorieGoalSettings settings,
   required DateTime day,
 }) {
-  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedDay = normalizeLocalDay(day);
   final countingGoalEntry = settings.countingGoalEntryForDay(normalizedDay);
   if (countingGoalEntry == null) return null;
   final anchorEntry =
       settings.cycleAnchorEntryForDay(normalizedDay) ?? countingGoalEntry;
-  final cycleStart = normalizeDiaryDay(anchorEntry.effectiveCountingStartDate);
-  final elapsedDays = diaryDaysBetween(cycleStart, normalizedDay);
+  final cycleStart = normalizeLocalDay(anchorEntry.effectiveCountingStartDate);
+  final elapsedDays = localDaysBetween(cycleStart, normalizedDay);
   if (elapsedDays < 0) return null;
   return elapsedDays ~/ calorieGoalRunLengthDays + 1;
 }
@@ -104,7 +104,7 @@ DateTime resolveCalorieGoalRunEndDate({
   required DateTime day,
 }) {
   final runStart = resolveCalorieGoalRunStartDate(settings: settings, day: day);
-  return addDiaryDays(runStart, calorieGoalRunLengthDays - 1);
+  return addLocalDays(runStart, calorieGoalRunLengthDays - 1);
 }
 
 /// Resolve remaining days in the active run, including [day].
@@ -112,9 +112,9 @@ int resolveRemainingCalorieGoalRunDays({
   required CalorieGoalSettings settings,
   required DateTime day,
 }) {
-  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedDay = normalizeLocalDay(day);
   final runEnd = resolveCalorieGoalRunEndDate(settings: settings, day: day);
-  return diaryDaysBetween(normalizedDay, runEnd) + 1;
+  return localDaysBetween(normalizedDay, runEnd) + 1;
 }
 
 /// Resolve where carryover starts for the current 7-day run.
@@ -123,8 +123,8 @@ DateTime resolveCalorieCarryoverStartDate({
   required DateTime day,
   required DateTime balanceStartDate,
 }) {
-  final normalizedDay = normalizeDiaryDay(day);
-  final normalizedBalanceStart = normalizeDiaryDay(balanceStartDate);
+  final normalizedDay = normalizeLocalDay(day);
+  final normalizedBalanceStart = normalizeLocalDay(balanceStartDate);
   if (normalizedBalanceStart.isAfter(normalizedDay)) {
     return normalizedBalanceStart;
   }

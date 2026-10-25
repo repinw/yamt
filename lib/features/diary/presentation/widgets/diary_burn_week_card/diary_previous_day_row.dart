@@ -6,9 +6,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_previous_day_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_previous_day_flow.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
@@ -30,7 +30,7 @@ class DiaryPreviousDayRow extends ConsumerWidget {
     final colors = FoodLabelColors.of(context);
     final mono = Theme.of(context).textTheme.labelSmall
         ?.copyWith(fontFamily: AppFonts.mono, color: colors.muted);
-    final previousDay = previousDiaryDay(data.selectedDay);
+    final previousDay = previousLocalDay(data.selectedDay);
     final weekday = DateFormat(
       'EEEE',
       Localizations.localeOf(context).toLanguageTag(),

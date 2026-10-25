@@ -1,15 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 import '../support/diary_dashboard_test_support.dart';
 
 final DateTime _today = DateTime(2026, 10, 8);
-final DateTime _tomorrow = nextDiaryDay(_today);
+final DateTime _tomorrow = nextLocalDay(_today);
 const _targets = DiaryMacroTargets(carbs: 250, protein: 120, fat: 70);
 const _delta = DiaryMacroTargets(carbs: 5, protein: 0, fat: 2);
 

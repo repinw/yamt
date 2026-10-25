@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
@@ -17,7 +17,7 @@ Future<ProgressWeightList> progressWeightList(
   Ref ref,
   ProgressWeightRange range,
 ) async {
-  final today = normalizeDiaryDay(ref.watch(clockProvider)());
+  final today = normalizeLocalDay(ref.watch(clockProvider)());
   final settings = await ref.watch(calorieGoalControllerProvider.future);
   final allGoals = ProgressPeriod.of(
     settings: settings,
@@ -31,7 +31,7 @@ Future<ProgressWeightList> progressWeightList(
       today: today,
     ),
     ProgressWeightRange.fourWeeks => ProgressPeriod(
-      start: addDiaryDays(today, -progressFallbackDays),
+      start: addLocalDays(today, -progressFallbackDays),
       end: today,
       goalStarts: allGoals.goalStarts,
     ),
@@ -54,7 +54,7 @@ Future<ProgressWeightList> progressWeightList(
     trend: RecentWeightTrend.fromSeries(
       series,
       today: today,
-      dayCount: diaryDaysBetween(chartStart, today) + 1,
+      dayCount: localDaysBetween(chartStart, today) + 1,
     ),
     series: series,
     goalStarts: [

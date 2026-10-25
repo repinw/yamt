@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_debug_dump_formatting.dart';
@@ -18,7 +19,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -147,7 +147,7 @@ void _expectDebugShows(
   final rowsByName = {
     for (final row in rows)
       if (!row.sortAt.isBefore(windowEnd) &&
-          row.sortAt.isBefore(nextDiaryDay(windowEnd)))
+          row.sortAt.isBefore(nextLocalDay(windowEnd)))
         row.cells[3]: row,
   };
   final calculation = data.calculation;
@@ -386,7 +386,7 @@ void main() {
       settings:
           [
             for (var week = 1; week <= 6; week++)
-              addDiaryDays(goalStart, week * 7),
+              addLocalDays(goalStart, week * 7),
           ].fold(
             CalorieGoalSettings.single(
               dailyKcalGoal: 2400,
@@ -399,12 +399,12 @@ void main() {
               calculatorProfile: null,
               source: CalorieGoalSource.weeklyCheckIn,
               weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-                windowStartDate: addDiaryDays(dueDate, -7),
-                windowEndDate: addDiaryDays(dueDate, -1),
+                windowStartDate: addLocalDays(dueDate, -7),
+                windowEndDate: addLocalDays(dueDate, -1),
                 trendWeightChangePerDay: 0,
                 calculatedTdeeKcal: 2500,
                 lowConfidence: false,
-                inputHash: 'v1:${diaryDayKey(dueDate)}',
+                inputHash: 'v1:${localDayKey(dueDate)}',
               ),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
@@ -9,7 +10,6 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_transition_helpers.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/onboarding/application/'
     'calorie_goal_onboarding_finish_flow.dart';
 
@@ -80,7 +80,7 @@ void main() {
       expect(saved, isTrue);
       final settings = await harness.settingsRepository.readSettings();
       final goalEntry = settings.goalHistory.single;
-      expect(goalEntry.effectiveDate, normalizeDiaryDay(today));
+      expect(goalEntry.effectiveDate, normalizeLocalDay(today));
     });
 
     test('counts today for learning when the user starts today', () async {
@@ -91,7 +91,7 @@ void main() {
 
       final settings = await harness.settingsRepository.readSettings();
       final goalEntry = settings.goalHistory.single;
-      expect(goalEntry.effectiveCountingStartDate, normalizeDiaryDay(today));
+      expect(goalEntry.effectiveCountingStartDate, normalizeLocalDay(today));
       expect(goalEntryCountsStartDay(goalEntry), isTrue);
     });
 
@@ -135,7 +135,7 @@ void main() {
       final runState = harness.runStateRepository.state;
       expect(
         runState.currentWeekStartDayKey,
-        diaryDayKey(normalizeDiaryDay(today)),
+        localDayKey(normalizeLocalDay(today)),
       );
       expect(runState.runWeekNumber, burnWeekLearningRunWeekNumber);
     });

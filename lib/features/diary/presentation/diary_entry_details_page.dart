@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_delete_flow.dart';
@@ -208,7 +208,7 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
     final day = await showEatPlanDayPicker(
       context,
       today: state.today,
-      loggedAt: addDiaryDays(state.today, 1),
+      loggedAt: addLocalDays(state.today, 1),
     );
     if (day != null && mounted) {
       await DiaryEntryDetailsFlow.planAgain(

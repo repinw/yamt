@@ -75,7 +75,7 @@ final class DiaryActivityWeightDataProvider
 }
 
 String _$diaryActivityWeightDataHash() =>
-    r'586cc4193b6a54ff6319d6e8065e8d5ea84b28cf';
+    r'7dd026e6c0039b7eb4008365864cb59933a85bc1';
 
 /// Provides weight data for the seven days that end on [day], from the
 /// weights of all devices.

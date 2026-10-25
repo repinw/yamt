@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_debug_dump_formatting.dart';
 import 'package:yamt/features/calories/application/calorie_debug_week_tdee.dart';
 import 'package:yamt/features/calories/application/calorie_debug_weekly_checkin_inputs.dart';
@@ -8,7 +9,6 @@ import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_window_resolver.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
@@ -80,7 +80,7 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
         lowConfidence: dayData.lowConfidence,
       ),
     );
-    learnedTdeeByWeekStart[diaryDayKey(
+    learnedTdeeByWeekStart[localDayKey(
       window.dueDate,
     )] = calorieDebugLearnedWeekTdeeData(
       window: window,

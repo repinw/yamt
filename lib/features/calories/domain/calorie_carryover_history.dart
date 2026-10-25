@@ -1,6 +1,6 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Builds normalized diary days used for carryover history.
 List<DateTime> buildCalorieCarryoverDateRange({
@@ -13,9 +13,9 @@ List<DateTime> buildCalorieCarryoverDateRange({
 
   final days = <DateTime>[];
   for (
-    var day = normalizeDiaryDay(startInclusive);
-    day.isBefore(normalizeDiaryDay(endExclusive));
-    day = nextDiaryDay(day)
+    var day = normalizeLocalDay(startInclusive);
+    day.isBefore(normalizeLocalDay(endExclusive));
+    day = nextLocalDay(day)
   ) {
     days.add(day);
   }
@@ -31,7 +31,7 @@ List<CalorieCarryoverDay> buildCalorieCarryoverDays({
   final carryoverDays = <CalorieCarryoverDay>[];
   for (var index = 0; index < days.length; index += 1) {
     final day = days[index];
-    final dayEntries = entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[];
+    final dayEntries = entriesByDay[localDayKey(day)] ?? const <CalorieEntry>[];
     final consumedKcal = dayEntries.fold<double>(
       0,
       (sum, entry) => sum + entry.totalKcal,

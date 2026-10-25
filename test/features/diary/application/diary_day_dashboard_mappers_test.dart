@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -12,7 +12,7 @@ void main() {
   group('buildDiaryDashboardMealSections', () {
     test('maps calorie entries into ordered meal sections and sums kcal', () {
       final selectedDay = DateTime(2026, 4, 27, 18);
-      final normalizedDay = normalizeDiaryDay(selectedDay);
+      final normalizedDay = normalizeLocalDay(selectedDay);
 
       final entries = <CalorieEntry>[
         _entry(
@@ -184,7 +184,7 @@ void main() {
   group('buildDiaryDashboardNutritionBars', () {
     test('sums macros from entries and derives macro targets from goal', () {
       final selectedDay = DateTime(2026, 4, 27, 18);
-      final normalizedDay = normalizeDiaryDay(selectedDay);
+      final normalizedDay = normalizeLocalDay(selectedDay);
 
       final entries = <CalorieEntry>[
         _entry(

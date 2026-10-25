@@ -1,9 +1,9 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Parses persisted Burn Week day key into a normalized day.
 DateTime? tryParseBurnWeekDayKey(String? dayKey) {
@@ -21,7 +21,7 @@ DateTime? tryParseBurnWeekDayKey(String? dayKey) {
   if (year == null || month == null || day == null) {
     return null;
   }
-  return normalizeDiaryDay(DateTime(year, month, day));
+  return normalizeLocalDay(DateTime(year, month, day));
 }
 
 /// Temporary migration, added in 3.9.0: removed in 3.12.0. Moves
@@ -37,9 +37,9 @@ DateTime alignBurnWeekStartDate({
   required DateTime storedWeekStartDate,
   required DateTime balanceStartDate,
 }) {
-  final storedDay = normalizeDiaryDay(storedWeekStartDate);
-  final balanceDay = normalizeDiaryDay(balanceStartDate);
-  final daysSinceBalanceStart = diaryDaysBetween(balanceDay, storedDay);
+  final storedDay = normalizeLocalDay(storedWeekStartDate);
+  final balanceDay = normalizeLocalDay(balanceStartDate);
+  final daysSinceBalanceStart = localDaysBetween(balanceDay, storedDay);
   // A start before the cycle belongs to an older goal; the sync restarts it.
   if (daysSinceBalanceStart <= 0) {
     return storedDay;
@@ -47,9 +47,9 @@ DateTime alignBurnWeekStartDate({
   final daysOffGrid = daysSinceBalanceStart % burnWeekDaysPerWeek;
   final DateTime gridDay;
   if (daysOffGrid == 1) {
-    gridDay = addDiaryDays(storedDay, -1);
+    gridDay = addLocalDays(storedDay, -1);
   } else if (daysOffGrid >= burnWeekDaysPerWeek - 2) {
-    gridDay = addDiaryDays(storedDay, burnWeekDaysPerWeek - daysOffGrid);
+    gridDay = addLocalDays(storedDay, burnWeekDaysPerWeek - daysOffGrid);
   } else {
     return storedDay;
   }
@@ -57,7 +57,7 @@ DateTime alignBurnWeekStartDate({
   for (
     var day = balanceDay;
     !day.isAfter(gridDay);
-    day = addDiaryDays(day, burnWeekDaysPerWeek)
+    day = addLocalDays(day, burnWeekDaysPerWeek)
   ) {
     if (day.timeZoneOffset != balanceDay.timeZoneOffset) {
       return gridDay;
@@ -72,10 +72,10 @@ bool shouldUseStoredBurnWeekStartDate({
   required DateTime currentDay,
   required DateTime balanceStartDate,
 }) {
-  final normalizedStoredWeekStart = normalizeDiaryDay(storedWeekStartDate);
-  final normalizedCurrentDay = normalizeDiaryDay(currentDay);
-  final normalizedBalanceStartDate = normalizeDiaryDay(balanceStartDate);
-  final storedWeekEnd = addDiaryDays(
+  final normalizedStoredWeekStart = normalizeLocalDay(storedWeekStartDate);
+  final normalizedCurrentDay = normalizeLocalDay(currentDay);
+  final normalizedBalanceStartDate = normalizeLocalDay(balanceStartDate);
+  final storedWeekEnd = addLocalDays(
     normalizedStoredWeekStart,
     burnWeekDaysPerWeek,
   );
@@ -99,13 +99,13 @@ DateTime resolveBurnWeekLiveWeekStartDate({
       )) {
     return storedWeekStartDate;
   }
-  final normalizedCurrentDay = normalizeDiaryDay(currentDay);
+  final normalizedCurrentDay = normalizeLocalDay(currentDay);
   final elapsedDays = resolveBurnWeekLiveElapsedDays(
     currentDay: normalizedCurrentDay,
     balanceStartDate: balanceStartDate,
   );
   final dayOffset = elapsedDays % burnWeekDaysPerWeek;
-  return addDiaryDays(normalizedCurrentDay, -dayOffset);
+  return addLocalDays(normalizedCurrentDay, -dayOffset);
 }
 
 /// Resolves sync anchor for current live Burn Week.
@@ -113,12 +113,12 @@ DateTime resolveBurnWeekLiveSyncWeekStartDate({
   required DateTime currentDay,
   required DateTime currentWeekStartDate,
 }) {
-  var syncWeekStartDate = normalizeDiaryDay(currentWeekStartDate);
-  final normalizedCurrentDay = normalizeDiaryDay(currentDay);
+  var syncWeekStartDate = normalizeLocalDay(currentWeekStartDate);
+  final normalizedCurrentDay = normalizeLocalDay(currentDay);
   while (!normalizedCurrentDay.isBefore(
-    addDiaryDays(syncWeekStartDate, burnWeekDaysPerWeek),
+    addLocalDays(syncWeekStartDate, burnWeekDaysPerWeek),
   )) {
-    syncWeekStartDate = addDiaryDays(syncWeekStartDate, burnWeekDaysPerWeek);
+    syncWeekStartDate = addLocalDays(syncWeekStartDate, burnWeekDaysPerWeek);
   }
   return syncWeekStartDate;
 }
@@ -128,9 +128,9 @@ int resolveBurnWeekLiveElapsedDays({
   required DateTime currentDay,
   required DateTime balanceStartDate,
 }) {
-  return diaryDaysBetween(
-    normalizeDiaryDay(balanceStartDate),
-    normalizeDiaryDay(currentDay),
+  return localDaysBetween(
+    normalizeLocalDay(balanceStartDate),
+    normalizeLocalDay(currentDay),
   ).clamp(0, 1000000);
 }
 
@@ -142,11 +142,11 @@ bool resolveBurnWeekLiveMissedTrackingThisWeek({
   required CalorieGoalSettings settings,
 }) {
   return weekOverview.days.any((day) {
-    final normalizedDay = normalizeDiaryDay(day.date);
-    if (normalizedDay.isBefore(normalizeDiaryDay(currentWeekStartDate))) {
+    final normalizedDay = normalizeLocalDay(day.date);
+    if (normalizedDay.isBefore(normalizeLocalDay(currentWeekStartDate))) {
       return false;
     }
-    if (!normalizedDay.isBefore(normalizeDiaryDay(today))) {
+    if (!normalizedDay.isBefore(normalizeLocalDay(today))) {
       return false;
     }
     if (settings.isSkippedIntakeDay(normalizedDay) ||
@@ -165,11 +165,11 @@ bool resolveBurnWeekLiveMissedTrackingForStoredWeek({
   required CalorieGoalSettings settings,
 }) {
   return storedWeekSnapshot.days.any((day) {
-    final normalizedDay = normalizeDiaryDay(day.date);
-    if (normalizedDay.isBefore(normalizeDiaryDay(storedWeekStartDate))) {
+    final normalizedDay = normalizeLocalDay(day.date);
+    if (normalizedDay.isBefore(normalizeLocalDay(storedWeekStartDate))) {
       return false;
     }
-    if (!normalizedDay.isBefore(normalizeDiaryDay(today))) {
+    if (!normalizedDay.isBefore(normalizeLocalDay(today))) {
       return false;
     }
     if (settings.isSkippedIntakeDay(normalizedDay) ||
@@ -204,7 +204,7 @@ bool isScheduledFutureFreshBurnWeekRun({
   required DateTime expectedWeekStartDate,
 }) {
   return storedWeekStartDate != null &&
-      isSameDiaryDay(storedWeekStartDate, expectedWeekStartDate) &&
+      isSameLocalDay(storedWeekStartDate, expectedWeekStartDate) &&
       runState.runWeekNumber == burnWeekLearningRunWeekNumber &&
       runState.starCount == 0 &&
       !runState.starBrokeThisWeek &&
@@ -223,11 +223,11 @@ bool shouldRepairBackfilledInitialBurnWeekRun({
     return false;
   }
 
-  final normalizedBalanceStartDate = normalizeDiaryDay(balanceStartDate);
-  final normalizedStoredWeekStartDate = normalizeDiaryDay(storedWeekStartDate);
-  final normalizedSyncWeekStartDate = normalizeDiaryDay(syncWeekStartDate);
+  final normalizedBalanceStartDate = normalizeLocalDay(balanceStartDate);
+  final normalizedStoredWeekStartDate = normalizeLocalDay(storedWeekStartDate);
+  final normalizedSyncWeekStartDate = normalizeLocalDay(syncWeekStartDate);
   if (!normalizedBalanceStartDate.isBefore(normalizedStoredWeekStartDate) ||
-      !isSameDiaryDay(
+      !isSameLocalDay(
         normalizedStoredWeekStartDate,
         normalizedSyncWeekStartDate,
       )) {
@@ -242,7 +242,7 @@ bool shouldRepairBackfilledInitialBurnWeekRun({
       storedWeekStartDayKey: null,
     ),
   );
-  return isSameDiaryDay(cycleWeekStartDate, normalizedStoredWeekStartDate);
+  return isSameLocalDay(cycleWeekStartDate, normalizedStoredWeekStartDate);
 }
 
 /// Resolves start dates of all closed weeks needing catch-up before sync week.
@@ -266,7 +266,7 @@ List<DateTime> resolveBurnWeekClosedWeekStartDates({
       : storedWeekStartDate ?? balanceStartDate;
   while (closedWeekStartDate.isBefore(syncWeekStartDate)) {
     closedWeekStartDates.add(closedWeekStartDate);
-    closedWeekStartDate = addDiaryDays(
+    closedWeekStartDate = addLocalDays(
       closedWeekStartDate,
       burnWeekDaysPerWeek,
     );

@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
@@ -7,7 +8,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 /// Resolves the latest completed weekly check-in window.
@@ -110,7 +110,7 @@ PendingCalorieGoalWeeklyCheckIn _windowFrom(
   return PendingCalorieGoalWeeklyCheckIn(
     windowStartDate: windowStartDate,
     windowEndDate: windowEndDate,
-    dueDate: nextDiaryDay(windowEndDate),
+    dueDate: nextLocalDay(windowEndDate),
   );
 }
 
@@ -124,7 +124,7 @@ CalorieLearnedTdeeFreshness resolveCalorieLearnedTdeeFreshness({
     return CalorieLearnedTdeeFreshness.none;
   }
   final daysSinceLearned = today
-      .difference(normalizeDiaryDay(learnedAt))
+      .difference(normalizeLocalDay(learnedAt))
       .inDays;
   if (daysSinceLearned >= learnedTdeeUrgentStaleAfterDays) {
     return CalorieLearnedTdeeFreshness.urgent;
@@ -147,7 +147,7 @@ CalorieWeeklyCheckInWindowDates resolveCalorieWeeklyCheckInWindowDates({
   );
   final windowDays = <DateTime>[
     for (var index = 0; index < windowLengthDays; index += 1)
-      addDiaryDays(pendingWeeklyCheckIn.windowStartDate, index),
+      addLocalDays(pendingWeeklyCheckIn.windowStartDate, index),
   ];
   final learningDays = buildCalorieWeeklyInclusiveDays(
     startDate: learningStartDate,
@@ -162,10 +162,10 @@ CalorieWeeklyCheckInWindowDates resolveCalorieWeeklyCheckInWindowDates({
           anchorEntry: anchorEntry,
           windowStartDate: pendingWeeklyCheckIn.windowStartDate,
         );
-  final learningPreviousBoundaryDay = previousDiaryDay(learningStartDate);
+  final learningPreviousBoundaryDay = previousLocalDay(learningStartDate);
   final shouldUseLearningPreviousBoundary =
       learningPreviousBoundaryDay.isAfter(
-        normalizeDiaryDay(
+        normalizeLocalDay(
           anchorEntry?.effectiveCountingStartDate ?? learningStartDate,
         ),
       ) ||
@@ -188,14 +188,14 @@ CalorieWeeklyCheckInWindowDates resolveCalorieWeeklyCheckInWindowDates({
     isFirstWindow: isFirstWindow,
     previousBoundaryDay: isFirstWindow
         ? null
-        : previousDiaryDay(pendingWeeklyCheckIn.windowStartDate),
-    nextBoundaryDay: nextDiaryDay(pendingWeeklyCheckIn.windowEndDate),
+        : previousLocalDay(pendingWeeklyCheckIn.windowStartDate),
+    nextBoundaryDay: nextLocalDay(pendingWeeklyCheckIn.windowEndDate),
   );
 }
 
 /// Stable key for one weekly check-in window.
 String calorieWeeklyCheckInWindowKey(DateTime startDate, DateTime endDate) {
-  return '${diaryDayKey(startDate)}:${diaryDayKey(endDate)}';
+  return '${localDayKey(startDate)}:${localDayKey(endDate)}';
 }
 
 /// Resolves an inclusive window end from a start and counted length.
@@ -204,7 +204,7 @@ DateTime resolveCalorieWeeklyWindowEndDate({
   required int countedDayCount,
 }) {
   assert(countedDayCount > 0, 'Window must contain counted days.');
-  return addDiaryDays(windowStartDate, countedDayCount - 1);
+  return addLocalDays(windowStartDate, countedDayCount - 1);
 }
 
 /// Number of days in the check-in window.
@@ -222,13 +222,13 @@ List<DateTime> buildCalorieWeeklyInclusiveDays({
   required DateTime startDate,
   required DateTime endDate,
 }) {
-  final normalizedStartDate = normalizeDiaryDay(startDate);
-  final normalizedEndDate = normalizeDiaryDay(endDate);
+  final normalizedStartDate = normalizeLocalDay(startDate);
+  final normalizedEndDate = normalizeLocalDay(endDate);
   return <DateTime>[
     for (
       var day = normalizedStartDate;
       !day.isAfter(normalizedEndDate);
-      day = nextDiaryDay(day)
+      day = nextLocalDay(day)
     )
       day,
   ];
@@ -240,7 +240,7 @@ DateTime calorieWeeklyLearningStartDateForCheckIn({
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
 }) {
-  final windowStart = normalizeDiaryDay(pendingWeeklyCheckIn.windowStartDate);
+  final windowStart = normalizeLocalDay(pendingWeeklyCheckIn.windowStartDate);
   final start = DailyTdeeSeries.startDay(
     settings,
     pendingWeeklyCheckIn.windowEndDate,

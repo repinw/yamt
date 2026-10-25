@@ -1,10 +1,10 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_debug_daily_rows.dart';
 import 'package:yamt/features/calories/application/calorie_debug_dump_formatting.dart';
 import 'package:yamt/features/calories/application/calorie_debug_week_tdee.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// A start and a summary row for each 7-day week of each goal.
 List<CalorieDebugDumpRow> calorieDebugGoalWeekRows({
@@ -29,9 +29,9 @@ List<CalorieDebugDumpRow> calorieDebugGoalWeekRows({
 
   for (var index = 0; index < goalEntries.length; index += 1) {
     final goalEntry = goalEntries[index];
-    final goalStart = normalizeDiaryDay(goalEntry.effectiveCountingStartDate);
+    final goalStart = normalizeLocalDay(goalEntry.effectiveCountingStartDate);
     final nextGoalStart = index + 1 < goalEntries.length
-        ? normalizeDiaryDay(goalEntries[index + 1].effectiveCountingStartDate)
+        ? normalizeLocalDay(goalEntries[index + 1].effectiveCountingStartDate)
         : endExclusive;
     final goalEndExclusive = nextGoalStart.isBefore(endExclusive)
         ? nextGoalStart
@@ -40,7 +40,7 @@ List<CalorieDebugDumpRow> calorieDebugGoalWeekRows({
     var weekStart = goalStart;
     var weekNumber = 1;
     while (weekStart.isBefore(goalEndExclusive)) {
-      final nextWeekStart = addDiaryDays(weekStart, 7);
+      final nextWeekStart = addLocalDays(weekStart, 7);
       final weekEndExclusive = nextWeekStart.isBefore(goalEndExclusive)
           ? nextWeekStart
           : goalEndExclusive;
@@ -89,23 +89,23 @@ Set<String> calorieDebugGoalWeekSeparatorDays({
   final goalEntries = _debugGoalEntries(settings);
   final separatorDays = <String>{};
   for (var index = 0; index < goalEntries.length; index += 1) {
-    final goalStart = normalizeDiaryDay(
+    final goalStart = normalizeLocalDay(
       goalEntries[index].effectiveCountingStartDate,
     );
     final nextGoalStart = index + 1 < goalEntries.length
-        ? normalizeDiaryDay(goalEntries[index + 1].effectiveCountingStartDate)
+        ? normalizeLocalDay(goalEntries[index + 1].effectiveCountingStartDate)
         : endExclusive;
     final goalEndExclusive = nextGoalStart.isBefore(endExclusive)
         ? nextGoalStart
         : endExclusive;
 
     for (
-      var day = addDiaryDays(goalStart, 7);
+      var day = addLocalDays(goalStart, 7);
       day.isBefore(goalEndExclusive);
-      day = addDiaryDays(day, 7)
+      day = addLocalDays(day, 7)
     ) {
       if (!day.isBefore(startInclusive)) {
-        separatorDays.add(diaryDayKey(day));
+        separatorDays.add(localDayKey(day));
       }
     }
   }
@@ -144,8 +144,8 @@ CalorieDebugDumpRow _weekStartRow({
     learnedTdeeByWeekStart: learnedTdeeByWeekStart,
   );
   final range =
-      '${diaryDayKey(weekStart)}'
-      '..${diaryDayKey(previousDiaryDay(weekEndExclusive))}';
+      '${localDayKey(weekStart)}'
+      '..${localDayKey(previousLocalDay(weekEndExclusive))}';
   return CalorieDebugDumpRow(
     sortAt: weekStart,
     typeOrder: 0,
@@ -192,18 +192,18 @@ CalorieDebugDumpRow _weekSummaryRow({
   final eatenTotal = _sumDailyValues(days, eatenKcalByDay);
   final weights = [
     for (final day in days)
-      if (weightByDay[diaryDayKey(day)] != null)
-        (day: day, weightKg: weightByDay[diaryDayKey(day)]!),
+      if (weightByDay[localDayKey(day)] != null)
+        (day: day, weightKg: weightByDay[localDayKey(day)]!),
   ];
   final startWeight = weights.isEmpty ? null : weights.first.weightKg;
   final endWeight = weights.isEmpty ? null : weights.last.weightKg;
   final weightChange = startWeight == null || endWeight == null
       ? null
       : endWeight - startWeight;
-  final summaryDay = previousDiaryDay(weekEndExclusive);
+  final summaryDay = previousLocalDay(weekEndExclusive);
   final range =
-      '${diaryDayKey(weekStart)}'
-      '..${diaryDayKey(summaryDay)}';
+      '${localDayKey(weekStart)}'
+      '..${localDayKey(summaryDay)}';
   final sortAt = summaryDay.add(
     const Duration(hours: 23, minutes: 59, seconds: 58),
   );
@@ -245,7 +245,7 @@ CalorieDebugDumpRow _weekSummaryRow({
 double _sumDailyValues(List<DateTime> days, Map<String, double> valuesByDay) {
   return days.fold<double>(
     0,
-    (sum, day) => sum + (valuesByDay[diaryDayKey(day)] ?? 0),
+    (sum, day) => sum + (valuesByDay[localDayKey(day)] ?? 0),
   );
 }
 
@@ -253,13 +253,13 @@ List<DateTime> _buildExclusiveDays({
   required DateTime startDate,
   required DateTime endExclusive,
 }) {
-  final normalizedStartDate = normalizeDiaryDay(startDate);
-  final normalizedEndExclusive = normalizeDiaryDay(endExclusive);
+  final normalizedStartDate = normalizeLocalDay(startDate);
+  final normalizedEndExclusive = normalizeLocalDay(endExclusive);
   return <DateTime>[
     for (
       var day = normalizedStartDate;
       day.isBefore(normalizedEndExclusive);
-      day = nextDiaryDay(day)
+      day = nextLocalDay(day)
     )
       day,
   ];

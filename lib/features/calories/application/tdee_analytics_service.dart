@@ -1,8 +1,8 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/daily_tdee_estimator.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
@@ -14,7 +14,7 @@ abstract final class TdeeAnalyticsService {
     required List<TdeeAnalyticsGoalCycle> cycles,
     required DateTime today,
   }) {
-    final normalizedToday = normalizeDiaryDay(today);
+    final normalizedToday = normalizeLocalDay(today);
     if (cycles.isEmpty) {
       return (start: normalizedToday, end: normalizedToday);
     }
@@ -29,7 +29,7 @@ abstract final class TdeeAnalyticsService {
         end = candidateEnd;
       }
     }
-    return (start: normalizeDiaryDay(start), end: normalizeDiaryDay(end));
+    return (start: normalizeLocalDay(start), end: normalizeLocalDay(end));
   }
 
   /// Builds daily analytics points from loaded inputs.
@@ -42,12 +42,12 @@ abstract final class TdeeAnalyticsService {
   }) {
     final days = buildCalorieCarryoverDateRange(
       startInclusive: startDate,
-      endExclusive: nextDiaryDay(endDate),
+      endExclusive: nextLocalDay(endDate),
     );
 
     final points = <TdeeAnalyticsPoint>[];
     for (final day in days) {
-      final key = diaryDayKey(day);
+      final key = localDayKey(day);
       final estimate = tdeeByDay[key];
 
       final baseTdee =
