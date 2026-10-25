@@ -39,13 +39,11 @@ class MacroCalculationResult {
 /// Protein and fat start from their targets. Carbs get the rest, but at most
 /// [maximumCarbsKcalShare] of the kcal; what lies above that cap goes to fat.
 /// On a small budget carbs keep [minimumCarbsFloorGrams] first: fat drops to
-/// its floor, then protein to [minimumProteinFloorGramsPerKg]; below that,
-/// carbs get the rest.
+/// its floor; below that, carbs get the rest. Protein never drops.
 ///
 /// The default protein target already takes the share above the cap from the
 /// weekly average (see `MacroGoalSettings.resolveProteinGrams`), so protein
-/// stays the same on every day of the week unless a day's budget is that
-/// small.
+/// stays the same on every day of the week.
 abstract final class MacroBudgetCalculator {
   /// Minimum carbs floor in grams to prevent ketosis / hypoglycemia.
   static const double minimumCarbsFloorGrams = 100;
@@ -58,10 +56,6 @@ abstract final class MacroBudgetCalculator {
 
   /// Minimum fat percentage of daily calories.
   static const double minimumFatCalorieFraction = 0.20;
-
-  /// Minimum protein in g/kg body weight. On a small budget protein is cut
-  /// for the carb floor only down to this.
-  static const double minimumProteinFloorGramsPerKg = 0.8;
 
   /// Energy density for carbs in standard daily calculation.
   static const double standardCarbKcalPerGram = 4;
@@ -81,8 +75,8 @@ abstract final class MacroBudgetCalculator {
     );
   }
 
-  /// Calculates balanced macros, capping carbs and keeping the carb, fat and
-  /// protein floors as far as the kcal allow.
+  /// Calculates balanced macros, capping carbs and keeping the carb and fat
+  /// floors as far as the kcal allow.
   static MacroCalculationResult calculate({
     required double goalKcal,
     required double weightKg,
@@ -172,33 +166,26 @@ abstract final class MacroBudgetCalculator {
   }) {
     const targetCarbsKcal = minimumCarbsFloorGrams * standardCarbKcalPerGram;
     final deficitKcal = targetCarbsKcal - remainingKcal;
-    final fatAdjustment = _reduceFatForFloor(
+    final fatGrams = _reduceFatForFloor(
       goalKcal: goalKcal,
       safeWeight: safeWeight,
       targetFatGrams: targetFatGrams,
       deficitKcal: deficitKcal,
     );
 
-    final remainingDeficit = deficitKcal - fatAdjustment.savedKcal;
-    final adjustedProteinGrams = _reduceProteinForDeficit(
-      safeWeight: safeWeight,
-      targetProteinGrams: targetProteinGrams,
-      deficitKcal: remainingDeficit,
-    );
-
     final usedKcal =
-        (adjustedProteinGrams * standardProteinKcalPerGram) +
-        (fatAdjustment.fatGrams * standardFatKcalPerGram);
+        (targetProteinGrams * standardProteinKcalPerGram) +
+        (fatGrams * standardFatKcalPerGram);
     final finalCarbsKcal = math.max(0, goalKcal - usedKcal);
 
     return MacroCalculationResult(
       carbs: finalCarbsKcal / standardCarbKcalPerGram,
-      protein: adjustedProteinGrams,
-      fat: fatAdjustment.fatGrams,
+      protein: targetProteinGrams,
+      fat: fatGrams,
     );
   }
 
-  static ({double fatGrams, double savedKcal}) _reduceFatForFloor({
+  static double _reduceFatForFloor({
     required double goalKcal,
     required double safeWeight,
     required double targetFatGrams,
@@ -212,28 +199,6 @@ abstract final class MacroBudgetCalculator {
     final fatFloorKcal = fatFloorGrams * standardFatKcalPerGram;
     final maxFatReduction = math.max<double>(0, initialFatKcal - fatFloorKcal);
     final fatReductionKcal = math.min<double>(deficitKcal, maxFatReduction);
-    final finalFatGrams =
-        targetFatGrams - (fatReductionKcal / standardFatKcalPerGram);
-
-    return (fatGrams: finalFatGrams, savedKcal: fatReductionKcal);
-  }
-
-  static double _reduceProteinForDeficit({
-    required double safeWeight,
-    required double targetProteinGrams,
-    required double deficitKcal,
-  }) {
-    if (deficitKcal <= 0) {
-      return targetProteinGrams;
-    }
-    // Protein goes down to its floor at most; protein already below it stays.
-    final proteinFloorGrams = math.min<double>(
-      targetProteinGrams,
-      safeWeight * minimumProteinFloorGramsPerKg,
-    );
-    final maxReductionKcal =
-        (targetProteinGrams - proteinFloorGrams) * standardProteinKcalPerGram;
-    final reductionKcal = math.min<double>(maxReductionKcal, deficitKcal);
-    return targetProteinGrams - (reductionKcal / standardProteinKcalPerGram);
+    return targetFatGrams - (fatReductionKcal / standardFatKcalPerGram);
   }
 }

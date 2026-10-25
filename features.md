@@ -357,10 +357,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   a day's budget is very small (see below); the rest goes to fat. A custom protein value stays as set. A carryover counts
   like a change of the day's kcal: the macros follow the same rules for the
   goal plus the carryover. On a small budget carbs keep 100 g first: fat
-  drops to its floor (0.6 g/kg or 20 percent of the kcal), then protein to
-  its floor of 0.8 g/kg; below that, carbs get the rest. When even the fat
-  and protein floors need more kcal than the day has, the targets add up to
-  more than the goal. Above a BMI of 25 only 40 percent
+  drops to its floor (0.6 g/kg or 20 percent of the kcal); below that, carbs
+  get the rest, so they can fall under 100 g. Protein never drops. When even
+  protein and the fat floor need more kcal than the day has, the targets add
+  up to more than the goal. Above a BMI of 25 only 40 percent
   of the extra weight counts (adjusted body weight), so heavy users get
   realistic targets. Those users see the adjusted weight and a medical
   disclaimer on the onboarding summary and in the macro settings. No training
