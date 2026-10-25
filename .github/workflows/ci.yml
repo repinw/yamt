@@ -185,9 +185,14 @@ jobs:
       # The emulator gets all 4 cores of the runner and more memory than the
       # profile's default, because it renders on the CPU and sometimes went
       # offline during a run.
+      #
+      # After the test the runner sometimes waits forever for the killed
+      # emulator to exit. The step timeout ends that wait; the check below
+      # reads the result from drive.log.
       - name: Run on the Android emulator
         id: drive
         continue-on-error: true
+        timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -208,6 +213,7 @@ jobs:
         id: drive-again
         if: steps.drive.outcome == 'failure' && hashFiles('emulator-crashed') != ''
         continue-on-error: true
+        timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -221,11 +227,16 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: tool/ci_integration_drive.sh ${{ matrix.target }}
 
+      # drive.log holds the last run of the test. The driver prints "All
+      # tests passed." only when every test passed, even when the emulator
+      # step then timed out.
       - name: Check the test result
-        if: steps.drive.outcome == 'failure' && steps.drive-again.outcome != 'success'
+        if: always()
         run: |
-          echo "The integration test failed." >&2
-          exit 1
+          if ! grep -qx 'All tests passed\.' drive.log 2>/dev/null; then
+            echo "The integration test failed." >&2
+            exit 1
+          fi
 
       - name: Upload the device log
         if: failure()
