@@ -133,7 +133,6 @@ Future<DiaryBalanceCardData> _resolveBalanceData({
   addTearDown(container.dispose);
   final budget = resolveDayBudget(
     week: weekOverview,
-    today: normalizeDiaryDay(now),
     nutrition: container.read(dailyNutritionTargetResolverProvider),
   );
   final delta = budget.carryoverMacroDelta;

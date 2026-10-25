@@ -1,7 +1,6 @@
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
-import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Grams of carbs, protein and fat.
@@ -21,32 +20,27 @@ class DayBudget {
   final double goalKcal;
 
   /// The nutrition target of the day, with the carryover from the days
-  /// before; a past day gets none.
+  /// before, the same carryover the day's kcal goal shows.
   final DailyNutritionTarget target;
 
   /// How much the carryover changes the macro targets.
   final MacroGrams carryoverMacroDelta;
 }
 
-/// Resolves the budget of the last day of [week], with [today] as today.
+/// Resolves the budget of the last day of [week].
+///
+/// The macro targets take the week's carryover, which the week overview
+/// already leaves out for a planned day, so they match the kcal goal.
 DayBudget resolveDayBudget({
   required CalorieWeekOverview week,
-  required DateTime today,
   required DailyNutritionTargetResolver nutrition,
 }) {
-  final dayOverview = week.days.last;
-  final day = normalizeDiaryDay(dayOverview.date);
-  final status = DiaryDayStatus.of(
-    day: day,
-    today: today,
-    isPreviousDayClosed: week.isPreviousDayClosed,
-  );
+  final day = normalizeDiaryDay(week.days.last.date);
   final goalKcal = dayGoalKcal(week);
-  final carryoverKcal = status.isPast ? 0.0 : week.carryoverBeforeTodayKcal;
   final target = nutrition.resolveTarget(
     day: day,
     goalKcal: goalKcal,
-    carryoverKcal: carryoverKcal,
+    carryoverKcal: week.carryoverBeforeTodayKcal,
   );
   final base = nutrition.resolveBaseTarget(day: day, goalKcal: goalKcal);
   return DayBudget(
