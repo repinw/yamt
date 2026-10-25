@@ -96,7 +96,7 @@ ProviderContainer _futureDaysContainer({
   required DateTime today,
   DateTime? goalStart,
 }) {
-  final yesterday = today.subtract(const Duration(days: 1));
+  final yesterday = addDiaryDays(today, -1);
   final logRepository = FakeCalorieLogRepository(
     initialEntries: <CalorieEntry>[
       _entry(
@@ -201,8 +201,8 @@ void main() {
 
   test('calorieWeekOverview aggregates rolling seven-day totals', () async {
     final today = normalizeDiaryDay(DateTime.now());
-    final fourDaysAgo = today.subtract(const Duration(days: 4));
-    final eightDaysAgo = today.subtract(const Duration(days: 8));
+    final fourDaysAgo = addDiaryDays(today, -4);
+    final eightDaysAgo = addDiaryDays(today, -8);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(
@@ -226,7 +226,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
         calculatorProfile: null,
-        effectiveDate: today.subtract(const Duration(days: 6)),
+        effectiveDate: addDiaryDays(today, -6),
       ),
     );
     addTearDown(logRepository.dispose);
@@ -245,7 +245,7 @@ void main() {
 
     expect(overview.days, hasLength(diaryVisibleDayCount));
     expect(overview.days.last.date, today);
-    expect(overview.days.first.date, today.subtract(const Duration(days: 6)));
+    expect(overview.days.first.date, addDiaryDays(today, -6));
     expect(overview.totalConsumedKcal, 1000);
     expect(overview.totalGoalKcal, 14000);
     expect(overview.remainingKcal, 13000);
@@ -253,14 +253,17 @@ void main() {
 
   test('calorieWeekOverview treats pause day as goal-perfect', () async {
     final today = DateTime(2026, 4, 10);
-    final firstVisibleDay = today.subtract(const Duration(days: 6));
+    final firstVisibleDay = addDiaryDays(today, -6);
     final pauseDay = DateTime(2026, 4, 8);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         for (var index = 0; index < 6; index += 1)
           _entry(
             'entry-$index',
-            loggedAt: firstVisibleDay.add(Duration(days: index, hours: 8)),
+            loggedAt: addDiaryDays(
+              firstVisibleDay,
+              index,
+            ).add(const Duration(hours: 8)),
             totalKcal: index == 4 ? 5000 : 2000,
           ),
       ],
@@ -302,7 +305,7 @@ void main() {
     'calorieWeekOverview spreads past under-eating into carryover',
     () async {
       final today = DateTime(2026, 4, 10);
-      final yesterday = today.subtract(const Duration(days: 1));
+      final yesterday = addDiaryDays(today, -1);
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
           _entry(
@@ -346,8 +349,8 @@ void main() {
   );
 
   final planToday = DateTime(2026, 4, 10);
-  final planTomorrow = planToday.add(const Duration(days: 1));
-  final planDayAfterTomorrow = planToday.add(const Duration(days: 2));
+  final planTomorrow = addDiaryDays(planToday, 1);
+  final planDayAfterTomorrow = addDiaryDays(planToday, 2);
 
   group('calorie settings', () {
     final today = DateTime(2026, 4, 10);
@@ -380,7 +383,7 @@ void main() {
         CalorieGoalSettings.single(
           dailyKcalGoal: 2000,
           calculatorProfile: null,
-          effectiveDate: today.subtract(const Duration(days: 6)),
+          effectiveDate: addDiaryDays(today, -6),
         ).setPauseDay(day: pauseDay, isPause: true),
       );
 
@@ -466,7 +469,7 @@ void main() {
     // The run started six days ago, so today is its last day.
     final container = _futureDaysContainer(
       today: planToday,
-      goalStart: planToday.subtract(const Duration(days: 6)),
+      goalStart: addDiaryDays(planToday, -6),
     );
     await _setClosedDay(container, planToday);
 
@@ -481,8 +484,8 @@ void main() {
     'calorieWeekOverview anchors the visible window to window controller',
     () async {
       final today = normalizeDiaryDay(DateTime.now());
-      final selectedDay = today.subtract(const Duration(days: 1));
-      final firstVisibleDay = selectedDay.subtract(const Duration(days: 6));
+      final selectedDay = addDiaryDays(today, -1);
+      final firstVisibleDay = addDiaryDays(selectedDay, -6);
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
           _entry(
@@ -590,7 +593,7 @@ void main() {
     'calorieWeekConsumptionSnapshot follows visible window controller',
     () async {
       final windowEnd = DateTime(2026, 3, 20);
-      final firstVisibleDay = windowEnd.subtract(const Duration(days: 6));
+      final firstVisibleDay = addDiaryDays(windowEnd, -6);
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
           _entry(
@@ -712,7 +715,7 @@ void main() {
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2000,
           calculatorProfile: null,
-          effectiveDate: windowEnd.subtract(const Duration(days: 6)),
+          effectiveDate: addDiaryDays(windowEnd, -6),
         ),
       );
       addTearDown(logRepository.dispose);
@@ -787,8 +790,8 @@ void main() {
   test('calorieWeekOverview uses day-specific goals and resets buffer '
       'on the latest goal change', () async {
     final today = normalizeDiaryDay(DateTime.now());
-    final yesterday = today.subtract(const Duration(days: 1));
-    final threeDaysAgo = today.subtract(const Duration(days: 3));
+    final yesterday = addDiaryDays(today, -1);
+    final threeDaysAgo = addDiaryDays(today, -3);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(
@@ -849,7 +852,7 @@ void main() {
 
   test('calorieWeekOverview resets previous-run carryover', () async {
     final today = DateTime(2026, 4, 10);
-    final cycleStartDay = today.subtract(const Duration(days: 9));
+    final cycleStartDay = addDiaryDays(today, -9);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(
@@ -860,7 +863,10 @@ void main() {
         for (var offset = 1; offset <= 8; offset += 1)
           _entry(
             'balanced-$offset',
-            loggedAt: cycleStartDay.add(Duration(days: offset, hours: 12)),
+            loggedAt: addDiaryDays(
+              cycleStartDay,
+              offset,
+            ).add(const Duration(hours: 12)),
             totalKcal: 2000,
           ),
       ],
@@ -937,7 +943,7 @@ void main() {
       final overview = await container.read(provider.future);
 
       expect(overview.days.last.date, today);
-      expect(overview.days.first.date, today.subtract(const Duration(days: 6)));
+      expect(overview.days.first.date, addDiaryDays(today, -6));
 
       expect(overview.balanceStartDate, today);
       expect(overview.carryoverBeforeTodayKcal, 0);
@@ -949,8 +955,8 @@ void main() {
     'calorieWeekOverview keeps the same balance cycle through weekly check-ins',
     () async {
       final today = DateTime(2026, 4, 10);
-      final yesterday = today.subtract(const Duration(days: 1));
-      final cycleStartDay = today.subtract(const Duration(days: 9));
+      final yesterday = addDiaryDays(today, -1);
+      final cycleStartDay = addDiaryDays(today, -9);
       final logRepository = FakeCalorieLogRepository(
         initialEntries: <CalorieEntry>[
           _entry(
@@ -961,7 +967,10 @@ void main() {
           for (var offset = 1; offset <= 7; offset += 1)
             _entry(
               'balanced-before-checkin-$offset',
-              loggedAt: cycleStartDay.add(Duration(days: offset, hours: 12)),
+              loggedAt: addDiaryDays(
+                cycleStartDay,
+                offset,
+              ).add(const Duration(hours: 12)),
               totalKcal: 2000,
             ),
           _entry(
@@ -1103,7 +1112,7 @@ void main() {
 
   test('calorieWeekOverview ignores days before a future goal start', () async {
     final today = normalizeDiaryDay(DateTime.now());
-    final tomorrow = today.add(const Duration(days: 1));
+    final tomorrow = addDiaryDays(today, 1);
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[
         _entry(
