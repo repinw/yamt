@@ -10,9 +10,9 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/cookbook_new/domain/combined_meal.dart';
 import 'package:yamt/features/cookbook_new/domain/cooked_pot.dart';
-import 'package:yamt/features/cookbook_new/presentation/combined_meal_discard_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cooked_meal_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/cooked_meal_discard_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_save_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_cookbook_switch.dart';
@@ -116,10 +116,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     );
     final mealAsync = ref.watch(livePreparedMealProvider(widget.mealId));
     // A combined meal is not cooked yet: leaving it gives its foods back.
-    final isCombined = switch (mealAsync.value) {
-      final meal? => meal.isCombined,
-      null => false,
-    };
+    final isCombined = mealAsync.value?.isCombined ?? false;
     final isSaving = ref
         .watch(cookedMealControllerProvider(widget.mealId))
         .isLoading;
@@ -177,7 +174,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
 
   /// Discards the combined meal and closes the page.
   Future<void> _discard() async {
-    final gone = await CombinedMealDiscardFlow.discard(
+    final gone = await CookedMealDiscardFlow.discard(
       context: context,
       ref: ref,
       mealId: widget.mealId,
