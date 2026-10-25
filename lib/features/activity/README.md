@@ -45,7 +45,7 @@ Current application providers:
 
 ## Accepted Dependencies
 
-- `core` for diary day normalization and shared primitives.
+- `core` for local day math and shared primitives.
 - `features/auth` for scoping local weight-prompt dismissal state to the active
   user when auth is available.
 - `features/health` for health access, day activity data, workouts, and weight
