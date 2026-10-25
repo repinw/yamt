@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_previous_day_controller.dart';
@@ -10,7 +11,10 @@ void main() {
   test('closes and reopens the day and reloads the overviews', () async {
     final repository = ClosedDayRepository(MemoryAppPreferences(), 'user-1');
     final container = ProviderContainer(
-      overrides: [closedDayRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        closedDayRepositoryProvider.overrideWithValue(repository),
+        clockProvider.overrideWithValue(() => DateTime(2026, 10, 4, 21)),
+      ],
     );
     addTearDown(container.dispose);
     final subscription = container.listen(
@@ -38,6 +42,7 @@ void main() {
         closedDayRepositoryProvider.overrideWithValue(
           _FailingClosedDayRepository(),
         ),
+        clockProvider.overrideWithValue(() => DateTime(2026, 10, 4, 21)),
       ],
     );
     addTearDown(container.dispose);

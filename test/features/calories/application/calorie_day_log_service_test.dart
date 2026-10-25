@@ -131,4 +131,19 @@ void main() {
     expect(closedDays.readClosedDay(), isNull);
     expect(revision(), 2);
   });
+
+  test('closes no day but today', () async {
+    // A card from before midnight still offers to close the day that is
+    // yesterday now.
+    final closedDays = ClosedDayRepository(MemoryAppPreferences(), 'user-1');
+    final dayLog = service(
+      FakePlannedEntryRepository(),
+      closedDays: closedDays,
+    );
+
+    await expectLater(dayLog.closeDay(DateTime(2026, 9, 27)), throwsStateError);
+
+    expect(closedDays.readClosedDay(), isNull);
+    expect(revision(), 0);
+  });
 }
