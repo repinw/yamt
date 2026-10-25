@@ -154,7 +154,8 @@ already documented as a reusable presentation surface.
   (`showPendingIngredientSelectionSheet`) lets the cook check one or more
   Vorrat items for a row from a `PendingIngredientStock`
   (`application/pending_ingredient_stock.dart`) and returns their ids in the
-  order checked.
+  order checked. The candidates among `selected` start checked and come
+  first.
 - `presentation/widgets/plan_shortage_reminder_settings_builder.dart`
   (`PlanShortageReminderSettingsBuilder`) gives another feature's surface the
   day-before reminder's on/off and time with their setters, whether the

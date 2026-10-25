@@ -9,6 +9,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_save_flow.dart';
@@ -490,6 +491,36 @@ void main() {
     await tester.tap(find.byKey(PreparedMealPendingFillSheet.takeKey));
     await tester.pumpAndSettle();
     expect(find.text('1 OF 1 IN STOCK'), findsOneWidget);
+    // The list opens with the row's items checked, so saving keeps them.
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(PreparedMealPendingFillSheet.stockKey));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<AppCheckboxListTile>(
+            find.byKey(pendingIngredientOptionKey('rice')),
+          )
+          .value,
+      isTrue,
+    );
+    await tester.tap(find.byKey(pendingIngredientSaveKey));
+    await tester.pumpAndSettle();
+    expect(find.text('1 OF 1 IN STOCK'), findsOneWidget);
+    // Unchecking it takes the row from no Vorrat item.
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(PreparedMealPendingFillSheet.stockKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(pendingIngredientOptionKey('rice')));
+    await tester.pump();
+    await tester.tap(find.byKey(pendingIngredientSaveKey));
+    await tester.pumpAndSettle();
+    expect(find.text('0 OF 1 IN STOCK'), findsOneWidget);
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(PreparedMealPendingFillSheet.takeKey));
+    await tester.pumpAndSettle();
 
     // The Vorrat has nothing for salt, so its row offers no pick.
     await tester.tap(find.byKey(FreeCookingActions.typeKey));

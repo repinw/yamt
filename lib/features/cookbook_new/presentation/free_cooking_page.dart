@@ -147,8 +147,10 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
           ingredient: row.text,
           // Read now: the Vorrat may have changed while the sheet was open.
           stock: controller.stockFor(row.text, localeCode),
+          selected: [for (final item in row.stockItems) item.id],
         );
-        if (itemIds != null && itemIds.isNotEmpty && mounted) {
+        // Nothing checked takes the row from no Vorrat item.
+        if (itemIds != null && mounted) {
           controller.pick(row.text, itemIds);
         }
       case PreparedMealPendingFillIgnore():
