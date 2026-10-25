@@ -109,7 +109,7 @@ class _FakePhotoRepository extends Fake implements ProductPhotoRepository {
     if (error != null) throw error;
     saved.add(front);
     return ProductPhotoUpload(
-      frontAddress: _foodPhotoAddress,
+      frontAddress: 'gs://yamt/users/u1/food_photos/p${saved.length}.jpg',
       done: upload.future,
     );
   }
@@ -383,6 +383,34 @@ void main() {
     expect(photos.upload.isCompleted, isFalse);
     expect(photos.saved.single.bytes, _pixel);
     expect(pageResult?.item.imageUrl, _foodPhotoAddress);
+  });
+
+  testWidgets('every photo is stored and kept on the AI estimate (#763)', (
+    tester,
+  ) async {
+    ManualProductAiSearchResult? pageResult;
+    final photos = _FakePhotoRepository();
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
+      photos: photos,
+      onResult: (result) => pageResult = result,
+    );
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
+      await tester.pumpAndSettle();
+    }
+    await _analyze(tester);
+
+    await tester.tap(find.text('To diary'));
+    await tester.pumpAndSettle();
+
+    expect(photos.saved, hasLength(2));
+    expect(pageResult?.item.imageUrl, _foodPhotoAddress);
+    expect(pageResult?.item.productSnapshot.aiEstimate?.photoUrls, [
+      _foodPhotoAddress,
+      'gs://yamt/users/u1/food_photos/p2.jpg',
+    ]);
   });
 
   testWidgets('an upload that fails after the page closed tells the user '

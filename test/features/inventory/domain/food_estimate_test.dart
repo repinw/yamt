@@ -57,6 +57,10 @@ void main() {
       estimate: _estimate,
       level: FoodEstimateLevel.rich,
       description: 'Döner mit allem',
+      photoUrls: [
+        'gs://yamt/users/u1/food_photos/p1.jpg',
+        'gs://yamt/users/u1/food_photos/p2.jpg',
+      ],
     );
 
     final stored = jsonDecode(jsonEncode(saved.toJson()));

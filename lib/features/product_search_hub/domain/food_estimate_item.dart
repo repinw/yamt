@@ -53,4 +53,16 @@ extension FoodEstimateItemPick on InventoryItem {
   /// the item's own food (#763).
   InventoryItem get withoutAiEstimate =>
       copyWith(productSnapshot: productSnapshot.copyWith(aiEstimate: null));
+
+  /// The item with the first of [photoUrls] as its image and all of them on
+  /// its AI estimate (#763); unchanged without a photo.
+  InventoryItem withFoodPhotos(List<String> photoUrls) {
+    if (photoUrls.isEmpty) return this;
+    return copyWith(
+      imageUrl: photoUrls.first,
+      productSnapshot: productSnapshot.copyWith(
+        aiEstimate: productSnapshot.aiEstimate?.withPhotoUrls(photoUrls),
+      ),
+    );
+  }
 }
