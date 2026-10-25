@@ -3175,12 +3175,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String diaryBudgetDetailsMacroAdjustment(
-    String protein,
-    String carbs,
-    String fat,
-  ) {
-    return 'Macro impact: Protein $protein · Carbs $carbs · Fat $fat';
+  String diaryBudgetDetailsMacroAdjustment(String carbs, String fat) {
+    return 'Macro impact: Carbs $carbs · Fat $fat';
   }
 
   @override

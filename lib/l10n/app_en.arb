@@ -1970,12 +1970,9 @@
       }
     }
   },
-  "diaryBudgetDetailsMacroAdjustment": "Macro impact: Protein {protein} · Carbs {carbs} · Fat {fat}",
+  "diaryBudgetDetailsMacroAdjustment": "Macro impact: Carbs {carbs} · Fat {fat}",
   "@diaryBudgetDetailsMacroAdjustment": {
     "placeholders": {
-      "protein": {
-        "type": "String"
-      },
       "carbs": {
         "type": "String"
       },

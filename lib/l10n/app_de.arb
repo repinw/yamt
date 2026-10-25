@@ -1681,12 +1681,9 @@
       }
     }
   },
-  "diaryBudgetDetailsMacroAdjustment": "Makro-Anpassung: Protein {protein} · Carbs {carbs} · Fett {fat}",
+  "diaryBudgetDetailsMacroAdjustment": "Makro-Anpassung: Carbs {carbs} · Fett {fat}",
   "@diaryBudgetDetailsMacroAdjustment": {
     "placeholders": {
-      "protein": {
-        "type": "String"
-      },
       "carbs": {
         "type": "String"
       },
