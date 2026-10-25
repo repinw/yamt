@@ -59,7 +59,9 @@ Future<UserProfile> _syncUserProfile(
     isAnonymous: user.isAnonymous,
   );
   // Temporary migration, added in 3.4.1: profiles saved without uid or
-  // isAnonymous are written once, so the tolerant decoder can go in 3.7.0.
+  // isAnonymous are written once. It stays until the tolerant profile decoder
+  // in user_profile_dto.dart goes, because a strict decoder needs both fields
+  // in every profile.
   final data = snapshot.data();
   final hasAccountFields =
       data != null &&
