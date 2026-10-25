@@ -315,6 +315,39 @@ void main() {
     expect(find.byKey(CookedMealPotSection.grossKey), findsOneWidget);
   });
 
+  testWidgets('"Verwerfen" asks and gives a cooked meal back to the Vorrat '
+      '(#862)', (tester) async {
+    final meals = _FakeMealRepository();
+    final inventory = _riceInventory();
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        voice: _FakeVoiceService('200 g Reis'),
+        inventory: inventory,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingActions.cookKey));
+    await tester.pumpAndSettle();
+    expect(find.byType(CookedMealPage), findsOneWidget);
+    expect(inventory.items.single.currentAmount, 800);
+
+    await tester.tap(find.byKey(CookedMealSaveBar.discardKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(freeCookingDiscardKey));
+    await tester.pumpAndSettle();
+
+    expect(meals.saved, isEmpty);
+    expect(inventory.items.single.currentAmount, 1000);
+    expect(find.byKey(_startKey), findsOneWidget);
+  });
+
   testWidgets('closing a combined meal asks and gives it back', (tester) async {
     final meals = _FakeMealRepository()..saved = [_combinedMeal()];
     await tester.pumpWidget(_app(meals: meals, voice: _FakeVoiceService('')));
@@ -551,6 +584,7 @@ Widget _app({
   required _FakeVoiceService voice,
   ScreenWakeLock? wakeLock,
   _FakeTemplateRepository? templates,
+  _FakeInventoryRepository? inventory,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -587,18 +621,7 @@ Widget _app({
         templates ?? _FakeTemplateRepository(),
       ),
       inventoryItemRepositoryProvider.overrideWithValue(
-        _FakeInventoryRepository([
-          InventoryItem.create(
-            id: 'rice',
-            name: 'Reis',
-            entryDate: DateTime.utc(2026, 9, 29),
-            storeName: 'Store',
-            quantity: 1,
-            initialAmount: 1000,
-            currentAmount: 1000,
-            amountUnit: InventoryAmountUnit.gram,
-          ),
-        ]),
+        inventory ?? _riceInventory(),
       ),
       inventoryActivityEventRepositoryProvider.overrideWithValue(
         _FakeActivityRepository(),
@@ -625,6 +648,20 @@ Widget _app({
     ),
   );
 }
+
+/// A Vorrat with 1000 g of rice.
+_FakeInventoryRepository _riceInventory() => _FakeInventoryRepository([
+  InventoryItem.create(
+    id: 'rice',
+    name: 'Reis',
+    entryDate: DateTime.utc(2026, 9, 29),
+    storeName: 'Store',
+    quantity: 1,
+    initialAmount: 1000,
+    currentAmount: 1000,
+    amountUnit: InventoryAmountUnit.gram,
+  ),
+]);
 
 /// Hears [transcript] once, then stays silent.
 class _FakeVoiceService implements VoiceSearchService {

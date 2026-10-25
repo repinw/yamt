@@ -81,7 +81,7 @@ class CookedMealController extends _$CookedMealController {
     }
   }
 
-  /// Discards the combined meal before its "Gekocht" step and gives its
+  /// Discards the meal in the pot before its "Gekocht" step and gives its
   /// foods back to the Vorrat. Returns whether it worked.
   Future<bool> discard() async {
     final link = ref.keepAlive();

@@ -5806,8 +5806,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookedWeighInstead => 'Gewicht stimmt nicht? Mit Behälter wiegen';
 
   @override
-  String get cookedCombinedDiscardBody =>
-      'Die Zutaten gehen zurück in den Vorrat.';
+  String get cookedDiscardBody => 'Die Zutaten gehen zurück in den Vorrat.';
 
   @override
   String get cookedDiscardFailed =>

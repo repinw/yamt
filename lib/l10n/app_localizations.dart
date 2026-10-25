@@ -9565,11 +9565,11 @@ abstract class AppLocalizations {
   /// **'Weight wrong? Weigh with a container'**
   String get cookedWeighInstead;
 
-  /// No description provided for @cookedCombinedDiscardBody.
+  /// No description provided for @cookedDiscardBody.
   ///
   /// In en, this message translates to:
   /// **'The ingredients go back to the stock.'**
-  String get cookedCombinedDiscardBody;
+  String get cookedDiscardBody;
 
   /// No description provided for @cookedDiscardFailed.
   ///

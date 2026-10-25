@@ -888,7 +888,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   switch (off by default, also for a combined meal) also saves the cooked
   meal as a cookbook template with today's ingredients and amounts; when
   only the template fails, the meal stays in the Vorrat and a message says
-  so. Closing the page keeps it in the pot. A meal that does not show up within a few seconds counts as
+  so. "Verwerfen" asks first, then gives the foods back to the Vorrat,
+  deletes the items added only for this meal, and removes the meal; plans
+  of a share of this pot stay and say their meal is gone. Closing the page
+  keeps it in the pot. A meal that does not show up within a few seconds counts as
   gone, and the page says it could not be loaded. When another device puts
   the meal into the Vorrat while the page is open, the page closes and says
   "Diese Mahlzeit ist schon gekocht und im Vorrat."

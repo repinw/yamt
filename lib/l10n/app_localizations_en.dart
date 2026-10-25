@@ -5728,8 +5728,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookedWeighInstead => 'Weight wrong? Weigh with a container';
 
   @override
-  String get cookedCombinedDiscardBody =>
-      'The ingredients go back to the stock.';
+  String get cookedDiscardBody => 'The ingredients go back to the stock.';
 
   @override
   String get cookedDiscardFailed =>
