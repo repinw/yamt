@@ -18,6 +18,7 @@ class TrainingWeekDepotChart extends StatelessWidget {
     required this.baseGoalKcal,
     required this.sessionKcal,
     required this.accent,
+    this.onToggle,
     super.key,
   });
 
@@ -32,6 +33,12 @@ class TrainingWeekDepotChart extends StatelessWidget {
 
   /// Color of the training day bars.
   final Color accent;
+
+  /// Called with the index of a tapped bar; `null` shows the bars only.
+  final ValueChanged<int>? onToggle;
+
+  /// Key of the bar at [index].
+  static Key barKey(int index) => ValueKey('training_week_depot_bar_$index');
 
   int get _trainingDays => days.where((day) => day.isTraining).length;
 
@@ -76,15 +83,18 @@ class TrainingWeekDepotChart extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  for (final day in days)
+                  for (final (index, day) in days.indexed)
                     Expanded(
-                      child: _DepotBar(
-                        label: day.label,
-                        heightFactor: day.isTraining
-                            ? 1
-                            : restRatio.clamp(0.25, 1.0),
-                        isTraining: day.isTraining,
-                        accent: accent,
+                      child: _tappable(
+                        index,
+                        _DepotBar(
+                          label: day.label,
+                          heightFactor: day.isTraining
+                              ? 1
+                              : restRatio.clamp(0.25, 1.0),
+                          isTraining: day.isTraining,
+                          accent: accent,
+                        ),
                       ),
                     ),
                 ],
@@ -100,6 +110,22 @@ class TrainingWeekDepotChart extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Screen readers use the day chips, which also name the date.
+  Widget _tappable(int index, Widget bar) {
+    final toggle = onToggle;
+    if (toggle == null) {
+      return bar;
+    }
+    return ExcludeSemantics(
+      child: GestureDetector(
+        key: barKey(index),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => toggle(index),
+        child: bar,
       ),
     );
   }

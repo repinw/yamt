@@ -178,7 +178,12 @@ void main() {
 
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
-    // Run 2 suggests the Thursday and the Monday of run 1; add its Tuesday.
+    // The step starts empty. Plan the Thursday and the Monday of run 1 again
+    // and add the Tuesday of run 2.
+    await tester.tap(
+      find.byKey(DiaryWeeklyCheckInSheetKeys.sameAsLastRunButton),
+    );
+    await tester.pumpAndSettle();
     final firstDay = find.byKey(DiaryWeeklyCheckInSheetKeys.trainingDay(0));
     await tester.ensureVisible(firstDay);
     await tester.pumpAndSettle();
@@ -279,11 +284,12 @@ void main() {
 
     await _pumpSection(tester, settings, log);
 
-    // The section opens the due check-in. Keep the previous TDEE and add the
-    // Tuesday of run 2 to its Thursday and Monday.
+    // The section opens the due check-in. Keep the previous TDEE, plan the
+    // Thursday and Monday of the last run again, and add the Tuesday.
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
     await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.keepPreviousChoice);
     await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
+    await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.sameAsLastRunButton);
     await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.trainingDay(0));
     expectSelected(DiaryWeeklyCheckInSheetKeys.trainingDay(0));
     await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.backButton);

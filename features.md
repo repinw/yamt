@@ -335,7 +335,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   steps: a look back since the goal start (trend, eaten, training days, weight
   chart, and the TDEE of each run) with the choice "Gemessenen übernehmen" or
   "Bisherigen behalten" and a link to change the goal; the training days of
-  the next run, preset from the last run; the progress photos of a pose
+  the next run, which start empty ("Wie letzter Run" plans the last ones
+  again, and the date chips and the bars of the week chart switch a day);
+  the progress photos of a pose
   ("Dein Weg bisher": the first since the goal start, the one nearest
   halfway, and today's, each with day and weight), where the slot of today
   adds or replaces today's photo and "Weiter" skips it; and the new targets
@@ -345,7 +347,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   congratulations page instead of the look back. The goal sheet that the
   check-in opens has a back arrow. Leaving it without a new goal, by the
   arrow, "Abbrechen", or a swipe, opens the check-in again on the same step
-  with the choices made so far, still undecided.
+  with the choices made so far, still undecided. A check-in swiped away or
+  put off with "Später" also keeps its step and choices for "Fortsetzen"
+  while the diary stays open.
 - Burn Week budget model with daily goal, activity credit, carryover, skipped
   days, remaining calories, and details sheet.
 - Macro tracking for protein, carbs, fat, and extended nutrient fields.

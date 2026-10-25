@@ -8812,7 +8812,7 @@ abstract class AppLocalizations {
   /// No description provided for @diaryCheckInTrainingSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Suggested: your days from the last run'**
+  /// **'Tap the days you train'**
   String get diaryCheckInTrainingSubtitle;
 
   /// No description provided for @diaryCheckInSessions.

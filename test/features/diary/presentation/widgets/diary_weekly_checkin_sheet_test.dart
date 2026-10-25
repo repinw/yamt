@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_models
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
+import 'package:yamt/features/calories/presentation/widgets/training_week_depot_chart.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -44,14 +45,18 @@ void main() {
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
     expect(find.text('When do you train?'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
+    expect(find.text('0'), findsOneWidget);
 
     await _tapVisible(
       tester,
       find.byKey(DiaryWeeklyCheckInSheetKeys.trainingDay(1)),
     );
     await tester.pumpAndSettle();
-    expect(find.text('4'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
+    // The bars switch their day too.
+    await _tapVisible(tester, find.byKey(TrainingWeekDepotChart.barKey(3)));
+    await tester.pumpAndSettle();
+    expect(find.text('2'), findsOneWidget);
 
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await tester.pumpAndSettle();
@@ -65,7 +70,7 @@ void main() {
 
     expect(results, hasLength(1));
     expect(results.single!.action, DiaryWeeklyCheckInSheetAction.apply);
-    expect(results.single!.training!.trainingDays, hasLength(4));
+    expect(results.single!.training!.trainingDays, hasLength(2));
   });
 
   testWidgets('past days and pause days keep their type and say why', (
@@ -106,7 +111,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final plan = _latePlan();
-    expect(results.single!.training!.trainingDays, plan.suggestedTrainingDays);
+    expect(results.single!.training!.trainingDays, plan.fixedTrainingDays);
     expect(results.single!.training!.runDay, plan.nextRunDays.first);
     semantics.dispose();
   });

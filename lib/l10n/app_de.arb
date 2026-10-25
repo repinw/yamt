@@ -2563,7 +2563,7 @@
   "diaryCheckInNext": "Weiter",
   "diaryCheckInBack": "Zurück",
   "diaryCheckInTrainingTitle": "Wann trainierst du?",
-  "diaryCheckInTrainingSubtitle": "Vorgeschlagen: deine Tage aus dem letzten Run",
+  "diaryCheckInTrainingSubtitle": "Tippe die Tage an, an denen du trainierst",
   "diaryCheckInSessions": "Einheiten",
   "diaryCheckInSameAsLastRun": "Wie letzter Run",
   "diaryCheckInNoSession": "Keine Einheit",
