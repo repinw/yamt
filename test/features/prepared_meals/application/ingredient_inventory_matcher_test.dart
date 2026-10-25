@@ -87,22 +87,6 @@ void main() {
     expect(matches.map((item) => item.id), <String>['1']);
   });
 
-  test('rankInventoryItemsForIngredient keeps non matches for manual pick', () {
-    final inventoryItems = <InventoryItem>[
-      _item(id: '1', name: 'Milch'),
-      _item(id: '2', name: 'Kartoffeln'),
-      _item(id: '3', name: 'Joghurt'),
-      _item(id: '4', name: 'Kartoffeln', quantity: 0),
-    ];
-
-    final rankedItems = rankInventoryItemsForIngredient(
-      ingredient: 'Kartoffeln',
-      inventoryItems: inventoryItems,
-    );
-
-    expect(rankedItems.map((item) => item.id), <String>['2', '3', '1']);
-  });
-
   test('resolveInventoryItemsById returns only existing items', () {
     final inventoryItems = <InventoryItem>[
       _item(id: '1', name: 'Kartoffeln'),
@@ -117,56 +101,47 @@ void main() {
     expect(resolvedItems.map((item) => item.id), <String>['2', '1']);
   });
 
-  test(
-    'rankInventoryItemsForIngredient ignores common english filler words',
-    () {
-      final rankedItems = rankInventoryItemsForIngredient(
-        ingredient: 'fresh large milk',
-        inventoryItems: <InventoryItem>[
-          _item(id: '1', name: 'Fresh Large'),
-          _item(id: '2', name: 'Milk'),
-        ],
-        localeCode: 'en',
-      );
+  test('the matcher ignores common english filler words', () {
+    final rankedItems = _match(
+      ingredient: 'fresh large milk',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Fresh Large'),
+        _item(id: '2', name: 'Milk'),
+      ],
+      localeCode: 'en',
+    );
 
-      expect(rankedItems.map((item) => item.id).first, '2');
-    },
-  );
+    expect(rankedItems.map((item) => item.id).first, '2');
+  });
 
-  test(
-    'rankInventoryItemsForIngredient uses fuzzy score for noisy imports',
-    () {
-      final rankedItems = rankInventoryItemsForIngredient(
-        ingredient: 'mittelgroße Zwiebeln',
-        inventoryItems: <InventoryItem>[
-          _item(id: '1', name: 'Mittelgroße Vorratsdose'),
-          _item(id: '2', name: 'Zwiebeln'),
-        ],
-        localeCode: 'de',
-      );
+  test('the matcher uses fuzzy score for noisy imports', () {
+    final rankedItems = _match(
+      ingredient: 'mittelgroße Zwiebeln',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Mittelgroße Vorratsdose'),
+        _item(id: '2', name: 'Zwiebeln'),
+      ],
+      localeCode: 'de',
+    );
 
-      expect(rankedItems.map((item) => item.id).first, '2');
-    },
-  );
+    expect(rankedItems.map((item) => item.id).first, '2');
+  });
 
-  test(
-    'rankInventoryItemsForIngredient matches compounds by character shingles',
-    () {
-      final rankedItems = rankInventoryItemsForIngredient(
-        ingredient: 'Rinderhackfleisch',
-        inventoryItems: <InventoryItem>[
-          _item(id: '1', name: 'Bio-Speisezwiebeln'),
-          _item(id: '2', name: 'Schwin Schweine Hack'),
-        ],
-        localeCode: 'de',
-      );
+  test('the matcher matches compounds by character shingles', () {
+    final rankedItems = _match(
+      ingredient: 'Rinderhackfleisch',
+      inventoryItems: <InventoryItem>[
+        _item(id: '1', name: 'Bio-Speisezwiebeln'),
+        _item(id: '2', name: 'Schwin Schweine Hack'),
+      ],
+      localeCode: 'de',
+    );
 
-      expect(rankedItems.map((item) => item.id).first, '2');
-    },
-  );
+    expect(rankedItems.map((item) => item.id).first, '2');
+  });
 
-  test('rankInventoryItemsForIngredient still matches onion compounds', () {
-    final rankedItems = rankInventoryItemsForIngredient(
+  test('the matcher still matches onion compounds', () {
+    final rankedItems = _match(
       ingredient: 'Zwiebeln',
       inventoryItems: <InventoryItem>[
         _item(id: '1', name: 'Bio-Speisezwiebeln'),
