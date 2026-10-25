@@ -1,6 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 
+import '../../../helpers/auth_user_data_key_session.dart';
 import '../../../helpers/memory_app_preferences.dart';
 
 void main() {
@@ -37,5 +41,28 @@ void main() {
       repository.saveClosedDay(DateTime(2026, 10, 5)),
       throwsStateError,
     );
+  });
+
+  test('the provider reads the user whose data key is ready', () async {
+    final preferences = MemoryAppPreferences();
+    await ClosedDayRepository(
+      preferences,
+      testUserDataCipher.uid,
+    ).saveClosedDay(DateTime(2026, 10, 5));
+    ClosedDayRepository repository({required bool keyReady}) {
+      final container = ProviderContainer(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(preferences),
+          userDataCipherProvider.overrideWithValue(
+            keyReady ? testUserDataCipher : null,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container.read(closedDayRepositoryProvider);
+    }
+
+    expect(repository(keyReady: true).readClosedDay(), DateTime(2026, 10, 5));
+    expect(repository(keyReady: false).readClosedDay(), isNull);
   });
 }
