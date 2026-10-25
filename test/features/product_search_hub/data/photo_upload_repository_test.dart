@@ -135,7 +135,11 @@ void main() {
     storage.uploadGates.addAll([first.future, second.future]);
 
     final retry = repository.uploadPendingPhotos(now: _now);
-    await pumpEventQueue();
+    // The retry reads its photos from disk first, which the event queue
+    // alone does not wait for.
+    while (storage.uploads.isEmpty) {
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+    }
     // The retry waits on one photo; the other starts on its own.
     final waiting = storage.uploads.single;
     final other = photos.firstWhere(
