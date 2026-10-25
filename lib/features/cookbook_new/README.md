@@ -12,7 +12,7 @@ templates list and the old cooking flow.
 - The "Frei kochen" page: the draft rows of a meal without a recipe, how
   spoken or typed text is cut into rows, and their stock state.
 - The "Gekocht" page: portions or pieces, pot, and food weight of a meal in
-  the pot, and discarding a combined meal there, which gives its foods back
+  the pot, and discarding any meal in the pot there, which gives its foods back
   to the Vorrat and deletes the ones added only for it, and the "Ins
   Kochbuch" switch that also saves the cooked meal as a template.
 - The recipe page: a recipe sized for the chosen portions, which Vorrat food

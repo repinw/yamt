@@ -3509,7 +3509,7 @@
     }
   },
   "cookedWeighInstead": "Weight wrong? Weigh with a container",
-  "cookedCombinedDiscardBody": "The ingredients go back to the stock.",
+  "cookedDiscardBody": "The ingredients go back to the stock.",
   "cookedDiscardFailed": "Could not discard the meal. Its foods are not back in the stock yet.",
   "cookedSave": "To stock",
   "cookedNeedsUtensil": "Pick the container first",

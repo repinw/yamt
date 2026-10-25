@@ -7,7 +7,7 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_discard_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Discards a combined meal from its "Gekocht" step.
+/// Discards a meal in the pot from its "Gekocht" step.
 abstract final class CookedMealDiscardFlow {
   const new _();
 
@@ -24,7 +24,7 @@ abstract final class CookedMealDiscardFlow {
     final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showFreeCookingDiscardDialog(
       context,
-      body: l10n.cookedCombinedDiscardBody,
+      body: l10n.cookedDiscardBody,
     );
     if (!confirmed || !context.mounted) {
       return false;

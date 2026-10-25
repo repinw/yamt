@@ -73,8 +73,8 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   /// Whether a missing meal counts as not found instead of not arrived yet.
   var _waitedForMeal = false;
 
-  /// Whether the cook discards a combined meal, so its leaving the Vorrat
-  /// does not count as gone.
+  /// Whether the cook discards the meal, so its leaving the Vorrat does not
+  /// count as gone.
   var _discarding = false;
 
   /// Whether this page saves the meal, so its leaving the pot is no news.
@@ -172,7 +172,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     );
   }
 
-  /// Discards the combined meal and closes the page.
+  /// Discards the meal, gives its foods back, and closes the page.
   Future<void> _discard() async {
     final gone = await CookedMealDiscardFlow.discard(
       context: context,
@@ -289,6 +289,9 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                     ).whenComplete(() => _saving = false),
                   );
                 },
+          onDiscard: isSaving || _saving || _discarding
+              ? null
+              : () => unawaited(_discard()),
         ),
       ],
     );
