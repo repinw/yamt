@@ -52,22 +52,6 @@ List<({InventoryItem item, int score})> scoreInventoryItemsForIngredient({
     if (match.score > 0) match,
 ];
 
-/// Rank inventory items for ingredient.
-List<InventoryItem> rankInventoryItemsForIngredient({
-  required String ingredient,
-  required List<InventoryItem> inventoryItems,
-  String? localeCode,
-}) {
-  return [
-    for (final (:item, score: _) in _rankScored(
-      ingredient,
-      inventoryItems,
-      localeCode,
-    ))
-      item,
-  ];
-}
-
 /// The items not used up, best score first, then by name. Each score is
 /// worked out once: the fuzzy match is too slow to repeat per comparison.
 List<({InventoryItem item, int score})> _rankScored(
