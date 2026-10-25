@@ -2,8 +2,8 @@ import 'dart:async' show unawaited;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_after_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars_content.dart';
@@ -48,7 +48,7 @@ class DiaryNutritionBars extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final normalizedDay = normalizeLocalDay(selectedDay);
     final dashboardState = ref.watch(
       diaryDayDashboardControllerProvider(normalizedDay),
     );

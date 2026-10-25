@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
@@ -140,7 +140,7 @@ class ProgressWeightList {
               for (final sample in healthSamples)
                 if (sample.recordedAt.toLocal() case final at)
                   ProgressWeighing(
-                    day: normalizeDiaryDay(at),
+                    day: normalizeLocalDay(at),
                     at: at,
                     weightKg: sample.weightKg,
                     source: sample.isFromThisApp
@@ -164,7 +164,7 @@ class ProgressWeightList {
     final runs = <ProgressWeightRun>[];
     for (final key in keys) {
       final runTrend = series.trendOnOrBefore(key.end);
-      final before = series.trendOnOrBefore(addDiaryDays(key.start, -1));
+      final before = series.trendOnOrBefore(addLocalDays(key.start, -1));
       runs.add(
         ProgressWeightRun(
           start: key.start,
@@ -189,7 +189,7 @@ class ProgressWeightList {
         : current - target;
     // From the day before the range like the runs, so they add up to it.
     final first =
-        series.trendOnOrBefore(addDiaryDays(start, -1)) ??
+        series.trendOnOrBefore(addLocalDays(start, -1)) ??
         trend.days
             .firstWhereOrNull(
               (day) => !day.day.isBefore(start) && day.trendWeightKg != null,

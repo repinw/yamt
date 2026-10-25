@@ -1,11 +1,11 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
@@ -111,7 +111,7 @@ class DiaryBalanceSource {
       _selectedDayOverview,
       _countedPlans,
     );
-    final isLiveDay = isSameDiaryDay(selectedDay, now);
+    final isLiveDay = isSameLocalDay(selectedDay, now);
     final scheduledRestartDate = resolveDiaryBalanceScheduledRestartDate(
       runState: _runState,
       today: selectedDay,
@@ -161,8 +161,8 @@ DiaryBalanceActions diaryBalanceActions(Ref ref) {
       if (!ref.mounted) {
         return;
       }
-      final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
-      final visibleDays = buildDiaryVisibleDays(
+      final normalizedSelectedDay = normalizeLocalDay(selectedDay);
+      final visibleDays = buildRollingLocalDays(
         anchorDay: normalizedSelectedDay,
       );
       ref

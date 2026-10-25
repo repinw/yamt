@@ -1,8 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_goal_onboarding_finish_flow.g.dart';
 
@@ -55,8 +55,8 @@ class CalorieGoalOnboardingFinishFlow {
   /// away. A later start leaves the days before it as practice days, and Burn
   /// Week live sync starts the run on the start day.
   Future<bool> saveGoal(CalorieGoalOnboardingFinishRequest request) async {
-    final today = normalizeDiaryDay(request.today);
-    final startDate = normalizeDiaryDay(request.startDate);
+    final today = normalizeLocalDay(request.today);
+    final startDate = normalizeLocalDay(request.startDate);
     final startsLater = startDate.isAfter(today);
     final goalSaved = await _goalController.saveCalculatedGoal(
       request.profile,

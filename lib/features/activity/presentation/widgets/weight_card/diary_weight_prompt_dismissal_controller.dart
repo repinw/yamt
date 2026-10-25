@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'diary_weight_prompt_dismissal_controller.g.dart';
 
@@ -20,7 +20,7 @@ class DiaryWeightPromptDismissalController
 
   /// Dismiss prompt for [day].
   Future<void> dismissForDay(DateTime day) async {
-    final dayKey = diaryDayKey(day);
+    final dayKey = localDayKey(day);
     if (state == dayKey) {
       return;
     }

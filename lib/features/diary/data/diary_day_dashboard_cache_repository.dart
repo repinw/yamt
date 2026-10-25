@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 
 part 'diary_day_dashboard_cache_repository.g.dart';
@@ -24,7 +24,7 @@ class DiaryDayDashboardCacheRepository {
     required String userId,
     required DateTime day,
   }) {
-    final dayKey = diaryDayKey(day);
+    final dayKey = localDayKey(day);
     final raw = preferences.getStringSync(_key(userId: userId, dayKey: dayKey));
     if (raw == null || raw.isEmpty) {
       return null;
@@ -44,7 +44,7 @@ class DiaryDayDashboardCacheRepository {
       final data = DiaryDayDashboardSnapshot.fromJson(
         Map<String, dynamic>.from(json['data'] as Map? ?? const {}),
       );
-      if (diaryDayKey(data.selectedDay) != dayKey ||
+      if (localDayKey(data.selectedDay) != dayKey ||
           data.weekOverview.days.isEmpty) {
         return null;
       }
@@ -66,7 +66,7 @@ class DiaryDayDashboardCacheRepository {
     required String userId,
     required DiaryDayDashboardSnapshot data,
   }) async {
-    final dayKey = diaryDayKey(data.selectedDay);
+    final dayKey = localDayKey(data.selectedDay);
     final encoded = jsonEncode(<String, dynamic>{
       'version': _cacheVersion,
       'user_id': userId,

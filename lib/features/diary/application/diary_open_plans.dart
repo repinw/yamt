@@ -1,5 +1,5 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 
 /// The plans of today, or of a tomorrow whose day before is closed: they do
@@ -28,10 +28,10 @@ class DiaryOpenPlans {
       for (final plan in data.plannedEntries)
         if (!plan.nutritionPending) plan,
     ];
-    final day = normalizeDiaryDay(data.selectedDay);
+    final day = normalizeLocalDay(data.selectedDay);
     final overview = data.weekOverview;
     final isPauseDay = overview.days.any(
-      (entry) => isSameDiaryDay(entry.date, day) && entry.isPauseDay,
+      (entry) => isSameLocalDay(entry.date, day) && entry.isPauseDay,
     );
     if (plans.isEmpty ||
         data.countsPlans ||

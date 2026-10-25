@@ -1,5 +1,5 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 
 /// Pure calculation helper for weight goal anticipation
@@ -47,7 +47,7 @@ abstract final class TdeeAnticipationCalculator {
     final effectiveDailyRate = recentWeightTrendKgPerDay.abs();
     final rawDays = (remainingKg / effectiveDailyRate).round();
     final daysRemaining = rawDays.clamp(1, 365);
-    final projectedDate = addDiaryDays(startDate, daysRemaining);
+    final projectedDate = addLocalDays(startDate, daysRemaining);
 
     return TdeeAnticipationProjection(projectedDate: projectedDate);
   }

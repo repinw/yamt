@@ -1,9 +1,9 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Merges daily weights and the goal-anchor weight for a check-in.
 ///
@@ -21,7 +21,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
       weightByDay: weightByDay,
       weightPointByDay: weightPointByDay,
       displayDay: day,
-      weightKg: dailyWeightByDay[diaryDayKey(day)],
+      weightKg: dailyWeightByDay[localDayKey(day)],
       dayIndex: dates.dayIndexFor(day),
     );
   }
@@ -33,7 +33,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
       weightPointByDay: weightPointByDay,
       displayDay: dates.pendingWeeklyCheckIn.windowStartDate,
       dayIndex: dates.dayIndexFor(dates.pendingWeeklyCheckIn.windowStartDate),
-      dayKey: diaryDayKey(anchorWeightSourceDay),
+      dayKey: localDayKey(anchorWeightSourceDay),
       dailyWeightByDay: dailyWeightByDay,
     );
   }
@@ -44,7 +44,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
       weightPointByDay: weightPointByDay,
       displayDay: dates.learningStartDate,
       dayIndex: 0,
-      dayKey: diaryDayKey(dates.learningPreviousBoundaryDay),
+      dayKey: localDayKey(dates.learningPreviousBoundaryDay),
       dailyWeightByDay: dailyWeightByDay,
     );
   }
@@ -66,7 +66,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
       weightPointByDay: weightPointByDay,
       displayDay: dates.pendingWeeklyCheckIn.windowStartDate,
       dayIndex: dates.dayIndexFor(dates.pendingWeeklyCheckIn.windowStartDate),
-      dayKey: diaryDayKey(previousBoundaryDay),
+      dayKey: localDayKey(previousBoundaryDay),
       dailyWeightByDay: dailyWeightByDay,
     );
   }
@@ -76,7 +76,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
     weightPointByDay: weightPointByDay,
     displayDay: dates.pendingWeeklyCheckIn.windowEndDate,
     dayIndex: dates.dayIndexFor(dates.nextBoundaryDay),
-    dayKey: diaryDayKey(dates.nextBoundaryDay),
+    dayKey: localDayKey(dates.nextBoundaryDay),
     dailyWeightByDay: dailyWeightByDay,
     decoupleWeightPointKey: true,
   );
@@ -99,7 +99,7 @@ const weeklyCheckInWeightLookbackDays = 28;
 DateTime weeklyCheckInWeightLookbackStart(
   CalorieWeeklyCheckInWindowDates dates,
 ) {
-  final lookbackStart = addDiaryDays(
+  final lookbackStart = addLocalDays(
     dates.pendingWeeklyCheckIn.windowEndDate,
     1 - weeklyCheckInWeightLookbackDays,
   );
@@ -136,9 +136,9 @@ CalorieWeeklyCheckInDayData? validateWeeklyCheckInWeightData({
       ).length >=
       2;
   final hasLookbackStartWeight =
-      weightData.weightByDay[diaryDayKey(lookbackStart)] != null;
+      weightData.weightByDay[localDayKey(lookbackStart)] != null;
   final hasWindowEndWeight =
-      weightData.weightByDay[diaryDayKey(
+      weightData.weightByDay[localDayKey(
         dates.pendingWeeklyCheckIn.windowEndDate,
       )] !=
       null;
@@ -197,7 +197,7 @@ void _putWeightIfAbsent({
   if (weightKg == null) {
     return;
   }
-  final displayDayKey = diaryDayKey(displayDay);
+  final displayDayKey = localDayKey(displayDay);
   final ptKey = weightPointKey ?? displayDayKey;
   if (!weightByDay.containsKey(displayDayKey)) {
     weightByDay[displayDayKey] = weightKg;

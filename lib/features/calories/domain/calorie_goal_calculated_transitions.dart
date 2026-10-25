@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -6,7 +7,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.da
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_transition_helpers.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Result of evaluating a transition to a calculated goal.
 typedef CalculatedGoalTransitionResult = ({
@@ -36,11 +36,11 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
   }) {
     final calculation = CalorieGoalCalculator.calculate(profile);
     var currentSettings = this;
-    final normalizedToday = normalizeDiaryDay(now);
+    final normalizedToday = normalizeLocalDay(now);
     final currentGoalEntry =
         currentSettings.activeGoalEntryForDay(now) ??
         currentSettings.latestGoalEntry;
-    final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
+    final normalizedGoalStartDate = normalizeLocalDay(goalStartDate);
     if (!allowFutureGoalStart &&
         normalizedGoalStartDate.isAfter(normalizedToday)) {
       return (
@@ -122,8 +122,8 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
     final currentCalculatorProfile =
         currentGoalEntry?.calculatorProfile ?? calculatorProfile;
     final currentSource = currentGoalEntry?.source ?? CalorieGoalSource.manual;
-    final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
-    final normalizedToday = normalizeDiaryDay(now);
+    final normalizedGoalStartDate = normalizeLocalDay(goalStartDate);
+    final normalizedToday = normalizeLocalDay(now);
     final normalizedEffectiveDate =
         normalizedGoalStartDate.isAfter(normalizedToday)
         ? normalizedToday

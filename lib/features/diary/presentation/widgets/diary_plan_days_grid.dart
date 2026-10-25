@@ -56,7 +56,7 @@ class DiaryPlanDaysGrid extends ConsumerWidget {
             .value ??
         const <DateTime>{};
     final monday = startOfCalendarWeek(first);
-    final dayCount = diaryDaysBetween(monday, last) + 1;
+    final dayCount = localDaysBetween(monday, last) + 1;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.md,

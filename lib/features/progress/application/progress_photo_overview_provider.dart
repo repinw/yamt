@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
@@ -16,7 +16,7 @@ Future<ProgressPhotoOverview> progressPhotoOverview(
   Ref ref,
   ProgressScope scope,
 ) async {
-  final today = normalizeDiaryDay(ref.watch(clockProvider)());
+  final today = normalizeLocalDay(ref.watch(clockProvider)());
   final photosFuture = ref.watch(progressPhotosProvider.future);
   final seriesFuture = ref.watch(weightSeriesProvider.future);
   final settings = await ref.watch(calorieGoalControllerProvider.future);

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/progress/domain/progress_day.dart';
 import 'package:yamt/features/progress/domain/progress_intake.dart';
 
@@ -66,7 +66,7 @@ void main() {
   test('adds up the week budget over all run days', () {
     final result = intake([
       for (var offset = 0; offset < 7; offset++)
-        _day(addDiaryDays(weekStart, offset), eaten: offset < 6 ? 2000 : 0),
+        _day(addLocalDays(weekStart, offset), eaten: offset < 6 ? 2000 : 0),
     ]);
 
     expect(result.weekGoalKcal, 7 * 2200);

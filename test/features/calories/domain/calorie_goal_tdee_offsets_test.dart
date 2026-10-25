@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -8,11 +9,10 @@ import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_tdee_offsets.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/daily_tdee_estimator.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 void main() {
   final goalStart = DateTime(2026, 4, 8);
-  final today = addDiaryDays(goalStart, 16);
+  final today = addLocalDays(goalStart, 16);
 
   CalorieGoalSettings settingsWithCheckIns() {
     var settings = CalorieGoalSettings.single(
@@ -21,15 +21,15 @@ void main() {
       effectiveDate: goalStart,
     );
     for (final week in [0, 1]) {
-      final windowStart = addDiaryDays(goalStart, 7 * week);
+      final windowStart = addLocalDays(goalStart, 7 * week);
       settings = settings.applyGoalChange(
-        changedAt: addDiaryDays(windowStart, 7),
+        changedAt: addLocalDays(windowStart, 7),
         dailyKcalGoal: 2400,
         calculatorProfile: null,
         source: CalorieGoalSource.weeklyCheckIn,
         weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
           windowStartDate: windowStart,
-          windowEndDate: addDiaryDays(windowStart, 6),
+          windowEndDate: addLocalDays(windowStart, 6),
           trendWeightChangePerDay: 0,
           calculatedTdeeKcal: 2500,
           lowConfidence: false,
@@ -41,7 +41,7 @@ void main() {
 
   Map<String, DailyTdeeEstimate> tdee(Map<int, double> kcalByOffset) => {
     for (final MapEntry(:key, :value) in kcalByOffset.entries)
-      diaryDayKey(addDiaryDays(goalStart, key)): DailyTdeeEstimate(
+      localDayKey(addLocalDays(goalStart, key)): DailyTdeeEstimate(
         tdeeKcal: value,
         measuredTdeeKcal: null,
         trendKgPerDay: 0,
@@ -52,7 +52,7 @@ void main() {
   test('moves each day by the TDEE known when it starts', () {
     final offsets = goalTdeeOffsets(
       settings: settingsWithCheckIns(),
-      startDate: addDiaryDays(goalStart, 14),
+      startDate: addLocalDays(goalStart, 14),
       today: today,
       tdeeByDay: tdee({13: 2500, 14: 2520, 15: 2540, 16: 2550}),
     );
@@ -67,7 +67,7 @@ void main() {
         (19, 40.0),
         (20, 40.0),
       ])
-        diaryDayKey(addDiaryDays(goalStart, day)): kcal,
+        localDayKey(addLocalDays(goalStart, day)): kcal,
     });
   });
 
@@ -91,14 +91,14 @@ void main() {
 
     // The first week rests on a goal without check-in or profile.
     expect(
-      moved.goalKcalForDay(addDiaryDays(goalStart, 3)),
-      settings.goalKcalForDay(addDiaryDays(goalStart, 3)),
+      moved.goalKcalForDay(addLocalDays(goalStart, 3)),
+      settings.goalKcalForDay(addLocalDays(goalStart, 3)),
     );
     // The second week keeps what it showed: the TDEE of the day before
     // minus the 2500 of its check-in.
-    expect(moved.goalKcalForDay(addDiaryDays(goalStart, 7)), 2380);
-    expect(moved.goalKcalForDay(addDiaryDays(goalStart, 8)), 2410);
-    expect(moved.goalKcalForDay(addDiaryDays(goalStart, 15)), 2420);
+    expect(moved.goalKcalForDay(addLocalDays(goalStart, 7)), 2380);
+    expect(moved.goalKcalForDay(addLocalDays(goalStart, 8)), 2410);
+    expect(moved.goalKcalForDay(addLocalDays(goalStart, 15)), 2420);
   });
 
   test('starts from the calculator TDEE before the first check-in', () {
@@ -120,11 +120,11 @@ void main() {
         calculatorProfile: profile,
         effectiveDate: goalStart,
       ),
-      today: addDiaryDays(goalStart, 2),
+      today: addLocalDays(goalStart, 2),
       tdeeByDay: tdee({1: calculatorTdee + 30}),
     );
 
-    expect(offsets[diaryDayKey(addDiaryDays(goalStart, 2))], closeTo(30, 1e-9));
+    expect(offsets[localDayKey(addLocalDays(goalStart, 2))], closeTo(30, 1e-9));
     expect(offsets, hasLength(5));
   });
 
@@ -136,7 +136,7 @@ void main() {
         calculatorProfile: null,
         effectiveDate: goalStart,
       ),
-      today: addDiaryDays(goalStart, 2),
+      today: addLocalDays(goalStart, 2),
       tdeeByDay: tdee({2: 2600}),
     );
 
@@ -159,7 +159,7 @@ void main() {
           calculatorProfile: profile,
           effectiveDate: goalStart,
         ).applyGoalChange(
-          changedAt: addDiaryDays(goalStart, 3),
+          changedAt: addLocalDays(goalStart, 3),
           dailyKcalGoal: 2100,
           calculatorProfile: profile,
           source: CalorieGoalSource.calculator,
@@ -168,22 +168,22 @@ void main() {
     final offsets = goalTdeeOffsets(
       settings: settings,
       startDate: goalStart,
-      today: addDiaryDays(goalStart, 5),
+      today: addLocalDays(goalStart, 5),
       tdeeByDay: tdee({2: 2600, 3: 2620, 4: 2650}),
     );
 
-    expect(offsets[diaryDayKey(addDiaryDays(goalStart, 5))], 50);
+    expect(offsets[localDayKey(addLocalDays(goalStart, 5))], 50);
   });
 
   test('never moves a goal under the minimum budget', () {
     final offsets = goalTdeeOffsets(
       settings: settingsWithCheckIns(),
-      startDate: addDiaryDays(goalStart, 14),
+      startDate: addLocalDays(goalStart, 14),
       today: today,
       tdeeByDay: tdee({15: 1000}),
     );
 
     // 2400 + (1000 - 2500) would be 900; the floor keeps 1200.
-    expect(offsets[diaryDayKey(today)], -1200);
+    expect(offsets[localDayKey(today)], -1200);
   });
 }

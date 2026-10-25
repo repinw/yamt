@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_debug_dump_formatting.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
@@ -11,7 +12,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 /// The TDEE of a goal week, its source, and the inputs it used.
@@ -36,7 +36,7 @@ CalorieDebugWeekTdeeData resolveCalorieDebugWeekTdeeData({
   required DateTime weekStart,
   required Map<String, CalorieDebugWeekTdeeData> learnedTdeeByWeekStart,
 }) {
-  final calculatedLearnedTdee = learnedTdeeByWeekStart[diaryDayKey(weekStart)];
+  final calculatedLearnedTdee = learnedTdeeByWeekStart[localDayKey(weekStart)];
   if (calculatedLearnedTdee != null) {
     return calculatedLearnedTdee;
   }
@@ -46,11 +46,11 @@ CalorieDebugWeekTdeeData resolveCalorieDebugWeekTdeeData({
   if (learnedEntry != null &&
       learnedSnapshot != null &&
       !learnedEntry.effectiveDate.isBefore(
-        normalizeDiaryDay(goalEntry.effectiveCountingStartDate),
+        normalizeLocalDay(goalEntry.effectiveCountingStartDate),
       )) {
     final snapshotWindow =
-        '${diaryDayKey(learnedSnapshot.windowStartDate)}'
-        '..${diaryDayKey(learnedSnapshot.windowEndDate)}';
+        '${localDayKey(learnedSnapshot.windowStartDate)}'
+        '..${localDayKey(learnedSnapshot.windowEndDate)}';
     final measuredTotalTdee = formatCalorieDebugNumber(
       learnedSnapshot.measuredTdeeKcal,
     );
@@ -129,11 +129,11 @@ CalorieDebugWeekTdeeData calorieDebugLearnedWeekTdeeData({
 }) {
   final weightTrend = calorieDebugWeightTrend(weightPoints: weightPoints);
   final calculatedWindow =
-      '${diaryDayKey(window.windowStartDate)}'
-      '..${diaryDayKey(window.windowEndDate)}';
+      '${localDayKey(window.windowStartDate)}'
+      '..${localDayKey(window.windowEndDate)}';
   final learningWindow =
-      '${diaryDayKey(dates.learningStartDate)}'
-      '..${diaryDayKey(window.windowEndDate)}';
+      '${localDayKey(dates.learningStartDate)}'
+      '..${localDayKey(window.windowEndDate)}';
   final trendPerDay = calculation.trendWeightChangePerDay.toStringAsFixed(5);
 
   return CalorieDebugWeekTdeeData(

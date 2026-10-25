@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
@@ -17,7 +18,6 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
@@ -44,7 +44,7 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  final today = normalizeDiaryDay(clock());
+  final today = normalizeLocalDay(clock());
   final pendingWeeklyCheckIn = previewLatestWindow
       ? resolveLatestCompletedCalorieWeeklyCheckIn(
           settings: settings,
@@ -138,7 +138,7 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
   final calorieEntriesByDay = await readCheckInCalorieEntriesByDay(
     calorieLogRepository: calorieLogRepository,
     startInclusive: dates.learningStartDate,
-    endExclusive: nextDiaryDay(pendingWeeklyCheckIn.windowEndDate),
+    endExclusive: nextLocalDay(pendingWeeklyCheckIn.windowEndDate),
   );
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
@@ -160,7 +160,7 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
   if (!kReleaseMode) {
     final daysLabel = dayData.days
         .map((day) {
-          return '${diaryDayKey(day.day)}'
+          return '${localDayKey(day.day)}'
               ':logged=${day.loggedIntakeKcal.toStringAsFixed(2)}'
               ',resolved='
               '${day.resolvedIntakeKcal?.toStringAsFixed(2) ?? 'null'}'
@@ -170,11 +170,11 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
         .join(' | ');
     final message =
         'WEEKLY_TDEE_WINDOW_DEBUG '
-        'window=${diaryDayKey(pendingWeeklyCheckIn.windowStartDate)}'
-        '..${diaryDayKey(pendingWeeklyCheckIn.windowEndDate)} '
-        'learningWindow=${diaryDayKey(dates.learningStartDate)}'
-        '..${diaryDayKey(pendingWeeklyCheckIn.windowEndDate)} '
-        'today=${diaryDayKey(today)} '
+        'window=${localDayKey(pendingWeeklyCheckIn.windowStartDate)}'
+        '..${localDayKey(pendingWeeklyCheckIn.windowEndDate)} '
+        'learningWindow=${localDayKey(dates.learningStartDate)}'
+        '..${localDayKey(pendingWeeklyCheckIn.windowEndDate)} '
+        'today=${localDayKey(today)} '
         'days=[$daysLabel]';
     log(message, name: _weeklyCheckInProviderLogName);
   }

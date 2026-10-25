@@ -100,4 +100,4 @@ final class BurnWeekLiveSyncProvider
   }
 }
 
-String _$burnWeekLiveSyncHash() => r'e08bbcf6af4dd8516112680d0bbe32954d09db40';
+String _$burnWeekLiveSyncHash() => r'bcc6a5a12fd4bee7c1ac720f000f75d6e94277a8';

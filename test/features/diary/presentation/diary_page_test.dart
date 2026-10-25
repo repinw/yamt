@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -38,7 +39,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -124,7 +124,7 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
     final isFirstBuild = stateOrNull == null;
     final calendar = super.build();
     return isFirstBuild
-        ? calendar.copyWith(selectedDay: normalizeDiaryDay(day))
+        ? calendar.copyWith(selectedDay: normalizeLocalDay(day))
         : calendar;
   }
 }
@@ -889,7 +889,7 @@ void main() {
   testWidgets('saving a new goal from the check-in does not reopen it', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final goalStartDate = today.subtract(const Duration(days: 14));
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
@@ -1012,7 +1012,7 @@ void main() {
   testWidgets('shows weekly check-in success card for todays learned target', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final snapshot = CalorieGoalWeeklyCheckInSnapshot(
       windowStartDate: today.subtract(const Duration(days: 7)),
       windowEndDate: today.subtract(const Duration(days: 1)),
@@ -1043,11 +1043,11 @@ void main() {
   });
 
   testWidgets('shows the check-in success card only on today', (tester) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
 
     await _pumpDiaryPage(
       tester,
-      selectedDay: previousDiaryDay(today),
+      selectedDay: previousLocalDay(today),
       settingsRepository: FakeCalorieSettingsRepository(
         initialSettings: _weeklyCheckInGoalSettings(today),
       ),
@@ -1059,7 +1059,7 @@ void main() {
   testWidgets('closing the check-in success card keeps it closed', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
 
     await _pumpDiaryPage(
       tester,
@@ -1079,7 +1079,7 @@ void main() {
     tester,
   ) async {
     late ProviderContainer container;
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final windowStartDate = today.subtract(const Duration(days: 7));
     PendingCalorieGoalWeeklyCheckIn? reopened;
 
@@ -1111,7 +1111,7 @@ void main() {
     await _pumpFrames(tester);
 
     expect(reopened?.windowStartDate, windowStartDate);
-    expect(reopened?.windowEndDate, previousDiaryDay(today));
+    expect(reopened?.windowEndDate, previousLocalDay(today));
     expect(reopened?.isDismissed, isFalse);
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
   });
@@ -1119,7 +1119,7 @@ void main() {
   testWidgets('offers no redo once the check-in inputs changed', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
 
     await _pumpDiaryPage(
       tester,
@@ -1127,7 +1127,7 @@ void main() {
       settingsRepository: FakeCalorieSettingsRepository(
         initialSettings: _weeklyCheckInGoalSettings(today)
             .invalidateWeeklyCheckInSnapshotsFromDay(
-              day: previousDiaryDay(today),
+              day: previousLocalDay(today),
               invalidatedAt: today,
             ),
       ),
@@ -1143,8 +1143,8 @@ void main() {
   testWidgets('shows a practice day before tomorrow goal start', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final startDate = nextDiaryDay(today);
+    final today = normalizeLocalDay(DateTime.now());
+    final startDate = nextLocalDay(today);
 
     await _pumpDiaryPage(
       tester,
@@ -1546,7 +1546,7 @@ Future<ProviderContainer> _pumpDiaryPage(
 
   _weeklyCheckInData =
       preloadedWeeklyCheckIn ?? _emptyWeeklyCheckInCheckInData();
-  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
+  final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final settings = await resolvedSettingsRepository.readSettings();
   final selectedDayEntries = await resolvedLogRepository.readEntriesForDay(
     normalizedSelectedDay,

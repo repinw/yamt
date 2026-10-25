@@ -1,8 +1,8 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 /// One row of the calorie debug table with its 13 cells.
@@ -50,7 +50,7 @@ String buildCalorieDebugMarkdownTable(
     ..writeln(_tableLine(List<String>.filled(headers.length, '---')));
   final separatedDays = <String>{};
   for (final row in rows) {
-    final dayKey = diaryDayKey(row.sortAt);
+    final dayKey = localDayKey(row.sortAt);
     if (separatorDays.contains(dayKey) && separatedDays.add(dayKey)) {
       buffer.writeln();
     }
@@ -115,7 +115,7 @@ int compareCalorieDebugRows(
 
 /// Joins the diary day keys of [days] with commas.
 String formatCalorieDebugDayKeys(List<DateTime> days) {
-  return days.map(diaryDayKey).join(',');
+  return days.map(localDayKey).join(',');
 }
 
 /// Formats `name=value` for the extra cell.
@@ -143,7 +143,7 @@ String formatCalorieDebugWeightPoints(
 String formatCalorieDebugWindowDays(List<CalorieWeeklyCheckInWindowDay> days) {
   return days
       .map((day) {
-        return '${diaryDayKey(day.day)}'
+        return '${localDayKey(day.day)}'
             ':logged=${day.loggedIntakeKcal.toStringAsFixed(2)}'
             ',resolved=${day.resolvedIntakeKcal?.toStringAsFixed(2) ?? 'null'}'
             ',weight=${day.weightKg?.toStringAsFixed(2) ?? 'null'}'
@@ -157,11 +157,11 @@ String calorieDebugWindowExtra(
   PendingCalorieGoalWeeklyCheckIn window,
   CalorieWeeklyCheckInWindowDates dates,
 ) {
-  return 'window=${diaryDayKey(window.windowStartDate)}'
-      '..${diaryDayKey(window.windowEndDate)}; '
-      'learning_window=${diaryDayKey(dates.learningStartDate)}'
-      '..${diaryDayKey(window.windowEndDate)}; '
-      'due=${diaryDayKey(window.dueDate)}';
+  return 'window=${localDayKey(window.windowStartDate)}'
+      '..${localDayKey(window.windowEndDate)}; '
+      'learning_window=${localDayKey(dates.learningStartDate)}'
+      '..${localDayKey(window.windowEndDate)}; '
+      'due=${localDayKey(window.dueDate)}';
 }
 
 /// The first and last weight of [weightPoints].

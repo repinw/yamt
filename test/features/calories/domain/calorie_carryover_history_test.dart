@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 void main() {
   group('buildCalorieCarryoverDateRange', () {
@@ -38,7 +38,7 @@ void main() {
         days: <DateTime>[dayOne, dayTwo],
         goalKcals: const <double>[2000, 2100],
         entriesByDay: <String, List<CalorieEntry>>{
-          diaryDayKey(dayOne): <CalorieEntry>[
+          localDayKey(dayOne): <CalorieEntry>[
             _entry(id: 'one', day: dayOne, kcal: 300),
             _entry(id: 'two', day: dayOne, kcal: 450),
           ],

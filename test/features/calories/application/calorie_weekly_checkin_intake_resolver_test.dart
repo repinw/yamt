@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_intake_resolver.dart';
@@ -6,21 +7,20 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_models
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 void main() {
   test('resolves window intake when every day has entries', () {
     final start = DateTime(2026, 4, 2);
-    final secondDay = nextDiaryDay(start);
+    final secondDay = nextLocalDay(start);
     final settings = _settings(start);
     final data = resolveWeeklyWindowIntakeData(
       days: [start, secondDay],
       calorieEntriesByDay: {
-        diaryDayKey(start): [_entry('a', start, 1200)],
-        diaryDayKey(secondDay): [_entry('b', secondDay, 800)],
+        localDayKey(start): [_entry('a', start, 1200)],
+        localDayKey(secondDay): [_entry('b', secondDay, 800)],
       },
       settings: settings,
-      weightByDay: {diaryDayKey(secondDay): 80},
+      weightByDay: {localDayKey(secondDay): 80},
     );
 
     expect(data.blockedReason, isNull);
@@ -31,14 +31,14 @@ void main() {
 
   test('blocks when >= 3 missing days are present', () {
     final day1 = DateTime(2026, 4, 2);
-    final day2 = nextDiaryDay(day1);
-    final day3 = nextDiaryDay(day2);
-    final day4 = nextDiaryDay(day3);
+    final day2 = nextLocalDay(day1);
+    final day3 = nextLocalDay(day2);
+    final day4 = nextLocalDay(day3);
 
     final data = resolveWeeklyWindowIntakeData(
       days: [day1, day2, day3, day4],
       calorieEntriesByDay: {
-        diaryDayKey(day1): [_entry('a', day1, 1200)],
+        localDayKey(day1): [_entry('a', day1, 1200)],
       },
       settings: _settings(day1),
       weightByDay: const <String, double>{},
@@ -55,16 +55,16 @@ void main() {
     'interpolates skipped days from average of logged days in the window',
     () {
       final start = DateTime(2026, 4, 2);
-      final skippedDay = nextDiaryDay(start);
-      final thirdDay = nextDiaryDay(skippedDay);
+      final skippedDay = nextLocalDay(start);
+      final thirdDay = nextLocalDay(skippedDay);
       final settings = _settings(start)
           .setSkippedIntakeDay(day: skippedDay, isSkipped: true);
 
       final data = resolveWeeklyWindowIntakeData(
         days: [start, skippedDay, thirdDay],
         calorieEntriesByDay: {
-          diaryDayKey(start): [_entry('a', start, 1000)],
-          diaryDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
+          localDayKey(start): [_entry('a', start, 1000)],
+          localDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
         },
         settings: settings,
         weightByDay: const <String, double>{},
@@ -81,14 +81,14 @@ void main() {
 
   test('does not block when the first day of the week is skipped', () {
     final start = DateTime(2026, 4, 2);
-    final secondDay = nextDiaryDay(start);
+    final secondDay = nextLocalDay(start);
     final settings = _settings(start)
         .setSkippedIntakeDay(day: start, isSkipped: true);
 
     final data = resolveWeeklyWindowIntakeData(
       days: [start, secondDay],
       calorieEntriesByDay: {
-        diaryDayKey(secondDay): [_entry('b', secondDay, 1800)],
+        localDayKey(secondDay): [_entry('b', secondDay, 1800)],
       },
       settings: settings,
       weightByDay: const <String, double>{},

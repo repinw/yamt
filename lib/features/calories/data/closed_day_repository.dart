@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'closed_day_repository.g.dart';
 
@@ -38,7 +38,7 @@ class ClosedDayRepository {
   Future<void> saveClosedDay(DateTime day) async {
     final saved = await _preferences.setString(
       _key(_requireUserId()),
-      normalizeDiaryDay(day).toIso8601String(),
+      normalizeLocalDay(day).toIso8601String(),
     );
     if (!saved) {
       throw StateError('The closed day was not saved.');

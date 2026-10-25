@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/onboarding/domain/tracking_start_day.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
@@ -39,10 +39,10 @@ class IntroStartDaySelector extends StatelessWidget {
     final theme = Theme.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dateFormat = DateFormat.MMMEd(locale);
-    final normalizedToday = normalizeDiaryDay(today);
-    final tomorrow = nextDiaryDay(normalizedToday);
-    final startsToday = isSameDiaryDay(startDate, normalizedToday);
-    final startsTomorrow = isSameDiaryDay(startDate, tomorrow);
+    final normalizedToday = normalizeLocalDay(today);
+    final tomorrow = nextLocalDay(normalizedToday);
+    final startsToday = isSameLocalDay(startDate, normalizedToday);
+    final startsTomorrow = isSameLocalDay(startDate, tomorrow);
     final startsOnOtherDay = !startsToday && !startsTomorrow;
 
     return Column(
@@ -89,7 +89,7 @@ class IntroStartDaySelector extends StatelessWidget {
   }
 
   Future<void> _pickOtherDay(BuildContext context) async {
-    final firstDate = normalizeDiaryDay(today);
+    final firstDate = normalizeLocalDay(today);
     final picked = await showDatePicker(
       context: context,
       initialDate: startDate,
@@ -110,11 +110,11 @@ String introStartActionLabel(
   required DateTime startDate,
   required String locale,
 }) {
-  final normalizedToday = normalizeDiaryDay(today);
-  if (isSameDiaryDay(startDate, normalizedToday)) {
+  final normalizedToday = normalizeLocalDay(today);
+  if (isSameLocalDay(startDate, normalizedToday)) {
     return l10n.introStartTodayAction;
   }
-  if (isSameDiaryDay(startDate, nextDiaryDay(normalizedToday))) {
+  if (isSameLocalDay(startDate, nextLocalDay(normalizedToday))) {
     return l10n.introStartTomorrowAction;
   }
   return l10n.introStartOnDateAction(DateFormat.MMMd(locale).format(startDate));

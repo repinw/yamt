@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
@@ -182,14 +182,14 @@ class _DiaryDailyBudgetDetailsResolver {
   }
 
   bool _isFinishedDayInActiveRun(CalorieWeekDayOverview day) {
-    final date = normalizeDiaryDay(day.date);
-    return date.isBefore(normalizeDiaryDay(selectedDayOverview.date)) &&
-        !date.isBefore(normalizeDiaryDay(carryoverStartDate));
+    final date = normalizeLocalDay(day.date);
+    return date.isBefore(normalizeLocalDay(selectedDayOverview.date)) &&
+        !date.isBefore(normalizeLocalDay(carryoverStartDate));
   }
 
   int _resolveRemainingRunDays() {
-    final completedDays = normalizeDiaryDay(selectedDayOverview.date)
-        .difference(normalizeDiaryDay(carryoverStartDate))
+    final completedDays = normalizeLocalDay(selectedDayOverview.date)
+        .difference(normalizeLocalDay(carryoverStartDate))
         .inDays;
     return math.max(
       1,

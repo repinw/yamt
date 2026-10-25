@@ -1,9 +1,9 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_goal_history_entry.g.dart';
 
@@ -153,8 +153,8 @@ DateTime resolveNormalizedCountingStartDate({
   required DateTime effectiveDate,
   DateTime? countingStartDate,
 }) {
-  final normalizedEffectiveDate = normalizeDiaryDay(effectiveDate);
-  final normalizedCountingStartDate = normalizeDiaryDay(
+  final normalizedEffectiveDate = normalizeLocalDay(effectiveDate);
+  final normalizedCountingStartDate = normalizeLocalDay(
     countingStartDate ?? effectiveDate,
   );
   if (normalizedCountingStartDate.isBefore(normalizedEffectiveDate)) {

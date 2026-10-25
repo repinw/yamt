@@ -1,10 +1,10 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'burn_week_run_controller.g.dart';
 
@@ -33,16 +33,16 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     List<bool>? missedTrackingForClosedWeeks,
   }) async {
     final current = await future;
-    final currentDayKey = diaryDayKey(normalizeDiaryDay(currentDay));
-    final normalizedWeekStartDate = normalizeDiaryDay(weekStartDate);
-    final weekStartDayKey = diaryDayKey(normalizedWeekStartDate);
+    final currentDayKey = localDayKey(normalizeLocalDay(currentDay));
+    final normalizedWeekStartDate = normalizeLocalDay(weekStartDate);
+    final weekStartDayKey = localDayKey(normalizedWeekStartDate);
     final currentWeekStartDayKey = _normalizeBurnWeekDayKey(
       current.currentWeekStartDayKey,
     );
     final currentWeekStartDate = tryParseBurnWeekDayKey(currentWeekStartDayKey);
     final closedWeekCount = missedTrackingForClosedWeeks?.length ?? 0;
-    final firstClosedWeekKey = diaryDayKey(
-      addDiaryDays(
+    final firstClosedWeekKey = localDayKey(
+      addLocalDays(
         normalizedWeekStartDate,
         -burnWeekDaysPerWeek * closedWeekCount,
       ),
@@ -147,7 +147,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
   /// Moves the current week to start on [weekStartDate], without closing it.
   Future<bool> moveWeekStartTo(DateTime weekStartDate) async {
     final current = await future;
-    final weekStartDayKey = diaryDayKey(normalizeDiaryDay(weekStartDate));
+    final weekStartDayKey = localDayKey(normalizeLocalDay(weekStartDate));
     final next = current.copyWith(currentWeekStartDayKey: weekStartDayKey);
     return await _save(next, previous: current);
   }
@@ -166,7 +166,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     final current = await future;
     return await _save(
       const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(weekStartDate),
+        currentWeekStartDayKey: localDayKey(weekStartDate),
         runWeekNumber: runWeekNumber ?? burnWeekLearningRunWeekNumber,
       ),
       previous: current,
@@ -202,7 +202,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     final current = await future;
     await _save(
       const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(weekStartDate),
+        currentWeekStartDayKey: localDayKey(weekStartDate),
         runWeekNumber: runWeekNumber,
       ),
       previous: current,
@@ -232,7 +232,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     if (currentWeekStartDate == null) {
       return currentWeekStartDayKey;
     }
-    return diaryDayKey(addDiaryDays(currentWeekStartDate, burnWeekDaysPerWeek));
+    return localDayKey(addLocalDays(currentWeekStartDate, burnWeekDaysPerWeek));
   }
 
   /// Shows and stores [next]; a failed or throwing save restores the run.
@@ -295,5 +295,5 @@ String? _normalizeBurnWeekDayKey(String? dayKey) {
   if (parsedDayKey == null) {
     return null;
   }
-  return diaryDayKey(parsedDayKey);
+  return localDayKey(parsedDayKey);
 }

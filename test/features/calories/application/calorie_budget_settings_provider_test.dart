@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
@@ -11,7 +12,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -49,7 +49,7 @@ CalorieEntry _entry(String id, DateTime day, double kcal) {
 
 void main() {
   final goalStart = DateTime(2026, 4, 8);
-  final today = addDiaryDays(goalStart, 16);
+  final today = addLocalDays(goalStart, 16);
 
   CalorieGoalSettings settingsWithCheckIns() {
     var settings = CalorieGoalSettings.single(
@@ -58,15 +58,15 @@ void main() {
       effectiveDate: goalStart,
     );
     for (final week in [0, 1]) {
-      final windowStart = addDiaryDays(goalStart, 7 * week);
+      final windowStart = addLocalDays(goalStart, 7 * week);
       settings = settings.applyGoalChange(
-        changedAt: addDiaryDays(windowStart, 7),
+        changedAt: addLocalDays(windowStart, 7),
         dailyKcalGoal: 2400,
         calculatorProfile: null,
         source: CalorieGoalSource.weeklyCheckIn,
         weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
           windowStartDate: windowStart,
-          windowEndDate: addDiaryDays(windowStart, 6),
+          windowEndDate: addLocalDays(windowStart, 6),
           trendWeightChangePerDay: 0,
           calculatedTdeeKcal: 2500,
           lowConfidence: false,
@@ -83,7 +83,7 @@ void main() {
     logRepository = FakeCalorieLogRepository(
       initialEntries: [
         for (var day = 0; day < 16; day++)
-          _entry('entry-$day', addDiaryDays(goalStart, day), 2500),
+          _entry('entry-$day', addLocalDays(goalStart, day), 2500),
       ],
     );
     container = ProviderContainer(
@@ -105,7 +105,7 @@ void main() {
           (ref) => FakeManualHealthWeightRepository([
             for (var day = 0; day < 16; day++)
               ManualHealthWeightEntry(
-                day: addDiaryDays(goalStart, day),
+                day: addLocalDays(goalStart, day),
                 weightKg: 80,
               ),
           ]),
@@ -132,14 +132,14 @@ void main() {
     // finished second week keeps its offsets.
     expect(offsetsByDay.keys, [
       for (var day = 7; day <= 20; day++)
-        diaryDayKey(addDiaryDays(goalStart, day)),
+        localDayKey(addLocalDays(goalStart, day)),
     ]);
     for (var day = 0; day <= 20; day++) {
-      final date = addDiaryDays(goalStart, day);
+      final date = addLocalDays(goalStart, day);
       expect(
         budget.goalKcalForDay(date),
         closeTo(
-          stored.goalKcalForDay(date) + (offsetsByDay[diaryDayKey(date)] ?? 0),
+          stored.goalKcalForDay(date) + (offsetsByDay[localDayKey(date)] ?? 0),
           1e-9,
         ),
       );
@@ -148,12 +148,12 @@ void main() {
 
   test('recomputes when an entry of the running week changes', () async {
     container.listen(calorieBudgetSettingsProvider, (_, _) {});
-    final before = (await offsets())[diaryDayKey(today)]!;
+    final before = (await offsets())[localDayKey(today)]!;
 
     await logRepository.saveEntry(
-      _entry('extra', previousDiaryDay(today), 1500),
+      _entry('extra', previousLocalDay(today), 1500),
     );
-    final after = (await offsets())[diaryDayKey(today)]!;
+    final after = (await offsets())[localDayKey(today)]!;
 
     expect(after, greaterThan(before));
   });

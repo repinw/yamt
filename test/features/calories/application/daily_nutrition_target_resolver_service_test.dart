@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 
 void main() {
@@ -156,7 +156,7 @@ void main() {
           dailyKcalGoal: 1600,
           calculatorProfile: profile,
           goalHistory: [_calculatorEntry(1600, profile)],
-          trainingDayOverrides: {diaryDayKey(trainingDay): true},
+          trainingDayOverrides: {localDayKey(trainingDay): true},
         ),
       );
 

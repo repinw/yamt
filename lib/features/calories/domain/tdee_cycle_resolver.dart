@@ -1,6 +1,6 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 
 /// Helper to parse and structure goal cycles from calorie settings history.
@@ -18,7 +18,7 @@ abstract final class TdeeCycleResolver {
       final now = DateTime.now();
       final defaultCycle = TdeeAnalyticsGoalCycle(
         id: 'default',
-        startDate: normalizeDiaryDay(settings.updatedAt ?? now),
+        startDate: normalizeLocalDay(settings.updatedAt ?? now),
         goalMode: settings.calculatorProfile?.goalMode,
         startWeightKg: settings.calculatorProfile?.weightKg,
         targetWeightKg: settings.calculatorProfile?.targetWeightKg,
@@ -41,7 +41,7 @@ abstract final class TdeeCycleResolver {
       final endDate =
           entry.endedAt ??
           (nextEntry != null
-              ? previousDiaryDay(nextEntry.effectiveCountingStartDate)
+              ? previousLocalDay(nextEntry.effectiveCountingStartDate)
               : null);
 
       cycles.add(

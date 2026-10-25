@@ -101,4 +101,4 @@ final class CalorieWeeklyCheckInPreviewPlanProvider
 }
 
 String _$calorieWeeklyCheckInPreviewPlanHash() =>
-    r'cb6267d6634486e2560b1fe0360e03bdc5222251';
+    r'1ca4d01745191d40cb503d359f2a4ee559f9f447';

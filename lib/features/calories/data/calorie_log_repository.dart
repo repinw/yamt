@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
@@ -14,7 +15,6 @@ import 'package:yamt/features/calories/data/calorie_entry_query_watch.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/unavailable_calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_log_repository.g.dart';
 
@@ -57,7 +57,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     if (userId == null) {
       return Stream<List<CalorieEntry>>.value(const <CalorieEntry>[]);
     }
-    final bounds = diaryDayBounds(day);
+    final bounds = localDayBounds(day);
     return watchCalorieEntryQuery(
       _collection(userId)
           .where('logged_at', isGreaterThanOrEqualTo: bounds.startInclusive)
@@ -89,7 +89,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<List<CalorieEntry>> readEntriesForDay(DateTime day) {
-    final bounds = diaryDayBounds(day);
+    final bounds = localDayBounds(day);
     return readEntriesInRange(
       startInclusive: bounds.startInclusive,
       endExclusive: bounds.endExclusive,

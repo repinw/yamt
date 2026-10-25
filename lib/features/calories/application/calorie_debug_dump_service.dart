@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_debug_daily_rows.dart';
 import 'package:yamt/features/calories/application/calorie_debug_dump_formatting.dart';
 import 'package:yamt/features/calories/application/calorie_debug_goal_week_rows.dart';
@@ -5,7 +6,6 @@ import 'package:yamt/features/calories/application/calorie_debug_weekly_checkin_
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -44,8 +44,8 @@ Future<CalorieDebugDumpResult> buildCalorieDebugDump({
   required Future<CalorieGoalSettings> settingsFuture,
   required DateTime now,
 }) async {
-  final today = normalizeDiaryDay(now.toLocal());
-  final endExclusive = nextDiaryDay(today);
+  final today = normalizeLocalDay(now.toLocal());
+  final endExclusive = nextLocalDay(today);
   final firstEntryDate = await calorieLogRepository.readFirstEntryDate();
   final manualWeightEntries = await manualWeightRepository.readEntries();
   final settings = await settingsFuture;
@@ -152,7 +152,7 @@ DateTime _resolveFallbackDumpStart({
   required DateTime? firstEntryDate,
 }) {
   if (firstEntryDate != null) {
-    return normalizeDiaryDay(firstEntryDate.toLocal());
+    return normalizeLocalDay(firstEntryDate.toLocal());
   }
   return today.subtract(const Duration(days: _debugDumpFallbackDays - 1));
 }

@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
@@ -16,7 +16,7 @@ import '../support/diary_dashboard_test_support.dart';
 
 void main() {
   final now = DateTime(2026, 9, 22, 12);
-  final normalizedDay = normalizeDiaryDay(now);
+  final normalizedDay = normalizeLocalDay(now);
 
   ProviderContainer containerWith(DiaryDayDashboardState state) {
     final container = ProviderContainer(
@@ -65,7 +65,7 @@ void main() {
   });
 
   test('moves to the new day when the diary day changes at midnight', () {
-    final tomorrow = nextDiaryDay(normalizedDay);
+    final tomorrow = nextLocalDay(normalizedDay);
     var clock = now;
     DiaryDayDashboardState loaded(DateTime day, double eatenKcal) =>
         diaryDashboardLoadedStateForTest(

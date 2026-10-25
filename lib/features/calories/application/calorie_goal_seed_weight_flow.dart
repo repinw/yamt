@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
@@ -17,7 +17,7 @@ Future<void> seedCalculatorWeightIfMissing({
   required double weightKg,
   required Future<bool> Function(DateTime day) onSeedSaved,
 }) async {
-  final normalizedDay = normalizeDiaryDay(day);
+  final normalizedDay = normalizeLocalDay(day);
   final manualEntries = await ref
       .read(manualHealthWeightRepositoryProvider)
       .readEntries();
@@ -39,11 +39,11 @@ Future<void> seedCalculatorWeightIfMissing({
     return;
   }
   if (!ref.mounted ||
-      manualEntries.any((entry) => isSameDiaryDay(entry.day, normalizedDay)) ||
+      manualEntries.any((entry) => isSameLocalDay(entry.day, normalizedDay)) ||
       healthSamples.any(
         (sample) =>
             !sample.isIgnored &&
-            isSameDiaryDay(sample.recordedAt, normalizedDay),
+            isSameLocalDay(sample.recordedAt, normalizedDay),
       )) {
     return;
   }
@@ -60,7 +60,7 @@ Future<void> seedCalculatorWeightIfMissing({
         .read(healthWeightServiceProvider)
         .loadWeightSamples(
           startInclusive: normalizedDay,
-          endExclusive: nextDiaryDay(normalizedDay),
+          endExclusive: nextLocalDay(normalizedDay),
         );
     if (!ref.mounted || localSamples.isNotEmpty) {
       return;

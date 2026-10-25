@@ -4,12 +4,12 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'planned_entry_repository.g.dart';
 
@@ -58,11 +58,11 @@ class PlannedEntryRepository {
     final snapshot = await _collection(firestore, dataCipher.uid)
         .where(
           calorieEntryLoggedAtField,
-          isGreaterThanOrEqualTo: diaryDayBounds(first).startInclusive,
+          isGreaterThanOrEqualTo: localDayBounds(first).startInclusive,
         )
         .where(
           calorieEntryLoggedAtField,
-          isLessThan: diaryDayBounds(last).endExclusive,
+          isLessThan: localDayBounds(last).endExclusive,
         )
         .orderBy(calorieEntryLoggedAtField)
         .get();
@@ -83,16 +83,16 @@ class PlannedEntryRepository {
     final snapshot = await _collection(firestore, dataCipher.uid)
         .where(
           calorieEntryLoggedAtField,
-          isGreaterThanOrEqualTo: diaryDayBounds(first).startInclusive,
+          isGreaterThanOrEqualTo: localDayBounds(first).startInclusive,
         )
         .where(
           calorieEntryLoggedAtField,
-          isLessThan: diaryDayBounds(last).endExclusive,
+          isLessThan: localDayBounds(last).endExclusive,
         )
         .get();
     return {
       for (final doc in snapshot.docs)
-        normalizeDiaryDay(
+        normalizeLocalDay(
           (doc.data()[calorieEntryLoggedAtField] as Timestamp).toDate(),
         ),
     };

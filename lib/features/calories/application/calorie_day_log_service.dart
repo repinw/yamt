@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
@@ -6,7 +7,6 @@ import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_day_log_service.g.dart';
 
@@ -84,7 +84,7 @@ class CalorieDayLogService {
   /// with its carryover. Throws when [day] is not today, for example from a
   /// card that was shown before midnight.
   Future<void> closeDay(DateTime day) async {
-    if (normalizeDiaryDay(day) != normalizeDiaryDay(_clock())) {
+    if (normalizeLocalDay(day) != normalizeLocalDay(_clock())) {
       throw StateError('Only today can be closed.');
     }
     await _closedDays.saveClosedDay(day);

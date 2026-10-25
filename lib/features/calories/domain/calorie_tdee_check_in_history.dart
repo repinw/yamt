@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// One goal: its first counted day and the days of its confirmed weekly
 /// check-ins, oldest first.
@@ -20,7 +20,7 @@ class CalorieTdeeHistory {
     final pending = settings.pendingWeeklyCheckIn;
     final pendingStart = pending == null
         ? null
-        : diaryDayKey(pending.windowStartDate);
+        : localDayKey(pending.windowStartDate);
     final histories = <CalorieTdeeHistory>[];
     CalorieGoalHistoryEntry? goal;
     var checkInDays = <DateTime>[];
@@ -30,7 +30,7 @@ class CalorieTdeeHistory {
       if (start == null) return;
       histories.add(
         CalorieTdeeHistory(
-          startDay: normalizeDiaryDay(start.effectiveCountingStartDate),
+          startDay: normalizeLocalDay(start.effectiveCountingStartDate),
           checkInDays: List<DateTime>.unmodifiable(checkInDays),
         ),
       );
@@ -44,7 +44,7 @@ class CalorieTdeeHistory {
         continue;
       }
       if (goal != null && _isConfirmedCheckIn(entry, pendingStart)) {
-        checkInDays.add(normalizeDiaryDay(entry.effectiveDate));
+        checkInDays.add(normalizeLocalDay(entry.effectiveDate));
       }
     }
     close();
@@ -65,5 +65,5 @@ bool _isConfirmedCheckIn(
   final snapshot = entry.weeklyCheckInSnapshot;
   return entry.source == CalorieGoalSource.weeklyCheckIn &&
       snapshot != null &&
-      diaryDayKey(snapshot.windowStartDate) != pendingWindowStartKey;
+      localDayKey(snapshot.windowStartDate) != pendingWindowStartKey;
 }

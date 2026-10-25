@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
@@ -7,7 +8,6 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Reads calorie entries grouped by diary day for a check-in range.
 Future<Map<String, List<CalorieEntry>>> readCheckInCalorieEntriesByDay({
@@ -21,7 +21,7 @@ Future<Map<String, List<CalorieEntry>>> readCheckInCalorieEntriesByDay({
   );
   final calorieEntriesByDay = <String, List<CalorieEntry>>{};
   for (final entry in calorieEntries) {
-    final key = diaryDayKey(entry.loggedAt);
+    final key = localDayKey(entry.loggedAt);
     calorieEntriesByDay.putIfAbsent(key, () => <CalorieEntry>[]).add(entry);
   }
   return calorieEntriesByDay;
@@ -37,7 +37,7 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
   final missingIntakeDays = <DateTime>[];
   final windowDays = <CalorieWeeklyCheckInWindowDay>[];
   for (final day in days) {
-    final dayKey = diaryDayKey(day);
+    final dayKey = localDayKey(day);
     final dayEntries = calorieEntriesByDay[dayKey] ?? const <CalorieEntry>[];
     final isExplicitPause = settings.isPauseDay(day);
     final hasEntries = dayEntries.isNotEmpty && !isExplicitPause;

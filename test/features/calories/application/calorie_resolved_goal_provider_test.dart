@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -8,7 +9,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -79,17 +79,17 @@ void main() {
       ).future,
     );
 
-    final firstGoal = goals[diaryDayKey(firstDay)];
-    final secondGoal = goals[diaryDayKey(secondDay)];
+    final firstGoal = goals[localDayKey(firstDay)];
+    final secondGoal = goals[localDayKey(secondDay)];
     expect(
       goals.keys,
-      orderedEquals(<String>[diaryDayKey(firstDay), diaryDayKey(secondDay)]),
+      orderedEquals(<String>[localDayKey(firstDay), localDayKey(secondDay)]),
     );
     expect(firstGoal, isNotNull);
-    expect(firstGoal!.day, normalizeDiaryDay(firstDay));
+    expect(firstGoal!.day, normalizeLocalDay(firstDay));
     expect(firstGoal.goalKcal, 2100);
     expect(secondGoal, isNotNull);
-    expect(secondGoal!.day, normalizeDiaryDay(secondDay));
+    expect(secondGoal!.day, normalizeLocalDay(secondDay));
     expect(secondGoal.goalKcal, 2100);
   });
 
@@ -215,7 +215,7 @@ void main() {
             source: CalorieGoalSource.weeklyCheckIn,
             weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
               windowStartDate: startDay,
-              windowEndDate: previousDiaryDay(today),
+              windowEndDate: previousLocalDay(today),
               trendWeightChangePerDay: 0,
               calculatedTdeeKcal: 2580,
               lowConfidence: false,

@@ -1,29 +1,29 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Resolves weekly calorie learning windows from goal history.
 abstract final class CalorieWeeklyWindowResolver {
   /// Returns the first weekly check-in window start for [anchorEntry].
   static DateTime firstWindowStartDate(CalorieGoalHistoryEntry anchorEntry) {
-    final anchorStartDate = normalizeDiaryDay(
+    final anchorStartDate = normalizeLocalDay(
       anchorEntry.effectiveCountingStartDate,
     );
-    if (!isSameDiaryDay(anchorEntry.effectiveDate, anchorStartDate)) {
+    if (!isSameLocalDay(anchorEntry.effectiveDate, anchorStartDate)) {
       return anchorStartDate;
     }
     if (!hasStarterDay(anchorEntry)) {
       return anchorStartDate;
     }
-    return nextDiaryDay(anchorStartDate);
+    return nextLocalDay(anchorStartDate);
   }
 
   /// Whether [anchorEntry] has a partial starter day before learning starts.
   static bool hasStarterDay(CalorieGoalHistoryEntry anchorEntry) {
-    return isSameDiaryDay(
+    return isSameLocalDay(
           anchorEntry.effectiveDate,
           anchorEntry.effectiveCountingStartDate,
         ) &&
@@ -59,7 +59,7 @@ abstract final class CalorieWeeklyWindowResolver {
     required CalorieGoalHistoryEntry anchorEntry,
     required DateTime windowStartDate,
   }) {
-    return isSameDiaryDay(firstWindowStartDate(anchorEntry), windowStartDate);
+    return isSameLocalDay(firstWindowStartDate(anchorEntry), windowStartDate);
   }
 
   /// Returns starter-day weight source day for first partial-day window.
@@ -76,7 +76,7 @@ abstract final class CalorieWeeklyWindowResolver {
     if (!hasStarterDay(anchorEntry)) {
       return null;
     }
-    return normalizeDiaryDay(anchorEntry.effectiveDate);
+    return normalizeLocalDay(anchorEntry.effectiveDate);
   }
 
   /// Returns calculator profile active for [day].

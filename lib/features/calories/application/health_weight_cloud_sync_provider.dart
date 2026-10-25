@@ -1,12 +1,12 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/app_update/data/app_client_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/application/health_connection_actions.dart';
 import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
@@ -54,17 +54,17 @@ Future<void> healthWeightCloudSync(Ref ref) async {
     }
     // The first check-in takes its start weight from the day before the
     // first counting day.
-    final loadStart = previousDiaryDay(firstGoalStart);
-    final recentStart = addDiaryDays(today, -_mirrorDays);
+    final loadStart = previousLocalDay(firstGoalStart);
+    final recentStart = addLocalDays(today, -_mirrorDays);
     final activeDevices = await clientRepository.loadActiveInstallIds(
       uid: cipher.uid,
-      since: addDiaryDays(today, -_mirrorDays),
+      since: addLocalDays(today, -_mirrorDays),
     );
     await repository.syncDevice(
       activeDevices: activeDevices,
       loadHealth: () => healthWeightService.loadWeightSamples(
         startInclusive: loadStart,
-        endExclusive: nextDiaryDay(today),
+        endExclusive: nextLocalDay(today),
       ),
       // Only days the load covers can show a deletion.
       mirrorSince: recentStart.isAfter(loadStart) ? recentStart : loadStart,

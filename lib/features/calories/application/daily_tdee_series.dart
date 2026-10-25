@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
@@ -7,7 +8,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/daily_tdee_estimator.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 
 /// Runs the [DailyTdeeEstimator] over loaded diary entries and weights.
@@ -15,7 +15,7 @@ abstract final class DailyTdeeSeries {
   /// First day of the daily TDEE: the earliest first-window day of a goal
   /// that is set and counting on or before [day], or `null` without one.
   static DateTime? startDay(CalorieGoalSettings settings, DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     DateTime? earliest;
     for (final entry in settings.sortedGoalHistory) {
       if (entry.effectiveDate.isAfter(normalizedDay)) break;
@@ -42,7 +42,7 @@ abstract final class DailyTdeeSeries {
   }) {
     final days = buildCalorieCarryoverDateRange(
       startInclusive: startDate,
-      endExclusive: nextDiaryDay(endDate),
+      endExclusive: nextLocalDay(endDate),
     );
     final start = _seedAndFloor(settings, startDate);
     final estimates = DailyTdeeEstimator.estimate(
@@ -53,18 +53,18 @@ abstract final class DailyTdeeSeries {
           (
             intakeKcal: settings.isPauseDay(day)
                 ? null
-                : entriesByDay[diaryDayKey(day)]?.fold<double>(
+                : entriesByDay[localDayKey(day)]?.fold<double>(
                     0,
                     (sum, entry) => sum + entry.totalKcal,
                   ),
-            weightKg: weights.rawByDay[diaryDayKey(day)],
+            weightKg: weights.rawByDay[localDayKey(day)],
           ),
       ],
     );
     return {
       for (final (index, day) in days.indexed)
         if (estimates.isNotEmpty)
-          diaryDayKey(day): index < estimates.length
+          localDayKey(day): index < estimates.length
               ? estimates[index]
               : DailyTdeeEstimate(
                   tdeeKcal: estimates.last.tdeeKcal,

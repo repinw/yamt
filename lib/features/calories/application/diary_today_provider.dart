@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'diary_today_provider.g.dart';
 
@@ -10,11 +10,11 @@ part 'diary_today_provider.g.dart';
 @Riverpod(keepAlive: true)
 class DiaryToday extends _$DiaryToday {
   @override
-  DateTime build() => normalizeDiaryDay(ref.watch(clockProvider)());
+  DateTime build() => normalizeLocalDay(ref.watch(clockProvider)());
 
   /// Reads the clock again and moves today on when the day changed.
   void refresh() {
-    final today = normalizeDiaryDay(ref.read(clockProvider)());
+    final today = normalizeLocalDay(ref.read(clockProvider)());
     if (today != state) {
       state = today;
     }
@@ -23,6 +23,6 @@ class DiaryToday extends _$DiaryToday {
   /// The time from now until the next day starts.
   Duration untilNextDay() {
     final now = ref.read(clockProvider)();
-    return nextDiaryDay(normalizeDiaryDay(now)).difference(now);
+    return nextLocalDay(normalizeLocalDay(now)).difference(now);
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
@@ -10,7 +11,6 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
 
@@ -20,11 +20,11 @@ import '../../calories/support/fake_planned_entry_repository.dart';
 void main() {
   test('combines week overview, run state, and selected day entries', () async {
     final selectedDay = DateTime(2026, 4, 27, 18);
-    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final normalizedDay = normalizeLocalDay(selectedDay);
     final weekOverview = _weekOverview(selectedDay: normalizedDay);
     final entries = <CalorieEntry>[_entry(id: 'breakfast', day: normalizedDay)];
     final runState = const BurnWeekRunState.initial().copyWith(
-      currentWeekStartDayKey: diaryDayKey(normalizedDay),
+      currentWeekStartDayKey: localDayKey(normalizedDay),
       runWeekNumber: 3,
     );
     DateTime? readDay;
@@ -62,7 +62,7 @@ void main() {
 
   test('keeps read future alive while week overview loads', () async {
     final selectedDay = DateTime(2026, 4, 27, 18);
-    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final normalizedDay = normalizeLocalDay(selectedDay);
     final completions = <Completer<CalorieWeekOverview>>[];
     final observer = _RecordingProviderObserver();
     final repository = FakeCalorieLogRepository();
@@ -106,7 +106,7 @@ void main() {
     'a failed day read fails the live data without an unhandled error',
     () async {
       final selectedDay = DateTime(2026, 4, 27, 18);
-      final normalizedDay = normalizeDiaryDay(selectedDay);
+      final normalizedDay = normalizeLocalDay(selectedDay);
       final weekOverview = Completer<CalorieWeekOverview>();
       final repository = FakeCalorieLogRepository()
         ..onReadEntriesForDay = (_) async =>
@@ -210,7 +210,7 @@ CalorieWeekOverview _weekOverview({required DateTime selectedDay}) {
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
-        date: addDiaryDays(selectedDay, -offset),
+        date: addLocalDays(selectedDay, -offset),
         totalKcal: (100 + offset).toDouble(),
         goalKcal: 2200,
         entryCount: offset == 0 ? 1 : 0,

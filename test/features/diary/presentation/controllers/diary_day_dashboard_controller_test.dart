@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -21,7 +22,6 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -680,7 +680,7 @@ CalorieWeekOverview _weekOverviewWithTodayExtraGoal({
   required DateTime selectedDay,
   required double todayExtraGoalKcal,
 }) {
-  final normalizedDay = normalizeDiaryDay(selectedDay);
+  final normalizedDay = normalizeLocalDay(selectedDay);
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(

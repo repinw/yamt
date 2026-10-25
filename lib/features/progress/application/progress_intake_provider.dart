@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
@@ -10,7 +11,6 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/progress/domain/progress_day.dart';
 import 'package:yamt/features/progress/domain/progress_intake.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
@@ -25,7 +25,7 @@ part 'progress_intake_provider.g.dart';
 @riverpod
 Future<ProgressIntake> progressIntake(Ref ref, ProgressScope scope) async {
   ref.watch(calorieOverviewRevisionProvider);
-  final today = normalizeDiaryDay(ref.watch(clockProvider)());
+  final today = normalizeLocalDay(ref.watch(clockProvider)());
   final repository = ref.watch(calorieLogRepositoryProvider);
   final targetResolver = ref.watch(dailyNutritionTargetResolverProvider);
   final settings = await ref.watch(calorieBudgetSettingsProvider.future);
@@ -48,7 +48,7 @@ Future<ProgressIntake> progressIntake(Ref ref, ProgressScope scope) async {
   final start = !isPast && weekStart.isBefore(comparison.start)
       ? weekStart
       : comparison.start;
-  final end = nextDiaryDay(isPast ? comparison.end : weekEnd);
+  final end = nextLocalDay(isPast ? comparison.end : weekEnd);
   final entries = await repository.readEntriesInRange(
     startInclusive: start,
     endExclusive: end,
@@ -66,7 +66,7 @@ Future<ProgressIntake> progressIntake(Ref ref, ProgressScope scope) async {
       _progressDay(
         day: day,
         today: today,
-        entries: entriesByDay[diaryDayKey(day)] ?? const <CalorieEntry>[],
+        entries: entriesByDay[localDayKey(day)] ?? const <CalorieEntry>[],
         goalKcal: settings.goalKcalForDay(day),
         isTrainingDay: settings.isTrainingDay(day),
         isPauseDay: settings.isPauseDay(day),

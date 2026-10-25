@@ -1,4 +1,4 @@
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 
 /// Hour from which onboarding proposes tomorrow instead of today.
 ///
@@ -11,11 +11,11 @@ const maximumTrackingStartDelayDays = 14;
 
 /// Start day onboarding proposes for the first tracked week at [now].
 DateTime defaultTrackingStartDay(DateTime now) {
-  final today = normalizeDiaryDay(now);
-  return now.hour < trackingStartTomorrowFromHour ? today : nextDiaryDay(today);
+  final today = normalizeLocalDay(now);
+  return now.hour < trackingStartTomorrowFromHour ? today : nextLocalDay(today);
 }
 
 /// Latest start day the user may pick at [now].
 DateTime latestTrackingStartDay(DateTime now) {
-  return addDiaryDays(normalizeDiaryDay(now), maximumTrackingStartDelayDays);
+  return addLocalDays(normalizeLocalDay(now), maximumTrackingStartDelayDays);
 }

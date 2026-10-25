@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_service.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
@@ -61,7 +61,7 @@ void main() {
     test('estimateDailyTdee counts a pause day as a day without intake', () {
       final start = DateTime(2025, 3);
       final days = [
-        for (var day = 0; day < 20; day++) addDiaryDays(start, day),
+        for (var day = 0; day < 20; day++) addLocalDays(start, day),
       ];
       final pauseDay = days[15];
       final settings = CalorieGoalSettings.single(
@@ -71,9 +71,9 @@ void main() {
       ).setPauseDay(day: pauseDay, isPause: true);
       final entriesByDay = {
         for (final day in days)
-          diaryDayKey(day): [
+          localDayKey(day): [
             buildQuickCalorieEntry(
-              id: diaryDayKey(day),
+              id: localDayKey(day),
               userId: 'user-1',
               name: 'Essen',
               mealType: MealType.lunch,
@@ -88,7 +88,7 @@ void main() {
       final estimates = DailyTdeeSeries.estimate(
         startDate: start,
         endDate: days.last,
-        today: addDiaryDays(days.last, 1),
+        today: addLocalDays(days.last, 1),
         settings: settings,
         entriesByDay: entriesByDay,
         weights: WeightTrendCalculator.fromDailyWeights({
@@ -97,12 +97,12 @@ void main() {
       );
 
       expect(estimates, hasLength(20));
-      expect(estimates[diaryDayKey(days.last)]!.tdeeKcal, closeTo(2500, 1));
+      expect(estimates[localDayKey(days.last)]!.tdeeKcal, closeTo(2500, 1));
     });
 
     test('estimateDailyTdee keeps the value of yesterday for today', () {
       final start = DateTime(2025, 3);
-      final today = addDiaryDays(start, 3);
+      final today = addLocalDays(start, 3);
 
       final estimates = DailyTdeeSeries.estimate(
         startDate: start,
@@ -115,14 +115,14 @@ void main() {
         ),
         entriesByDay: {
           for (var day = 0; day <= 3; day++)
-            diaryDayKey(addDiaryDays(start, day)): [
+            localDayKey(addLocalDays(start, day)): [
               buildQuickCalorieEntry(
                 id: '$day',
                 userId: 'user-1',
                 name: 'Essen',
                 mealType: MealType.lunch,
-                loggedAt: addDiaryDays(start, day),
-                now: addDiaryDays(start, day),
+                loggedAt: addLocalDays(start, day),
+                now: addLocalDays(start, day),
                 // Today's diary holds only breakfast so far.
                 kcal: day == 3 ? 400 : 3000,
               ),
@@ -131,8 +131,8 @@ void main() {
         weights: WeightTrendCalculator.fromDailyWeights({start: 80}),
       );
 
-      final yesterday = estimates[diaryDayKey(addDiaryDays(start, 2))];
-      final todayEstimate = estimates[diaryDayKey(today)];
+      final yesterday = estimates[localDayKey(addLocalDays(start, 2))];
+      final todayEstimate = estimates[localDayKey(today)];
       expect(todayEstimate?.tdeeKcal, yesterday?.tdeeKcal);
       expect(todayEstimate, isNotNull);
       expect(todayEstimate?.measuredTdeeKcal, isNull);

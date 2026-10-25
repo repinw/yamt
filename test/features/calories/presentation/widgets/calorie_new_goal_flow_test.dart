@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -11,7 +12,6 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -234,7 +234,7 @@ Future<void> _openSheet(WidgetTester tester) async {
 }
 
 CalorieGoalSettings _learnedSettings() {
-  final goalStartDate = normalizeDiaryDay(DateTime.now())
+  final goalStartDate = normalizeLocalDay(DateTime.now())
       .subtract(const Duration(days: 20));
   return CalorieGoalSettings.single(
     dailyKcalGoal: 2450,

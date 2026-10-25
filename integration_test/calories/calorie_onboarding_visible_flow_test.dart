@@ -7,6 +7,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -22,7 +23,6 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/onboarding/presentation/'
@@ -127,8 +127,8 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
     required DateTime startInclusive,
     required DateTime endExclusive,
   }) async {
-    final start = normalizeDiaryDay(startInclusive);
-    final end = normalizeDiaryDay(endExclusive);
+    final start = normalizeLocalDay(startInclusive);
+    final end = normalizeLocalDay(endExclusive);
     return _entries
         .where(
           (entry) =>
@@ -182,9 +182,9 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   List<CalorieEntry> _entriesForDay(DateTime day) {
-    final normalizedDay = normalizeDiaryDay(day);
+    final normalizedDay = normalizeLocalDay(day);
     return _entries
-        .where((entry) => isSameDiaryDay(entry.loggedAt, normalizedDay))
+        .where((entry) => isSameLocalDay(entry.loggedAt, normalizedDay))
         .toList(growable: false);
   }
 }
@@ -542,13 +542,13 @@ void _expectHomeDiary(_CalorieOnboardingIntegrationHarness harness) {
 Future<void> _expectGoalStartedToday(
   _CalorieOnboardingIntegrationHarness harness,
 ) async {
-  final today = normalizeDiaryDay(_testNow);
+  final today = normalizeLocalDay(_testNow);
   final settings = await harness.settingsRepository.readSettings();
   final goalEntry = settings.goalHistory.single;
   expect(goalEntry.effectiveDate, today);
   expect(
     harness.runStateRepository.state.currentWeekStartDayKey,
-    diaryDayKey(today),
+    localDayKey(today),
   );
   expect(harness.logRepository.entries, isEmpty);
 }

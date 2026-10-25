@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -20,7 +21,6 @@ import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -127,7 +127,7 @@ void main() {
   });
 
   testWidgets('pause day shows special balance', (tester) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
 
     await _pumpBalanceCard(
       tester,
@@ -135,7 +135,7 @@ void main() {
       weekStartDate: today,
       dayTotals: const [0, 0, 0, 0, 0, 0, 20000],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(today),
+        currentWeekStartDayKey: localDayKey(today),
         runWeekNumber: 2,
       ),
       isPauseDay: true,
@@ -146,7 +146,7 @@ void main() {
   });
 
   testWidgets('recoverable over-target state keeps card quiet', (tester) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
 
     await _pumpBalanceCard(
       tester,
@@ -154,7 +154,7 @@ void main() {
       weekStartDate: today,
       dayTotals: const [0, 0, 0, 0, 0, 0, 5000],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(today),
+        currentWeekStartDayKey: localDayKey(today),
         runWeekNumber: 2,
       ),
     );
@@ -166,7 +166,7 @@ void main() {
   testWidgets('learning week hides game controls and zone dialogs', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final weekStartDate = today.subtract(const Duration(days: 6));
 
     await _pumpBalanceCard(
@@ -175,7 +175,7 @@ void main() {
       weekStartDate: weekStartDate,
       dayTotals: const [0, 0, 0, 0, 0, 0, 0],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(weekStartDate),
+        currentWeekStartDayKey: localDayKey(weekStartDate),
       ),
     );
 
@@ -187,7 +187,7 @@ void main() {
   testWidgets('shows scheduled restart card when next run is pending', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final restartDate = today.add(const Duration(days: 1));
 
     await _pumpBalanceCard(
@@ -196,7 +196,7 @@ void main() {
       weekStartDate: today,
       dayTotals: const [0, 0, 0, 0, 0, 0, 0],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(restartDate),
+        currentWeekStartDayKey: localDayKey(restartDate),
       ),
     );
 
@@ -207,8 +207,8 @@ void main() {
   testWidgets('shows a practice badge before a future goal start', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final startDate = nextDiaryDay(today);
+    final today = normalizeLocalDay(DateTime.now());
+    final startDate = nextLocalDay(today);
 
     await _pumpBalanceCard(
       tester,
@@ -232,10 +232,10 @@ void main() {
   testWidgets('shows the practice badge for a past day before goal start', (
     tester,
   ) async {
-    final selectedDay = normalizeDiaryDay(
+    final selectedDay = normalizeLocalDay(
       DateTime.now().subtract(const Duration(days: 7)),
     );
-    final startDate = nextDiaryDay(selectedDay);
+    final startDate = nextLocalDay(selectedDay);
 
     await _pumpBalanceCard(
       tester,
@@ -257,7 +257,7 @@ void main() {
   testWidgets('keeps Burn Week live sync subscribed on non-live days', (
     tester,
   ) async {
-    final selectedDay = normalizeDiaryDay(
+    final selectedDay = normalizeLocalDay(
       DateTime.now().subtract(const Duration(days: 1)),
     );
     var syncWatchCount = 0;
@@ -268,7 +268,7 @@ void main() {
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
+        currentWeekStartDayKey: localDayKey(selectedDay),
       ),
       onBurnWeekLiveSyncWatch: () {
         syncWatchCount += 1;
@@ -281,7 +281,7 @@ void main() {
   testWidgets('hides weekly label on non-live days without counters', (
     tester,
   ) async {
-    final selectedDay = normalizeDiaryDay(
+    final selectedDay = normalizeLocalDay(
       DateTime.now().subtract(const Duration(days: 1)),
     );
 
@@ -311,7 +311,7 @@ void main() {
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 2500],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
+        currentWeekStartDayKey: localDayKey(selectedDay),
       ),
       themeMode: ThemeMode.dark,
     );
@@ -335,7 +335,7 @@ void main() {
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 0],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
+        currentWeekStartDayKey: localDayKey(selectedDay),
       ),
     );
 
@@ -356,7 +356,7 @@ void main() {
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 0],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
+        currentWeekStartDayKey: localDayKey(selectedDay),
       ),
       showDetails: false,
     );
@@ -380,7 +380,7 @@ void main() {
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 600],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
+        currentWeekStartDayKey: localDayKey(selectedDay),
       ),
       isPauseDay: true,
       showDetails: false,
@@ -631,7 +631,7 @@ void main() {
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 1200],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
+        currentWeekStartDayKey: localDayKey(selectedDay),
       ),
       showDetails: false,
     );
@@ -660,7 +660,7 @@ void main() {
   });
 
   testWidgets('renders future non-live day snapshot', (tester) async {
-    final selectedDay = normalizeDiaryDay(
+    final selectedDay = normalizeLocalDay(
       DateTime.now().add(const Duration(days: 1)),
     );
     final weekStartDate = selectedDay.subtract(const Duration(days: 6));
@@ -694,7 +694,7 @@ void main() {
   testWidgets('keeps live and non-live balance cards the same height', (
     tester,
   ) async {
-    final today = normalizeDiaryDay(DateTime.now());
+    final today = normalizeLocalDay(DateTime.now());
     final nonLiveDay = today.subtract(const Duration(days: 1));
 
     await _pumpBalanceCard(
@@ -703,7 +703,7 @@ void main() {
       weekStartDate: today,
       dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(today),
+        currentWeekStartDayKey: localDayKey(today),
         runWeekNumber: 2,
       ),
     );
@@ -742,7 +742,7 @@ void main() {
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 0],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(selectedDay),
+        currentWeekStartDayKey: localDayKey(selectedDay),
       ),
       todayFlexibleGoalKcal: -838,
     );
@@ -753,7 +753,7 @@ void main() {
   });
 
   testWidgets('shows retry content when week overview fails', (tester) async {
-    final selectedDay = normalizeDiaryDay(
+    final selectedDay = normalizeLocalDay(
       DateTime.now().subtract(const Duration(days: 1)),
     );
 
@@ -778,7 +778,7 @@ void main() {
   testWidgets('tapping budget details button opens budget details sheet', (
     tester,
   ) async {
-    final selectedDay = normalizeDiaryDay(DateTime.now());
+    final selectedDay = normalizeLocalDay(DateTime.now());
 
     await _pumpBalanceCard(
       tester,
@@ -806,7 +806,7 @@ void main() {
   testWidgets('renders daily balance subtitle segments with loop', (
     tester,
   ) async {
-    final selectedDay = normalizeDiaryDay(DateTime.now());
+    final selectedDay = normalizeLocalDay(DateTime.now());
 
     await _pumpBalanceCard(
       tester,
@@ -848,7 +848,7 @@ Future<void> _pumpBalanceCard(
   bool isPreviousDayClosed = false,
   List<CalorieEntry> plans = const <CalorieEntry>[],
 }) async {
-  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
+  final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final weekOverview = _weekOverview(
     selectedDay: normalizedSelectedDay,
     weekStartDate: weekStartDate,
@@ -974,7 +974,7 @@ CalorieWeekOverview _weekOverview({
   double? previousDayCarryoverKcal,
   bool isPreviousDayClosed = false,
 }) {
-  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
+  final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
@@ -996,7 +996,7 @@ CalorieWeekOverview _weekOverview({
     totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,
     remainingKcal: totalGoalKcal - totalConsumedKcal,
-    balanceStartDate: normalizeDiaryDay(weekStartDate),
+    balanceStartDate: normalizeLocalDay(weekStartDate),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: todayFlexibleGoalKcal,
     goalStartsInFuture: goalStartsInFuture,

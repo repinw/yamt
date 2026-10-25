@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Training days that the user picked for the run that contains `runDay`.
 typedef CalorieRunTrainingChoice = ({
@@ -46,7 +46,7 @@ extension CalorieRunTraining on CalorieGoalSettings {
     final start = resolveCalorieGoalRunStartDate(settings: this, day: day);
     final days = [
       for (var offset = 0; offset < calorieGoalRunLengthDays; offset++)
-        addDiaryDays(start, offset),
+        addLocalDays(start, offset),
     ];
     return CalorieRunTrainingPlan(
       days: List<DateTime>.unmodifiable(days),
@@ -67,14 +67,14 @@ extension CalorieRunTraining on CalorieGoalSettings {
     required Set<DateTime> trainingDays,
   }) {
     final plan = runTrainingPlan(day);
-    final wanted = {for (final day in trainingDays) diaryDayKey(day)};
+    final wanted = {for (final day in trainingDays) localDayKey(day)};
     final overrides = Map<String, bool>.of(trainingDayOverrides);
     final unplanned = Map<String, bool>.of(unplannedTrainingDayOverrides);
     for (final runDay in plan.days) {
       if (plan.pauseDays.contains(runDay)) {
         continue;
       }
-      final key = diaryDayKey(runDay);
+      final key = localDayKey(runDay);
       final isTraining = wanted.contains(key);
       unplanned.remove(key);
       if (isTraining == isScheduledTrainingDay(runDay)) {
@@ -97,7 +97,7 @@ extension CalorieRunTraining on CalorieGoalSettings {
     required DateTime today,
   }) {
     if (runTrainingPlan(training.runDay).lastDay
-        .isBefore(normalizeDiaryDay(today))) {
+        .isBefore(normalizeLocalDay(today))) {
       return null;
     }
     return withRunTrainingDays(

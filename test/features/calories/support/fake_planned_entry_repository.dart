@@ -1,6 +1,6 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Keeps plans in memory.
 class FakePlannedEntryRepository extends PlannedEntryRepository {
@@ -22,23 +22,23 @@ class FakePlannedEntryRepository extends PlannedEntryRepository {
     if (loadShouldFail) {
       throw StateError('Plan read failed.');
     }
-    final from = normalizeDiaryDay(first);
-    final to = normalizeDiaryDay(last);
+    final from = normalizeLocalDay(first);
+    final to = normalizeLocalDay(last);
     return plans.where((plan) {
-      final day = normalizeDiaryDay(plan.loggedAt);
+      final day = normalizeLocalDay(plan.loggedAt);
       return !day.isBefore(from) && !day.isAfter(to);
     }).toList()..sort((a, b) => a.loggedAt.compareTo(b.loggedAt));
   }
 
   @override
   Future<Set<DateTime>> loadPlannedDays(DateTime first, DateTime last) async {
-    final from = normalizeDiaryDay(first);
-    final to = normalizeDiaryDay(last);
+    final from = normalizeLocalDay(first);
+    final to = normalizeLocalDay(last);
     return {
       for (final plan in plans)
-        if (!normalizeDiaryDay(plan.loggedAt).isBefore(from) &&
-            !normalizeDiaryDay(plan.loggedAt).isAfter(to))
-          normalizeDiaryDay(plan.loggedAt),
+        if (!normalizeLocalDay(plan.loggedAt).isBefore(from) &&
+            !normalizeLocalDay(plan.loggedAt).isAfter(to))
+          normalizeLocalDay(plan.loggedAt),
     };
   }
 

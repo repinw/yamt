@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
@@ -7,7 +8,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/daily_tdee_estimator.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// How far the goal of each day from [startDate] through the end of the
 /// running week moves with the daily TDEE, by diary day key.
@@ -26,16 +26,16 @@ Map<String, double> goalTdeeOffsets({
   required DateTime today,
   required Map<String, DailyTdeeEstimate> tdeeByDay,
 }) {
-  final normalizedToday = normalizeDiaryDay(today);
+  final normalizedToday = normalizeLocalDay(today);
   // Without a counting goal today, no running week reaches into the future.
   final endDate = settings.countingGoalEntryForDay(normalizedToday) == null
       ? normalizedToday
       : resolveCalorieGoalRunEndDate(settings: settings, day: normalizedToday);
   final offsets = <String, double>{};
   for (
-    var day = normalizeDiaryDay(startDate);
+    var day = normalizeLocalDay(startDate);
     !day.isAfter(endDate);
-    day = nextDiaryDay(day)
+    day = nextLocalDay(day)
   ) {
     if (settings.countingGoalEntryForDay(day) == null) continue;
     // Each day moves against the goal it has, also after a change mid-run.
@@ -44,17 +44,17 @@ Map<String, double> goalTdeeOffsets({
         ? null
         : _referenceTdeeKcal(entry, tdeeByDay);
     // A day's own intake must not raise its own goal.
-    final known = previousDiaryDay(
+    final known = previousLocalDay(
       day.isBefore(normalizedToday) ? day : normalizedToday,
     );
-    final tdeeKcal = tdeeByDay[diaryDayKey(known)]?.tdeeKcal;
+    final tdeeKcal = tdeeByDay[localDayKey(known)]?.tdeeKcal;
     if (referenceKcal != null && tdeeKcal != null) {
       // A falling TDEE never pushes a goal under the minimum budget.
       final floorKcal = math.min<double>(
         0,
         minimumDailyCalorieBudgetKcal - (entry!.dailyKcalGoal ?? 0),
       );
-      offsets[diaryDayKey(day)] = math.max(tdeeKcal - referenceKcal, floorKcal);
+      offsets[localDayKey(day)] = math.max(tdeeKcal - referenceKcal, floorKcal);
     }
   }
   return offsets;
@@ -68,7 +68,7 @@ double? _referenceTdeeKcal(
   if (checkInTdee > 0) return checkInTdee;
   final profile = entry.calculatorProfile;
   if (profile == null) return null;
-  return tdeeByDay[diaryDayKey(previousDiaryDay(entry.effectiveDate))]
+  return tdeeByDay[localDayKey(previousLocalDay(entry.effectiveDate))]
           ?.tdeeKcal ??
       CalorieGoalCalculator.calculate(profile).tdeeKcal;
 }

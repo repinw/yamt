@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// One run: its first and last day, and its number in its goal, or `null`
 /// for a block without a goal.
@@ -18,7 +18,7 @@ Map<DateTime, ProgressWeightRunKey> progressWeightRunsByDay(
   DateTime today,
 ) {
   final days = [
-    for (var day = start; !day.isAfter(today); day = addDiaryDays(day, 1)) day,
+    for (var day = start; !day.isAfter(today); day = addLocalDays(day, 1)) day,
   ];
   // shortcut: three goal history lookups per day; precompute per goal once
   // the "Alles" range spans years.
@@ -36,10 +36,10 @@ Map<DateTime, ProgressWeightRunKey> progressWeightRunsByDay(
       for (var at = index; at <= last; at++) {
         final day = days[at];
         // The run start is off midnight across a clock change.
-        final runStart = normalizeDiaryDay(
+        final runStart = normalizeLocalDay(
           resolveCalorieGoalRunStartDate(settings: settings, day: day),
         );
-        final runEnd = addDiaryDays(runStart, calorieGoalRunLengthDays - 1);
+        final runEnd = addLocalDays(runStart, calorieGoalRunLengthDays - 1);
         runs[day] = (
           start: runStart,
           // A run that a gap cuts short ends with the goal.
@@ -56,20 +56,20 @@ Map<DateTime, ProgressWeightRunKey> progressWeightRunsByDay(
       final DateTime blockStart;
       final DateTime blockEnd;
       if (index > 0) {
-        final offset = diaryDaysBetween(gapStart, days[at]);
-        blockStart = addDiaryDays(
+        final offset = localDaysBetween(gapStart, days[at]);
+        blockStart = addLocalDays(
           gapStart,
           offset - offset % calorieGoalRunLengthDays,
         );
-        final end = addDiaryDays(blockStart, calorieGoalRunLengthDays - 1);
+        final end = addLocalDays(blockStart, calorieGoalRunLengthDays - 1);
         blockEnd = end.isAfter(gapEnd) ? gapEnd : end;
       } else {
-        final offset = diaryDaysBetween(days[at], gapEnd);
-        blockEnd = addDiaryDays(
+        final offset = localDaysBetween(days[at], gapEnd);
+        blockEnd = addLocalDays(
           gapEnd,
           -(offset - offset % calorieGoalRunLengthDays),
         );
-        final begin = addDiaryDays(blockEnd, 1 - calorieGoalRunLengthDays);
+        final begin = addLocalDays(blockEnd, 1 - calorieGoalRunLengthDays);
         blockStart = begin.isBefore(gapStart) ? gapStart : begin;
       }
       runs[days[at]] = (start: blockStart, end: blockEnd, number: null);
@@ -86,7 +86,7 @@ Map<DateTime, ProgressWeightRunKey> progressWeightRunsByDay(
   };
   return runs.map((day, run) {
     final next = nextStart[run.start];
-    final cut = next == null ? null : addDiaryDays(next, -1);
+    final cut = next == null ? null : addLocalDays(next, -1);
     return MapEntry(
       day,
       cut != null && run.end.isAfter(cut)

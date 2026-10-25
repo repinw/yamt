@@ -1,4 +1,4 @@
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 
 /// Where a diary day stands relative to today.
 enum DiaryDayStatus {
@@ -25,8 +25,8 @@ enum DiaryDayStatus {
     required DateTime today,
     bool isPreviousDayClosed = false,
   }) {
-    final normalizedDay = normalizeDiaryDay(day);
-    final normalizedToday = normalizeDiaryDay(today);
+    final normalizedDay = normalizeLocalDay(day);
+    final normalizedToday = normalizeLocalDay(today);
     if (normalizedDay.isBefore(normalizedToday)) {
       return past;
     }

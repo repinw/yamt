@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_goal_progress_provider.dart';
@@ -17,7 +18,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_snapshot_rules.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_weekly_checkin_plan_provider.g.dart';
 
@@ -50,7 +50,7 @@ Future<CalorieWeeklyCheckInPlan?> calorieWeeklyCheckInPreviewPlan(
   final hasWindow =
       resolveLatestCompletedCalorieWeeklyCheckIn(
         settings: settings,
-        today: normalizeDiaryDay(today),
+        today: normalizeLocalDay(today),
       ) !=
       null;
   if (!hasWindow) {
@@ -75,8 +75,8 @@ Future<CalorieWeeklyCheckInPlan?> _buildPlan(
   if (pending == null) {
     return null;
   }
-  final today = normalizeDiaryDay(ref.watch(clockProvider)());
-  final windowEnd = normalizeDiaryDay(pending.windowEndDate);
+  final today = normalizeLocalDay(ref.watch(clockProvider)());
+  final windowEnd = normalizeLocalDay(pending.windowEndDate);
   // The chart is optional: without it, the user can still decide.
   CalorieGoalProgress? progress;
   try {
@@ -109,7 +109,7 @@ Future<CalorieWeeklyCheckInPlan?> _buildPlan(
       day: windowEnd,
     ),
     reviewedDays: (
-      start: normalizeDiaryDay(pending.windowStartDate),
+      start: normalizeLocalDay(pending.windowStartDate),
       end: windowEnd,
     ),
     previousTrainingDayCount: reviewedRun.trainingDays.length,

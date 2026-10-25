@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
@@ -6,7 +7,6 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'diary_day_dashboard_live_data_provider.g.dart';
 
@@ -44,7 +44,7 @@ Future<DiaryDayDashboardLiveData> diaryDayDashboardLiveData(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
-    final normalizedDay = normalizeDiaryDay(selectedDay);
+    final normalizedDay = normalizeLocalDay(selectedDay);
     final weekOverviewFuture = ref.watch(
       calorieWeekOverviewForWindowProvider(normalizedDay).future,
     );

@@ -1,3 +1,4 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
@@ -7,7 +8,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_transition_helpers.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Result of evaluating a transition to a learned TDEE goal.
 typedef LearnedTdeeGoalTransitionResult = ({
@@ -58,8 +58,8 @@ extension CalorieGoalLearnedTransitions on CalorieGoalSettings {
       trainingWeekdays: trainingWeekdays,
       trainingDayKcalOffset: trainingDayKcalOffset,
     );
-    final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
-    final normalizedToday = normalizeDiaryDay(now);
+    final normalizedGoalStartDate = normalizeLocalDay(goalStartDate);
+    final normalizedToday = normalizeLocalDay(now);
     final normalizedEffectiveDate =
         normalizedGoalStartDate.isAfter(normalizedToday)
         ? normalizedToday

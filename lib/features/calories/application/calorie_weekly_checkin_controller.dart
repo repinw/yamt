@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
@@ -7,7 +8,6 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_window
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_snapshot_rules.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 part 'calorie_weekly_checkin_controller.g.dart';
@@ -109,7 +109,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         settings: settings,
         latestDueWindow: resolveLatestCompletedCalorieWeeklyCheckIn(
           settings: settings,
-          today: normalizeDiaryDay(ref.read(clockProvider)()),
+          today: normalizeLocalDay(ref.read(clockProvider)()),
         ),
       );
       return save == null ||

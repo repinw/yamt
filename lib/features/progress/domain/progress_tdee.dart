@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_tdee_check_in_history.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 
@@ -38,7 +38,7 @@ class ProgressTdee {
   }) {
     final chartStart = period.chartStart;
     final pointsByDay = {
-      for (final point in points) diaryDayKey(point.day): point,
+      for (final point in points) localDayKey(point.day): point,
     };
     final runStart = resolveCalorieGoalRunStartDate(
       settings: settings,
@@ -49,15 +49,15 @@ class ProgressTdee {
         for (
           var day = chartStart;
           !day.isAfter(period.end);
-          day = nextDiaryDay(day)
+          day = nextLocalDay(day)
         )
           if (day.isBefore(period.start))
             (day: day, tdeeKcal: null, measuredKcal: null)
           else
             (
               day: day,
-              tdeeKcal: pointsByDay[diaryDayKey(day)]?.learnedBaseTdeeKcal,
-              measuredKcal: pointsByDay[diaryDayKey(day)]?.totalTdeeKcal,
+              tdeeKcal: pointsByDay[localDayKey(day)]?.learnedBaseTdeeKcal,
+              measuredKcal: pointsByDay[localDayKey(day)]?.totalTdeeKcal,
             ),
       ],
       checkInDays: {
@@ -70,7 +70,7 @@ class ProgressTdee {
           if (start.day.isAfter(chartStart)) start,
       ],
       runStartDay: runStart,
-      nextCheckInDay: addDiaryDays(runStart, calorieGoalRunLengthDays),
+      nextCheckInDay: addLocalDays(runStart, calorieGoalRunLengthDays),
       isCheckInOpen: settings.pendingWeeklyCheckIn != null,
     );
   }
@@ -101,10 +101,10 @@ class ProgressTdee {
 
   /// Change of the latest estimate against the one before it.
   double? get changeSinceYesterdayKcal =>
-      days.isEmpty ? null : _changeSince(addDiaryDays(days.last.day, -2));
+      days.isEmpty ? null : _changeSince(addLocalDays(days.last.day, -2));
 
   /// Change since the estimate in effect when the running week started.
-  double? get changeThisWeekKcal => _changeSince(previousDiaryDay(runStartDay));
+  double? get changeThisWeekKcal => _changeSince(previousLocalDay(runStartDay));
 
   double? _changeSince(DateTime day) {
     final current = currentTdeeKcal;

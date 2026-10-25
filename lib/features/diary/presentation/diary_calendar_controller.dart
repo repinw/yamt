@@ -6,7 +6,6 @@ import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 
@@ -100,7 +99,7 @@ class DiaryCalendarController extends _$DiaryCalendarController {
   void resumedAfterAbsence(DateTime leftAt) {
     final away = ref.read(clockProvider)().difference(leftAt);
     if (away >= _awayBeforeToday ||
-        normalizeDiaryDay(leftAt) != ref.read(diaryTodayProvider)) {
+        normalizeLocalDay(leftAt) != ref.read(diaryTodayProvider)) {
       showToday();
     }
   }

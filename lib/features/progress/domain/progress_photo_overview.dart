@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/health/domain/progress_photo.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 
@@ -72,7 +72,7 @@ class ProgressPhotoOverview {
       changeKg: beforeKg == null || afterKg == null ? null : afterKg - beforeKg,
       weeks: before == null || after == null
           ? null
-          : diaryDaysBetween(before.day, after.day) ~/ 7,
+          : localDaysBetween(before.day, after.day) ~/ 7,
     );
   }
 

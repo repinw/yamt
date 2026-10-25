@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_tdee_check_in_history.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 
 /// Which goals the Fortschritt tab covers.
@@ -97,12 +97,12 @@ class ProgressPeriod {
       final cycles = TdeeCycleResolver.resolveGoalCycles(settings);
       if (number >= 1 && number <= cycles.length - 2) {
         final goal = cycles[cycles.length - number];
-        final start = normalizeDiaryDay(goal.startDate);
+        final start = normalizeLocalDay(goal.startDate);
         // A goal ended on the day the next one starts leaves that day to it.
-        final beforeNext = previousDiaryDay(
-          normalizeDiaryDay(cycles[cycles.length - number - 1].startDate),
+        final beforeNext = previousLocalDay(
+          normalizeLocalDay(cycles[cycles.length - number - 1].startDate),
         );
-        var end = normalizeDiaryDay(goal.endDate ?? today);
+        var end = normalizeLocalDay(goal.endDate ?? today);
         if (end.isAfter(beforeNext)) end = beforeNext;
         if (end.isAfter(today)) end = today;
         return ProgressPeriod(
@@ -120,7 +120,7 @@ class ProgressPeriod {
         if (index >= first) (number: index + 1, day: goal.startDay),
     ]);
     final start =
-        starts.firstOrNull?.day ?? addDiaryDays(today, -progressFallbackDays);
+        starts.firstOrNull?.day ?? addLocalDays(today, -progressFallbackDays);
     return ProgressPeriod(start: start, end: today, goalStarts: starts);
   }
 
@@ -136,7 +136,7 @@ class ProgressPeriod {
   /// First day that a chart shows: [start], or earlier so that the chart
   /// covers at least [progressMinChartDays] days up to [end].
   DateTime get chartStart {
-    final earliest = addDiaryDays(end, 1 - progressMinChartDays);
+    final earliest = addLocalDays(end, 1 - progressMinChartDays);
     return start.isAfter(earliest) ? earliest : start;
   }
 }

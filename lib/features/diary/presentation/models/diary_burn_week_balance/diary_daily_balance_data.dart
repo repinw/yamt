@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/application/diary_open_plans.dart';
@@ -87,7 +87,7 @@ class DiaryDailyBalanceData {
         ? null
         : '$realEatenLabel · $adjustmentLabel';
 
-    final today = normalizeDiaryDay(now);
+    final today = normalizeLocalDay(now);
     final status = DiaryDayStatus.of(
       day: selectedDay,
       today: today,
@@ -146,7 +146,7 @@ class DiaryDailyBalanceData {
       isPlanned: isPlanned,
       leftLabel: countsPlans
           ? l10n.diaryBalanceLeftAfterPlanLabel
-          : isSameDiaryDay(selectedDay, today)
+          : isSameLocalDay(selectedDay, today)
           ? l10n.diaryBalanceLeftTodayLabel
           : l10n.diaryBalanceLeftLabel,
       isOverTarget: isOverTarget,

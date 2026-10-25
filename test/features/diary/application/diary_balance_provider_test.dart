@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
@@ -7,7 +8,6 @@ import 'package:yamt/features/calories/application/daily_nutrition_target_resolv
 import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
@@ -20,13 +20,13 @@ void main() {
     'resolve returns scheduled restart for live day with future run start',
     () async {
       final selectedDay = DateTime(2026, 4, 27);
-      final restartDate = addDiaryDays(selectedDay, 1);
+      final restartDate = addLocalDays(selectedDay, 1);
 
       final data = await _resolveBalanceData(
         selectedDay: selectedDay,
         now: selectedDay.add(const Duration(hours: 12)),
         runState: const BurnWeekRunState.initial().copyWith(
-          currentWeekStartDayKey: diaryDayKey(restartDate),
+          currentWeekStartDayKey: localDayKey(restartDate),
         ),
         weekOverview: _weekOverview(selectedDay: selectedDay),
       );
@@ -39,7 +39,7 @@ void main() {
 
   test('resolve returns practice day before future goal start', () async {
     final selectedDay = DateTime(2026, 4, 27);
-    final startDate = addDiaryDays(selectedDay, 2);
+    final startDate = addLocalDays(selectedDay, 2);
 
     final data = await _resolveBalanceData(
       selectedDay: selectedDay,
@@ -67,7 +67,7 @@ void main() {
         selectedDay: selectedDay,
         now: selectedDay.add(const Duration(hours: 12)),
         runState: const BurnWeekRunState.initial().copyWith(
-          currentWeekStartDayKey: diaryDayKey(selectedDay),
+          currentWeekStartDayKey: localDayKey(selectedDay),
           runWeekNumber: 2,
         ),
         weekOverview: _weekOverview(
@@ -99,7 +99,7 @@ void main() {
       selectedDay: selectedDay,
       now: selectedDay.add(const Duration(hours: 12)),
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: diaryDayKey(expiredWeekStart),
+        currentWeekStartDayKey: localDayKey(expiredWeekStart),
         runWeekNumber: 2,
       ),
       weekOverview: _weekOverview(
@@ -138,7 +138,7 @@ Future<DiaryBalanceCardData> _resolveBalanceData({
   final delta = budget.carryoverMacroDelta;
   return DiaryBalanceSource.fromDashboardData(
     DiaryDayDashboardData(
-      selectedDay: normalizeDiaryDay(selectedDay),
+      selectedDay: normalizeLocalDay(selectedDay),
       refreshedAt: now,
       weekOverview: weekOverview,
       selectedDayEntries: entries,
@@ -177,11 +177,11 @@ CalorieWeekOverview _weekOverview({
   DateTime? nextGoalStartDate,
   double? futureGoalKcal,
 }) {
-  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
+  final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
-        date: addDiaryDays(normalizedSelectedDay, -offset),
+        date: addLocalDays(normalizedSelectedDay, -offset),
         totalKcal: dayTotals[6 - offset],
         goalKcal: goalKcal,
         entryCount: dayTotals[6 - offset] > 0 ? 1 : 0,
@@ -199,7 +199,7 @@ CalorieWeekOverview _weekOverview({
     totalGoalKcal: totalGoalKcal,
     remainingKcal: totalGoalKcal - totalConsumedKcal,
     balanceStartDate:
-        balanceStartDate ?? addDiaryDays(normalizedSelectedDay, -6),
+        balanceStartDate ?? addLocalDays(normalizedSelectedDay, -6),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: goalKcal,
     goalStartsInFuture: goalStartsInFuture,

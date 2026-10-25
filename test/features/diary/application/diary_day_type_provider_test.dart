@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_type_provider.dart';
 import 'package:yamt/features/diary/domain/diary_day_type.dart';
 
@@ -56,7 +56,7 @@ Future<(ProviderContainer, _RecordingCalorieGoalController)> _setUp({
 
 void main() {
   test('resolves the day type status from goal settings', () async {
-    final (container, _) = await _setUp(pauseDayKeys: [diaryDayKey(_tuesday)]);
+    final (container, _) = await _setUp(pauseDayKeys: [localDayKey(_tuesday)]);
 
     final monday = container.read(diaryDayTypeStatusProvider(_monday));
     expect(monday?.type, DiaryDayType.training);
@@ -90,7 +90,7 @@ void main() {
 
   test('marking a pause day as rest unpauses without toggling', () async {
     final (container, controller) = await _setUp(
-      pauseDayKeys: [diaryDayKey(_tuesday)],
+      pauseDayKeys: [localDayKey(_tuesday)],
     );
 
     await container
@@ -112,7 +112,7 @@ void main() {
 
   test('selecting pause on a pause day keeps it paused', () async {
     final (container, controller) = await _setUp(
-      pauseDayKeys: [diaryDayKey(_tuesday)],
+      pauseDayKeys: [localDayKey(_tuesday)],
     );
 
     await container

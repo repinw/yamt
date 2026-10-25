@@ -1,6 +1,6 @@
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Checks if two calculator profiles are structurally equivalent.
 bool sameCalculatorProfile(
@@ -49,7 +49,7 @@ DateTime goalChangeTimestamp({
   required DateTime now,
   bool? countGoalStartDayForLearning,
 }) {
-  if (isSameDiaryDay(normalizedEffectiveDate, normalizedToday)) {
+  if (isSameLocalDay(normalizedEffectiveDate, normalizedToday)) {
     if (countGoalStartDayForLearning == true) {
       return normalizedEffectiveDate;
     }
@@ -67,7 +67,7 @@ bool goalStartDayTrackingChanged({
   if (countGoalStartDayForLearning == null || currentGoalEntry == null) {
     return false;
   }
-  if (!isSameDiaryDay(
+  if (!isSameLocalDay(
     currentGoalEntry.effectiveCountingStartDate,
     normalizedGoalStartDate,
   )) {
@@ -79,7 +79,7 @@ bool goalStartDayTrackingChanged({
 
 /// Determines whether a goal history entry counts its start day for learning.
 bool goalEntryCountsStartDay(CalorieGoalHistoryEntry entry) {
-  if (!isSameDiaryDay(entry.effectiveDate, entry.effectiveCountingStartDate)) {
+  if (!isSameLocalDay(entry.effectiveDate, entry.effectiveCountingStartDate)) {
     return true;
   }
   final changedAt = entry.effectiveChangedAt;

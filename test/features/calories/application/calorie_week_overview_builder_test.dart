@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_builder.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 final _today = DateTime(2026, 10, 8);
-final DateTime _tomorrow = addDiaryDays(_today, 1);
-final DateTime _dayAfter = addDiaryDays(_today, 2);
-final DateTime _runStart = addDiaryDays(_today, -1);
+final DateTime _tomorrow = addLocalDays(_today, 1);
+final DateTime _dayAfter = addLocalDays(_today, 2);
+final DateTime _runStart = addLocalDays(_today, -1);
 
 final _settings = CalorieGoalSettings.single(
   dailyKcalGoal: 2000,
@@ -22,16 +22,16 @@ CalorieWeekOverview _build(
   DateTime? closedDay,
   void Function()? onClosedDayRead,
 }) {
-  final eaten = {diaryDayKey(_runStart): 1500.0, diaryDayKey(_today): 800.0};
+  final eaten = {localDayKey(_runStart): 1500.0, localDayKey(_today): 800.0};
   return buildCalorieWeekOverview(
     settings: _settings,
     overviews: [
-      for (final date in buildDiaryVisibleDays(anchorDay: day))
+      for (final date in buildRollingLocalDays(anchorDay: day))
         CalorieWeekDayOverview(
           date: date,
-          totalKcal: eaten[diaryDayKey(date)] ?? 0,
+          totalKcal: eaten[localDayKey(date)] ?? 0,
           goalKcal: date.isBefore(_runStart) ? 0 : 2000,
-          entryCount: eaten.containsKey(diaryDayKey(date)) ? 1 : 0,
+          entryCount: eaten.containsKey(localDayKey(date)) ? 1 : 0,
         ),
     ],
     realToday: _today,
