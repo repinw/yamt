@@ -283,36 +283,32 @@ void main() {
       expect(targets.carbs, 200.0);
     });
 
-    test(
-      'balances fat and protein to guarantee 100g carbs floor at 1526 kcal',
-      () {
-        // 80kg male at 1526 kcal (2.0 P, 1.0 F):
-        // Unadjusted: 160g P (640 kcal), 80g F (720 kcal) -> 1360 kcal.
-        // Remaining = 166 kcal -> 41.5g carbs (< 100g).
-        // Fat floor for 80kg: 80 * 0.6 = 48g.
-        // Deficit to reach 100g carbs (400 kcal) = 400 - 166 = 234 kcal.
-        // Fat reduction = 234 / 9 = 26g -> Fat = 80 - 26 = 54g (486 kcal).
-        // Protein stays at 160g (640 kcal).
-        // Carbs = (1526 - 640 - 486) / 4 = 400 / 4 = 100g.
-        final targets = MacroBudgetCalculator.calculate(
-          goalKcal: 1526,
-          weightKg: 80,
-          proteinGramsPerKg: 2,
-          fatGramsPerKg: 1,
-        );
+    test('lowers fat to keep the 100g carbs floor at 1526 kcal', () {
+      // 80kg male at 1526 kcal (2.0 P, 1.0 F):
+      // Unadjusted: 160g P (640 kcal), 80g F (720 kcal) -> 1360 kcal.
+      // Remaining = 166 kcal -> 41.5g carbs (< 100g).
+      // Fat floor for 80kg: 80 * 0.6 = 48g.
+      // Deficit to reach 100g carbs (400 kcal) = 400 - 166 = 234 kcal.
+      // Fat reduction = 234 / 9 = 26g -> Fat = 80 - 26 = 54g (486 kcal).
+      // Protein stays at 160g (640 kcal).
+      // Carbs = (1526 - 640 - 486) / 4 = 400 / 4 = 100g.
+      final targets = MacroBudgetCalculator.calculate(
+        goalKcal: 1526,
+        weightKg: 80,
+        proteinGramsPerKg: 2,
+        fatGramsPerKg: 1,
+      );
 
-        expect(targets.protein, 160.0);
-        expect(targets.fat, 54.0);
-        expect(targets.carbs, 100.0);
-      },
-    );
+      expect(targets.protein, 160.0);
+      expect(targets.fat, 54.0);
+      expect(targets.carbs, 100.0);
+    });
 
-    test('cuts protein for the carbs floor down to its own floor', () {
+    test('keeps protein and lets carbs fall below their floor', () {
       // 1300 kcal goal for 90kg person (2.0 P, 1.0 F):
-      // Fat floor: 90 * 0.6 = 54g (486 kcal).
-      // Carbs floor: 100g (400 kcal).
-      // Remainder for protein: 1300 - 486 - 400 = 414 kcal -> 103.5g,
-      // above the protein floor of 90 * 0.8 = 72g.
+      // Protein stays at 90 * 2.0 = 180g (720 kcal).
+      // Fat drops to its floor: 90 * 0.6 = 54g (486 kcal).
+      // Carbs get the rest: (1300 - 720 - 486) / 4 = 23.5g.
       final targets = MacroBudgetCalculator.calculate(
         goalKcal: 1300,
         weightKg: 90,
@@ -320,15 +316,15 @@ void main() {
         fatGramsPerKg: 1,
       );
 
-      expect(targets.protein, 103.5);
+      expect(targets.protein, 180.0);
       expect(targets.fat, 54.0);
-      expect(targets.carbs, 100.0);
+      expect(targets.carbs, 23.5);
     });
 
-    test('keeps the protein floor before the carbs floor', () {
-      // 1000 kcal goal for 90kg person (2.0 P, 1.0 F):
-      // Fat floor 54g (486 kcal), protein floor 90 * 0.8 = 72g (288 kcal).
-      // Carbs get the rest: (1000 - 486 - 288) / 4 = 56.5g.
+    test('adds up to more than the goal when protein and the fat floor need '
+        'more kcal than the day has', () {
+      // 1000 kcal goal for 90kg person (2.0 P, 1.0 F): protein 180g
+      // (720 kcal) and the fat floor 54g (486 kcal) leave no carbs.
       final targets = MacroBudgetCalculator.calculate(
         goalKcal: 1000,
         weightKg: 90,
@@ -336,13 +332,13 @@ void main() {
         fatGramsPerKg: 1,
       );
 
-      expect(targets.protein, 72.0);
+      expect(targets.protein, 180.0);
       expect(targets.fat, 54.0);
-      expect(targets.carbs, 56.5);
+      expect(targets.carbs, 0.0);
     });
 
-    test('never raises protein that is below its floor', () {
-      // 0.5 g/kg protein at 80kg is 40g, below the 64g floor; it stays.
+    test('keeps a low protein target as set', () {
+      // 0.5 g/kg protein at 80kg is 40g; it stays.
       // Fat floor 48g (432 kcal), carbs get (900 - 160 - 432) / 4 = 77g.
       final targets = MacroBudgetCalculator.calculate(
         goalKcal: 900,

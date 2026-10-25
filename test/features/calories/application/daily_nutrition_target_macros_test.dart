@@ -266,54 +266,49 @@ void main() {
       expect(targets.carbs, closeTo(150, 0.01));
     });
 
-    test('a negative carryover below the floors cuts protein', () {
-      final preferences = MemoryAppPreferences();
-      final container = ProviderContainer(
-        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
-      );
-      addTearDown(container.dispose);
+    for (final (carryoverKcal, dayKcal) in [
+      (-300.0, 1100.0),
+      (-550.0, 850.0),
+    ]) {
+      test('a negative carryover of $carryoverKcal kcal keeps protein and '
+          'lowers carbs below their floor', () {
+        final preferences = MemoryAppPreferences();
+        final container = ProviderContainer(
+          overrides: [appPreferencesProvider.overrideWithValue(preferences)],
+        );
+        addTearDown(container.dispose);
 
-      final targets = container
-          .listen(
-            Provider(
-              (ref) =>
-                  _macros(ref, day: _day, goalKcal: 1400, carryoverKcal: -300),
-            ),
-            (_, _) {},
-          )
-          .read();
+        final (base, targets) = container
+            .listen(
+              Provider(
+                (ref) => (
+                  _macros(ref, day: _day, goalKcal: 1400),
+                  _macros(
+                    ref,
+                    day: _day,
+                    goalKcal: 1400,
+                    carryoverKcal: carryoverKcal,
+                  ),
+                ),
+              ),
+              (_, _) {},
+            )
+            .read();
 
-      // The day counts like a 1100 kcal day, as in the base budget: carbs
-      // keep their 100 g floor, fat drops to its floor of 80 kg * 0.6 = 48 g,
-      // and protein gets the rest.
-      expect(targets.carbs, closeTo(100, 0.01));
-      expect(targets.fat, closeTo(48, 0.01));
-      expect(targets.protein, closeTo((1100 - 400 - 48 * 9) / 4, 0.01));
-    });
-
-    test('a large negative carryover keeps the protein floor', () {
-      final preferences = MemoryAppPreferences();
-      final container = ProviderContainer(
-        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
-      );
-      addTearDown(container.dispose);
-
-      final targets = container
-          .listen(
-            Provider(
-              (ref) =>
-                  _macros(ref, day: _day, goalKcal: 1400, carryoverKcal: -550),
-            ),
-            (_, _) {},
-          )
-          .read();
-
-      // The day counts like an 850 kcal day: fat stays at 48 g, protein at
-      // its floor of 80 kg * 0.8 = 64 g, and carbs get the rest below 100 g.
-      expect(targets.fat, closeTo(48, 0.01));
-      expect(targets.protein, closeTo(64, 0.01));
-      expect(targets.carbs, closeTo((850 - 48 * 9 - 64 * 4) / 4, 0.01));
-    });
+        // Protein stays as without the carryover, fat drops to its floor of
+        // 80 kg * 0.6 = 48 g, and carbs get the rest, below 100 g.
+        expect(targets.protein, closeTo(base.protein, 0.01));
+        expect(targets.fat, closeTo(48, 0.01));
+        expect(
+          targets.carbs,
+          closeTo(
+            ((dayKcal - 48 * 9 - base.protein * 4) / 4).clamp(0, 100),
+            0.01,
+          ),
+        );
+        expect(targets.carbs, lessThan(100));
+      });
+    }
   });
 }
 
