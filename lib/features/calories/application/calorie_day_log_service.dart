@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_day_log_service.g.dart';
 
@@ -80,8 +81,12 @@ class CalorieDayLogService {
   }
 
   /// Closes [day], so the planned day after it counts like a started day
-  /// with its carryover.
+  /// with its carryover. Throws when [day] is not today, for example from a
+  /// card that was shown before midnight.
   Future<void> closeDay(DateTime day) async {
+    if (normalizeDiaryDay(day) != normalizeDiaryDay(_clock())) {
+      throw StateError('Only today can be closed.');
+    }
     await _closedDays.saveClosedDay(day);
     // Closing changes budgets without a calorie log.
     _overviewRevision.markChanged();

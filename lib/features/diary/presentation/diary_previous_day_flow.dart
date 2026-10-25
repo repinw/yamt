@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_previous_day_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -20,6 +21,9 @@ Future<void> closeDiaryPreviousDayFlow(
   // A second tap before the card shows the close saves it again and
   // replaces the snack bar.
   if (!await ref.read(diaryPreviousDayControllerProvider.notifier).close(day)) {
+    // A card from before midnight names yesterday; reading the clock again
+    // moves the diary on to today.
+    container.read(diaryTodayProvider.notifier).refresh();
     _showFailed(messenger, l10n.diaryPreviousDayCloseFailed(weekday));
     return;
   }
