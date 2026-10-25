@@ -35,13 +35,15 @@ extension InventoryItemEatAmounts on InventoryItemEatCalculator {
   }
 
   /// [value] snapped to half portions of [portion], at least one half and
-  /// at most what the stock holds.
+  /// at most what the stock holds. When not even half a portion is left,
+  /// [value] stays free, up to the stock.
   double halfPortionAmount(double value, double portion) {
     final half = portion / 2;
-    final halves = math.min(
-      math.max(1, (value / half).round()),
-      (maxAmount / half).floor(),
-    );
+    final halvesLeft = (maxAmount / half).floor();
+    if (halvesLeft < 1) {
+      return math.min(value, maxAmount.toDouble());
+    }
+    final halves = math.min(math.max(1, (value / half).round()), halvesLeft);
     return halves * half;
   }
 
