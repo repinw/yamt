@@ -72,12 +72,9 @@ struct HomeDiarySnapshot: Decodable {
     fat = Macro(
       eaten: try json.decode(Double.self, forKey: .fatGrams),
       target: try json.decode(Double.self, forKey: .fatGoalGrams))
-    // Temporary compatibility, added in 3.6.0: snapshots saved by 3.5.0 and
-    // older have no accent and show the lime text tones until the app syncs
-    // again. Remove in 3.9.0.
     accent = HomeWidgetColors.dynamic(
-      light: try json.decodeIfPresent(UInt32.self, forKey: .accentLight) ?? 0x4F6A00,
-      dark: try json.decodeIfPresent(UInt32.self, forKey: .accentDark) ?? 0xD4F55F)
+      light: try json.decode(UInt32.self, forKey: .accentLight),
+      dark: try json.decode(UInt32.self, forKey: .accentDark))
   }
 
   /// Last snapshot the app saved, or `nil` before the first sync.
