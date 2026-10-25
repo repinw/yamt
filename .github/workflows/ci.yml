@@ -75,7 +75,9 @@ jobs:
 
       # The runner is in UTC, which has no clock change.
       - name: Clock change tests in Europe/Berlin
-        run: flutter test test/features/calories/clock_change
+        run: >-
+          flutter test test/features/calories/clock_change
+          test/features/calories/application/calorie_week_overview_provider_test.dart
         env:
           TZ: Europe/Berlin
 
