@@ -1404,11 +1404,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get preparedMealPendingIngredientSelectionTitle =>
-      'Zutat aus Inventar ergänzen';
+      'Zutat aus dem Vorrat ergänzen';
 
   @override
   String get preparedMealPendingIngredientSelectionEmpty =>
-      'Keine Inventarartikel vorhanden.';
+      'Kein Artikel im Vorrat passt zu dieser Zutat.';
+
+  @override
+  String get preparedMealPendingIngredientSelectionUnitHint =>
+      'Nur Artikel, die die Menge in ihrer Einheit liefern.';
 
   @override
   String get preparedMealPendingIngredientFillFailed =>

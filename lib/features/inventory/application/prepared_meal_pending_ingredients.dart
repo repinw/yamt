@@ -59,10 +59,12 @@ buildPreparedMealPendingIngredientFillResult({
     }
 
     final currentItem = nextItems[itemIndex];
-    if (!hasCompatibleTemplateRequirement(
-      item: currentItem,
-      requiredUnit: requiredUnit,
-    )) {
+    // Pieces never come from an item kept in grams (#860).
+    if (!ingredientItemFits(currentItem, requirement) ||
+        !hasCompatibleTemplateRequirement(
+          item: currentItem,
+          requiredUnit: requiredUnit,
+        )) {
       continue;
     }
 
@@ -132,25 +134,6 @@ buildPreparedMealPendingIngredientFillResult({
         : null,
   );
 }
-
-/// The best Vorrat item that can fill the open row [ingredient] with the
-/// row's own amount, or the item of its name for a row that names no amount,
-/// by the same rule as the recipe page. `null` when no matching item fits.
-InventoryItem? findPendingIngredientStockMatch({
-  required String ingredient,
-  required List<InventoryItem> inventoryItems,
-  required TemplateIngredientParser ingredientParser,
-  required String localeCode,
-}) => bestIngredientStockMatch(
-  text: ingredient,
-  requirement: ingredientParser.parseRequirement(
-    ingredient: ingredient,
-    selectedPortions: 1,
-    basePortions: 1,
-  ),
-  items: inventoryItems,
-  localeCode: localeCode,
-);
 
 /// The open rows of [currentMeal] that the newly added amounts of
 /// [components] do not fill yet, and [components] with each food that

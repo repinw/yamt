@@ -5,9 +5,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/application/'
     'household_scoped_list_feed.dart';
+import 'package:yamt/features/inventory/application/pending_ingredient_stock.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
-import 'package:yamt/features/inventory/application/prepared_meal_pending_ingredients.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_reminder_plan_service.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -123,14 +123,14 @@ class PreparedMealsController extends _$PreparedMealsController {
     ),
   );
 
-  /// The best item of [inventoryItems] that can fill the open row
-  /// [ingredient] with the row's own amount.
-  InventoryItem? pendingIngredientStockMatch({
+  /// The items of [inventoryItems] that can fill the open row [ingredient]
+  /// with the row's own amount: the best one and all of them.
+  PendingIngredientStock pendingIngredientStock({
     required String ingredient,
     required List<InventoryItem> inventoryItems,
     required String localeCode,
   }) {
-    return findPendingIngredientStockMatch(
+    return findPendingIngredientStock(
       ingredient: ingredient,
       inventoryItems: inventoryItems,
       ingredientParser: ref.read(templateIngredientParserProvider),

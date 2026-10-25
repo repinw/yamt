@@ -203,30 +203,6 @@ void main() {
       ]);
     });
 
-    test('buildPreparedMealPendingIngredientFillResult consumes weighted item '
-        'for recipe piece requirement', () {
-      final carrots = _measuredItem(
-        id: 'carrots',
-        name: 'Carrots',
-        currentAmount: 150,
-        initialAmount: 200,
-        initialQuantity: 1,
-      );
-
-      final result = buildPreparedMealPendingIngredientFillResult(
-        currentItems: <InventoryItem>[carrots],
-        ingredient: '2 Carrots',
-        inventoryItemIds: const <String>['carrots'],
-        ingredientParser: parser,
-      );
-
-      expect(result, isNotNull);
-      expect(result!.nextItems.single.currentAmount, 0);
-      expect(result.components.single.usedAmount, 150);
-      expect(result.components.single.usedUnit, InventoryAmountUnit.gram);
-      expect(result.remainingIngredient, '1 pc Carrots');
-    });
-
     test('buildPreparedMealEditResult keeps fractional consumed portions', () {
       final rice = _measuredItem(
         id: 'rice',

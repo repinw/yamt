@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/application/pending_ingredient_stock.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_from_template.dart';
 import 'package:yamt/features/inventory/application/'
@@ -50,16 +51,68 @@ List<String?> _filledRows(String row, List<InventoryItem> items) {
   ];
 }
 
-InventoryItem? _match(String ingredient, List<InventoryItem> items) {
-  return findPendingIngredientStockMatch(
-    ingredient: ingredient,
-    inventoryItems: items,
-    ingredientParser: const TemplateIngredientParser(),
-    localeCode: 'de',
-  );
-}
+PendingIngredientStock _stock(String ingredient, List<InventoryItem> items) =>
+    findPendingIngredientStock(
+      ingredient: ingredient,
+      inventoryItems: items,
+      ingredientParser: const TemplateIngredientParser(),
+      localeCode: 'de',
+    );
+
+InventoryItem? _match(String ingredient, List<InventoryItem> items) =>
+    _stock(ingredient, items).best;
 
 void main() {
+  test('offers only the items that can supply the row in its unit (#860)', () {
+    final items = [
+      _milk(id: 'gram', unit: InventoryAmountUnit.gram),
+      _milk(id: 'ml', unit: InventoryAmountUnit.milliliter),
+    ];
+
+    final stock = _stock('200 ml Milch', items);
+    expect(stock.best?.id, 'ml');
+    expect(stock.candidates.map((item) => item.id), ['ml']);
+    expect(stock.hidesByUnit, isTrue);
+    // "2 Stück" asks for pieces, which neither item is kept in.
+    final pieces = _stock('2 Stück Milch', items);
+    expect(pieces.candidates, isEmpty);
+    expect(pieces.hidesByUnit, isTrue);
+  });
+
+  test('hints at hidden items only when some item has another unit', () {
+    final milk = _milk(id: 'ml', unit: InventoryAmountUnit.milliliter);
+
+    expect(_stock('200 ml Milch', [milk]).hidesByUnit, isFalse);
+    // A row without an amount fits items in any unit.
+    expect(
+      _stock('Milch', [milk, _rice('rice', grams: 600)]).hidesByUnit,
+      isFalse,
+    );
+    // A used-up item is not in the Vorrat any more.
+    expect(
+      _stock('200 ml Milch', [milk, _rice('rice', grams: 0)]).hidesByUnit,
+      isFalse,
+    );
+    expect(
+      _stock('200 ml Milch', [milk, _rice('rice', grams: 600)]).hidesByUnit,
+      isTrue,
+    );
+  });
+
+  test('a row in pieces takes nothing from an item kept in grams (#860)', () {
+    final rice = _rice('rice', grams: 600);
+
+    expect(
+      buildPreparedMealPendingIngredientFillResult(
+        currentItems: [rice],
+        ingredient: '2 Stück Reis',
+        inventoryItemIds: [rice.id],
+        ingredientParser: const TemplateIngredientParser(),
+      ),
+      isNull,
+    );
+  });
+
   test('skips a match whose unit cannot supply the row', () {
     final items = [
       _milk(id: 'gram', unit: InventoryAmountUnit.gram),

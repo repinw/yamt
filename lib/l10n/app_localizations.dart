@@ -2377,14 +2377,20 @@ abstract class AppLocalizations {
   /// No description provided for @preparedMealPendingIngredientSelectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add ingredient from inventory'**
+  /// **'Add ingredient from stock'**
   String get preparedMealPendingIngredientSelectionTitle;
 
   /// No description provided for @preparedMealPendingIngredientSelectionEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No inventory items available.'**
+  /// **'No item in stock fits this ingredient.'**
   String get preparedMealPendingIngredientSelectionEmpty;
+
+  /// No description provided for @preparedMealPendingIngredientSelectionUnitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only items that supply the amount in its unit.'**
+  String get preparedMealPendingIngredientSelectionUnitHint;
 
   /// No description provided for @preparedMealPendingIngredientFillFailed.
   ///
