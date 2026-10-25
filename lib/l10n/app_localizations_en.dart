@@ -1387,11 +1387,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preparedMealPendingIngredientSelectionTitle =>
-      'Add ingredient from inventory';
+      'Add ingredient from stock';
 
   @override
   String get preparedMealPendingIngredientSelectionEmpty =>
-      'No inventory items available.';
+      'No item in stock fits this ingredient.';
+
+  @override
+  String get preparedMealPendingIngredientSelectionUnitHint =>
+      'Only items that supply the amount in its unit.';
 
   @override
   String get preparedMealPendingIngredientFillFailed =>

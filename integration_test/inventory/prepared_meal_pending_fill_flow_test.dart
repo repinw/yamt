@@ -30,6 +30,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_fill_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_pending_ingredient_sheet.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -53,6 +55,17 @@ class _StaticInventoryItemsController extends InventoryItemsController {
       initialAmount: 1000,
       currentAmount: 600,
       amountUnit: InventoryAmountUnit.gram,
+    ),
+    // Kept in pieces, so it cannot supply the row's grams (#860).
+    InventoryItem.create(
+      id: 'rice-bags',
+      name: 'Reis Kochbeutel',
+      entryDate: DateTime(2026, 9, 27),
+      storeName: 'Store',
+      quantity: 4,
+      initialAmount: 4,
+      currentAmount: 4,
+      amountUnit: InventoryAmountUnit.piece,
     ),
   ];
 }
@@ -333,6 +346,29 @@ void main() {
 
     expect(find.text('Reis'), findsWidgets);
     await tester.tap(find.byKey(PreparedMealPendingFillSheet.takeKey));
+    await _settle(tester);
+
+    expect(calls, ['fill pan $_row rice']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets("the Vorrat pick offers only items in the row's unit (#860)", (
+    tester,
+  ) async {
+    final calls = <String>[];
+    await tester.pumpWidget(_harness(calls));
+    await _settle(tester);
+    await _openFillSheet(tester);
+
+    final stock = find.byKey(PreparedMealPendingFillSheet.stockKey);
+    await tester.ensureVisible(stock);
+    await tester.tap(stock);
+    await _settle(tester);
+    expect(find.byKey(pendingIngredientOptionKey('rice-bags')), findsNothing);
+    expect(find.byKey(pendingIngredientUnitHintKey), findsOneWidget);
+    await tester.tap(find.byKey(pendingIngredientOptionKey('rice')));
+    await tester.pump();
+    await tester.tap(find.byKey(pendingIngredientSaveKey));
     await _settle(tester);
 
     expect(calls, ['fill pan $_row rice']);

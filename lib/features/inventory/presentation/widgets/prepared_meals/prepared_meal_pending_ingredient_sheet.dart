@@ -3,8 +3,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
-import 'package:yamt/features/inventory/application/'
-    'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/pending_ingredient_stock.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -48,21 +47,31 @@ class _PendingIngredientPreview extends StatelessWidget {
   }
 }
 
+/// Key of the option for the Vorrat item [itemId] in the picker.
+ValueKey<String> pendingIngredientOptionKey(String itemId) =>
+    ValueKey<String>('pending-ingredient-option-$itemId');
+
+/// Key of the picker's save button.
+const pendingIngredientSaveKey = ValueKey<String>('pending-ingredient-save');
+
+/// Key of the hint that items in another unit are left out.
+const pendingIngredientUnitHintKey = ValueKey<String>(
+  'pending-ingredient-unit-hint',
+);
+
 /// Lets the user pick the Vorrat foods that fill the missing recipe
-/// [ingredient]; the best matches come first. Returns the picked ids.
+/// [ingredient] from the candidates of its [stock], the items that can supply
+/// its amount, best first, with a hint when items in another unit are left
+/// out. Returns the picked ids.
 Future<List<String>?> showPendingIngredientSelectionSheet({
   required BuildContext context,
   required String ingredient,
-  required List<InventoryItem> inventoryItems,
+  required PendingIngredientStock stock,
 }) {
+  final (best: _, :candidates, :hidesByUnit) = stock;
   final l10n = AppLocalizations.of(context)!;
   final emptySelectionMessage =
       l10n.preparedMealPendingIngredientSelectionEmpty;
-  final sortedItems = rankInventoryItemsForIngredient(
-    ingredient: ingredient,
-    inventoryItems: inventoryItems,
-    localeCode: l10n.localeName,
-  );
 
   return showModalBottomSheet<List<String>>(
     context: context,
@@ -92,18 +101,25 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
                       ingredient,
                       style: Theme.of(dialogContext).textTheme.bodyMedium,
                     ),
+                    if (hidesByUnit)
+                      Text(
+                        key: pendingIngredientUnitHintKey,
+                        l10n.preparedMealPendingIngredientSelectionUnitHint,
+                        style: Theme.of(dialogContext).textTheme.bodySmall,
+                      ),
                     const SizedBox(height: AppSpacing.lg),
                     Expanded(
-                      child: sortedItems.isEmpty
+                      child: candidates.isEmpty
                           ? Center(child: Text(emptySelectionMessage))
                           : ListView.builder(
-                              itemCount: sortedItems.length,
+                              itemCount: candidates.length,
                               itemBuilder: (context, index) {
-                                final item = sortedItems[index];
+                                final item = candidates[index];
                                 final isSelected = draftSelection.contains(
                                   item.id,
                                 );
                                 return AppCheckboxListTile(
+                                  key: pendingIngredientOptionKey(item.id),
                                   value: isSelected,
                                   contentPadding: EdgeInsets.zero,
                                   secondary: _PendingIngredientPreview(
@@ -136,6 +152,7 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         FilledButton(
+                          key: pendingIngredientSaveKey,
                           onPressed: () =>
                               Navigator.of(dialogContext)
                                   .pop(draftSelection.toList(growable: false)),

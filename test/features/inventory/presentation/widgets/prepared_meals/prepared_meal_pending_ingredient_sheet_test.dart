@@ -35,9 +35,11 @@ void main() {
                     showPendingIngredientSelectionSheet(
                       context: context,
                       ingredient: 'Tomato',
-                      inventoryItems: <InventoryItem>[
-                        _item(id: 'tomato', name: 'Tomato sauce'),
-                      ],
+                      stock: (
+                        best: null,
+                        candidates: [_item(id: 'tomato', name: 'Tomato sauce')],
+                        hidesByUnit: false,
+                      ),
                     ),
                   );
                 },
@@ -62,6 +64,8 @@ void main() {
       find.text(l10n.preparedMealPendingIngredientSelectionTitle),
       findsOneWidget,
     );
+    // Nothing was left out for its unit, so no hint.
+    expect(find.byKey(pendingIngredientUnitHintKey), findsNothing);
   });
 }
 

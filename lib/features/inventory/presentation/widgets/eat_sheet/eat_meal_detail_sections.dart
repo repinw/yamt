@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/application/pending_ingredient_stock.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
@@ -174,13 +175,7 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
       ingredient: ingredient,
       // An ignored row can be filled, but it is ignored already.
       canIgnore: meal.pendingRecipeIngredients.contains(ingredient),
-      match: ref
-          .read(preparedMealsControllerProvider.notifier)
-          .pendingIngredientStockMatch(
-            ingredient: ingredient,
-            inventoryItems: _inventoryItems(),
-            localeCode: AppLocalizations.of(context)!.localeName,
-          ),
+      match: _stock(ingredient).best,
     );
     if (!mounted || choice == null) {
       return;
@@ -197,7 +192,8 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
         final itemIds = await showPendingIngredientSelectionSheet(
           context: context,
           ingredient: ingredient,
-          inventoryItems: _inventoryItems(),
+          // Read now: the Vorrat may have changed while the sheet was open.
+          stock: _stock(ingredient),
         );
         if (!mounted || itemIds == null || itemIds.isEmpty) {
           return;
@@ -254,6 +250,14 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
           .preparedMealPendingIngredientIgnoreFailed,
     );
   }
+
+  PendingIngredientStock _stock(String ingredient) => ref
+      .read(preparedMealsControllerProvider.notifier)
+      .pendingIngredientStock(
+        ingredient: ingredient,
+        inventoryItems: _inventoryItems(),
+        localeCode: AppLocalizations.of(context)!.localeName,
+      );
 
   List<InventoryItem> _inventoryItems() =>
       ref.read(inventoryItemsControllerProvider).value ??

@@ -24,7 +24,7 @@ InventoryItem? bestIngredientStockMatch({
       .firstWhereOrNull(
         (match) =>
             _standsIn(match.score, scored) &&
-            _itemFits(match.item, requirement, amountConversion),
+            ingredientItemFits(match.item, requirement, amountConversion),
       )
       ?.item;
 }
@@ -56,7 +56,7 @@ ingredientStockCandidates({
   final matches = <InventoryItem>[];
   final weaker = <InventoryItem>[];
   for (final (:item, :score) in scored) {
-    if (_itemFits(item, requirement, amountConversion)) {
+    if (ingredientItemFits(item, requirement, amountConversion)) {
       (_standsIn(score, scored) ? matches : weaker).add(item);
     }
   }
@@ -69,7 +69,7 @@ ingredientStockCandidates({
         for (final item in items)
           if (!item.isFullyConsumed &&
               !named.contains(item.id) &&
-              _itemFits(item, requirement, amountConversion))
+              ingredientItemFits(item, requirement, amountConversion))
             item,
       ]..sort(
         (left, right) =>
@@ -179,15 +179,15 @@ List<({InventoryItem item, int score})> _scored(
 bool _standsIn(int score, List<({InventoryItem item, int score})> scored) =>
     score == scored.first.score;
 
-// Whether [item] is kept in a unit that can supply [requirement], with the
-// recipe's saved [amountConversion] for pieces, whatever it still holds.
-// Without a [requirement] there is no amount to supply, so any item fits;
-// callers check [ingredientNamesNoAmount] first.
-bool _itemFits(
+/// Whether [item] is kept in a unit that can supply [requirement], with the
+/// recipe's saved [amountConversion] for pieces, whatever it still holds.
+/// Without a [requirement] there is no amount to supply, so any item fits;
+/// callers check [ingredientNamesNoAmount] first.
+bool ingredientItemFits(
   InventoryItem item,
-  TemplateIngredientRequirement? requirement,
+  TemplateIngredientRequirement? requirement, [
   RecipeIngredientAmountConversion? amountConversion,
-) =>
+]) =>
     requirement == null ||
     resolveEffectiveRequirementForItems(
           requirement: requirement,
