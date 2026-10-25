@@ -62,11 +62,13 @@ const pendingIngredientUnitHintKey = ValueKey<String>(
 /// Lets the user pick the Vorrat foods that fill the missing recipe
 /// [ingredient] from the candidates of its [stock], the items that can supply
 /// its amount, best first, with a hint when items in another unit are left
-/// out. Returns the picked ids.
+/// out. The candidates among [selected] start checked. Returns the picked
+/// ids.
 Future<List<String>?> showPendingIngredientSelectionSheet({
   required BuildContext context,
   required String ingredient,
   required PendingIngredientStock stock,
+  List<String> selected = const <String>[],
 }) {
   final (best: _, :candidates, :hidesByUnit) = stock;
   final l10n = AppLocalizations.of(context)!;
@@ -78,7 +80,10 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (sheetContext) {
-      final draftSelection = <String>{};
+      final draftSelection = <String>{
+        for (final id in selected)
+          if (candidates.any((item) => item.id == id)) id,
+      };
       final maxHeight = MediaQuery.sizeOf(sheetContext).height * 0.8;
       final bottomInset = MediaQuery.viewInsetsOf(sheetContext).bottom;
 
