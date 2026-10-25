@@ -2,12 +2,13 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/barcode_icon.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_food_source.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_fill_match.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_pending_fill_option.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// What the cook chose to fill an open row with.
@@ -161,46 +162,56 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
               ),
             Column(
               children: [
-                _Option(
+                PreparedMealPendingFillOption(
                   key: stockKey,
                   icon: const Icon(Icons.inventory_2_outlined),
                   title: l10n.preparedMealFillStock,
                   description: l10n.preparedMealFillStockDescription,
-                  choice: const PreparedMealPendingFillPickStock(),
+                  onTap: () =>
+                      Navigator.of(context)
+                          .pop(const PreparedMealPendingFillPickStock()),
                 ),
-                _Option(
+                PreparedMealPendingFillOption(
                   key: sourceKey(PreparedMealFoodSource.search),
                   icon: const Icon(Icons.search_rounded),
                   title: l10n.preparedMealFillSearch,
                   description: l10n.preparedMealFillSearchDescription,
-                  choice: const PreparedMealPendingFillFind(
-                    PreparedMealFoodSource.search,
+                  onTap: () => Navigator.of(context).pop(
+                    const PreparedMealPendingFillFind(
+                      PreparedMealFoodSource.search,
+                    ),
                   ),
                 ),
-                _Option(
+                PreparedMealPendingFillOption(
                   key: sourceKey(PreparedMealFoodSource.barcode),
                   icon: const BarcodeIcon(),
                   title: l10n.preparedMealFillBarcode,
                   description: l10n.preparedMealFillBarcodeDescription,
-                  choice: const PreparedMealPendingFillFind(
-                    PreparedMealFoodSource.barcode,
+                  onTap: () => Navigator.of(context).pop(
+                    const PreparedMealPendingFillFind(
+                      PreparedMealFoodSource.barcode,
+                    ),
                   ),
                 ),
-                _Option(
+                PreparedMealPendingFillOption(
                   key: sourceKey(PreparedMealFoodSource.ai),
                   icon: const Icon(Icons.auto_awesome_rounded),
                   title: l10n.preparedMealFillAi,
                   description: l10n.preparedMealFillAiDescription,
-                  choice: const PreparedMealPendingFillFind(
-                    PreparedMealFoodSource.ai,
+                  onTap: () => Navigator.of(context).pop(
+                    const PreparedMealPendingFillFind(
+                      PreparedMealFoodSource.ai,
+                    ),
                   ),
                 ),
-                _Option(
+                PreparedMealPendingFillOption(
                   key: shoppingListKey,
                   icon: const Icon(Icons.add_shopping_cart_rounded),
                   title: l10n.preparedMealFillShoppingList,
                   description: l10n.preparedMealFillShoppingListDescription,
-                  choice: const PreparedMealPendingFillShoppingList(),
+                  onTap: () =>
+                      Navigator.of(context)
+                          .pop(const PreparedMealPendingFillShoppingList()),
                 ),
               ],
             ),
@@ -215,78 +226,6 @@ class PreparedMealPendingFillSheet extends StatelessWidget {
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Option extends StatelessWidget {
-  const new({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.choice,
-    super.key,
-  });
-
-  final Widget icon;
-  final String title;
-  final String description;
-  final PreparedMealPendingFillChoice choice;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = FoodLabelColors.of(context);
-    final textTheme = Theme.of(context).textTheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: colors.rule)),
-      ),
-      child: AppInkWell(
-        onTap: () => Navigator.of(context).pop(choice),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AppGraphit.toolButton),
-          child: Row(
-            spacing: AppSpacing.lg,
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colors.tile,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  child: IconTheme(
-                    data: IconThemeData(
-                      color: colors.ink,
-                      size: AppGraphit.toolIcon,
-                    ),
-                    child: icon,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: AppSpacing.xxs,
-                  children: [
-                    Text(
-                      title,
-                      style: textTheme.titleSmall?.copyWith(
-                        color: colors.ink,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      description,
-                      style: textTheme.bodySmall?.copyWith(color: colors.muted),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
