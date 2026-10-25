@@ -30,4 +30,14 @@ class ManualProductAiSearchResult {
   /// Eat request entered on the AI page, such as a plan. It wins over
   /// [eatSelection].
   final InventoryItemEatRequest? eatRequest;
+
+  /// This result with [item].
+  ManualProductAiSearchResult withItem(InventoryItem item) =>
+      ManualProductAiSearchResult(
+        item: item,
+        action: action,
+        globalPackageWeight: globalPackageWeight,
+        eatSelection: eatSelection,
+        eatRequest: eatRequest,
+      );
 }

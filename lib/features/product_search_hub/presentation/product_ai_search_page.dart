@@ -17,6 +17,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_chip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
+import 'package:yamt/features/product_search_hub/domain/food_estimate_item.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_exceptions.dart';
@@ -242,7 +243,7 @@ class _ManualProductAiSearchPageState
           ),
         );
     if (result == null || !mounted) return;
-    final saved = await _withFoodPhoto(result);
+    final saved = await _withFoodPhotos(result);
     if (!mounted) return;
     final onResult = widget.onResult;
     if (onResult != null) {
@@ -252,19 +253,20 @@ class _ManualProductAiSearchPageState
     popManualProductSearchPage(context, saved);
   }
 
-  /// [result] with the first photo as the item's image. The upload runs on
-  /// after the page closes; a failed upload waits on the device for a later
-  /// try. The user hears of a failure on the app's messenger.
-  Future<ManualProductAiSearchResult> _withFoodPhoto(
+  /// [result] with the first photo as the item's image and every photo on
+  /// its AI estimate (#763). The uploads run on after the page closes; a
+  /// failed upload waits on the device for a later try. The user hears of a
+  /// failure on the app's messenger.
+  Future<ManualProductAiSearchResult> _withFoodPhotos(
     ManualProductAiSearchResult result,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final ProductPhotoUpload? upload;
+    final List<ProductPhotoUpload> uploads;
     try {
-      upload = await ref
+      uploads = await ref
           .read(foodEstimateControllerProvider.notifier)
-          .saveFirstPhoto();
+          .savePhotos();
     } on Object catch (error, stackTrace) {
       log(
         'Storing the food photo failed.',
@@ -279,20 +281,16 @@ class _ManualProductAiSearchPageState
       return result;
     }
     whenPhotoUploadQueued(
-      upload?.done,
+      Future.wait([for (final upload in uploads) upload.done]),
       () => messenger.showAppSnackBar(
         l10n.photoUploadQueued,
         tone: AppSnackBarTone.info,
       ),
     );
-    final imageUrl = upload?.frontAddress;
-    if (imageUrl == null) return result;
-    return ManualProductAiSearchResult(
-      item: result.item.copyWith(imageUrl: imageUrl),
-      action: result.action,
-      globalPackageWeight: result.globalPackageWeight,
-      eatSelection: result.eatSelection,
-      eatRequest: result.eatRequest,
+    return result.withItem(
+      result.item.withFoodPhotos([
+        for (final upload in uploads) ?upload.frontAddress,
+      ]),
     );
   }
 }

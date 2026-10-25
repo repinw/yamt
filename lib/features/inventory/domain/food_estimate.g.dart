@@ -43,18 +43,26 @@ Map<String, dynamic> _$FoodEstimateToJson(FoodEstimate instance) =>
       'ingredients': instance.ingredients.map((e) => e.toJson()).toList(),
     };
 
-SavedFoodEstimate _$SavedFoodEstimateFromJson(Map<String, dynamic> json) =>
-    SavedFoodEstimate(
-      estimate: FoodEstimate.fromJson(json['estimate'] as Map<String, dynamic>),
-      level: $enumDecode(_$FoodEstimateLevelEnumMap, json['level']),
-      description: json['description'] as String,
-    );
+SavedFoodEstimate _$SavedFoodEstimateFromJson(Map<String, dynamic> json) {
+  $checkKeys(json, requiredKeys: const ['photo_urls']);
+  return SavedFoodEstimate(
+    estimate: FoodEstimate.fromJson(json['estimate'] as Map<String, dynamic>),
+    level: $enumDecode(_$FoodEstimateLevelEnumMap, json['level']),
+    description: json['description'] as String,
+    photoUrls:
+        (json['photo_urls'] as List<dynamic>?)
+            ?.map((e) => e as String)
+            .toList() ??
+        const [],
+  );
+}
 
 Map<String, dynamic> _$SavedFoodEstimateToJson(SavedFoodEstimate instance) =>
     <String, dynamic>{
       'estimate': instance.estimate.toJson(),
       'level': _$FoodEstimateLevelEnumMap[instance.level]!,
       'description': instance.description,
+      'photo_urls': instance.photoUrls,
     };
 
 const _$FoodEstimateLevelEnumMap = {

@@ -61,20 +61,20 @@ class FoodEstimateController extends _$FoodEstimateController {
     );
   }
 
-  /// Starts storing the first photo as the user's private food photo and
-  /// returns the running upload, or null without a photo. Its address is
-  /// known before the upload ends, so the food can be saved right away
-  /// (#845). Throws when signed out.
-  Future<ProductPhotoUpload?> saveFirstPhoto() async {
-    final photo = state.photos.firstOrNull;
-    if (photo == null) return null;
-    return await ref
-        .read(productPhotoRepositoryProvider)
-        .savePrivateFrontPhoto(
+  /// Starts storing every photo as a private food photo of the user and
+  /// returns the running uploads in the photos' order. Their addresses are
+  /// known before the uploads end, so the food can be saved right away
+  /// (#845, #763). Throws when signed out.
+  Future<List<ProductPhotoUpload>> savePhotos() async {
+    final repository = ref.read(productPhotoRepositoryProvider);
+    return await Future.wait([
+      for (final photo in state.photos)
+        repository.savePrivateFrontPhoto(
           // The path is read only to scan a barcode, which a food photo is
           // never scanned for.
           ProductPhoto(path: '', bytes: photo.bytes, mimeType: photo.mimeType),
-        );
+        ),
+    ]);
   }
 
   /// Removes the photo at [index].

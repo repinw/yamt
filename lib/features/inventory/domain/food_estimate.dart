@@ -175,6 +175,7 @@ class SavedFoodEstimate {
     required this.estimate,
     required this.level,
     required this.description,
+    this.photoUrls = const [],
   });
 
   /// Reads a stored estimate.
@@ -190,6 +191,19 @@ class SavedFoodEstimate {
   /// The user's description of the food.
   final String description;
 
+  /// Storage addresses of the photos the AI saw, in the user's order. The
+  /// first is also the item's image.
+  @JsonKey(required: true)
+  final List<String> photoUrls;
+
+  /// This estimate with [photoUrls].
+  SavedFoodEstimate withPhotoUrls(List<String> photoUrls) => SavedFoodEstimate(
+    estimate: estimate,
+    level: level,
+    description: description,
+    photoUrls: photoUrls,
+  );
+
   /// The stored form.
   Map<String, dynamic> toJson() => _$SavedFoodEstimateToJson(this);
 
@@ -198,8 +212,14 @@ class SavedFoodEstimate {
       other is SavedFoodEstimate &&
       other.estimate == estimate &&
       other.level == level &&
-      other.description == description;
+      other.description == description &&
+      const ListEquality<String>().equals(other.photoUrls, photoUrls);
 
   @override
-  int get hashCode => Object.hash(estimate, level, description);
+  int get hashCode => Object.hash(
+    estimate,
+    level,
+    description,
+    const ListEquality<String>().hash(photoUrls),
+  );
 }
