@@ -279,8 +279,9 @@ class CalorieEntry {
   /// food behind them. Its totals are what was typed; it has no real amount.
   ///
   /// Temporary compatibility, added in 3.4.1: the default covers entries
-  /// saved before 3.3.0 until the private data migration has added the
-  /// field; it goes from 3.7.0 on.
+  /// saved before 3.3.0 that never got the field. It goes with the other
+  /// JSON defaults of this file, once a migration has re-saved the stored
+  /// data in the strict shape.
   @JsonKey(defaultValue: false)
   final bool isQuickEntry;
 
