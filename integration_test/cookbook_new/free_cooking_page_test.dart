@@ -31,8 +31,6 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_row_list.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_text_sheet.dart';
-import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'recipe_stock_picker_sheet.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -43,6 +41,11 @@ import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/presentation/models/prepared_meal_food_source.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_pending_fill_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_pending_ingredient_sheet.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -392,9 +395,8 @@ void main() {
     expect(find.byKey(_startKey), findsOneWidget);
   });
 
-  testWidgets('a row shows its Vorrat item, and "Kochen" takes the pick', (
-    tester,
-  ) async {
+  testWidgets('a row shows its Vorrat item, "Zeile füllen" offers only the '
+      'Vorrat, and "Kochen" takes the pick (#861)', (tester) async {
     final meals = _FakeMealRepository();
     await tester.pumpWidget(
       _app(meals: meals, voice: _FakeVoiceService('200 g Reis')),
@@ -414,13 +416,47 @@ void main() {
 
     await tester.tap(row);
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(RecipeStockPickerSheet.noneKey));
+    // A draft has no meal yet that a new food could join.
+    expect(
+      find.byKey(
+        PreparedMealPendingFillSheet.sourceKey(PreparedMealFoodSource.search),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(PreparedMealPendingFillSheet.shoppingListKey),
+      findsNothing,
+    );
+    await tester.tap(find.byKey(PreparedMealPendingFillSheet.ignoreKey));
     await tester.pumpAndSettle();
     expect(find.text('0 OF 1 IN STOCK'), findsOneWidget);
     expect(
       find.descendant(of: row, matching: find.text('Choose')),
       findsOneWidget,
     );
+
+    // The list takes the row from the items checked there.
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(PreparedMealPendingFillSheet.stockKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(pendingIngredientOptionKey('rice')));
+    await tester.pump();
+    await tester.tap(find.byKey(pendingIngredientSaveKey));
+    await tester.pumpAndSettle();
+    expect(find.text('1 OF 1 IN STOCK'), findsOneWidget);
+
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(PreparedMealPendingFillSheet.ignoreKey));
+    await tester.pumpAndSettle();
+    expect(find.text('0 OF 1 IN STOCK'), findsOneWidget);
+    // "Übernehmen" takes the best match again.
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(PreparedMealPendingFillSheet.takeKey));
+    await tester.pumpAndSettle();
+    expect(find.text('1 OF 1 IN STOCK'), findsOneWidget);
 
     // The Vorrat has nothing for salt, so its row offers no pick.
     await tester.tap(find.byKey(FreeCookingActions.typeKey));
@@ -430,13 +466,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(FreeCookingRowList.rowKey(1)));
     await tester.pumpAndSettle();
-    expect(find.byKey(RecipeStockPickerSheet.noneKey), findsNothing);
+    expect(find.byKey(PreparedMealPendingFillSheet.stockKey), findsNothing);
 
     await tester.tap(find.byKey(FreeCookingActions.cookKey));
     await tester.pumpAndSettle();
     final meal = meals.saved.single;
-    expect(meal.components, isEmpty);
-    expect(meal.pendingRecipeIngredients, hasLength(2));
+    expect(meal.components.single.inventoryItemId, 'rice');
+    expect(meal.pendingRecipeIngredients, ['Salz']);
   });
 }
 

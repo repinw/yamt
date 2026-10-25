@@ -25,8 +25,10 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_row_list.dart';
-import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'recipe_stock_picker_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_pending_fill_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_pending_ingredient_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Frei kochen": a meal without a recipe. The cook says or types the
@@ -120,16 +122,42 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
     if (!mounted) {
       return;
     }
-    final pick = await showRecipeStockPicker(
-      context: context,
-      foodName: row.foodName,
-      candidates: row.candidates,
-      selectedId: row.stockItem?.id,
+    final controller = ref.read(freeCookingControllerProvider.notifier);
+    final localeCode = AppLocalizations.of(context)!.localeName;
+    final choice = await PreparedMealPendingFillSheet.show(
+      context,
+      ingredient: row.text,
+      match: controller.stockFor(row.text, localeCode).best,
+      inDraft: true,
     );
-    if (pick != null && mounted) {
-      ref
-          .read(freeCookingControllerProvider.notifier)
-          .pick(row.text, pick.itemId);
+    if (!mounted) {
+      return;
+    }
+    switch (choice) {
+      case PreparedMealPendingFillTake(:final item):
+        controller.pick(row.text, [item.id]);
+      case PreparedMealPendingFillPickStock():
+        // Lets the choice sheet finish closing before the next one opens.
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted) {
+          return;
+        }
+        final itemIds = await showPendingIngredientSelectionSheet(
+          context: context,
+          ingredient: row.text,
+          // Read now: the Vorrat may have changed while the sheet was open.
+          stock: controller.stockFor(row.text, localeCode),
+        );
+        if (itemIds != null && itemIds.isNotEmpty && mounted) {
+          controller.pick(row.text, itemIds);
+        }
+      case PreparedMealPendingFillIgnore():
+        controller.pick(row.text, const <String>[]);
+      // A draft offers no other choice.
+      case PreparedMealPendingFillFind() ||
+          PreparedMealPendingFillShoppingList() ||
+          null:
+        break;
     }
   }
 

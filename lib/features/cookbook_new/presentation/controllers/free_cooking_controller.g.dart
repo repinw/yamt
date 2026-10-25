@@ -48,7 +48,7 @@ final class FreeCookingControllerProvider
 }
 
 String _$freeCookingControllerHash() =>
-    r'ef92aa606830fd4da0382b8d8bbb325bd28992d0';
+    r'661d8538cb2c6937047e1f0d6c8dc689ca34e2df';
 
 /// Holds the rows of a meal cooked without a recipe and saves it as a Vorrat
 /// meal.

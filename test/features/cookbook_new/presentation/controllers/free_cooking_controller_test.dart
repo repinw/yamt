@@ -254,8 +254,8 @@ void main() {
     expect(rows[2].candidates, isEmpty);
 
     notifier
-      ..pick('500 g Hähnchen', 'hähnchenbrust')
-      ..pick('Salz', 'salz');
+      ..pick('500 g Hähnchen', ['hähnchenbrust'])
+      ..pick('Salz', ['salz']);
     rows = await _rows(container);
     expect(rows.map((row) => row.stockItem?.id), [
       'hähnchenbrust',
@@ -263,7 +263,7 @@ void main() {
       null,
     ]);
 
-    notifier.pick('500 g Hähnchen', null);
+    notifier.pick('500 g Hähnchen', const []);
     rows = await _rows(container);
     expect(rows.first.isInStock, isFalse);
 
@@ -274,13 +274,34 @@ void main() {
     expect(container.read(freeCookingControllerProvider).picks, isEmpty);
   });
 
+  test('a row can take several picked items, which "Kochen" takes in '
+      'order (#861)', () async {
+    final service = _FakeCookingService();
+    final container = _container(
+      service,
+      items: [_item('Reis'), _item('Testreis')],
+    );
+    final notifier = container.read(freeCookingControllerProvider.notifier)
+      ..addText('500 g Reis')
+      ..pick('500 g Reis', ['testreis', 'reis']);
+    final rows = await _rows(container);
+
+    expect(rows.single.stockItems.map((item) => item.id), ['testreis', 'reis']);
+    // The row shows what both items hold.
+    expect(rows.single.stockAmount?.amount, 1200);
+    await notifier.cook(name: 'Pfanne', rows: rows);
+    expect(service.calls.single.assignments, {
+      '500 g Reis': ['testreis', 'reis'],
+    });
+  });
+
   test('rows with the same text share their pick, "Kochen" saves it for '
       'all of them, and it goes with the last row of its text', () async {
     final service = _FakeCookingService();
     final container = _container(service, items: [_item('Salz')]);
     final notifier = container.read(freeCookingControllerProvider.notifier)
       ..addText('Salz, Pfeffer, Salz')
-      ..pick('Salz', 'salz');
+      ..pick('Salz', ['salz']);
     var rows = await _rows(container);
     expect(rows.map((row) => row.stockItem?.id), ['salz', null, 'salz']);
 
@@ -295,14 +316,14 @@ void main() {
     expect(rows.map((row) => row.stockItem?.id), [null, null]);
 
     notifier
-      ..pick('Salz', 'salz')
+      ..pick('Salz', ['salz'])
       ..addText('nein, Salz');
     rows = await _rows(container);
     expect(rows.map((row) => row.stockItem?.id), [null, null]);
 
     notifier
       ..addText('Salz')
-      ..pick('Salz', 'salz');
+      ..pick('Salz', ['salz']);
     rows = await _rows(container);
     expect(rows.map((row) => row.stockItem?.id), [null, 'salz', 'salz']);
     await notifier.cook(name: 'Pfanne', rows: rows);
