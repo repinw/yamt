@@ -82,7 +82,9 @@ class DiaryWeeklyCheckInTrainingStep extends StatelessWidget {
                 isEnabled: plan.canChangeDay(day),
               ),
           ],
-          onToggle: (index) => onToggle(days[index]),
+          onToggle: (index) {
+            if (plan.canChangeDay(days[index])) onToggle(days[index]);
+          },
         ),
         if (days.any((day) => !plan.canChangeDay(day))) ...[
           const SizedBox(height: AppSpacing.xs),
@@ -106,6 +108,9 @@ class DiaryWeeklyCheckInTrainingStep extends StatelessWidget {
           baseGoalKcal: goalKcal,
           sessionKcal: plan.sessionKcal,
           accent: accent,
+          onToggle: (index) {
+            if (plan.canChangeDay(days[index])) onToggle(days[index]);
+          },
         ),
         const SizedBox(height: AppSpacing.md),
         Wrap(

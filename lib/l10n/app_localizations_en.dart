@@ -5236,8 +5236,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCheckInTrainingTitle => 'When do you train?';
 
   @override
-  String get diaryCheckInTrainingSubtitle =>
-      'Suggested: your days from the last run';
+  String get diaryCheckInTrainingSubtitle => 'Tap the days you train';
 
   @override
   String get diaryCheckInSessions => 'Sessions';

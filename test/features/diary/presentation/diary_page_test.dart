@@ -36,6 +36,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
@@ -326,6 +327,103 @@ void main() {
 
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
     expect(find.textContaining('APR 20 – APR 26'), findsOneWidget);
+  });
+
+  testWidgets('a closed check-in comes back with its choices', (tester) async {
+    final windowStartDate = DateTime(2026, 4, 21);
+    final container = await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      useGoRouter: true,
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
+        windowStartDate: windowStartDate,
+        shouldAutoOpen: false,
+      ),
+    );
+    DiaryWeeklyCheckInSheetState sheetState() => container
+        .read(
+          diaryWeeklyCheckInSheetControllerProvider(
+            windowStart: windowStartDate,
+          ),
+        )
+        .requireValue!;
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryWeeklyCheckInCardKeys.continueButton),
+    );
+    await _pumpFrames(tester);
+    await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
+    await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.trainingDay(2));
+    final choices = sheetState();
+    expect(choices.trainingDays, hasLength(1));
+
+    tester
+        .state<NavigatorState>(find.byType(Navigator).last)
+        .maybePop<Object?>();
+    await _pumpFrames(tester);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryWeeklyCheckInCardKeys.continueButton),
+    );
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(sheetState().step, DiaryWeeklyCheckInStep.training);
+    expect(sheetState().trainingDays, choices.trainingDays);
+  });
+
+  testWidgets('a check-in whose save failed comes back with its choices', (
+    tester,
+  ) async {
+    final windowStartDate = DateTime(2026, 4, 21);
+    final container = await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      useGoRouter: true,
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
+        windowStartDate: windowStartDate,
+        shouldAutoOpen: false,
+      ),
+      overrides: [
+        calorieWeeklyCheckInControllerProvider.overrideWith(
+          () => _FakeWeeklyCheckInController(applySaves: false),
+        ),
+      ],
+    );
+    DiaryWeeklyCheckInSheetState sheetState() => container
+        .read(
+          diaryWeeklyCheckInSheetControllerProvider(
+            windowStart: windowStartDate,
+          ),
+        )
+        .requireValue!;
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryWeeklyCheckInCardKeys.continueButton),
+    );
+    await _pumpFrames(tester);
+    await _tapCheckInSheet(
+      tester,
+      DiaryWeeklyCheckInSheetKeys.useMeasuredChoice,
+    );
+    await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
+    await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.trainingDay(2));
+    final choices = sheetState();
+    expect(choices.trainingDays, hasLength(1));
+    await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
+    await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
+    await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.startWeekButton);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
+
+    await _tapDiaryCardAction(
+      tester,
+      find.byKey(DiaryWeeklyCheckInCardKeys.continueButton),
+    );
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(sheetState().trainingDays, choices.trainingDays);
   });
 
   testWidgets('weekly check-in hint continue opens dialog', (tester) async {
@@ -706,7 +804,7 @@ void main() {
       );
       await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.backButton);
       final choices = sheetState();
-      expect(choices.trainingDays, hasLength(4));
+      expect(choices.trainingDays, hasLength(1));
 
       await _tapCheckInSheet(
         tester,
@@ -1661,9 +1759,18 @@ CalorieWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
 /// Answers the check-in actions without saving; [onShowAgain] sees the
 /// reopened check-in.
 class _FakeWeeklyCheckInController extends CalorieWeeklyCheckInController {
-  new({this.onShowAgain});
+  new({this.onShowAgain, this.applySaves = true});
 
   final void Function(PendingCalorieGoalWeeklyCheckIn pending)? onShowAgain;
+
+  /// Whether "Woche starten" with the measured TDEE saves.
+  final bool applySaves;
+
+  @override
+  Future<bool> applyWeeklyCheckIn(
+    CalorieWeeklyCheckInData checkInData, {
+    CalorieRunTrainingChoice? training,
+  }) async => applySaves;
 
   @override
   Future<bool> syncLearnedTdeeCache(

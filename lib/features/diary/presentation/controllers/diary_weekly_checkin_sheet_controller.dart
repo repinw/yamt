@@ -110,7 +110,8 @@ class DiaryWeeklyCheckInSheetController
       plan: plan,
       step: DiaryWeeklyCheckInStep.review,
       useMeasured: plan.measurement != null,
-      trainingDays: Set<DateTime>.unmodifiable(plan.suggestedTrainingDays),
+      // The user picks the days; "Wie letzter Run" plans the last ones again.
+      trainingDays: Set<DateTime>.unmodifiable(plan.fixedTrainingDays),
     );
   }
 

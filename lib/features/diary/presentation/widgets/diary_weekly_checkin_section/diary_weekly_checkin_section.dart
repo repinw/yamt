@@ -57,6 +57,9 @@ class _DiaryWeeklyCheckInSectionState
       const AsyncLoading<CalorieWeeklyCheckInData>();
   String? _hiddenWindowKey;
   String? _reopenWindowKey;
+  // Keeps the step and the choices of an open check-in while its sheet is
+  // closed, so "Fortsetzen" and the goal sheet come back to them.
+  ProviderSubscription<Object?>? _keptSheet;
 
   @override
   void initState() {
@@ -73,6 +76,7 @@ class _DiaryWeeklyCheckInSectionState
   @override
   void dispose() {
     _subscription?.close();
+    _keptSheet?.close();
     WidgetsBinding.instance.removeObserver(this);
     _dialogs.dispose();
     super.dispose();
@@ -196,26 +200,21 @@ class _DiaryWeeklyCheckInSectionState
     }
 
     final resolvedPending = pending!;
-    ProviderSubscription<Object?>? keepSheet;
+    _keptSheet?.close();
+    _keptSheet = ref.listenManual(
+      diaryWeeklyCheckInSheetControllerProvider(
+        windowStart: resolvedPending.windowStartDate,
+      ),
+      (_, _) {},
+    );
+    DiaryWeeklyCheckInSheetResult? result;
     try {
       var current = checkInData;
       var reopen = true;
       while (reopen && mounted) {
-        final result = await _showSheet(current);
-        keepSheet?.close();
-        keepSheet = null;
+        result = await _showSheet(current);
         if (!mounted) {
           return;
-        }
-        if (result?.action == DiaryWeeklyCheckInSheetAction.newGoal) {
-          // Keeps the step and the choices of the sheet while the goal
-          // sheet is open, so the reopened sheet shows them again.
-          keepSheet = ref.listenManual(
-            diaryWeeklyCheckInSheetControllerProvider(
-              windowStart: resolvedPending.windowStartDate,
-            ),
-            (_, _) {},
-          );
         }
         reopen = await _handleDialogAction(
           result: result,
@@ -226,7 +225,13 @@ class _DiaryWeeklyCheckInSectionState
         current = _dialogs.lastCheckInData ?? current;
       }
     } finally {
-      keepSheet?.close();
+      // A saved decision drops its choices in _decide; a closed, postponed,
+      // or unsaved check-in comes back to them.
+      if (result?.action
+          case DiaryWeeklyCheckInSheetAction.newGoal ||
+              DiaryWeeklyCheckInSheetAction.trackMissingWeight) {
+        _dropKeptSheet();
+      }
       _dialogs.endDialog(isMounted: () => mounted, openDialog: _openDialog);
     }
   }
@@ -299,6 +304,7 @@ class _DiaryWeeklyCheckInSectionState
       return;
     }
     if (saved) {
+      _dropKeptSheet();
       _refreshDashboard();
       return;
     }
@@ -319,6 +325,11 @@ class _DiaryWeeklyCheckInSectionState
       return;
     }
     _refreshDashboard();
+  }
+
+  void _dropKeptSheet() {
+    _keptSheet?.close();
+    _keptSheet = null;
   }
 
   void _refreshDashboard() {

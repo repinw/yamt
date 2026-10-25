@@ -5312,7 +5312,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryCheckInTrainingSubtitle =>
-      'Vorgeschlagen: deine Tage aus dem letzten Run';
+      'Tippe die Tage an, an denen du trainierst';
 
   @override
   String get diaryCheckInSessions => 'Einheiten';

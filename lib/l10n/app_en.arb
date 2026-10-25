@@ -3144,7 +3144,7 @@
   "diaryCheckInNext": "Next",
   "diaryCheckInBack": "Back",
   "diaryCheckInTrainingTitle": "When do you train?",
-  "diaryCheckInTrainingSubtitle": "Suggested: your days from the last run",
+  "diaryCheckInTrainingSubtitle": "Tap the days you train",
   "diaryCheckInSessions": "Sessions",
   "diaryCheckInSameAsLastRun": "Like last run",
   "diaryCheckInNoSession": "No session",

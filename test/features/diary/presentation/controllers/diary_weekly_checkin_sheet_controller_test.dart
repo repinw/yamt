@@ -66,14 +66,15 @@ _start({DateTime? windowStart, bool measured = true}) async {
 
 void main() {
   test(
-    'starts on the review with the measured TDEE and the suggestion',
+    'starts on the review with the measured TDEE and no training day',
     () async {
       final (:container, :provider) = await _start();
 
       final state = container.read(provider).value!;
       expect(state.step, DiaryWeeklyCheckInStep.review);
       expect(state.useMeasured, isTrue);
-      expect(state.trainingDays, state.plan.suggestedTrainingDays);
+      expect(state.trainingDays, isEmpty);
+      expect(state.plan.suggestedTrainingDays, isNotEmpty);
     },
   );
 
@@ -83,17 +84,14 @@ void main() {
     final days = container.read(provider).value!.plan.nextRunDays;
 
     controller.toggleTrainingDay(days[1]);
-    expect(container.read(provider).value!.trainingDays, contains(days[1]));
-    controller.toggleTrainingDay(days[0]);
-    expect(
-      container.read(provider).value!.trainingDays,
-      isNot(contains(days[0])),
-    );
-
-    controller.clearTrainingDays();
+    expect(container.read(provider).value!.trainingDays, {days[1]});
+    controller.toggleTrainingDay(days[1]);
     expect(container.read(provider).value!.trainingDays, isEmpty);
+
     controller.resetTrainingDays();
     expect(container.read(provider).value!.trainingDays, hasLength(3));
+    controller.clearTrainingDays();
+    expect(container.read(provider).value!.trainingDays, isEmpty);
   });
 
   test(
