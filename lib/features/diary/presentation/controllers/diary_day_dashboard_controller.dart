@@ -227,7 +227,6 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       final today = ref.read(diaryTodayProvider);
       final budget = resolveDayBudget(
         week: liveData.weekOverview,
-        today: today,
         nutrition: ref.read(dailyNutritionTargetResolverProvider),
       );
       final snapshot = DiaryDayDashboardSnapshot(

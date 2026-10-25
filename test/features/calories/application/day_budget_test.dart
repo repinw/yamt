@@ -58,7 +58,7 @@ CalorieWeekOverview _week({
 );
 
 DayBudget _budget(CalorieWeekOverview week) =>
-    resolveDayBudget(week: week, today: _today, nutrition: _Nutrition());
+    resolveDayBudget(week: week, nutrition: _Nutrition());
 
 void main() {
   final yesterday = _today.subtract(const Duration(days: 1));
@@ -74,10 +74,10 @@ void main() {
         })
       >[
         (
-          name: 'a past day gets no carryover',
+          name: 'a past day keeps its carryover, as its kcal goal does',
           week: _week(day: yesterday),
           goalKcal: 2000,
-          carryoverKcal: 0,
+          carryoverKcal: 300,
         ),
         (
           name: 'today gets its carryover',
