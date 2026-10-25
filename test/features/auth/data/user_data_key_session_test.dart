@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,19 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/device/key_backup.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
-import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
 import '../../../helpers/fake_key_backup.dart';
 
@@ -296,125 +291,6 @@ void main() {
         );
       },
     );
-  });
-
-  group('private data migration', () {
-    const entryPath = 'users/u1/calorie_entries/e1';
-
-    /// Stores the device key of u1 and an entry in the shape that app
-    /// versions before 3.3.0 saved, without `is_quick_entry`.
-    Future<void> storeEntryFromBeforeQuickEntries() async {
-      final dataKey = await PayloadCipher.newDataKey();
-      FlutterSecureStorage.setMockInitialValues(<String, String>{
-        'data_key_u1': base64Encode(await dataKey.extractBytes()),
-      });
-      final entry = CalorieEntry.create(
-        id: 'e1',
-        userId: 'u1',
-        name: 'Apfel',
-        mealType: MealType.snack,
-        consumedAmount: 150,
-        consumedUnit: ConsumedUnit.grams,
-        per100Kcal: 52,
-        per100Protein: 0.3,
-        per100Carbs: 14,
-        per100Fat: 0.2,
-        loggedAt: DateTime(2026, 9, 20, 12),
-      );
-      final oldJson = entry.toJson()..remove('is_quick_entry');
-      await firestore.doc(entryPath).set(<String, dynamic>{
-        calorieEntryLoggedAtField: entry.loggedAt,
-        encryptedPayloadField: await PayloadCipher(dataKey)
-            .encryptJson(oldJson, aad: entryPath),
-      });
-    }
-
-    /// The migration runs in the background after the key is ready.
-    Future<bool> migrationDone() async {
-      for (var i = 0; i < 50; i++) {
-        if (await const FlutterSecureStorage().read(
-              key: 'private_data_migrated_3_4_1_u1',
-            ) ==
-            'true') {
-          return true;
-        }
-        await pumpEventQueue();
-      }
-      return false;
-    }
-
-    test('adds is_quick_entry to entries from before quick entries', () async {
-      await storeEntryFromBeforeQuickEntries();
-      final container = createContainer();
-
-      final state = await signIn(container, isAnonymous: true);
-      expect(await migrationDone(), isTrue);
-
-      final cipher = (state as UserDataKeyReady).cipher;
-      final snapshot = await firestore.doc(entryPath).get();
-      final stored = await cipher.decryptJson(
-        snapshot.data()![encryptedPayloadField] as String,
-        aad: entryPath,
-      );
-      expect(stored['is_quick_entry'], isFalse);
-      final entry = await decodeCalorieEntryDocument(snapshot, cipher: cipher);
-      expect(entry.name, 'Apfel');
-    });
-
-    test('runs only once per device', () async {
-      await storeEntryFromBeforeQuickEntries();
-      final container = createContainer();
-      final state = await signIn(container, isAnonymous: true);
-      expect(await migrationDone(), isTrue);
-      final cipher = (state as UserDataKeyReady).cipher;
-      final lateEntry = <String, dynamic>{'name': 'late'};
-      await firestore.doc('users/u1/calorie_entries/e2').set(<String, dynamic>{
-        encryptedPayloadField: await cipher.encryptJson(
-          lateEntry,
-          aad: 'users/u1/calorie_entries/e2',
-        ),
-      });
-
-      container.invalidate(userDataKeySessionProvider);
-      await container.read(userDataKeySessionProvider.future);
-      for (var i = 0; i < 50; i++) {
-        await pumpEventQueue();
-      }
-
-      final snapshot = await firestore.doc('users/u1/calorie_entries/e2').get();
-      expect(
-        await cipher.decryptJson(
-          snapshot.data()![encryptedPayloadField] as String,
-          aad: 'users/u1/calorie_entries/e2',
-        ),
-        lateEntry,
-      );
-    });
-
-    test('a new data key counts as migrated without reading entries', () async {
-      final container = createContainer();
-
-      await signIn(container, isAnonymous: true);
-
-      expect(await migrationDone(), isTrue);
-    });
-
-    test('deleting the local keys also forgets the migration', () async {
-      final container = createContainer();
-      await signIn(container, isAnonymous: true);
-      expect(await migrationDone(), isTrue);
-
-      await container
-          .read(userDataKeyRepositoryProvider)!
-          .deleteLocalKeys('u1');
-
-      expect(
-        await const FlutterSecureStorage().read(
-          key: 'private_data_migrated_3_4_1_u1',
-        ),
-        isNull,
-      );
-    });
   });
 
   test('signed out without a user', () async {
