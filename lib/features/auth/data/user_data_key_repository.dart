@@ -7,8 +7,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
-import 'package:yamt/core/data/payload_cipher.dart';
-import 'package:yamt/core/data/payload_field_backfill.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/device/key_backup.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
@@ -89,35 +87,12 @@ class UserDataKeyRepository {
     return _saveFlag(_freshStartPendingName(uid), value: pending);
   }
 
-  /// Temporary migration, added in 3.4.1: removed in 3.7.0. Adds
-  /// `is_quick_entry` to calorie entries saved before 3.3.0, once per device.
-  Future<void> migratePrivateData(
-    String uid,
-    PayloadCipher cipher, {
-    required bool dataKeyIsNew,
-  }) async {
-    if (await _loadFlag(_privateDataMigratedName(uid))) {
-      return;
-    }
-    if (!dataKeyIsNew) {
-      await backfillPayloadFields(
-        collection: _firestore.collection(
-          '$_usersCollection/$uid/calorie_entries',
-        ),
-        cipher: cipher,
-        defaults: const <String, Object?>{'is_quick_entry': false},
-      );
-    }
-    await _saveFlag(_privateDataMigratedName(uid), value: true);
-  }
-
   /// Deletes everything this device and the platform backup store for [uid].
   Future<void> deleteLocalKeys(String uid) async {
     for (final name in <String>[
       _dataKeyName(uid),
       _recoveryKeyName(uid),
       _recoveryKeyConfirmedName(uid),
-      _privateDataMigratedName(uid),
     ]) {
       await _storage.delete(key: name);
     }
@@ -258,9 +233,6 @@ String _recoveryKeyName(String uid) => 'recovery_key_$uid';
 String _recoveryKeyConfirmedName(String uid) => 'recovery_key_confirmed_$uid';
 
 String _freshStartPendingName(String uid) => 'fresh_start_pending_$uid';
-
-String _privateDataMigratedName(String uid) =>
-    'private_data_migrated_3_4_1_$uid';
 
 /// User data key repository, or `null` while Firestore is unavailable.
 @Riverpod(keepAlive: true)
