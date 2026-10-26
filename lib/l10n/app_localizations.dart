@@ -9721,6 +9721,12 @@ abstract class AppLocalizations {
   /// **'“50 g cream” · “no” takes it back'**
   String get cookingGuideVoiceHint;
 
+  /// No description provided for @cookingGuideJumpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to'**
+  String get cookingGuideJumpTitle;
+
   /// No description provided for @cookingGuideNext.
   ///
   /// In en, this message translates to:
