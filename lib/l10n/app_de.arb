@@ -972,12 +972,11 @@
   "caloriesGoalReachedBody": "Du hast dein Zielgewicht erreicht. Möchtest du den aktuellen 7-Tage-Run fortsetzen oder jetzt ein neues Ziel setzen?",
   "caloriesGoalReachedContinue": "Run fortsetzen",
   "caloriesGoalReachedNewGoal": "Neues Ziel setzen",
-  "caloriesNewGoalCurrentWeight": "Aktuelles Gewicht: {weight} kg",
-  "@caloriesNewGoalCurrentWeight": {
-    "placeholders": {
-      "weight": {"type": "String"}
-    }
-  },
+  "caloriesNewGoalTitle": "Neues Ziel",
+  "caloriesNewGoalStartsOn": "Tagesziel ab {date}",
+  "caloriesNewGoalTdee": "TDEE {kcal} kcal",
+  "caloriesNewGoalTargetDetail": "Aktuelles Gewicht: {weight} kg · {mode}",
+  "caloriesNewGoalTargetLabel": "Zielgewicht",
   "caloriesCalculatorResultsTitle": "Ergebnisse",
   "caloriesCalculatorBmrLabel": "Grundumsatz",
   "caloriesCalculatorTdeeLabel": "Erhaltungskalorien",

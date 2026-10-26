@@ -2,13 +2,12 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_scroll_wheel.dart';
+import 'package:yamt/core/widgets/app_wheel_selection_band.dart';
 import 'package:yamt/features/calories/domain/calorie_age_calculator.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_field_card.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
-    'intro_wheel_selection_band.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Youngest age the calorie calculator accepts.
@@ -123,7 +122,7 @@ class IntroBirthDateCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           _MaybeExpanded(
             expand: expand,
-            child: IntroWheelSelectionBand(
+            child: AppWheelSelectionBand(
               child: Row(
                 children: [
                   Expanded(

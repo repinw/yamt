@@ -94,6 +94,83 @@ void main() {
     expect(harness.results, [false, false]);
   });
 
+  testWidgets('the cancel button closes the sheet without a goal', (
+    tester,
+  ) async {
+    final harness = await _pumpHarness(
+      tester,
+      settings: _learnedSettings(),
+      showBackButton: true,
+    );
+    await _openSheet(tester);
+
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.cancelButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
+    expect(harness.results, [false]);
+    final settings = await harness.settingsRepository.readSettings();
+    expect(settings.sortedGoalHistory, hasLength(1));
+  });
+
+  testWidgets('on a phone the sheet closes with a swipe down (#820)', (
+    tester,
+  ) async {
+    final harness = await _pumpHarness(
+      tester,
+      settings: _learnedSettings(),
+      showBackButton: true,
+      viewSize: const Size(390, 844),
+    );
+    await _openSheet(tester);
+
+    await tester.drag(
+      find.byKey(CalorieLearnedTdeeSheetKeys.goalValue),
+      const Offset(0, 600),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
+    expect(harness.results, [false]);
+  });
+
+  testWidgets('the pace wheel sets the pace of the saved goal', (tester) async {
+    final harness = await _pumpHarness(
+      tester,
+      settings: _learnedSettings(),
+      showBackButton: true,
+    );
+    await _openSheet(tester);
+
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.paceRow), findsNothing);
+    final slider = find.byType(Slider);
+    await tester.tapAt(
+      tester.getCenter(slider) - Offset(tester.getSize(slider).width / 4, 0),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.paceRow));
+    await tester.pumpAndSettle();
+    expect(find.text('0.50 kg / week'), findsWidgets);
+
+    await tester.drag(
+      find.byKey(CalorieLearnedTdeeSheetKeys.paceWheel),
+      const Offset(0, -(34 + kDragSlopDefault)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
+    await tester.pumpAndSettle();
+
+    expect(harness.results, [true]);
+    final settings = await harness.settingsRepository.readSettings();
+    final profile = settings.sortedGoalHistory.last.calculatorProfile!;
+    expect(profile.goalMode, CalorieGoalMode.lose);
+    expect(profile.goalSpeedKgPerWeek, closeTo(0.55, 0.001));
+  });
+
   testWidgets('dismissing the sheet completes without a goal', (tester) async {
     final harness = await _pumpHarness(
       tester,
@@ -177,9 +254,10 @@ Future<_Harness> _pumpHarness(
   WidgetTester tester, {
   required CalorieGoalSettings settings,
   bool showBackButton = false,
+  Size viewSize = const Size(800, 1400),
 }) async {
   tester.view
-    ..physicalSize = const Size(800, 1400)
+    ..physicalSize = viewSize
     ..devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final settingsRepository = FakeCalorieSettingsRepository(

@@ -28,6 +28,24 @@ abstract final class CalorieLearnedTdeeSheetKeys {
 
   /// The full reset button.
   static const fullResetButton = Key('calorie_learned_tdee_full_reset_button');
+
+  /// The button that closes the sheet without saving.
+  static const cancelButton = Key('calorie_learned_tdee_cancel_button');
+
+  /// The new daily target of the new-goal form.
+  static const goalValue = Key('calorie_learned_tdee_goal_value');
+
+  /// The target weight row of the new-goal form.
+  static const targetRow = Key('calorie_learned_tdee_target_row');
+
+  /// The pace row of the new-goal form.
+  static const paceRow = Key('calorie_learned_tdee_pace_row');
+
+  /// The pace wheel of the new-goal form.
+  static const paceWheel = Key('calorie_learned_tdee_pace_wheel');
+
+  /// The goal start row of the new-goal form.
+  static const startRow = Key('calorie_learned_tdee_start_row');
 }
 
 /// Defines calorie entry editor keys.

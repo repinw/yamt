@@ -3,7 +3,7 @@ import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Highlight band that marks the selected row of one or more `AppScrollWheel`s.
-class IntroWheelSelectionBand extends StatelessWidget {
+class AppWheelSelectionBand extends StatelessWidget {
   /// Creates a selection band around [child].
   const new({required this.child, super.key});
 

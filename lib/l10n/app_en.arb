@@ -1094,12 +1094,27 @@
   "caloriesGoalReachedBody": "You reached your target weight. Would you like to continue the current 7-day run or set a new goal now?",
   "caloriesGoalReachedContinue": "Continue run",
   "caloriesGoalReachedNewGoal": "Set new goal",
-  "caloriesNewGoalCurrentWeight": "Current weight: {weight} kg",
-  "@caloriesNewGoalCurrentWeight": {
+  "caloriesNewGoalTitle": "New goal",
+  "caloriesNewGoalStartsOn": "Daily target from {date}",
+  "@caloriesNewGoalStartsOn": {
     "placeholders": {
-      "weight": {"type": "String"}
+      "date": {"type": "String"}
     }
   },
+  "caloriesNewGoalTdee": "TDEE {kcal} kcal",
+  "@caloriesNewGoalTdee": {
+    "placeholders": {
+      "kcal": {"type": "String"}
+    }
+  },
+  "caloriesNewGoalTargetDetail": "Current weight: {weight} kg · {mode}",
+  "@caloriesNewGoalTargetDetail": {
+    "placeholders": {
+      "weight": {"type": "String"},
+      "mode": {"type": "String"}
+    }
+  },
+  "caloriesNewGoalTargetLabel": "Target weight",
   "caloriesCalculatorResultsTitle": "Results",
   "caloriesCalculatorBmrLabel": "Basal metabolic rate",
   "caloriesCalculatorTdeeLabel": "Maintenance calories",

@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_pace.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
-import 'package:yamt/features/onboarding/domain/goal_target_date_estimator.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/models/'
@@ -20,18 +20,6 @@ import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_warning_note.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Slowest pace the wheel offers, in kilograms per week.
-const _minimumPaceKgPerWeek = 0.05;
-
-/// Fastest pace the wheel offers, in kilograms per week.
-const _maximumPaceKgPerWeek = 1.5;
-
-/// Distance between two pace wheel items, in kilograms per week.
-const _paceStepKgPerWeek = 0.05;
-
-/// Pace the wheel starts on, in kilograms per week.
-const _defaultPaceKgPerWeek = 0.5;
 
 /// Pace above which the flow warns about an ambitious plan.
 const _ambitiousPaceKgPerWeek = 0.5;
@@ -65,7 +53,7 @@ class IntroPacePage extends StatelessWidget {
         double.tryParse(
           args.state.goalSpeedKgPerWeekText.replaceAll(',', '.'),
         ) ??
-        _defaultPaceKgPerWeek;
+        defaultGoalPaceKgPerWeek;
 
     return IntroFillPageContent(
       minFillHeight: AppIntroLayout.fillMinHeightOnePicker,
@@ -84,10 +72,10 @@ class IntroPacePage extends StatelessWidget {
             valueText: args.state.goalSpeedKgPerWeekText,
             errorText: null,
             onChanged: args.notifier.updateGoalSpeedKgPerWeek,
-            minValue: _minimumPaceKgPerWeek,
-            maxValue: _maximumPaceKgPerWeek,
-            defaultValue: _defaultPaceKgPerWeek,
-            step: _paceStepKgPerWeek,
+            minValue: minimumGoalPaceKgPerWeek,
+            maxValue: maximumGoalPaceKgPerWeek,
+            defaultValue: defaultGoalPaceKgPerWeek,
+            step: goalPaceStepKgPerWeek,
             expand: fill,
           ),
         ],
