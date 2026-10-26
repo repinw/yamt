@@ -19,6 +19,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_portion_line.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_save_bar.dart';
@@ -196,8 +198,6 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     required bool isSaving,
   }) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = FoodLabelColors.of(context);
-    final textTheme = Theme.of(context).textTheme;
     final portions = _portions ?? meal.totalPortions;
     final inPieces = _inPieces ?? meal.isServedInPieces;
     final utensilsAsync = ref.watch(kitchenUtensilListProvider);
@@ -255,14 +255,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                 },
               ),
               const SizedBox(height: AppSpacing.md),
-              Text(switch (pot.gramsPerPortion) {
-                final grams? => l10n.cookedPerPortionWeighed(
-                  grams,
-                  pot.kcalPerPortion,
-                ),
-                null when inPieces => l10n.cookedPerPiece(pot.kcalPerPortion),
-                null => l10n.cookedPerPortion(pot.kcalPerPortion),
-              }, style: textTheme.bodyMedium?.copyWith(color: colors.muted)),
+              CookedMealPortionLine(pot: pot, inPieces: inPieces),
               const SizedBox(height: AppSpacing.xxl),
               CookedMealCookbookSwitch(
                 value: _toCookbook,
