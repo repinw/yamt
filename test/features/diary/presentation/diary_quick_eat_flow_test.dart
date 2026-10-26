@@ -70,7 +70,7 @@ void main() {
   testWidgets('manual quick-eat route keeps future selected day', (
     tester,
   ) async {
-    final futureDay = DateTime.now().add(const Duration(days: 1));
+    final futureDay = addLocalDays(DateTime.now(), 1);
     final expectedDay =
         '${futureDay.year.toString().padLeft(4, '0')}-'
         '${futureDay.month.toString().padLeft(2, '0')}-'

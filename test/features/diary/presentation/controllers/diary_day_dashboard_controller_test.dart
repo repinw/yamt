@@ -509,10 +509,7 @@ void main() {
     // although its own budget stays the same.
     await container
         .read(calorieGoalControllerProvider.notifier)
-        .setPauseDay(
-          day: selectedDay.subtract(const Duration(days: 2)),
-          isPause: true,
-        );
+        .setPauseDay(day: addLocalDays(selectedDay, -2), isPause: true);
     for (var i = 0; i < 40 && !dayBeforeIsPause(); i++) {
       await Future<void>.delayed(const Duration(milliseconds: 50));
     }
@@ -684,7 +681,7 @@ CalorieWeekOverview _weekOverviewWithTodayExtraGoal({
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
-        date: normalizedDay.subtract(Duration(days: offset)),
+        date: addLocalDays(normalizedDay, -offset),
         totalKcal: 0,
         goalKcal: offset == 0 ? 2000 + todayExtraGoalKcal : 2000,
         baseGoalKcal: 2000,
@@ -697,7 +694,7 @@ CalorieWeekOverview _weekOverviewWithTodayExtraGoal({
     totalConsumedKcal: 0,
     totalGoalKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),
     remainingKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),
-    balanceStartDate: normalizedDay.subtract(const Duration(days: 6)),
+    balanceStartDate: addLocalDays(normalizedDay, -6),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: 2000 + todayExtraGoalKcal,
     goalStartsInFuture: false,

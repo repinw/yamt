@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
@@ -161,7 +162,7 @@ void main() {
 
     final entry = await controller().save(
       defaultName: 'Quick entry',
-      planDay: dateOnly(quickEntryNow).subtract(const Duration(days: 1)),
+      planDay: addLocalDays(quickEntryNow, -1),
     );
 
     expect(plans.plans.single.id, entry!.id);

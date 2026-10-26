@@ -279,10 +279,10 @@ void main() {
       ),
     );
     final container = buildContainer(repository);
-    final cappedWeekStartDate = DateTime(
-      2026,
-      4,
-    ).add(const Duration(days: burnWeekDaysPerWeek * 1001));
+    final cappedWeekStartDate = addLocalDays(
+      DateTime(2026, 4),
+      burnWeekDaysPerWeek * 1001,
+    );
 
     await syncWeek(
       container,

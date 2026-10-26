@@ -91,7 +91,7 @@ CalorieWeekOverview diaryWeekOverviewForTest({
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
-        date: normalizedDay.subtract(Duration(days: offset)),
+        date: addLocalDays(normalizedDay, -offset),
         totalKcal: dayTotals[6 - offset],
         goalKcal: goalKcal,
         entryCount: dayTotals[6 - offset] > 0 ? 1 : 0,
@@ -108,7 +108,7 @@ CalorieWeekOverview diaryWeekOverviewForTest({
     totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,
     remainingKcal: totalGoalKcal - totalConsumedKcal,
-    balanceStartDate: normalizedDay.subtract(const Duration(days: 6)),
+    balanceStartDate: addLocalDays(normalizedDay, -6),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: goalKcal,
     nextGoalStartDate: null,

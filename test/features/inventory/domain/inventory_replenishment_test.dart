@@ -18,7 +18,7 @@ InventoryItem _item(
   id: id,
   name: name,
   brand: brand,
-  entryDate: _now.subtract(Duration(days: daysAgo)),
+  entryDate: DateTime(_now.year, _now.month, _now.day - daysAgo, _now.hour),
   storeName: 'Store',
   quantity: quantity,
   initialQuantity: initialQuantity,

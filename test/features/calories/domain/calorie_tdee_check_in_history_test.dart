@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -31,8 +32,8 @@ CalorieGoalHistoryEntry _calculatorGoal() {
 }
 
 CalorieGoalHistoryEntry _checkIn({required int week, bool isRejected = false}) {
-  final windowStart = _goalStart.add(Duration(days: 7 * (week - 1)));
-  final due = windowStart.add(const Duration(days: 7));
+  final windowStart = addLocalDays(_goalStart, 7 * (week - 1));
+  final due = addLocalDays(windowStart, 7);
   return CalorieGoalHistoryEntry(
     dailyKcalGoal: 2000,
     calculatorProfile: null,
@@ -41,7 +42,7 @@ CalorieGoalHistoryEntry _checkIn({required int week, bool isRejected = false}) {
     source: CalorieGoalSource.weeklyCheckIn,
     weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
       windowStartDate: windowStart,
-      windowEndDate: due.subtract(const Duration(days: 1)),
+      windowEndDate: addLocalDays(due, -1),
       trendWeightChangePerDay: -0.07,
       lowConfidence: false,
       calculatedTdeeKcal: 2480,

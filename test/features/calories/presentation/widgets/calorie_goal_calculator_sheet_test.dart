@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -124,8 +125,8 @@ CalorieGoalSettings _learnedTdeeSettings() {
     countingStartDate: goalStartDate,
     source: CalorieGoalSource.calculator,
     weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: goalStartDate.subtract(const Duration(days: 7)),
-      windowEndDate: goalStartDate.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(goalStartDate, -7),
+      windowEndDate: addLocalDays(goalStartDate, -1),
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,
@@ -637,7 +638,7 @@ void main() {
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
-    final futureGoalStart = DateTime.now().add(const Duration(days: 2));
+    final futureGoalStart = addLocalDays(DateTime.now(), 2);
     addTearDown(repository.dispose);
 
     await tester.pumpWidget(

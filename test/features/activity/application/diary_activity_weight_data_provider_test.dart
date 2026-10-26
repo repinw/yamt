@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
@@ -17,7 +18,7 @@ void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
   test('shows the weights of all devices without activity data', () async {
-    final previousDay = selectedDay.subtract(const Duration(days: 1));
+    final previousDay = addLocalDays(selectedDay, -1);
     final container = ProviderContainer(
       overrides: [
         appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),

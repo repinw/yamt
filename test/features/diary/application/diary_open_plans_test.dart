@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/diary_open_plans.dart';
@@ -52,9 +53,9 @@ void main() {
       'on a planned tomorrow', () {
     expect(_openPlans(today: _day, plans: const []), isNull);
     expect(_openPlans(today: _day, countsPlans: true), isNull);
-    expect(_openPlans(today: _day.add(const Duration(days: 1))), isNull);
+    expect(_openPlans(today: addLocalDays(_day, 1)), isNull);
     // A tomorrow whose day before is open is a plan itself.
-    expect(_openPlans(today: _day.subtract(const Duration(days: 1))), isNull);
+    expect(_openPlans(today: addLocalDays(_day, -1)), isNull);
   });
 
   test('reminders without kcal leave nothing to count', () {

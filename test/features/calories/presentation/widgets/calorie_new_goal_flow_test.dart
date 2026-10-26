@@ -234,8 +234,7 @@ Future<void> _openSheet(WidgetTester tester) async {
 }
 
 CalorieGoalSettings _learnedSettings() {
-  final goalStartDate = normalizeLocalDay(DateTime.now())
-      .subtract(const Duration(days: 20));
+  final goalStartDate = addLocalDays(DateTime.now(), -20);
   return CalorieGoalSettings.single(
     dailyKcalGoal: 2450,
     calculatorProfile: const CalorieCalculatorProfile(
@@ -251,8 +250,8 @@ CalorieGoalSettings _learnedSettings() {
     countingStartDate: goalStartDate,
     source: CalorieGoalSource.calculator,
     weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: goalStartDate.subtract(const Duration(days: 7)),
-      windowEndDate: goalStartDate.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(goalStartDate, -7),
+      windowEndDate: addLocalDays(goalStartDate, -1),
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,

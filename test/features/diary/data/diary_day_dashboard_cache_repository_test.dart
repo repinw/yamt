@@ -103,7 +103,7 @@ void main() {
       repository.readSync(
         preferences: preferences,
         userId: userId,
-        day: day.add(const Duration(days: 1)),
+        day: addLocalDays(day, 1),
       ),
       isNull,
     );
@@ -184,7 +184,7 @@ CalorieWeekOverview _weekOverview(DateTime day) {
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
-        date: day.subtract(Duration(days: offset)),
+        date: addLocalDays(day, -offset),
         totalKcal: offset == 0 ? 120 : 0,
         goalKcal: 2000,
         entryCount: offset == 0 ? 1 : 0,
@@ -197,7 +197,7 @@ CalorieWeekOverview _weekOverview(DateTime day) {
     totalConsumedKcal: 120,
     totalGoalKcal: 14000,
     remainingKcal: 13880,
-    balanceStartDate: day.subtract(const Duration(days: 6)),
+    balanceStartDate: addLocalDays(day, -6),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: 2000,
     goalStartsInFuture: false,

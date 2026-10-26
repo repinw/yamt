@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -359,9 +360,9 @@ Future<void> _openWhenMenu(WidgetTester tester) async {
 DateTime _targetLoggedAtDate() {
   final today = DateUtils.dateOnly(_now);
   if (today.day > 1) {
-    return today.subtract(const Duration(days: 1));
+    return addLocalDays(today, -1);
   }
-  return today.subtract(const Duration(days: 2));
+  return addLocalDays(today, -2);
 }
 
 Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {

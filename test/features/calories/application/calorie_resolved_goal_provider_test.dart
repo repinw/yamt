@@ -237,7 +237,7 @@ void main() {
 
   test('does not clamp a learned resolved goal above the 1200 floor', () async {
     final today = DateTime(2026, 4, 15);
-    final sourceStart = today.subtract(const Duration(days: 7));
+    final sourceStart = addLocalDays(today, -7);
     final settings = const CalorieGoalSettings.empty()
         .applyGoalChange(
           changedAt: sourceStart,
@@ -251,7 +251,7 @@ void main() {
           source: CalorieGoalSource.weeklyCheckIn,
           weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
             windowStartDate: sourceStart,
-            windowEndDate: today.subtract(const Duration(days: 1)),
+            windowEndDate: addLocalDays(today, -1),
             trendWeightChangePerDay: 0,
             calculatedTdeeKcal: 1450,
             lowConfidence: false,

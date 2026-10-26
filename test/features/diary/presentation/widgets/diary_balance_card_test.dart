@@ -167,7 +167,7 @@ void main() {
     tester,
   ) async {
     final today = normalizeLocalDay(DateTime.now());
-    final weekStartDate = today.subtract(const Duration(days: 6));
+    final weekStartDate = addLocalDays(today, -6);
 
     await _pumpBalanceCard(
       tester,
@@ -188,7 +188,7 @@ void main() {
     tester,
   ) async {
     final today = normalizeLocalDay(DateTime.now());
-    final restartDate = today.add(const Duration(days: 1));
+    final restartDate = addLocalDays(today, 1);
 
     await _pumpBalanceCard(
       tester,
@@ -232,9 +232,7 @@ void main() {
   testWidgets('shows the practice badge for a past day before goal start', (
     tester,
   ) async {
-    final selectedDay = normalizeLocalDay(
-      DateTime.now().subtract(const Duration(days: 7)),
-    );
+    final selectedDay = addLocalDays(DateTime.now(), -7);
     final startDate = nextLocalDay(selectedDay);
 
     await _pumpBalanceCard(
@@ -257,9 +255,7 @@ void main() {
   testWidgets('keeps Burn Week live sync subscribed on non-live days', (
     tester,
   ) async {
-    final selectedDay = normalizeLocalDay(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
+    final selectedDay = addLocalDays(DateTime.now(), -1);
     var syncWatchCount = 0;
 
     await _pumpBalanceCard(
@@ -281,9 +277,7 @@ void main() {
   testWidgets('hides weekly label on non-live days without counters', (
     tester,
   ) async {
-    final selectedDay = normalizeLocalDay(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
+    final selectedDay = addLocalDays(DateTime.now(), -1);
 
     await _pumpBalanceCard(
       tester,
@@ -402,7 +396,7 @@ void main() {
       tester,
       now: now,
       selectedDay: selectedDay,
-      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      weekStartDate: addLocalDays(selectedDay, -3),
       dayTotals: const [0, 0, 0, 0, 0, 0, 900],
       runState: const BurnWeekRunState.initial(),
       showDetails: false,
@@ -434,7 +428,7 @@ void main() {
       tester,
       now: now,
       selectedDay: selectedDay,
-      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      weekStartDate: addLocalDays(selectedDay, -3),
       dayTotals: const [0, 0, 0, 0, 0, 0, 900],
       runState: const BurnWeekRunState.initial(),
       showDetails: false,
@@ -463,7 +457,7 @@ void main() {
       tester,
       now: now,
       selectedDay: selectedDay,
-      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      weekStartDate: addLocalDays(selectedDay, -3),
       dayTotals: const [0, 0, 0, 0, 0, 0, 900],
       runState: const BurnWeekRunState.initial(),
       todayFlexibleGoalKcal: 2218,
@@ -492,7 +486,7 @@ void main() {
       tester,
       now: now,
       selectedDay: selectedDay,
-      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      weekStartDate: addLocalDays(selectedDay, -3),
       dayTotals: const [0, 0, 0, 0, 0, 0, 900],
       runState: const BurnWeekRunState.initial(),
       todayFlexibleGoalKcal: 2218,
@@ -546,7 +540,7 @@ void main() {
       tester,
       now: now,
       selectedDay: selectedDay,
-      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      weekStartDate: addLocalDays(selectedDay, -3),
       dayTotals: const [0, 0, 0, 0, 0, 0, 900],
       runState: const BurnWeekRunState.initial(),
       todayFlexibleGoalKcal: 2218,
@@ -660,10 +654,8 @@ void main() {
   });
 
   testWidgets('renders future non-live day snapshot', (tester) async {
-    final selectedDay = normalizeLocalDay(
-      DateTime.now().add(const Duration(days: 1)),
-    );
-    final weekStartDate = selectedDay.subtract(const Duration(days: 6));
+    final selectedDay = addLocalDays(DateTime.now(), 1);
+    final weekStartDate = addLocalDays(selectedDay, -6);
 
     await _pumpBalanceCard(
       tester,
@@ -695,7 +687,7 @@ void main() {
     tester,
   ) async {
     final today = normalizeLocalDay(DateTime.now());
-    final nonLiveDay = today.subtract(const Duration(days: 1));
+    final nonLiveDay = addLocalDays(today, -1);
 
     await _pumpBalanceCard(
       tester,
@@ -753,9 +745,7 @@ void main() {
   });
 
   testWidgets('shows retry content when week overview fails', (tester) async {
-    final selectedDay = normalizeLocalDay(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
+    final selectedDay = addLocalDays(DateTime.now(), -1);
 
     await _pumpBalanceCard(
       tester,
@@ -978,7 +968,7 @@ CalorieWeekOverview _weekOverview({
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
-        date: normalizedSelectedDay.subtract(Duration(days: offset)),
+        date: addLocalDays(normalizedSelectedDay, -offset),
         totalKcal: dayTotals[6 - offset],
         goalKcal: goalKcal,
         baseGoalKcal: baseGoalKcal,
