@@ -1954,6 +1954,12 @@ abstract class AppLocalizations {
   /// **'Action failed. Please try again.'**
   String get inventoryItemActionFailed;
 
+  /// No description provided for @inventoryItemReanalyzeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The new estimate could not be applied.'**
+  String get inventoryItemReanalyzeFailed;
+
   /// No description provided for @inventoryItemCannotPlan.
   ///
   /// In en, this message translates to:

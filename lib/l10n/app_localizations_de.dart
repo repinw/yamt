@@ -1154,6 +1154,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Aktion fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
+  String get inventoryItemReanalyzeFailed =>
+      'Neue Schätzung konnte nicht übernommen werden.';
+
+  @override
   String get inventoryItemCannotPlan =>
       'Konnte nicht geplant werden: diese Menge braucht den Kalorien-Editor';
 

@@ -18,7 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// its name, nutrition and ingredients. The stock stays, also once some of
 /// it is eaten, and so do the diary entries already eaten.
 ///
-/// The undo snackbar goes to `messenger`, which outlives [run]'s context.
+/// The snackbars go to `messenger`, which outlives [run]'s context.
 abstract final class InventoryItemReanalyzeFlow {
   /// Runs the AI page for [item]. Returns whether the item changed; false
   /// when the user went back or saving failed.
@@ -52,12 +52,10 @@ abstract final class InventoryItemReanalyzeFlow {
       ),
     );
     if (!saved) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showAppSnackBar(
-          l10n.inventoryItemActionFailed,
-          tone: AppSnackBarTone.error,
-        );
-      }
+      messenger.showAppSnackBar(
+        l10n.inventoryItemReanalyzeFailed,
+        tone: AppSnackBarTone.error,
+      );
       return false;
     }
     messenger.showAppSnackBar(

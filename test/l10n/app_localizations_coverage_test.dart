@@ -94,6 +94,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryItemUpdatedMessage,
     l10n.inventoryItemEditRequiresFullItem,
     l10n.inventoryItemActionFailed,
+    l10n.inventoryItemReanalyzeFailed,
     l10n.inventoryItemSwapCandidateRequiresFullItem,
     l10n.inventoryBarcodeScanUnsupported,
     l10n.inventoryManualAddScanBarcodeAction,
