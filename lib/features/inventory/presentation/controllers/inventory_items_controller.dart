@@ -180,10 +180,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
-  /// Restore consumed item.
-  Future<bool> restoreConsumedItem(String itemId, int amount) =>
-      restoreConsumedItems({itemId: amount});
-
   /// Returns several amounts to their items in one write. Nothing changes
   /// when an item is missing or an amount is below 1.
   Future<bool> restoreConsumedItems(Map<String, int> amountsByItemId) {
