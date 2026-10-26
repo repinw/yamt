@@ -14,7 +14,7 @@ offset=$2
 # shortcut: a change day on 29 February lands on 1 March; fine for a test run.
 julian() {
   local date year day month
-  date=$(date -d "today $1 days" +%Y-%j-%m)
+  date=$(TZ=$run_zone date -d "today $1 days" +%Y-%j-%m)
   IFS=- read -r year day month <<<"$date"
   day=$((10#$day))
   if ((10#$month > 2)) && date -d "$year-02-29" >/dev/null 2>&1; then
@@ -22,6 +22,15 @@ julian() {
   fi
   echo "$day"
 }
+
+# The tests count today in the generated zone, so today is taken at the
+# offset that zone has on the run day: summer time (UTC+2) while its change
+# is still ahead for fall or already behind for spring, else winter time.
+if [[ $kind == fall && $offset -ge 1 || $kind == spring && $offset -le 0 ]]; then
+  run_zone=UTC-2
+else
+  run_zone=UTC-1
+fi
 
 change=$(julian "$offset")
 case "$kind" in
