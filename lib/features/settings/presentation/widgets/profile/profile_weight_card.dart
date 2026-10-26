@@ -177,9 +177,7 @@ class ProfileWeightCard extends ConsumerWidget {
       value: _kg(context, state.weight?.latestWeighInKg),
       note: day == null
           ? null
-          : l10n.profileWeighInDay(
-              today.difference(normalizeLocalDay(day)).inDays,
-            ),
+          : l10n.profileWeighInDay(localDaysBetween(day, today)),
     );
   }
 
