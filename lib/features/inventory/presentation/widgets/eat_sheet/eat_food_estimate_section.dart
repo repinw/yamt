@@ -116,7 +116,10 @@ class _EatFoodEstimateHeaderState extends ConsumerState<EatFoodEstimateHeader> {
     final items = ref.read(inventoryItemsControllerProvider.notifier);
     setState(() => _isSaving = true);
     widget.onSaving(true);
-    final saved = await items.setFoodEstimateLevel(item.id, level);
+    final saved = await items.changeAiFood(
+      item.id,
+      (stored) => stored.withFoodEstimateLevel(level),
+    );
     // Also when the head is gone, so the page does not stay blocked.
     widget.onSaving(false);
     if (!mounted) return;

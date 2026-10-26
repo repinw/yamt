@@ -235,9 +235,9 @@ class InventoryItemsController extends _$InventoryItemsController {
   Future<bool> updateItem(InventoryItem item) =>
       _mutate(false, (items) => _edits.update(items, item));
 
-  /// Prepares the AI food [itemId] at [level] (#763).
-  Future<bool> setFoodEstimateLevel(String itemId, FoodEstimateLevel level) =>
-      _mutate(false, (items) => _edits.setLevel(items, itemId, level));
+  /// Saves [change] of the AI food [itemId], which keeps its stock (#763).
+  Future<bool> changeAiFood(String itemId, AiFoodChange change) =>
+      _mutate(false, (items) => _edits.changeAiFood(items, itemId, change));
 
   /// Points [pendingItem] at the catalog product [globalFoodItemId], see
   /// [InventoryItemEditService.linkToCatalog].
