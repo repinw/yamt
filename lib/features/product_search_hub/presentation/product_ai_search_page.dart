@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -8,7 +7,6 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -17,8 +15,6 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_chip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
-import 'package:yamt/features/product_search_hub/domain/food_estimate_item.dart';
-import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -26,11 +22,11 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'food_estimate_photo_save_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'food_estimate_result_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_ai_search_result.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'photo_upload_queued_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'food_estimate_photo_input.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -243,7 +239,7 @@ class _ManualProductAiSearchPageState
           ),
         );
     if (result == null || !mounted) return;
-    final saved = await _withFoodPhotos(result);
+    final saved = await withSavedFoodPhotos(context, ref, result);
     if (!mounted) return;
     final onResult = widget.onResult;
     if (onResult != null) {
@@ -251,46 +247,5 @@ class _ManualProductAiSearchPageState
       return;
     }
     popManualProductSearchPage(context, saved);
-  }
-
-  /// [result] with the first photo as the item's image and every photo on
-  /// its AI estimate (#763). The uploads run on after the page closes; a
-  /// failed upload waits on the device for a later try. The user hears of a
-  /// failure on the app's messenger.
-  Future<ManualProductAiSearchResult> _withFoodPhotos(
-    ManualProductAiSearchResult result,
-  ) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    final List<ProductPhotoUpload> uploads;
-    try {
-      uploads = await ref
-          .read(foodEstimateControllerProvider.notifier)
-          .savePhotos();
-    } on Object catch (error, stackTrace) {
-      log(
-        'Storing the food photo failed.',
-        name: 'ManualProductAiSearchPage',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      messenger.showAppSnackBar(
-        l10n.foodEstimatePhotoNotSaved,
-        tone: AppSnackBarTone.error,
-      );
-      return result;
-    }
-    whenPhotoUploadQueued(
-      Future.wait([for (final upload in uploads) upload.done]),
-      () => messenger.showAppSnackBar(
-        l10n.photoUploadQueued,
-        tone: AppSnackBarTone.info,
-      ),
-    );
-    return result.withItem(
-      result.item.withFoodPhotos([
-        for (final upload in uploads) ?upload.frontAddress,
-      ]),
-    );
   }
 }
