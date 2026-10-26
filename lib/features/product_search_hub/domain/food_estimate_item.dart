@@ -61,7 +61,7 @@ extension FoodEstimateItemPick on InventoryItem {
     return copyWith(
       imageUrl: photoUrls.first,
       productSnapshot: productSnapshot.copyWith(
-        aiEstimate: productSnapshot.aiEstimate?.withPhotoUrls(photoUrls),
+        aiEstimate: productSnapshot.aiEstimate?.copyWith(photoUrls: photoUrls),
       ),
     );
   }

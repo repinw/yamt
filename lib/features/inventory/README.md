@@ -221,7 +221,10 @@ already documented as a reusable presentation surface.
   (one editable row of a food label), `EatTextLink`, `EatMissingValuesHint`
   with `productMissingValuesText` (the line that names a product's missing
   values), `consumedUnitSymbol`, `planSavedMessage` and `formatQuickChipAmount`
-  (the amount with a quarter glyph such as "½"; `eat_sheet_l10n.dart`), so later
+  (the amount with a quarter glyph such as "½"; `eat_sheet_l10n.dart`),
+  `foodEstimateLevelLabel` and `foodEstimateComponents` (the name of an AI
+  food's preparation level and its ingredient lines at that level;
+  `eat_food_estimate_section.dart`), so later
   features can show and edit foods in the same food label look.
 
 ## Rules

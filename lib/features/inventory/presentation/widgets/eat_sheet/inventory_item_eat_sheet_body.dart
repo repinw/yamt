@@ -243,9 +243,7 @@ class _InventoryItemEatSheetBodyState
 
   bool get _canPlan => widget.canPlan ?? widget.confirmLabel == null;
   List<ProductMissingValue>? get _missingValues {
-    if (widget.onCompleteValues == null || widget.header != null) {
-      return null;
-    }
+    if (widget.onCompleteValues == null) return null;
     return missingItemValues(
       widget.item,
       checkPackageSize: !widget.hasOpenStock,

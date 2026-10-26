@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_stock_changes.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_selection_controller.dart';
@@ -52,7 +53,7 @@ abstract final class InventoryItemHubFlow {
                 final changed = await _run(
                   hubContext,
                   ref,
-                  item,
+                  _current(ref, item),
                   action,
                   pageMessenger,
                 );
@@ -67,6 +68,7 @@ abstract final class InventoryItemHubFlow {
     if (!context.mounted) {
       return;
     }
+    final current = _current(ref, item);
     switch (result) {
       case null:
         if (!closedByAction) onDismissed?.call();
@@ -90,7 +92,7 @@ abstract final class InventoryItemHubFlow {
         final started = await InventoryItemEatFlow.stageAndComplete(
           context: context,
           container: ref.container,
-          item: item,
+          item: current,
           request: request,
         );
         if (!started && context.mounted) {
@@ -106,7 +108,7 @@ abstract final class InventoryItemHubFlow {
           await InventoryCombinedEatFlow.storeAsMeal(
             context: context,
             ref: ref,
-            item: item,
+            item: current,
             request: request,
             picks: picks,
             includesItem: includesItem,
@@ -115,13 +117,21 @@ abstract final class InventoryItemHubFlow {
           await InventoryCombinedEatFlow.eat(
             context: context,
             ref: ref,
-            item: item,
+            item: current,
             request: request,
             picks: picks,
             includesItem: includesItem,
           );
         }
     }
+  }
+
+  // An AI level chip saves the item while the hub stays open (#763); other
+  // items stay as the hub showed them.
+  static InventoryItem _current(WidgetRef ref, InventoryItem item) {
+    if (item.productSnapshot.aiEstimate == null) return item;
+    final items = ref.read(inventoryItemsControllerProvider).value;
+    return findInventoryItem(items ?? const [], item.id) ?? item;
   }
 
   static Future<bool> _run(

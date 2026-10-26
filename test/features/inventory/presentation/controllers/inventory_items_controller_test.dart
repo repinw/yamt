@@ -9,8 +9,10 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -741,6 +743,63 @@ void main() {
       <InventoryItem>[original],
     );
     expect(await repository.readAll(), <InventoryItem>[original]);
+  });
+
+  test('setFoodEstimateLevel prepares a partly eaten AI food at the new '
+      'level and keeps its stock and photos (#763)', () async {
+    const estimate = FoodEstimate(
+      name: 'Rice bowl',
+      portionGrams: 200,
+      kcalLean: 150,
+      kcalRich: 300,
+      per100: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+        per100Kcal: 100,
+      ),
+      ingredients: [],
+    );
+    final eaten = _item(id: 'a', weight: '400g').copyWith(
+      currentAmount: 250,
+      lastConsumedAt: DateTime.parse('2026-04-07T13:00:00Z'),
+      imageUrl: 'gs://yamt/users/u1/food_photos/p1.jpg',
+      nutrition: estimate.per100,
+    );
+    final original = eaten.copyWith(
+      productSnapshot: eaten.productSnapshot.copyWith(
+        aiEstimate: const SavedFoodEstimate(
+          estimate: estimate,
+          level: FoodEstimateLevel.normal,
+          description: '',
+          photoUrls: ['gs://yamt/users/u1/food_photos/p1.jpg'],
+        ),
+      ),
+    );
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[original],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+    await container.read(inventoryItemsControllerProvider.future);
+
+    final saved = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .setFoodEstimateLevel('a', FoodEstimateLevel.rich);
+
+    expect(saved, isTrue);
+    final stored = (await repository.readAll()).single;
+    expect(stored.currentAmount, 250);
+    expect(stored.imageUrl, original.imageUrl);
+    expect(stored.nutrition?.per100Kcal, closeTo(150, 0.001));
+    expect(stored.productSnapshot.aiEstimate?.level, FoodEstimateLevel.rich);
+    expect(stored.productSnapshot.aiEstimate?.photoUrls, [original.imageUrl]);
+    expect(container.read(inventoryItemsControllerProvider).value, [stored]);
   });
 
   test('updateItem rejects fully consumed items', () async {

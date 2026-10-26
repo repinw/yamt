@@ -16,6 +16,7 @@ import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_a
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_food_estimate_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_body.dart';
@@ -69,11 +70,13 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   // Below the page's snackbar messenger, so action hints show on the hub.
   final GlobalKey _cardKey = GlobalKey();
   var _isRunning = false;
+  // An AI level chip saves a new item while the hub stays open (#763).
+  late InventoryItem _item = widget.item;
   // The hub item can leave a meal; it is back once the meal is empty.
   var _hubRemoved = false;
 
   InventoryItemEatSheetControllerProvider get _sheet =>
-      inventoryItemEatSheetControllerProvider(item: widget.item);
+      inventoryItemEatSheetControllerProvider(item: _item);
 
   @override
   void initState() {
@@ -83,11 +86,9 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     }
     // Riverpod refuses changes while the first frame builds.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       final combine = ref.read(
-        inventoryItemCombineControllerProvider(widget.item.id).notifier,
+        inventoryItemCombineControllerProvider(_item.id).notifier,
       );
       widget.initialPicks.forEach(combine.addWithDefaultAmount);
       for (final (:result, :request) in widget.initialFoods) {
@@ -107,21 +108,21 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     // Watched, so the line follows the list after an undo.
     final isOnShoppingList = ref.watch(
       sourceItemInActiveShoppingListProvider((
-        name: widget.item.name,
-        brand: widget.item.brand,
-        initialQuantity: widget.item.initialQuantity,
-        unitPrice: widget.item.unitPrice,
+        name: _item.name,
+        brand: _item.brand,
+        initialQuantity: _item.initialQuantity,
+        unitPrice: _item.unitPrice,
       )),
     );
-    final combine = inventoryItemCombineControllerProvider(widget.item.id);
+    final combine = inventoryItemCombineControllerProvider(_item.id);
     final picks = ref.watch(combine);
-    final canEat = consumableInventoryAmount(widget.item) != null;
+    final canEat = consumableInventoryAmount(_item) != null;
     // A running action also blocks "Kombinieren", which closes the hub (#728).
     final actions = IgnorePointer(
       ignoring: _isRunning,
       child: InventoryItemHubActionsCard(
         key: _cardKey,
-        item: widget.item,
+        item: _item,
         isOnShoppingList: isOnShoppingList,
         onPicked: _run,
         actions: [
@@ -135,7 +136,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     );
     if (!canEat) {
       return InventoryItemUsedUpHubBody(
-        item: widget.item,
+        item: _item,
         isOnShoppingList: isOnShoppingList,
         actions: actions,
         onRun: _run,
@@ -151,9 +152,11 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     });
     final includesHub = !_hubRemoved || picks.isEmpty;
     final meal = picks.isEmpty ? null : _meal(picks, includesHub: includesHub);
-    final hasMealRuler = inventoryItemUsesFixedCalorieUnit(widget.item);
+    final hasMealRuler = inventoryItemUsesFixedCalorieUnit(_item);
     return InventoryItemEatSheetBody(
-      item: widget.item,
+      // A new item starts a new eat page, see [_takeItem].
+      key: ValueKey(_item),
+      item: _item,
       // A meal goes into the stock first; logging it is the second choice.
       confirmIntent: picks.isEmpty
           ? InventoryItemEatSheetIntent.logOnly
@@ -161,17 +164,25 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       confirmLabel: picks.isEmpty ? null : l10n.eatPageCombineStore,
       mealKcal: meal == null ? null : (kcal: meal.total.kcal),
       addMoreActionText: picks.isEmpty ? null : l10n.eatPageCombineConfirm,
-      header: meal == null
-          ? null
-          : EatMealHeader(
+      header: meal != null
+          ? EatMealHeader(
               title: combinedFoodName([
-                if (includesHub) widget.item.name,
+                if (includesHub) _item.name,
                 for (final pick in picks) pick.item.name,
               ]),
               imageUrls: [
-                if (includesHub) widget.item.imageUrl,
+                if (includesHub) _item.imageUrl,
                 for (final pick in picks) pick.item.imageUrl,
               ],
+            )
+          : _item.productSnapshot.aiEstimate == null
+          ? null
+          : EatFoodEstimateHeader(
+              item: _item,
+              enabled: !_isRunning,
+              onSaving: (saving) =>
+                  mounted ? setState(() => _isRunning = saving) : null,
+              onSaved: _takeItem,
             ),
       // In a meal the hub item's row carries its ruler.
       showAmount: meal == null || (includesHub && !hasMealRuler),
@@ -188,19 +199,20 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
         spacing: AppSpacing.xxl,
         children: [
           // The item card starts a meal; then its foods show here.
-          if (picks.isNotEmpty &&
-              InventoryCombinedEatService.canCombine(widget.item))
+          if (picks.isNotEmpty && InventoryCombinedEatService.canCombine(_item))
             // A running action blocks the add link, which closes the hub.
             IgnorePointer(
               ignoring: _isRunning,
               child: EatCombineSection(
-                hubItem: widget.item,
+                hubItem: _item,
                 includesHubItem: includesHub,
                 onRemoveHubItem: () => setState(() => _hubRemoved = true),
               ),
             ),
           // Portions are set in the meal's "Gekocht" step.
           if (meal != null) EatMealTable(meal: meal),
+          if (meal == null && _item.productSnapshot.aiEstimate != null)
+            EatFoodEstimateIngredients(item: _item),
           actions,
         ],
       ),
@@ -234,16 +246,14 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     required bool includesHub,
   }) {
     final request = result.request;
-    if (_isRunning) {
-      return;
-    }
+    if (_isRunning) return;
     if (picks.isEmpty) {
       Navigator.of(context).pop(InventoryItemHubEat(request));
       return;
     }
     final hubContext = _cardKey.currentContext;
     if (includesHub &&
-        !canDirectlySaveInventoryItemEatRequest(widget.item, request)) {
+        !canDirectlySaveInventoryItemEatRequest(_item, request)) {
       if (hubContext != null) {
         ScaffoldMessenger.of(hubContext).showAppSnackBar(
           AppLocalizations.of(context)!.inventoryItemActionFailed,
@@ -262,11 +272,17 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     );
   }
 
+  void _takeItem(InventoryItem item) {
+    final before = ref.read(_sheet);
+    setState(() => _item = item);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(_sheet.notifier).takeInput(before);
+    });
+  }
+
   Future<void> _run(InventoryItemHubAction action) async {
     final hubContext = _cardKey.currentContext;
-    if (_isRunning || hubContext == null) {
-      return;
-    }
+    if (_isRunning || hubContext == null) return;
     setState(() => _isRunning = true);
     try {
       final changed = await widget.onAction(hubContext, action);

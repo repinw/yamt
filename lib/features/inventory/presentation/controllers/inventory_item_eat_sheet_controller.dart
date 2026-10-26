@@ -203,6 +203,31 @@ class InventoryItemEatSheetController
     _update(state.copyWith(mealType: mealType));
   }
 
+  /// Takes what was entered on [before], the page of this food before its
+  /// item changed, such as to a new AI level (#763).
+  void takeInput(InventoryItemEatSheetState before) {
+    _update(
+      withAmountText(
+        state.copyWith(
+          portionAmountText: before.portionAmountText,
+          portionUnit: before.portionUnit,
+          portionLabel: () => before.portionLabel,
+          inedibleAmountText: before.inedibleAmountText,
+          isInedibleExpanded: before.isInedibleExpanded,
+          loggedAt: before.loggedAt,
+          mealType: before.mealType,
+        ),
+        before.usesPortionMode
+            ? before.portionCountText
+            : before.inventoryAmountText,
+      ).copyWith(
+        countedPortion: () => before.countedPortion,
+        didEditInventoryAmount: before.didEditInventoryAmount,
+        didEditPortion: before.didEditPortion,
+      ),
+    );
+  }
+
   /// Validates the input for [intent]. [asPlan] plans the food, even on
   /// today; [planDay] plans it on that day without showing it first, unless
   /// the input is rejected and the page stays open.
