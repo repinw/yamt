@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -9,8 +10,15 @@ import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_details_controller.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_reminder_plan_service.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 
+import '../../../../helpers/fake_prepared_meal_template_repository.dart';
+import '../../../../support/prepared_meal_test_data.dart';
+import '../../../shoppinglist/support/fake_shopping_list_repository.dart';
 import '../../support/diary_dashboard_test_support.dart';
 
 PreparedMeal _meal({int total = 3, num remaining = 3}) => PreparedMeal(
@@ -27,6 +35,28 @@ PreparedMeal _meal({int total = 3, num remaining = 3}) => PreparedMeal(
   components: const [],
 );
 
+/// Records the plans planned anew after a pick.
+class _RecordingPlanService implements PreparedMealReminderPlanService {
+  final replans = <(String, PreparedMeal)>[];
+
+  @override
+  Future<void> refresh(String mealId) async {}
+
+  @override
+  Future<void> refreshRecipes(
+    List<PreparedMeal> templates,
+    List<InventoryItem> items, {
+    Map<String, PreparedMeal> repicked = const {},
+  }) async {}
+
+  @override
+  Future<void> replanRecipePlan(
+    String planId,
+    PreparedMeal template,
+    List<InventoryItem> items,
+  ) async => replans.add((planId, template));
+}
+
 void main() {
   final today = DateTime(2026, 10, 5);
   final plan = buildConsumedPreparedMealCalorieEntry(
@@ -39,9 +69,13 @@ void main() {
   )!;
   final planDay = DateTime(2026, 10, 6);
 
-  ProviderContainer setUp(Stream<List<PreparedMeal>> meals) {
+  ProviderContainer setUp(
+    Stream<List<PreparedMeal>> meals, {
+    List<Override> overrides = const [],
+  }) {
     final container = ProviderContainer(
       overrides: [
+        ...overrides,
         clockProvider.overrideWithValue(() => DateTime(2026, 10, 5, 13)),
         inventoryQuickEatMealsProvider.overrideWith((ref) => meals),
         diaryDayDashboardControllerProvider(planDay).overrideWithValue(
@@ -279,5 +313,87 @@ void main() {
     final state = container.read(provider)!;
     expect(state.amount.amountText, '300');
     expect(state.isChanged, isFalse);
+  });
+
+  group('a picked Vorrat item', () {
+    final recipe = preparedMealTestData(id: 'stew').copyWith(
+      recipeIngredients: const ['100 g Reis', '1 Zwiebel'],
+      recipeIngredientAssignments: const {
+        '1 Zwiebel': ['onion'],
+      },
+    );
+
+    ({
+      ProviderContainer container,
+      FakePreparedMealTemplateRepository templates,
+      _RecordingPlanService plans,
+    })
+    start() {
+      final templates = FakePreparedMealTemplateRepository(templates: [recipe]);
+      final list = FakeShoppingListRepository();
+      addTearDown(list.dispose);
+      final plans = _RecordingPlanService();
+      final container = setUp(
+        Stream.value([_meal()]),
+        overrides: [
+          preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
+          shoppingListRepositoryProvider.overrideWithValue(list),
+          inventoryQuickEatItemsProvider.overrideWith(
+            (ref) => Stream.value(const <InventoryItem>[]),
+          ),
+          preparedMealReminderPlanServiceProvider.overrideWithValue(plans),
+        ],
+      );
+      return (container: container, templates: templates, plans: plans);
+    }
+
+    test('is saved on the recipe as it is stored now', () async {
+      final (:container, :templates, :plans) = start();
+      // Changed elsewhere while the picker was open.
+      templates.templates = [recipe.copyWith(name: 'Eintopf')];
+      await pumpEventQueue();
+
+      final saved = await container
+          .read(
+            diaryPlanDetailsControllerProvider(
+              plan.id,
+              planDay,
+              today,
+            ).notifier,
+          )
+          .pickIngredientItem('stew', '100 g Reis', 'rice');
+
+      expect(saved, isTrue);
+      final stored = templates.templates.single;
+      expect(stored.name, 'Eintopf');
+      expect(stored.recipeIngredientAssignments, {
+        '1 Zwiebel': ['onion'],
+        '100 g Reis': ['rice'],
+      });
+      // The plan on the page follows the pick, also with choices of its own.
+      final (planId, template) = plans.replans.single;
+      expect(planId, plan.id);
+      expect(
+        template.recipeIngredientAssignments,
+        stored.recipeIngredientAssignments,
+      );
+    });
+
+    test('says so when the save fails', () async {
+      final (:container, :templates, plans: _) = start();
+      templates.failWrites = true;
+
+      final saved = await container
+          .read(
+            diaryPlanDetailsControllerProvider(
+              plan.id,
+              planDay,
+              today,
+            ).notifier,
+          )
+          .pickIngredientItem('stew', '100 g Reis', 'rice');
+
+      expect(saved, isFalse);
+    });
   });
 }

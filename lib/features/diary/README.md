@@ -146,6 +146,10 @@ Main application adapters and mappers:
 - `presentation/diary_home_widget_summary_provider.dart` (public, read by
   `features/home_widget`)
 - `application/diary_plan_start_day_provider.dart` (earliest selectable diary day)
+- `application/diary_plan_ingredients_provider.dart` (a recipe plan's
+  ingredients with the Vorrat items they count with, and
+  `diaryPlanIngredientLines`, which pairs them with the plan's foods and
+  keeps the foods no line takes)
 - `application/diary_day_type_provider.dart` (training/rest/pause status and
   updates through the calorie goal controller)
 - `data/diary_day_dashboard_cache_repository.dart`
@@ -172,6 +176,9 @@ Main application adapters and mappers:
 - `features/inventory` for repository-backed quick-eat data, the public
   Inventory presentation flows used to complete inventory and manual-product
   entries, and the public eat page widgets of the entry details page.
+- `features/cookbook_new` for the Vorrat picker of a recipe plan's
+  ingredient on the plan details page; the pick saves on the recipe through
+  `IngredientCheckSaveService`.
 - `core/widgets` for optional shell chrome when the diary page is embedded.
 
 Keep these dependencies at page, application adapter, or complete-section

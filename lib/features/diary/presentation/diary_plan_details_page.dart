@@ -5,11 +5,13 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_details_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_plan_ingredient_rows_provider.dart';
+import 'package:yamt/features/diary/presentation/diary_plan_ingredient_pick_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_portion_formatter.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_plan_ingredients_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_action_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
@@ -97,6 +99,13 @@ class _DiaryPlanDetailsPageState extends ConsumerState<DiaryPlanDetailsPage> {
 
   late final DiaryPlanDetailsControllerProvider _provider =
       diaryPlanDetailsControllerProvider(
+        widget.plan.id,
+        normalizeLocalDay(widget.plan.loggedAt),
+        widget.today,
+      );
+
+  late final DiaryPlanIngredientRowsProvider _rows =
+      diaryPlanIngredientRowsProvider(
         widget.plan.id,
         normalizeLocalDay(widget.plan.loggedAt),
         widget.today,
@@ -201,17 +210,17 @@ class _DiaryPlanDetailsPageState extends ConsumerState<DiaryPlanDetailsPage> {
             max: state.maxPortions,
             onChanged: controller.setPortions,
           ),
-        if (preview.isBundle)
-          EatComponentsList(
-            initiallyExpanded: true,
-            components: [
-              for (final food in preview.bundleComponents)
-                (
-                  name: food.name,
-                  amount: food.amountLabel,
-                  kcal: food.totalKcal,
-                ),
-            ],
+        if (preview.isBundle || preview.bundleSourceTemplateId != null)
+          DiaryPlanIngredientsList(
+            plan: preview,
+            lines: ref.watch(_rows),
+            onPick: (line) => pickDiaryPlanIngredientFlow(
+              context,
+              ref,
+              controller: _provider,
+              templateId: preview.bundleSourceTemplateId!,
+              line: line,
+            ),
           ),
         EatActionCard(
           title: l10n.diaryPlanSemanticsLabel,

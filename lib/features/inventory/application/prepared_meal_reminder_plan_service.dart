@@ -80,31 +80,67 @@ class PreparedMealReminderPlanService {
     );
   }
 
-  /// Gives each reminder of a recipe in [templates] the recipe's values,
-  /// cooked on paper from the Vorrat [items], once none of its ingredients
-  /// lacks an item. Throws when a read or write fails.
+  /// Gives each plan of a recipe in [templates] the recipe's values,
+  /// cooked on paper from the Vorrat [items]: a reminder once none of its
+  /// ingredients lacks an item; a plan with kcal once its recipe saved
+  /// other Vorrat items, as [repicked] holds them by recipe id as they were
+  /// before. A plan with kcal that the earlier recipe would not give holds
+  /// the cook's own choices and stays. Throws when a read or write fails.
   ///
   /// shortcut: a recipe plan with kcal stays one when an ingredient loses
   /// its item; it is planned anew from the recipe page then.
   Future<void> refreshRecipes(
     List<PreparedMeal> templates,
-    List<InventoryItem> items,
-  ) {
+    List<InventoryItem> items, {
+    Map<String, PreparedMeal> repicked = const {},
+  }) {
     final byId = {for (final template in templates) template.id: template};
+    CalorieEntry? replan(CalorieEntry plan, PreparedMeal template) =>
+        replanTemplatePlan(plan, template, items: items, parser: _parser);
     return _rewrite((plan) {
       final template = byId[plan.bundleSourceTemplateId];
-      if (!plan.nutritionPending || template == null) {
+      if (template == null) {
         return null;
       }
-      final counted = replanTemplatePlan(
-        plan,
-        template,
-        items: items,
-        parser: _parser,
-      );
-      return counted == null || counted.nutritionPending ? null : counted;
+      if (!plan.nutritionPending) {
+        final before = repicked[template.id];
+        final earlier = before == null ? null : replan(plan, before);
+        // A plan the earlier recipe would not give holds the cook's own
+        // choices.
+        if (earlier == null || !_sameItems(plan, earlier)) {
+          return null;
+        }
+      }
+      final counted = replan(plan, template);
+      if (counted == null || counted.nutritionPending) {
+        return null;
+      }
+      return plan.nutritionPending || !_sameItems(plan, counted)
+          ? counted
+          : null;
     });
   }
+
+  /// Plans the plan [planId] anew from [template] with the Vorrat [items]
+  /// once the user picked an item for it, so it follows the pick even when
+  /// it held the cook's own choices. A reminder that still lacks an item
+  /// stays one. Throws when a read or write fails.
+  Future<void> replanRecipePlan(
+    String planId,
+    PreparedMeal template,
+    List<InventoryItem> items,
+  ) => _rewrite((plan) {
+    if (plan.id != planId) {
+      return null;
+    }
+    final counted = replanTemplatePlan(
+      plan,
+      template,
+      items: items,
+      parser: _parser,
+    );
+    return counted == null || counted.nutritionPending ? null : counted;
+  });
 
   /// Saves the plans that [rewrite] gives for the open and overdue plans; a
   /// plan it gives null for stays.
@@ -135,3 +171,13 @@ class PreparedMealReminderPlanService {
     _overviewRevision.markChanged();
   }
 }
+
+// Stock that only shrank or grew leaves a plan as it is. Plan components
+// keep no item id, so the foods and their values tell.
+bool _sameItems(CalorieEntry plan, CalorieEntry next) =>
+    const ListEquality<Object?>().equals(_foods(plan), _foods(next));
+
+List<Object?> _foods(CalorieEntry plan) => [
+  for (final food in plan.bundleComponents)
+    (food.name, food.brand, food.amountLabel, food.totalKcal.round()),
+];

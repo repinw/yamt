@@ -2,11 +2,11 @@ import 'dart:math' show max;
 
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_from_template.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
+import 'package:yamt/features/inventory/application/template_plan_ingredients.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
@@ -89,56 +89,6 @@ CalorieEntry? replanTemplatePlan(
       loggedAt: plan.loggedAt,
       createdAt: plan.createdAt,
     );
-
-/// The Vorrat items in [items] that supply each ingredient of [recipe], as
-/// the recipe page picks them ([ingredientStockPick]). A plan cooks from
-/// full packs, so a saved item stays even when it is used up.
-///
-/// shortcut: plans match with the lexicon of all languages; pass the app
-/// locale when a plan needs one language's food words.
-Map<String, List<String>> templatePlanAssignments(
-  PreparedMeal recipe,
-  List<InventoryItem> items, {
-  required TemplateIngredientParser parser,
-}) {
-  return {
-    for (final ingredient in recipe.recipeIngredients)
-      ingredient: _planItems(recipe, ingredient, items, parser),
-  };
-}
-
-List<String> _planItems(
-  PreparedMeal recipe,
-  String ingredient,
-  List<InventoryItem> items,
-  TemplateIngredientParser parser,
-) {
-  final saved =
-      recipe.recipeIngredientAssignments[ingredient] ?? const <String>[];
-  final candidates = ingredientStockCandidates(
-    text: ingredient,
-    requirement: parser.parseRequirement(
-      ingredient: ingredient,
-      selectedPortions: 1,
-      basePortions: 1,
-    ),
-    items: [
-      for (final item in items)
-        if (saved.contains(item.id)) _fullPack(item) else item,
-    ],
-    localeCode: null,
-    amountConversion:
-        recipe.recipeIngredientAmountConversions[ingredient.trim()],
-  );
-  return [
-    for (final item in ingredientStockPick(
-      recipe: recipe,
-      text: ingredient,
-      candidates: candidates,
-    ))
-      item.id,
-  ];
-}
 
 /// The stock [plan] of the Kochbuch [template] takes from each Vorrat item
 /// in [items], by item id, in the item's stored unit: the recipe cooked on
@@ -237,13 +187,8 @@ PlanUnstockedIngredient _unstocked(
 
 // A plan takes no stock, so each item counts as a full pack.
 List<InventoryItem> _fullPacks(List<InventoryItem> items) => [
-  for (final item in items) _fullPack(item),
+  for (final item in items) templatePlanFullPack(item),
 ];
-
-InventoryItem _fullPack(InventoryItem item) => item.copyWith(
-  quantity: max(item.quantity, item.initialQuantity),
-  currentAmount: max(item.currentAmount, item.initialAmount),
-);
 
 PreparedMealBuildResult? _cookedOnPaper(
   PreparedMeal recipe, {

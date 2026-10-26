@@ -44,6 +44,9 @@ templates list and the old cooking flow.
 - `presentation/widgets/cookbook_cook_actions.dart` (`cookbookCookActions`):
   the actions that the home shell shows in its action panel on the Kochbuch
   tab.
+- `presentation/widgets/recipe_stock_picker_sheet.dart`
+  (`showRecipeStockPicker`): the sheet that picks the Vorrat item of an
+  ingredient; the diary's plan details use it for a recipe plan.
 
 ## Rules
 

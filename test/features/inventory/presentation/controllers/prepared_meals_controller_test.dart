@@ -1236,6 +1236,14 @@ class _RecordingReminderPlanService implements PreparedMealReminderPlanService {
   @override
   Future<void> refreshRecipes(
     List<PreparedMeal> templates,
+    List<InventoryItem> items, {
+    Map<String, PreparedMeal> repicked = const {},
+  }) async {}
+
+  @override
+  Future<void> replanRecipePlan(
+    String planId,
+    PreparedMeal template,
     List<InventoryItem> items,
   ) async {}
 }

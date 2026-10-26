@@ -1469,6 +1469,11 @@
   "diaryPlanAcceptRecipePending": "Match every ingredient of the recipe to a stock item first",
   "diaryPlanAcceptRecipeGone": "The recipe is no longer in the cookbook",
   "diaryPlanNutritionPending": "kcal open",
+  "diaryPlanIngredientSaveFailed": "Couldn't save the choice.",
+  "diaryPlanIngredientsLoadFailed": "Couldn't load the recipe's ingredients.",
+  "@diaryPlanIngredientsLoadFailed": {
+    "description": "Shown on the plan details when the recipe lines of a plan could not be read."
+  },
   "diaryPlanShortTag": "Not in stock",
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance could not be loaded",

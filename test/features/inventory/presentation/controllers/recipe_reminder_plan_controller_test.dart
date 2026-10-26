@@ -19,6 +19,7 @@ class _RecordingReminderPlanService implements PreparedMealReminderPlanService {
   bool fails = false;
   Completer<void>? gate;
   final refreshes = <(List<PreparedMeal>, List<InventoryItem>)>[];
+  final repicks = <Map<String, PreparedMeal>>[];
 
   @override
   Future<void> refresh(String mealId) async {}
@@ -26,14 +27,23 @@ class _RecordingReminderPlanService implements PreparedMealReminderPlanService {
   @override
   Future<void> refreshRecipes(
     List<PreparedMeal> templates,
-    List<InventoryItem> items,
-  ) async {
+    List<InventoryItem> items, {
+    Map<String, PreparedMeal> repicked = const {},
+  }) async {
     refreshes.add((templates, items));
+    repicks.add(repicked);
     await gate?.future;
     if (fails) {
       throw StateError('The plans could not be read.');
     }
   }
+
+  @override
+  Future<void> replanRecipePlan(
+    String planId,
+    PreparedMeal template,
+    List<InventoryItem> items,
+  ) async {}
 }
 
 void main() {
@@ -111,5 +121,55 @@ void main() {
       [recipe],
       [recipe],
     ]);
+  });
+
+  test('names the recipes whose saved Vorrat items changed', () async {
+    final recipe = preparedMealTestData(id: 'stew');
+
+    await change([recipe]);
+    await change([
+      recipe.copyWith(
+        recipeIngredientAssignments: const {
+          '200 g Reis': ['rice'],
+        },
+      ),
+    ]);
+    await change([
+      recipe.copyWith(
+        name: 'Eintopf',
+        recipeIngredientAssignments: const {
+          '200 g Reis': ['rice'],
+        },
+      ),
+    ]);
+
+    expect(
+      [for (final repicked in service.repicks) repicked.keys.toSet()],
+      [
+        <String>{},
+        {'stew'},
+        <String>{},
+      ],
+    );
+    // The recipe as it was before the change.
+    expect(service.repicks[1]['stew'], recipe);
+  });
+
+  test('a failed refresh keeps the recipes with other items for the next '
+      'change', () async {
+    final recipe = preparedMealTestData(id: 'stew');
+    final repicked = recipe.copyWith(
+      recipeIngredientAssignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+    await change([recipe]);
+
+    service.fails = true;
+    await change([repicked]);
+    service.fails = false;
+    await change([repicked.copyWith(name: 'Eintopf')]);
+
+    expect(service.repicks.last, {'stew': recipe});
   });
 }

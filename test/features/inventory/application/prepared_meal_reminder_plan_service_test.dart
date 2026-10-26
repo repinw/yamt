@@ -228,6 +228,131 @@ void main() {
       expect(container.read(calorieOverviewRevisionProvider), revision);
     });
 
+    PreparedMeal repicked() => _recipe.copyWith(
+      recipeIngredientAssignments: const {
+        '200 g Oats': ['oats-light'],
+      },
+    );
+    final cheaper = _oats.copyWith(
+      id: 'oats-light',
+      nutrition: const GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 300,
+        per100Protein: 10,
+        per100Carbs: 50,
+        per100Fat: 5,
+      ),
+    );
+    CalorieEntry counted() => replanTemplatePlan(
+      _recipeReminder(),
+      _recipe,
+      items: [_oats],
+      parser: const TemplateIngredientParser(),
+    )!;
+
+    test('give a counted plan the item the recipe takes now', () async {
+      plans.plans.add(counted());
+
+      await container
+          .read(preparedMealReminderPlanServiceProvider)
+          .refreshRecipes(
+            [repicked()],
+            [_oats, cheaper],
+            repicked: {'recipe': _recipe},
+          );
+
+      expect(plans.plans.single.totalKcal, closeTo(300, 0.01));
+    });
+
+    test(
+      'leave a counted plan alone while its recipe keeps its items',
+      () async {
+        // Planned with the cook's changes for this time; the saved recipe
+        // differs.
+        plans.plans.add(counted());
+        final revision = container.read(calorieOverviewRevisionProvider);
+
+        await container
+            .read(preparedMealReminderPlanServiceProvider)
+            .refreshRecipes([repicked()], [_oats, cheaper]);
+
+        expect(plans.plans.single.totalKcal, closeTo(400, 0.01));
+        expect(container.read(calorieOverviewRevisionProvider), revision);
+      },
+    );
+
+    test("leave a counted plan alone that holds the cook's own pick", () async {
+      // Counted with the light oats for this cooking only.
+      plans.plans.add(
+        replanTemplatePlan(
+          _recipeReminder(),
+          repicked(),
+          items: [_oats, cheaper],
+          parser: const TemplateIngredientParser(),
+        )!,
+      );
+
+      await container
+          .read(preparedMealReminderPlanServiceProvider)
+          .refreshRecipes(
+            [
+              _recipe.copyWith(
+                recipeIngredientAssignments: const {
+                  '200 g Oats': ['oats'],
+                },
+              ),
+            ],
+            [_oats, cheaper],
+            repicked: {'recipe': _recipe},
+          );
+
+      expect(plans.plans.single.totalKcal, closeTo(300, 0.01));
+    });
+
+    test('plan the plan a pick was made on anew, also with its own '
+        'choices', () async {
+      // Both counted with the light oats for one cooking only.
+      final ownPick = replanTemplatePlan(
+        _recipeReminder(),
+        repicked(),
+        items: [_oats, cheaper],
+        parser: const TemplateIngredientParser(),
+      )!;
+      plans.plans.addAll([ownPick, ownPick.copyWith(id: 'other')]);
+
+      await container
+          .read(preparedMealReminderPlanServiceProvider)
+          .replanRecipePlan(
+            ownPick.id,
+            _recipe.copyWith(
+              recipeIngredientAssignments: const {
+                '200 g Oats': ['oats'],
+              },
+            ),
+            [_oats, cheaper],
+          );
+
+      final kcalById = {
+        for (final plan in plans.plans) plan.id: plan.totalKcal.round(),
+      };
+      expect(kcalById, {ownPick.id: 400, 'other': 300});
+    });
+
+    test('leave a counted plan alone while its items stay', () async {
+      plans.plans.add(counted());
+      final revision = container.read(calorieOverviewRevisionProvider);
+
+      await container
+          .read(preparedMealReminderPlanServiceProvider)
+          .refreshRecipes(
+            [_recipe],
+            [_oats.copyWith(currentAmount: 300)],
+            repicked: {'recipe': _recipe},
+          );
+
+      expect(container.read(calorieOverviewRevisionProvider), revision);
+    });
+
     test('leave a plan alone that changed while they were counted', () async {
       final reminder = _recipeReminder();
       final changed = reminder.copyWith(

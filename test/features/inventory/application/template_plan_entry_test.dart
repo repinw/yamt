@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/template_plan_entry.dart';
+import 'package:yamt/features/inventory/application/template_plan_ingredients.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -195,5 +196,34 @@ void main() {
       'Salz': ['Salz'],
       'Pfeffer': <String>[],
     });
+  });
+
+  test('a recipe plan lists each line with its item and the other '
+      'candidates', () {
+    InventoryItem rice(String id) =>
+        _item(id, currentAmount: 500).copyWith(name: id);
+    final recipe = _template(
+      ingredients: const ['100 g Reis', '1 Prise Salz', '50 g Mehl'],
+      assignments: const {
+        '100 g Reis': ['Reiswaffeln'],
+      },
+    ).copyWith(ignoredRecipeIngredients: const ['1 Prise Salz']);
+
+    final lines = templatePlanIngredients(recipe, [
+      rice('Reis'),
+      rice('Reiswaffeln'),
+    ], parser: const TemplateIngredientParser());
+
+    // An ignored line is left out; a line without an item has none.
+    expect(
+      [for (final line in lines) line.ingredient],
+      ['100 g Reis', '50 g Mehl'],
+    );
+    expect([for (final item in lines.first.items) item.id], ['Reiswaffeln']);
+    expect(
+      {for (final item in lines.first.candidates) item.id},
+      {'Reis', 'Reiswaffeln'},
+    );
+    expect(lines.last.items, isEmpty);
   });
 }

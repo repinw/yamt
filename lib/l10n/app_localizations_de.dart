@@ -2738,6 +2738,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryPlanNutritionPending => 'kcal offen';
 
   @override
+  String get diaryPlanIngredientSaveFailed =>
+      'Die Wahl konnte nicht gespeichert werden.';
+
+  @override
+  String get diaryPlanIngredientsLoadFailed =>
+      'Die Zutaten des Rezepts konnten nicht geladen werden.';
+
+  @override
   String get diaryPlanShortTag => 'Fehlt im Vorrat';
 
   @override
