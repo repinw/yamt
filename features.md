@@ -710,6 +710,16 @@ and feature description docs. This is product-facing; architecture rules stay in
   other users' scans or a shared serving suggestion; its last serving is
   remembered for its user only (#701). AI foods saved before the mark existed are
   not known as such.
+- The Vorrat eat page of an AI food shows lean / normal / rich chips under
+  its name and its ingredients, collapsed, below the amount. A chip saves
+  the level on the item at once: its nutrition follows the level from then
+  on, also for a partly eaten food, and entries already eaten keep theirs.
+  Eating waits until the level is saved (#763).
+- "Neu analysieren", the first line of its item card, opens the AI page
+  with the food's photos and description. "Übernehmen" on the result
+  replaces the name, nutrition, portion, estimate and photos; the stock and
+  the dates stay, also for a partly eaten food. Photos removed there go.
+  Only photos added there are uploaded. The snackbar can undo it (#763).
 - The product editor looks like the eat page: image, brand and name as
   inputs, package size with a unit switch, and the nutrition label with an
   input per 100 g. All seven values of the EU label (energy, fat, saturates,

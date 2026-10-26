@@ -575,6 +575,29 @@ void main() {
     expect((eat! as InventoryItemHubEat).request.inventoryAmount, 120);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('an AI food offers to estimate it again from the item card '
+      '(#763)', (tester) async {
+    final actions = <InventoryItemHubAction>[];
+    await tester.pumpWidget(
+      _buildHarness(
+        open: _openRecording(actions, item: _bowl),
+        items: FakeInventoryItemRepository([_bowl]),
+      ),
+    );
+    await _pumpVisibleStep(tester);
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+
+    final reanalyze = find.byKey(EatItemActionsCard.reanalyzeKey);
+    await tester.ensureVisible(reanalyze);
+    await _pumpVisibleStep(tester);
+    await tester.tap(reanalyze);
+    await _pumpVisibleStep(tester);
+
+    expect(actions, [InventoryItemHubAction.reanalyze]);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 double _rulerValue(WidgetTester tester) {

@@ -52,7 +52,13 @@ class InventoryItemHubActionsCard extends ConsumerWidget {
         );
     return EatItemActionsCard(
       isOnShoppingList: isOnShoppingList,
-      actions: actions,
+      actions: [
+        for (final action in actions)
+          // Only an AI food has an estimate to run again.
+          if (action != InventoryItemHubAction.reanalyze ||
+              item.productSnapshot.aiEstimate != null)
+            action,
+      ],
       onPicked: onPicked,
       onInedible: offersInedible
           ? () => ref.read(sheet.notifier).openInedible()

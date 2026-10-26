@@ -39,6 +39,7 @@ class FoodEstimateResultPage extends StatefulWidget {
     required this.initialMealType,
     this.offersEatInstead = false,
     this.imageBytes,
+    this.takesOver = false,
     super.key,
   });
 
@@ -66,6 +67,10 @@ class FoodEstimateResultPage extends StatefulWidget {
 
   /// First photo of the food.
   final Uint8List? imageBytes;
+
+  /// Whether the result takes over a stored AI food ("Übernehmen"), whose
+  /// stock stays, so the page shows no amount (#763).
+  final bool takesOver;
 
   @override
   State<FoodEstimateResultPage> createState() => _FoodEstimateResultPageState();
@@ -96,7 +101,12 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
       key: ValueKey(_generation),
       item: _item(estimate.portionGrams.round()),
       confirmIntent: InventoryItemEatSheetIntent.logOnly,
-      confirmLabel: widget.eatsNow ? null : l10n.foodEstimateAddToStock,
+      confirmLabel: widget.eatsNow
+          ? null
+          : widget.takesOver
+          ? l10n.foodEstimateApply
+          : l10n.foodEstimateAddToStock,
+      showAmount: !widget.takesOver,
       initialInventoryAmount: _grams,
       initialLoggedAt: _loggedAt,
       initialMealType: _mealType,

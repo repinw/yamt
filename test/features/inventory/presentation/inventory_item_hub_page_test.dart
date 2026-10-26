@@ -305,4 +305,12 @@ void main() {
     expect(find.byKey(EatItemActionsCard.combineKey), findsNothing);
     expect(find.byKey(const Key('eat_item_action_edit')), findsOneWidget);
   });
+
+  testWidgets('a food without an AI estimate offers no new estimate (#763)', (
+    tester,
+  ) async {
+    await _openHub(tester, _eggs);
+
+    expect(find.byKey(EatItemActionsCard.reanalyzeKey), findsNothing);
+  });
 }

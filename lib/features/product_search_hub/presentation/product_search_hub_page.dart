@@ -82,6 +82,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
         quickEatConfig: productSearchHubQuickEatConfig(widget.args),
         initialAction: widget.args.initialManualProductAction,
         offersEatInstead: widget.args.offersEatInstead,
+        reestimates: widget.args.reestimates,
         onResult: (result) => _runWhenIdle(() => _completeAiResult(result)),
       );
     }
@@ -134,6 +135,8 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   Future<void> _completeAiResult(ManualProductAiSearchResult result) async {
     await _completeCreatedEntry(productSearchHubAiEntryResult(result));
     if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    // A food estimated again takes only an estimate, never a search pick.
+    if (widget.args.reestimates) return _closeHub();
     setState(() => _showsAiPage = false);
   }
 

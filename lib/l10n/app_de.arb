@@ -2445,6 +2445,7 @@
   "foodEstimateOverline": "KI-Schätzung",
   "foodEstimateReanalyze": "Neu analysieren",
   "foodEstimateAddToStock": "In Vorrat",
+  "foodEstimateApply": "Übernehmen",
   "foodEstimateLevelLean": "mager",
   "foodEstimateLevelNormal": "normal",
   "foodEstimateLevelRich": "reichhaltig",

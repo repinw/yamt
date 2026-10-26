@@ -9,6 +9,7 @@ class InventoryManualProductSearchRequest {
     required this.item,
     this.includeStoreInSearch = true,
     this.includeWeightInSearch = true,
+    this.startsWithAi = false,
   });
 
   /// Base inventory item.
@@ -19,4 +20,8 @@ class InventoryManualProductSearchRequest {
 
   /// Whether weight is included in search text.
   final bool includeWeightInSearch;
+
+  /// Whether the hub opens the AI page right away, which starts from the
+  /// item's own estimate when it has one (#763).
+  final bool startsWithAi;
 }

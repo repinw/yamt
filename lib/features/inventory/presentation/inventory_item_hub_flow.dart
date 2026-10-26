@@ -13,6 +13,7 @@ import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_s
 import 'package:yamt/features/inventory/presentation/inventory_combined_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_reanalyze_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_remove_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
@@ -160,6 +161,12 @@ abstract final class InventoryItemHubFlow {
         pageMessenger,
       ),
       InventoryItemHubAction.replace => _replace(hubContext, ref, item),
+      InventoryItemHubAction.reanalyze => InventoryItemReanalyzeFlow.run(
+        context: hubContext,
+        ref: ref,
+        item: item,
+        messenger: pageMessenger,
+      ),
     };
   }
 

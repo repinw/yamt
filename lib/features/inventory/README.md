@@ -8,8 +8,11 @@ discard events, and inventory-backed calorie handoff context.
 - Inventory item domain models, amount parsing, consumption, discard events.
 - The AI food estimate (`domain/food_estimate.dart`). An item made from an
   estimate keeps it in its product snapshot (`SavedFoodEstimate`: the
-  estimate, the chosen level, the description). A swap keeps the estimate
-  of a new AI food and drops it for any other food (#763).
+  estimate, the chosen level, the description, the photo addresses). A swap
+  keeps the estimate of a new AI food and drops it for any other food. A new
+  level and a new estimate ("Neu analysieren",
+  `InventoryItemReanalyzeFlow`) go through `changeAiFood`, which keeps the
+  stock, also of a partly eaten food (#763).
 - Household inventory activity events and timeline UI for shared stock changes.
 - Prepared meal domain models and mutation workflows.
 - Inventory repositories and stores for Firestore-backed inventory data. The

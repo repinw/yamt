@@ -102,6 +102,10 @@ class _FakePhotoRepository extends Fake implements ProductPhotoRepository {
   Exception? saveError;
   final saved = <ProductPhoto>[];
   final upload = Completer<void>();
+  final stored = <String, Uint8List>{};
+
+  @override
+  Future<Uint8List> readPrivatePhoto(String address) async => stored[address]!;
 
   @override
   Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) async {
@@ -160,6 +164,8 @@ Future<void> _pumpPage(
   bool offersEatInstead = false,
   String initialPrompt = '',
   VoiceSearchService? voice,
+  InventoryItem? item,
+  bool reestimates = false,
 }) async {
   final router = GoRouter(
     routes: [
@@ -169,13 +175,26 @@ Future<void> _pumpPage(
           body: Center(
             child: FilledButton(
               onPressed: () async {
+                if (reestimates) {
+                  // The hub passes this flag; the route args have none.
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => ManualProductAiSearchPage(
+                        item: item ?? _placeholderItem(),
+                        reestimates: true,
+                        onResult: onResult,
+                      ),
+                    ),
+                  );
+                  return;
+                }
                 onResult(
                   await pushManualProductSearchPage<
                     ManualProductAiSearchResult
                   >(
                     context: context,
                     args: ManualProductSearchRouteArgs.aiSearch(
-                      item: _placeholderItem(),
+                      item: item ?? _placeholderItem(),
                       initialPrompt: initialPrompt,
                       showEatImmediatelyOption: fromDiary || offersEatInstead,
                       initialAction:
@@ -579,5 +598,51 @@ void main() {
 
     expect(find.text('The photos show no food.'), findsOneWidget);
     expect(find.text('What are you eating?'), findsOneWidget);
+  });
+
+  testWidgets('a stored AI food starts from its photos and description and '
+      'takes the new estimate without storing them again (#763)', (
+    tester,
+  ) async {
+    const stored = 'gs://yamt/users/u1/food_photos/old.jpg';
+    final placeholder = _placeholderItem();
+    final item = placeholder.copyWith(
+      productSnapshot: placeholder.productSnapshot.copyWith(
+        aiEstimate: const SavedFoodEstimate(
+          estimate: _doener,
+          level: FoodEstimateLevel.normal,
+          description: 'Restaurant',
+          photoUrls: [stored],
+        ),
+      ),
+    );
+    ManualProductAiSearchResult? pageResult;
+    final photos = _FakePhotoRepository()..stored[stored] = _pixel;
+    final repository = _FakeFoodEstimateRepository((_) async => _doener);
+    await _pumpPage(
+      tester,
+      repository: repository,
+      photos: photos,
+      item: item,
+      reestimates: true,
+      onResult: (result) => pageResult = result,
+    );
+
+    expect(find.text('Restaurant'), findsOneWidget);
+    expect(
+      tester
+          .widget<FoodEstimatePhotoInput>(find.byType(FoodEstimatePhotoInput))
+          .photos,
+      hasLength(1),
+    );
+    await _analyze(tester);
+    expect(repository.descriptions.last, 'Restaurant');
+    expect(repository.sentPhotoCounts.last, 1);
+
+    await tester.tap(find.text('Apply'));
+    await tester.pumpAndSettle();
+
+    expect(photos.saved, isEmpty);
+    expect(pageResult?.item.productSnapshot.aiEstimate?.photoUrls, [stored]);
   });
 }

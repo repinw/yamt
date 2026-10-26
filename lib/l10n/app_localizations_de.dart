@@ -4881,6 +4881,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get foodEstimateAddToStock => 'In Vorrat';
 
   @override
+  String get foodEstimateApply => 'Übernehmen';
+
+  @override
   String get foodEstimateLevelLean => 'mager';
 
   @override

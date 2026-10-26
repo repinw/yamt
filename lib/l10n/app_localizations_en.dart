@@ -4809,6 +4809,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodEstimateAddToStock => 'Add to stock';
 
   @override
+  String get foodEstimateApply => 'Apply';
+
+  @override
   String get foodEstimateLevelLean => 'lean';
 
   @override
