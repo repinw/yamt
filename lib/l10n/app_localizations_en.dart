@@ -1140,6 +1140,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemActionFailed => 'Action failed. Please try again.';
 
   @override
+  String get inventoryItemReanalyzeFailed =>
+      'The new estimate could not be applied.';
+
+  @override
   String get inventoryItemCannotPlan =>
       'Could not plan: this amount needs the calorie editor';
 

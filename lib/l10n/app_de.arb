@@ -658,6 +658,7 @@
   "inventoryItemEditRequiresFullItem": "Du kannst den Artikel nur bearbeiten, solange er noch vollständig vorhanden ist.",
   "inventoryItemSwapCandidateRequiresFullItem": "Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.",
   "inventoryItemActionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
+  "inventoryItemReanalyzeFailed": "Neue Schätzung konnte nicht übernommen werden.",
   "inventoryItemCannotPlan": "Konnte nicht geplant werden: diese Menge braucht den Kalorien-Editor",
   "inventoryBarcodeScanUnsupported": "Barcode-Scan wird aktuell auf Android und iOS unterstützt.",
   "inventoryManualAddHint": "Scanne einen Barcode. Danach kannst du das Produkt prüfen, speichern oder Nährwerte ergänzen.",
