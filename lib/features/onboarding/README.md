@@ -107,8 +107,6 @@ Contains pure onboarding-specific logic:
 
 - `calorie_goal_onboarding_preferences.dart`: Defines the per-user completion
   preference key and marker value.
-- `goal_target_date_estimator.dart`: Estimates the day the target weight is
-  reached from the current weight, the target weight, and the weekly pace.
 - `intro_activity_option.dart`: The four weekly activity levels onboarding
   offers and the calculator level each maps to. The calculator's extreme level
   is not offered here; it stays reachable from the calorie settings, and an
@@ -169,7 +167,8 @@ Contains the page, the intro flow, and its pages:
     `intro_page_content.dart` (header on top of it), and
     `intro_fill_page_content.dart` (header on top, footer above the controls,
     pickers fill the rest; `intro_picker_stack.dart` splits that height).
-  - Pickers: `core/widgets/app_scroll_wheel.dart` with `intro_wheel_selection_band.dart`,
+  - Pickers: `core/widgets/app_scroll_wheel.dart` with
+    `core/widgets/app_wheel_selection_band.dart`,
     `intro_vertical_wheel_field.dart`, `intro_birth_date_card.dart`,
     `intro_weekday_selector.dart`, all inside `intro_field_card.dart`.
   - Choices and results: `intro_choice_card.dart` on `intro_selectable_card.dart`,

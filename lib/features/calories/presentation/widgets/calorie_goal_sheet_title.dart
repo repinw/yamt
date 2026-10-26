@@ -35,7 +35,8 @@ class CalorieGoalSheetTitle extends StatelessWidget {
     }
     return Row(
       children: [
-        IconButton(
+        // Tonal, so the arrow stands out in light and dark themes (#820).
+        IconButton.filledTonal(
           key: CalorieGoalCalculatorSheetKeys.sheetBackButton,
           tooltip: AppLocalizations.of(context)!.caloriesCalculatorBackAction,
           onPressed: enabled ? () => Navigator.of(context).pop() : null,

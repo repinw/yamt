@@ -3364,11 +3364,35 @@ abstract class AppLocalizations {
   /// **'Set new goal'**
   String get caloriesGoalReachedNewGoal;
 
-  /// No description provided for @caloriesNewGoalCurrentWeight.
+  /// No description provided for @caloriesNewGoalTitle.
   ///
   /// In en, this message translates to:
-  /// **'Current weight: {weight} kg'**
-  String caloriesNewGoalCurrentWeight(String weight);
+  /// **'New goal'**
+  String get caloriesNewGoalTitle;
+
+  /// No description provided for @caloriesNewGoalStartsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily target from {date}'**
+  String caloriesNewGoalStartsOn(String date);
+
+  /// No description provided for @caloriesNewGoalTdee.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE {kcal} kcal'**
+  String caloriesNewGoalTdee(String kcal);
+
+  /// No description provided for @caloriesNewGoalTargetDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Current weight: {weight} kg · {mode}'**
+  String caloriesNewGoalTargetDetail(String weight, String mode);
+
+  /// No description provided for @caloriesNewGoalTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target weight'**
+  String get caloriesNewGoalTargetLabel;
 
   /// No description provided for @caloriesCalculatorResultsTitle.
   ///

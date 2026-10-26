@@ -1,9 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_scroll_wheel.dart';
+import 'package:yamt/core/widgets/app_wheel_selection_band.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_field_card.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
-    'intro_wheel_selection_band.dart';
 
 /// Vertical scroll wheel for a numeric onboarding value.
 ///
@@ -96,7 +95,7 @@ class IntroVerticalWheelField extends StatelessWidget {
           : '$introFieldEmptyValue $unit',
       errorText: errorText,
       expand: expand,
-      child: IntroWheelSelectionBand(
+      child: AppWheelSelectionBand(
         child: AppScrollWheel(
           itemCount: _itemCount,
           selectedIndex: _currentIndex,

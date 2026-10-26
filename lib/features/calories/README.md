@@ -217,10 +217,20 @@ weight is right here because the macros need a calm level, not a slope.
 
 When a calculator profile exists, the calculator flow shows one "Your body
 data" step (`CalorieGoalBodySummary`) instead of the sex, height, and age
-steps, and the learned TDEE goal sheet shows the same list. Its "Edit in
+steps, and the learned TDEE sheet shows the same list when it edits the
+running goal. Its "Edit in
 profile" link closes the goal sheet and opens `AppRoutes.homeProfile`, where
 the body data is edited. Weight, activity level, and the goal stay in the
 flow, because a new goal asks them anew.
+
+#### New Goal From the Learned TDEE
+
+`CalorieNewGoalForm` is the learned TDEE sheet when it starts a new goal: the
+new daily target on top, then rows for the target weight
+(`CalorieTargetWeightSelector`), the pace (`CalorieGoalPaceWheel`), and the
+start day. Only one row's control is open at a time, so the sheet stays short
+enough to swipe away. The pace range and the reach estimate live in
+`domain/calorie_goal_pace.dart`, which onboarding uses too.
 
 #### Body Data Edits
 

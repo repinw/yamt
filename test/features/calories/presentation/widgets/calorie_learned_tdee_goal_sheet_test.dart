@@ -719,7 +719,7 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Current weight: 64 kg'), findsOneWidget);
+    expect(find.text('Current weight: 64 kg · Maintain'), findsOneWidget);
     expect(
       find.byKey(CalorieLearnedTdeeSheetKeys.fullResetButton),
       findsNothing,

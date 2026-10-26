@@ -1938,9 +1938,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesGoalReachedNewGoal => 'Set new goal';
 
   @override
-  String caloriesNewGoalCurrentWeight(String weight) {
-    return 'Current weight: $weight kg';
+  String get caloriesNewGoalTitle => 'New goal';
+
+  @override
+  String caloriesNewGoalStartsOn(String date) {
+    return 'Daily target from $date';
   }
+
+  @override
+  String caloriesNewGoalTdee(String kcal) {
+    return 'TDEE $kcal kcal';
+  }
+
+  @override
+  String caloriesNewGoalTargetDetail(String weight, String mode) {
+    return 'Current weight: $weight kg · $mode';
+  }
+
+  @override
+  String get caloriesNewGoalTargetLabel => 'Target weight';
 
   @override
   String get caloriesCalculatorResultsTitle => 'Results';

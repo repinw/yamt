@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/onboarding/domain/goal_target_date_estimator.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_pace.dart';
 
 void main() {
   final today = DateTime(2026, 9, 17);
@@ -59,5 +59,12 @@ void main() {
       ),
       isNull,
     );
+  });
+
+  test('snapGoalPace rounds to the picker steps and range', () {
+    expect(snapGoalPace(0.33), 0.35);
+    expect(snapGoalPace(0.5), 0.5);
+    expect(snapGoalPace(2), 1.5);
+    expect(snapGoalPace(0.01), 0.05);
   });
 }

@@ -319,8 +319,15 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Calorie calculator using sex, weight, height, age, activity level, goal mode,
   and goal speed. Once the body data is known, setting a new goal lists sex,
   height, and age as a plain list with "Edit in profile" instead of asking
-  them again; the link closes the goal sheet and opens the profile page. The
-  learned TDEE goal sheet shows the same list.
+  them again; the link closes the goal sheet and opens the profile page.
+  Editing the running goal from the learned TDEE shows the same list.
+- Setting a new goal from the learned TDEE is one short sheet: the new daily
+  target on top, then one row each for the target weight, the pace, and the
+  start day. Tapping the target or pace row opens its slider or wheel below
+  it; the pace wheel offers the onboarding's 0.05 to 1.5 kg per week and
+  shows when the target is reached at that pace. Body data is edited in the
+  profile. The sheet has a drag handle, closes with a swipe down, and has
+  "Abbrechen" next to "Ziel speichern".
 - Learned TDEE recalculation from tracked data: a daily estimate from the
   first goal on; the weekly check-in takes its value at the end of the week,
   and the TDEE of past runs shows the daily estimate too.
@@ -345,7 +352,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   training and rest day split and the macros before and after. "Woche
   starten" saves the choice and the training days. A reached goal shows a
   congratulations page instead of the look back. The goal sheet that the
-  check-in opens has a back arrow. Leaving it without a new goal, by the
+  check-in opens has a tonal back arrow. Leaving it without a new goal, by the
   arrow, "Abbrechen", or a swipe, opens the check-in again on the same step
   with the choices made so far, still undecided. A check-in swiped away or
   put off with "Später" also keeps its step and choices for "Fortsetzen"
