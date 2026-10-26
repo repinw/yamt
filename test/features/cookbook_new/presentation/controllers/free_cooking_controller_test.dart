@@ -79,6 +79,7 @@ class _FakeCookingService implements PreparedMealCookingService {
     required bool servedInPieces,
     required int? potTareWeight,
     required int? finalNetWeight,
+    String? name,
   }) => throw UnimplementedError();
 
   @override

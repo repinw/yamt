@@ -74,4 +74,22 @@ class FreeCookingRow {
 extension FreeCookingRowCounts on List<FreeCookingRow> {
   /// Number of rows that the Vorrat supplies.
   int get inStockCount => where((row) => row.isInStock).length;
+
+  /// A name for the dish from its first three foods, for example
+  /// "Reis, Hähnchen, Brokkoli", or `null` without rows. Rows with an
+  /// amount come before seasonings, and a row the Vorrat supplies takes
+  /// the item's name.
+  String? get suggestedName {
+    final foods = <String, String>{};
+    for (final row in [
+      ...where((row) => row.requirement != null),
+      ...where((row) => row.requirement == null),
+    ]) {
+      final food = (row.stockItem?.name ?? row.foodName).trim();
+      if (food.isNotEmpty) {
+        foods.putIfAbsent(food.toLowerCase(), () => food);
+      }
+    }
+    return foods.isEmpty ? null : foods.values.take(3).join(', ');
+  }
 }

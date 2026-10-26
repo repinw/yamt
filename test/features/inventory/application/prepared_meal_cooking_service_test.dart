@@ -177,6 +177,57 @@ void main() {
     expect(PreparedMeal.fromJson(meal.toJson()), meal);
   });
 
+  test('finishCooking renames the meal unless the name is blank', () async {
+    final meals = _FakeMealRepository();
+    final service = _service(
+      meals,
+      _FakeInventoryRepository([_rice()]),
+      _FakeActivityRepository(),
+    );
+    await service.cook(
+      name: 'Reis',
+      ingredients: const ['200 g Reis'],
+      assignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+    final mealId = meals.saved.single.id;
+
+    final blank = await service.finishCooking(
+      mealId: mealId,
+      totalPortions: 2,
+      servedInPieces: false,
+      potTareWeight: null,
+      finalNetWeight: null,
+      name: '  ',
+    );
+    expect(blank.name, 'Reis');
+
+    final mealsRenamed = _FakeMealRepository();
+    final renamer = _service(
+      mealsRenamed,
+      _FakeInventoryRepository([_rice()]),
+      _FakeActivityRepository(),
+    );
+    await renamer.cook(
+      name: 'Reis',
+      ingredients: const ['200 g Reis'],
+      assignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+    final renamed = await renamer.finishCooking(
+      mealId: mealsRenamed.saved.single.id,
+      totalPortions: 2,
+      servedInPieces: false,
+      potTareWeight: null,
+      finalNetWeight: null,
+      name: ' Reispfanne ',
+    );
+    expect(renamed.name, 'Reispfanne');
+    expect(mealsRenamed.saved.single.name, 'Reispfanne');
+  });
+
   test('finishCooking counts a meal in pieces without weights', () async {
     final meals = _FakeMealRepository();
     final service = _service(

@@ -15,8 +15,8 @@ class CookedMealController extends _$CookedMealController {
   @override
   FutureOr<void> build(String mealId) {}
 
-  /// Marks the meal as cooked with [totalPortions], counted in pieces when
-  /// [servedInPieces], and with the pot's
+  /// Marks the meal as cooked under [name] with [totalPortions], counted in
+  /// pieces when [servedInPieces], and with the pot's
   /// [potTareWeight] and the food's [netWeight] when it was weighed. Returns
   /// the cooked meal, or `null` when it failed.
   Future<PreparedMeal?> save({
@@ -24,6 +24,7 @@ class CookedMealController extends _$CookedMealController {
     required bool servedInPieces,
     required int? potTareWeight,
     required int? netWeight,
+    String? name,
   }) async {
     final link = ref.keepAlive();
     state = const AsyncLoading();
@@ -37,6 +38,7 @@ class CookedMealController extends _$CookedMealController {
               servedInPieces: servedInPieces,
               potTareWeight: netWeight == null ? null : potTareWeight,
               finalNetWeight: netWeight,
+              name: name,
             ),
       );
       if (result case AsyncError(:final error, :final stackTrace)) {

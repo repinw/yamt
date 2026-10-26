@@ -15,11 +15,12 @@ abstract final class CookedMealSaveFlow {
   /// cookbook.
   static const cookbookFailedKey = ValueKey<String>('cooked-cookbook-failed');
 
-  /// Marks [meal] as cooked with [portions], counted in pieces when
-  /// [servedInPieces], and with the pot's [tareWeight] and the food's
-  /// [netWeight] when known. With [toCookbook] the cooked meal also becomes
-  /// a cookbook template. A failed cooking stays on the page and says so; a
-  /// failed template only says so, because the meal is in the Vorrat.
+  /// Marks [meal] as cooked, renamed to [name] unless it is `null`, with
+  /// [portions], counted in pieces when [servedInPieces], and with the
+  /// pot's [tareWeight] and the food's [netWeight] when known. With
+  /// [toCookbook] the cooked meal also becomes a cookbook template. A failed
+  /// cooking stays on the page and says so; a failed template only says so,
+  /// because the meal is in the Vorrat.
   static Future<void> save({
     required BuildContext context,
     required WidgetRef ref,
@@ -29,6 +30,7 @@ abstract final class CookedMealSaveFlow {
     required bool toCookbook,
     required int? tareWeight,
     required int? netWeight,
+    required String? name,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
@@ -38,6 +40,7 @@ abstract final class CookedMealSaveFlow {
       servedInPieces: servedInPieces,
       potTareWeight: tareWeight,
       netWeight: netWeight,
+      name: name,
     );
     if (!context.mounted) {
       return;
@@ -63,8 +66,8 @@ abstract final class CookedMealSaveFlow {
     } else {
       messenger.showAppSnackBar(
         inCookbook
-            ? l10n.cookedSavedWithCookbook(meal.name)
-            : l10n.cookedSaved(meal.name),
+            ? l10n.cookedSavedWithCookbook(cooked.name)
+            : l10n.cookedSaved(cooked.name),
       );
     }
   }
