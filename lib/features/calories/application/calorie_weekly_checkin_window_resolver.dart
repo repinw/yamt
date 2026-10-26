@@ -123,9 +123,7 @@ CalorieLearnedTdeeFreshness resolveCalorieLearnedTdeeFreshness({
   if (learnedAt == null) {
     return CalorieLearnedTdeeFreshness.none;
   }
-  final daysSinceLearned = today
-      .difference(normalizeLocalDay(learnedAt))
-      .inDays;
+  final daysSinceLearned = localDaysBetween(learnedAt, today);
   if (daysSinceLearned >= learnedTdeeUrgentStaleAfterDays) {
     return CalorieLearnedTdeeFreshness.urgent;
   }
@@ -211,9 +209,10 @@ DateTime resolveCalorieWeeklyWindowEndDate({
 int calorieWeeklyWindowLengthDays(
   PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
 ) {
-  return pendingWeeklyCheckIn.windowEndDate
-          .difference(pendingWeeklyCheckIn.windowStartDate)
-          .inDays +
+  return localDaysBetween(
+        pendingWeeklyCheckIn.windowStartDate,
+        pendingWeeklyCheckIn.windowEndDate,
+      ) +
       1;
 }
 

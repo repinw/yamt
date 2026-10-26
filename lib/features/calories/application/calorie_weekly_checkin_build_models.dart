@@ -61,7 +61,7 @@ class CalorieWeeklyCheckInWindowDates {
   final DateTime nextBoundaryDay;
 
   int dayIndexFor(DateTime day) {
-    return normalizeLocalDay(day).difference(learningStartDate).inDays;
+    return localDaysBetween(learningStartDate, day);
   }
 }
 
