@@ -84,7 +84,7 @@ class _FakeFoodEstimateRepository implements FoodEstimateRepository {
   @override
   Future<List<FoodEstimatePhoto>> loadPhotos({required bool fromCamera}) async {
     photoSources.add(fromCamera);
-    return [(mimeType: 'image/png', bytes: _pixel)];
+    return [(mimeType: 'image/png', bytes: _pixel, address: null)];
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -82,8 +83,13 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
 
 class _ManualProductAiSearchPageState
     extends ConsumerState<ManualProductAiSearchPage> {
-  late final _description = TextEditingController(text: widget.initialPrompt)
-    ..addListener(() => setState(() {}));
+  // A stored AI food starts from its description and photos (#763).
+  late final SavedFoodEstimate? _saved = widget.item.productSnapshot.aiEstimate;
+  late final _description = TextEditingController(
+    text: widget.initialPrompt.isEmpty
+        ? _saved?.description ?? ''
+        : widget.initialPrompt,
+  )..addListener(() => setState(() {}));
   final _voice = TextVoiceSearchController();
   late final VoiceSearchService _voiceService;
 
@@ -91,6 +97,16 @@ class _ManualProductAiSearchPageState
   void initState() {
     super.initState();
     _voiceService = ref.read(voiceSearchServiceProvider);
+    if (_saved case final saved?) {
+      // Riverpod refuses changes while the page mounts.
+      unawaited(
+        Future.microtask(
+          () => ref
+              .read(foodEstimateControllerProvider.notifier)
+              .loadStoredPhotos(saved.photoUrls),
+        ),
+      );
+    }
   }
 
   @override

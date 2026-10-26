@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -105,6 +106,10 @@ class _Photos implements ProductPhotoRepository {
 
   @override
   Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Uint8List> readPrivatePhoto(String address) =>
       throw UnimplementedError();
 }
 

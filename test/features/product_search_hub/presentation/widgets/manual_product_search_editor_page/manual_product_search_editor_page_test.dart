@@ -94,6 +94,10 @@ class _FakePhotoRepository implements ProductPhotoRepository {
       done: Completer<void>().future,
     );
   }
+
+  @override
+  Future<Uint8List> readPrivatePhoto(String address) =>
+      throw UnimplementedError();
 }
 
 Future<void> _pumpEditor(
