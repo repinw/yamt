@@ -156,6 +156,78 @@ void main() {
     ]);
   });
 
+  test('a weak match the cook picks still fills its row (#842)', () {
+    final cakes = InventoryItem.create(
+      id: 'cakes',
+      name: 'Reiswaffeln',
+      entryDate: DateTime.utc(2026, 9),
+      storeName: 'Store',
+      quantity: 1,
+      initialAmount: 500,
+      currentAmount: 500,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+
+    expect(_filledRows('200 g Reis', [cakes]), ['200 g Reis']);
+  });
+
+  test('an added weak match does not fill an open row by itself (#842)', () {
+    final now = DateTime.utc(2026, 10);
+    PreparedMealComponent component(InventoryItem item) =>
+        PreparedMealComponent(
+          inventoryItemId: item.id,
+          name: item.name,
+          brand: null,
+          imageUrl: null,
+          usedAmount: 200,
+          usedUnit: InventoryAmountUnit.gram,
+          totalKcal: 0,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+          sourceItemSnapshot: item,
+        );
+    final meal = PreparedMeal(
+      id: 'pan',
+      name: 'Pfanne',
+      totalPortions: 1,
+      remainingPortions: 1,
+      totalKcal: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      createdAt: now,
+      updatedAt: now,
+      components: const <PreparedMealComponent>[],
+      pendingRecipeIngredients: const ['200 g Reis'],
+    );
+    final cakes = InventoryItem.create(
+      id: 'cakes',
+      name: 'Reiswaffeln',
+      entryDate: now,
+      storeName: 'Store',
+      quantity: 1,
+      initialAmount: 500,
+      currentAmount: 500,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+
+    expect(
+      reconciledPendingRecipeIngredients(
+        currentMeal: meal,
+        components: [component(cakes)],
+      ).rows,
+      ['200 g Reis'],
+    );
+    expect(
+      reconciledPendingRecipeIngredients(
+        currentMeal: meal,
+        components: [component(_rice('rice', grams: 600))],
+      ).rows,
+      isEmpty,
+    );
+  });
+
   test('foods that share a row are linked to their own share of it', () {
     // Unassigning them opens rows that add up to the row again.
     expect(

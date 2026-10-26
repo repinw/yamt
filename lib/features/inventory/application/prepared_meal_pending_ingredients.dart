@@ -242,11 +242,10 @@ bool _coverageSatisfiesRequirement({
       coverage.remainingAmount < requirement.amount) {
     return false;
   }
-  return ingredientInventoryMatchScore(
-        ingredient: requirement.name,
-        item: component.sourceItemSnapshot,
-      ) >
-      0;
+  return ingredientMatchesFully(
+    ingredient: requirement.name,
+    item: component.sourceItemSnapshot,
+  );
 }
 
 TemplateIngredientRequirement? _parsePendingRequirement(String ingredient) {

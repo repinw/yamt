@@ -263,4 +263,50 @@ void main() {
       );
     }
   });
+
+  group('a weak compound match is only offered (#842)', () {
+    const rice = '100 g Reis';
+    final riceRequirement = const TemplateIngredientParser().parseRequirement(
+      ingredient: rice,
+      selectedPortions: 1,
+      basePortions: 1,
+    );
+    final cakes = _item('cakes', 'Reiswaffeln', InventoryAmountUnit.gram);
+
+    test('alone, it supplies nothing but can be picked', () {
+      final (:matches, :others) = ingredientStockCandidates(
+        text: rice,
+        requirement: riceRequirement,
+        items: [cakes],
+        localeCode: 'de',
+      );
+
+      expect(matches, isEmpty);
+      expect(others.map((item) => item.id), ['cakes']);
+      expect(
+        bestIngredientStockMatch(
+          text: rice,
+          requirement: riceRequirement,
+          items: [cakes],
+          localeCode: 'de',
+        ),
+        isNull,
+      );
+    });
+
+    test('the food as the last part supplies the line before it', () {
+      final (:matches, :others) = ingredientStockCandidates(
+        text: rice,
+        requirement: riceRequirement,
+        items: [
+          cakes,
+          _item('basmati', 'Basmatireis', InventoryAmountUnit.gram),
+        ],
+        localeCode: 'de',
+      );
+
+      expect(matches.map((item) => item.id), ['basmati']);
+      expect(others.map((item) => item.id), contains('cakes'));
+    });
+  });
 }

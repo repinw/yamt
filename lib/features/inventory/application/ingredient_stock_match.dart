@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:yamt/features/inventory/application/ingredient_inventory_matcher.dart';
 import 'package:yamt/features/inventory/application/recipe_ingredient_assignment_support.dart';
+import 'package:yamt/features/inventory/domain/ingredient_compound_head.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -20,10 +21,11 @@ InventoryItem? bestIngredientStockMatch({
     return null;
   }
   final scored = _scored(text, items, localeCode);
+  final best = _bestFullScore(scored);
   return scored
       .firstWhereOrNull(
         (match) =>
-            _standsIn(match.score, scored) &&
+            _standsIn(match, best) &&
             ingredientItemFits(match.item, requirement, amountConversion),
       )
       ?.item;
@@ -35,7 +37,8 @@ InventoryItem? bestIngredientStockMatch({
 /// unit by name. Only the matches supply the line by default, so a weaker
 /// match never stands in for a better one kept in another unit: no other
 /// rice for "100 g Testreis" when Testreis is kept in pieces, and no
-/// "Milchreis" for "300 ml Milch" (#785).
+/// "Milchreis" for "300 ml Milch" (#785). A weak match, such as
+/// "Reiswaffeln" for "Reis", is only among the `others` (#842).
 ///
 /// An ingredient that names no amount, such as "Salz", fits any item of its
 /// name ([ingredientNamesNoAmount]), and only its name matches count. A
@@ -53,17 +56,18 @@ ingredientStockCandidates({
     return (matches: const <InventoryItem>[], others: const <InventoryItem>[]);
   }
   final scored = _scored(text, items, localeCode);
+  final best = _bestFullScore(scored);
   final matches = <InventoryItem>[];
   final weaker = <InventoryItem>[];
-  for (final (:item, :score) in scored) {
-    if (ingredientItemFits(item, requirement, amountConversion)) {
-      (_standsIn(score, scored) ? matches : weaker).add(item);
+  for (final match in scored) {
+    if (ingredientItemFits(match.item, requirement, amountConversion)) {
+      (_standsIn(match, best) ? matches : weaker).add(match.item);
     }
   }
   if (requirement == null) {
     return (matches: matches, others: weaker);
   }
-  final named = {for (final (:item, score: _) in scored) item.id};
+  final named = {for (final match in scored) match.item.id};
   final rest =
       [
         for (final item in items)
@@ -160,24 +164,37 @@ final _amountHint = RegExp(
   caseSensitive: false,
 );
 
-// The items not used up that match [text], best first. Every item gets a
-// name score, not only the fitting ones, so a better match in another unit
+// The items not used up that match [text], best first, each marked when it
+// matches only weakly ([isWeakIngredientMatch]). Every item gets a name
+// score, not only the fitting ones, so a better match in another unit
 // keeps a weaker one from standing in.
-List<({InventoryItem item, int score})> _scored(
+List<_Scored> _scored(
   String text,
   List<InventoryItem> items,
   String? localeCode,
-) => scoreInventoryItemsForIngredient(
-  ingredient: text,
-  inventoryItems: items,
-  localeCode: localeCode,
-);
+) => [
+  for (final (:item, :score) in scoreInventoryItemsForIngredient(
+    ingredient: text,
+    inventoryItems: items,
+    localeCode: localeCode,
+  ))
+    (
+      item: item,
+      score: score,
+      weak: isWeakIngredientMatch(ingredient: text, item: item),
+    ),
+];
 
-// Whether a name match of [score] matches as well as the best of [scored],
-// so it may supply a line. Compound words make "Milchreis" score more than
-// half of "Milch" (#785), so no weaker match counts.
-bool _standsIn(int score, List<({InventoryItem item, int score})> scored) =>
-    score == scored.first.score;
+typedef _Scored = ({InventoryItem item, int score, bool weak});
+
+// The best score of [scored] that is not weak, or `null`.
+int? _bestFullScore(List<_Scored> scored) =>
+    scored.firstWhereOrNull((match) => !match.weak)?.score;
+
+// Whether [match] matches as well as the [best] match that is not weak, so
+// it may supply a line. Compound words make "Milchreis" score more than half
+// of "Milch" (#785), so no weaker match counts.
+bool _standsIn(_Scored match, int? best) => !match.weak && match.score == best;
 
 /// Whether [item] is kept in a unit that can supply [requirement], with the
 /// recipe's saved [amountConversion] for pieces, whatever it still holds.

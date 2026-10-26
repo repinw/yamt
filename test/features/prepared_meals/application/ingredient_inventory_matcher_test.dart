@@ -279,4 +279,23 @@ void main() {
       isEmpty,
     );
   });
+
+  test('a weak match is no Vorrat food for the line (#842)', () {
+    expect(
+      hasInventoryItemForIngredient(
+        ingredient: 'Reis',
+        inventoryItems: [_item(id: 'cakes', name: 'Reiswaffeln')],
+        localeCode: 'de',
+      ),
+      isFalse,
+    );
+    expect(
+      hasInventoryItemForIngredient(
+        ingredient: 'Reis',
+        inventoryItems: [_item(id: 'basmati', name: 'Basmatireis')],
+        localeCode: 'de',
+      ),
+      isTrue,
+    );
+  });
 }

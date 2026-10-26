@@ -870,6 +870,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   or "fehlt"; the title counts "2 von 3 da". Only the food that matches the
   name best counts: when "Testreis" is kept in pieces, "100 g Testreis"
   stays "fehlt" and no other rice stands in.
+  A compound that only starts with the food, such as "Reiswaffeln" for
+  "Reis", "Heringsfilet" for "Hering", or an item "Milch" for "Milchreis",
+  is a weak match: it never fills the row or counts as stock, but "Aus dem
+  Vorrat" offers it. "Basmatireis" for "Reis" ends in the food and fills
+  the row, and so does a recipe amount word after the food, as in
+  "Knoblauchzehen" or "Tomatenstücke"; so do "Buttermilch" for "Milch" and
+  "Milchreis" for "Reis" (#891).
   A swipe removes a row. "nein" at the start of what was said takes the rows
   added last out again, and "nein, 200 g Sahne" swaps them for the
   correction, as in the Kochhelfer.
