@@ -14,6 +14,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_food_estimate_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'inventory_item_eat_sheet_body.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -118,7 +120,7 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
             children: [
               for (final level in FoodEstimateLevel.values)
                 EatChip(
-                  label: _levelLabel(l10n, level),
+                  label: foodEstimateLevelLabel(l10n, level),
                   isSelected: level == _level,
                   onPressed: () => _pickLevel(level),
                 ),
@@ -126,21 +128,12 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
           ),
           EatComponentsList(
             initiallyExpanded: true,
-            components: [
-              for (final ingredient in estimate.ingredientsAt(
-                _level,
-                grams: (_grams ?? 0).toDouble(),
-              ))
-                (
-                  name: ingredient.name,
-                  amount: eatComponentAmount(
-                    l10n,
-                    ingredient.grams.roundToDouble(),
-                    InventoryAmountUnit.gram,
-                  ),
-                  kcal: ingredient.kcal,
-                ),
-            ],
+            components: foodEstimateComponents(
+              l10n,
+              estimate,
+              _level,
+              grams: _grams,
+            ),
           ),
         ],
       ),
@@ -212,13 +205,5 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
         eatRequest: eatRequest,
       ),
     );
-  }
-
-  static String _levelLabel(AppLocalizations l10n, FoodEstimateLevel level) {
-    return switch (level) {
-      FoodEstimateLevel.lean => l10n.foodEstimateLevelLean,
-      FoodEstimateLevel.normal => l10n.foodEstimateLevelNormal,
-      FoodEstimateLevel.rich => l10n.foodEstimateLevelRich,
-    };
   }
 }

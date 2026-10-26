@@ -196,12 +196,15 @@ class SavedFoodEstimate {
   @JsonKey(required: true)
   final List<String> photoUrls;
 
-  /// This estimate with [photoUrls].
-  SavedFoodEstimate withPhotoUrls(List<String> photoUrls) => SavedFoodEstimate(
+  /// This estimate with [level] or [photoUrls] in place of its own.
+  SavedFoodEstimate copyWith({
+    FoodEstimateLevel? level,
+    List<String>? photoUrls,
+  }) => SavedFoodEstimate(
     estimate: estimate,
-    level: level,
+    level: level ?? this.level,
     description: description,
-    photoUrls: photoUrls,
+    photoUrls: photoUrls ?? this.photoUrls,
   );
 
   /// The stored form.

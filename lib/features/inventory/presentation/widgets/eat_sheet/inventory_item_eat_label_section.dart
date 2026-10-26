@@ -22,6 +22,7 @@ class InventoryItemEatLabelSection extends StatelessWidget {
     this.brand,
     this.caption,
     this.imageBytes,
+    this.belowHeader,
     super.key,
   });
 
@@ -39,6 +40,9 @@ class InventoryItemEatLabelSection extends StatelessWidget {
 
   /// Local image in place of the item's image.
   final Uint8List? imageBytes;
+
+  /// Content between the header and the nutrition label.
+  final Widget? belowHeader;
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +67,7 @@ class InventoryItemEatLabelSection extends StatelessWidget {
           heroTag: HeroTags.stockItemImage(item.id),
           fallbackLetter: inventoryPictureLetter(item.name),
         ),
+        ?belowHeader,
         if (nutrition != null)
           EatLabelTable(
             key: const Key('inventory_item_nutrition_table'),

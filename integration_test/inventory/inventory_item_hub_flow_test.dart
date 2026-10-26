@@ -1,12 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -17,6 +24,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_combine_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_food_estimate_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_inedible_line.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -34,6 +43,7 @@ import 'package:yamt/features/inventory/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/helpers/auth_user_data_key_session.dart';
+import '../../test/helpers/fake_inventory_item_repository.dart';
 
 const _openKey = Key('open_item_hub');
 const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
@@ -149,6 +159,30 @@ final InventoryItem _blueberries = _gramItem(
 final InventoryItem _oats = _gramFood('item-oats', 'Haferflocken', stock: 500);
 final InventoryItem _rice = _gramFood('item-rice', 'Reis', stock: 250);
 
+/// An AI food with a normal preparation.
+final InventoryItem _bowl = () {
+  final item = _gramFood('item-bowl', 'Rice bowl', stock: 400);
+  return item.copyWith(
+    aiEstimated: true,
+    productSnapshot: item.productSnapshot.copyWith(
+      aiEstimate: SavedFoodEstimate(
+        estimate: FoodEstimate(
+          name: 'Rice bowl',
+          portionGrams: 200,
+          kcalLean: 600,
+          kcalRich: 900,
+          per100: item.nutrition!,
+          ingredients: const [
+            FoodEstimateIngredient(name: 'Rice', grams: 200, kcal: 740),
+          ],
+        ),
+        level: FoodEstimateLevel.normal,
+        description: '',
+      ),
+    ),
+  );
+}();
+
 /// Opens a hub from the harness button.
 typedef _HubOpener = Future<void> Function(BuildContext context, WidgetRef ref);
 
@@ -183,16 +217,27 @@ _HubOpener _openRecording(
 Future<void> _openFlow(BuildContext context, WidgetRef ref) =>
     InventoryItemHubFlow.open(context: context, ref: ref, item: _eggs);
 
-Widget _buildHarness({required _HubOpener open}) {
+Widget _buildHarness({
+  required _HubOpener open,
+  FakeInventoryItemRepository? items,
+}) {
   // Signed out: the hub's shopping list and serving reads stay empty.
   final container = ProviderContainer(
     overrides: [
+      if (items != null) ...[
+        firebaseFirestoreProvider.overrideWith((ref) => null),
+        inventoryItemRepositoryProvider.overrideWithValue(items),
+      ],
       userProfileProvider.overrideWith((ref) => Stream.value(null)),
       authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
       userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
     ],
   );
   addTearDown(container.dispose);
+  // The app keeps the Vorrat warm, so a chip's save outlives its tap.
+  if (items != null) {
+    container.listen(inventoryItemsControllerProvider, (_, _) {});
+  }
 
   return UncontrolledProviderScope(
     container: container,
@@ -481,6 +526,53 @@ void main() {
     final picks = (meal! as InventoryItemHubMeal).picks;
     expect(picks.single.item.id, _rice.id);
     expect(picks.single.request.inventoryAmount, 137);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an AI food saves a new level from its chip and eats the '
+      'amount entered before (#763)', (tester) async {
+    final items = FakeInventoryItemRepository([_bowl]);
+    final results = <InventoryItemHubResult?>[];
+    await tester.pumpWidget(
+      _buildHarness(
+        open: _openRecording(
+          <InventoryItemHubAction>[],
+          item: _bowl,
+          onResult: results.add,
+        ),
+        items: items,
+      ),
+    );
+    await _pumpVisibleStep(tester);
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+
+    await tester.enterText(find.byKey(EatAmountRuler.fieldKey), '120');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await _pumpVisibleStep(tester);
+    final rich = find.byKey(
+      EatFoodEstimateHeader.levelKey(FoodEstimateLevel.rich),
+    );
+    await tester.ensureVisible(rich);
+    await _pumpVisibleStep(tester);
+    await tester.tap(rich);
+    await _pumpVisibleStep(tester);
+
+    final saved = items.items.single;
+    expect(saved.productSnapshot.aiEstimate!.level, FoodEstimateLevel.rich);
+    expect(
+      saved.nutrition,
+      saved.productSnapshot.aiEstimate!.estimate.per100At(
+        FoodEstimateLevel.rich,
+      ),
+    );
+    expect(_fieldText(tester, find.byKey(EatAmountRuler.fieldKey)), '120');
+    await tester.tap(find.byKey(_confirmKey));
+    await _pumpVisibleStep(tester);
+
+    final eat = results.single;
+    expect(eat, isA<InventoryItemHubEat>());
+    expect((eat! as InventoryItemHubEat).request.inventoryAmount, 120);
     expect(tester.takeException(), isNull);
   });
 }
