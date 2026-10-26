@@ -188,9 +188,10 @@ class _DiaryDailyBudgetDetailsResolver {
   }
 
   int _resolveRemainingRunDays() {
-    final completedDays = normalizeLocalDay(selectedDayOverview.date)
-        .difference(normalizeLocalDay(carryoverStartDate))
-        .inDays;
+    final completedDays = localDaysBetween(
+      carryoverStartDate,
+      selectedDayOverview.date,
+    );
     return math.max(
       1,
       calorieGoalRunLengthDays -
