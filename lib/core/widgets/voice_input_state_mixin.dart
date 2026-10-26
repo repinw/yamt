@@ -15,13 +15,16 @@ mixin VoiceInputStateMixin<T extends StatefulWidget> on State<T> {
   /// Shows a failed voice session to the user.
   void showVoiceInputFailure(VoiceSearchFailure failure);
 
-  /// Starts [service] and keeps the flags in sync with it.
+  /// Starts [service] and keeps the flags in sync with it. A recognition
+  /// ends after [pauseFor] of silence, or the service's default.
   Future<VoiceSearchFailure?> startVoiceInput(
     VoiceSearchService service, {
     required ValueChanged<VoiceSearchRecognition> onResult,
+    Duration? pauseFor,
   }) {
     return service.startListening(
       onResult: onResult,
+      pauseFor: pauseFor,
       onListeningStateChanged: (isListening) =>
           handleVoiceListeningChanged(isListening: isListening),
       onError: handleVoiceError,

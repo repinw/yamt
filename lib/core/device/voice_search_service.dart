@@ -38,10 +38,12 @@ abstract class VoiceSearchService {
   bool get isListening;
 
   /// Starts listening and streams recognition updates through callbacks.
+  /// A recognition ends after [pauseFor] of silence, 4 s by default.
   Future<VoiceSearchFailure?> startListening({
     required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
     required ValueChanged<VoiceSearchFailure> onError,
+    Duration? pauseFor,
   });
 
   /// Stops active listening session.
@@ -76,6 +78,7 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
     required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
     required ValueChanged<VoiceSearchFailure> onError,
+    Duration? pauseFor,
   }) async {
     _onResult = onResult;
     _onListeningStateChanged = onListeningStateChanged;
@@ -91,7 +94,7 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
         onResult: _handleResult,
         listenOptions: SpeechListenOptions(
           listenFor: const Duration(seconds: 30),
-          pauseFor: const Duration(seconds: 4),
+          pauseFor: pauseFor ?? const Duration(seconds: 4),
           cancelOnError: true,
           listenMode: ListenMode.search,
         ),

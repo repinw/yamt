@@ -438,6 +438,32 @@ void main() {
     expect(name.focusNode.hasFocus, isFalse);
   });
 
+  testWidgets('speech shows as the rows it gives until the stop takes them '
+      '(#832)', (tester) async {
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        voice: _FakeVoiceService('Salz und Pfeffer', untilStop: true),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(FreeCookingRowList.pendingRowKey(0)), findsOneWidget);
+    expect(find.byKey(FreeCookingRowList.pendingRowKey(1)), findsOneWidget);
+    expect(find.byKey(FreeCookingRowList.rowKey(0)), findsNothing);
+
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(FreeCookingRowList.pendingRowKey(0)), findsNothing);
+    expect(find.byKey(FreeCookingRowList.rowKey(0)), findsOneWidget);
+    expect(find.byKey(FreeCookingRowList.rowKey(1)), findsOneWidget);
+  });
+
   testWidgets('asks before it discards rows', (tester) async {
     await tester.pumpWidget(
       _app(meals: _FakeMealRepository(), voice: _FakeVoiceService('Salz')),
@@ -723,11 +749,16 @@ _FakeInventoryRepository _riceInventory() => _FakeInventoryRepository([
 
 /// Hears [transcript] once, then stays silent.
 class _FakeVoiceService implements VoiceSearchService {
-  new(this.transcript);
+  new(this.transcript, {this.untilStop = false});
 
   final String transcript;
+
+  /// Whether [transcript] stays a partial result until the stop sends it
+  /// as final, as when the cook stops mid-sentence.
+  final bool untilStop;
   var _heard = false;
   ValueChanged<bool>? _onListening;
+  ValueChanged<VoiceSearchRecognition>? _onResult;
 
   @override
   bool isListening = false;
@@ -737,15 +768,17 @@ class _FakeVoiceService implements VoiceSearchService {
     required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
     required ValueChanged<VoiceSearchFailure> onError,
+    Duration? pauseFor,
   }) async {
     isListening = true;
     _onListening = onListeningStateChanged;
+    _onResult = onResult;
     onListeningStateChanged(true);
     if (!_heard) {
       _heard = true;
       scheduleMicrotask(
         () => onResult(
-          VoiceSearchRecognition(transcript: transcript, isFinal: true),
+          VoiceSearchRecognition(transcript: transcript, isFinal: !untilStop),
         ),
       );
     }
@@ -756,6 +789,14 @@ class _FakeVoiceService implements VoiceSearchService {
   Future<void> stopListening() async {
     isListening = false;
     _onListening?.call(false);
+    if (untilStop) {
+      // The final result comes after the stop returns, as on Android.
+      scheduleMicrotask(
+        () => _onResult?.call(
+          VoiceSearchRecognition(transcript: transcript, isFinal: true),
+        ),
+      );
+    }
   }
 
   @override

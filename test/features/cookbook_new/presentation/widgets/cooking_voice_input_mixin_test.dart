@@ -8,14 +8,19 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooking_voice_input_mixin.dart';
 
 void main() {
-  testWidgets('a stop takes the final result once', (tester) async {
-    final page = await _pump(tester, _FakeVoice(finalText: '200 ml Sahne'));
+  testWidgets('a stop shows what was heard until it takes the final result '
+      'once (#832)', (tester) async {
+    final voice = _FakeVoice(finalText: '200 ml Sahne');
+    final page = await _pump(tester, voice);
 
     await page.toggleListening();
     await tester.pump();
     expect(page.pendingSpeech.value, '200 ml');
+    // Cooking ends a recognition after a short pause.
+    expect(voice.pauseFor, const Duration(seconds: 2));
 
     await page.stopListening();
+    expect(page.pendingSpeech.value, '200 ml');
     await tester.pump();
     expect(page.heard, ['200 ml Sahne']);
     expect(page.pendingSpeech.value, isNull);
@@ -30,6 +35,8 @@ void main() {
     await tester.pump();
     await page.stopListening();
     await tester.pump();
+    expect(page.pendingSpeech.value, '200 ml');
+    await tester.pump(const Duration(seconds: 3));
 
     expect(page.heard, isEmpty);
     expect(page.pendingSpeech.value, isNull);
@@ -47,6 +54,67 @@ void main() {
 
     expect(page.heard, ['200 ml']);
     expect(page.pendingSpeech.value, isNull);
+  });
+
+  testWidgets('a final result later than the wait still counts, and '
+      'finishing after a stop takes what it showed (#832)', (tester) async {
+    final voice = _FakeVoice();
+    final page = await _pump(tester, voice);
+
+    await page.toggleListening();
+    await tester.pump();
+    await page.stopListening();
+    await tester.pump(const Duration(seconds: 3));
+    expect(page.pendingSpeech.value, isNull);
+    voice.sendFinal('200 ml Sahne');
+    expect(page.heard, ['200 ml Sahne']);
+
+    // "Kochen" right after a stop: no final comes, so it takes what the
+    // stop showed.
+    await page.toggleListening();
+    await tester.pump();
+    await page.stopListening();
+    final finishing = page.finishListening();
+    await tester.pump(const Duration(seconds: 3));
+    await finishing;
+    expect(page.heard, ['200 ml Sahne', '200 ml']);
+    expect(page.pendingSpeech.value, isNull);
+  });
+
+  testWidgets('finishing right after a stop waits for its final result', (
+    tester,
+  ) async {
+    final page = await _pump(tester, _FakeVoice(finalText: '200 ml Sahne'));
+
+    await page.toggleListening();
+    await tester.pump();
+    // The stop's final result is still on its way when "Kochen" is tapped,
+    // which pauses voice input before it finishes.
+    final stopping = page.stopListening();
+    page.pauses = true;
+    final finishing = page.finishListening();
+    await stopping;
+    await tester.pump();
+    await finishing;
+
+    expect(page.heard, ['200 ml Sahne']);
+    expect(page.pendingSpeech.value, isNull);
+  });
+
+  testWidgets('starting again clears what the last stop still showed', (
+    tester,
+  ) async {
+    final page = await _pump(tester, _FakeVoice());
+
+    await page.toggleListening();
+    await tester.pump();
+    await page.stopListening();
+    expect(page.pendingSpeech.value, '200 ml');
+    // Before the new session hears anything.
+    final starting = page.toggleListening();
+
+    expect(page.pendingSpeech.value, isNull);
+    await starting;
   });
 
   testWidgets('a "not listening" report while starting starts no second '
@@ -83,8 +151,11 @@ class _PageState extends State<_Page>
   @override
   VoiceSearchService get voiceService => widget.voice;
 
+  /// Set while the page saves, as "Kochen" does before it finishes.
+  bool pauses = false;
+
   @override
-  bool get pausesVoiceInput => false;
+  bool get pausesVoiceInput => pauses;
 
   @override
   void onSpokenText(String text) => heard.add(text);
@@ -106,6 +177,9 @@ class _FakeVoice implements VoiceSearchService {
 
   /// How often listening started.
   int starts = 0;
+
+  /// The pause the last start asked for.
+  Duration? pauseFor;
   ValueChanged<VoiceSearchRecognition>? _onResult;
   ValueChanged<bool>? _onListening;
 
@@ -117,8 +191,10 @@ class _FakeVoice implements VoiceSearchService {
     required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
     required ValueChanged<VoiceSearchFailure> onError,
+    Duration? pauseFor,
   }) async {
     starts++;
+    this.pauseFor = pauseFor;
     isListening = true;
     _onResult = onResult;
     _onListening = onListeningStateChanged;
@@ -149,4 +225,8 @@ class _FakeVoice implements VoiceSearchService {
     isListening = false;
     _onListening?.call(false);
   }
+
+  /// Sends [text] as a late final result.
+  void sendFinal(String text) =>
+      _onResult?.call(VoiceSearchRecognition(transcript: text, isFinal: true));
 }

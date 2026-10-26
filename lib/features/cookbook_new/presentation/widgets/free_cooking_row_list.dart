@@ -3,6 +3,7 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cookbook_new/domain/free_cooking_row.dart';
+import 'package:yamt/features/cookbook_new/domain/free_cooking_transcript.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_row_tile.dart';
 
@@ -21,6 +22,10 @@ class FreeCookingRowList extends StatefulWidget {
   /// Key of the row at [index].
   static ValueKey<String> rowKey(int index) =>
       ValueKey<String>('free-cooking-row-$index');
+
+  /// Key of the spoken row at [index] that is not final yet.
+  static ValueKey<String> pendingRowKey(int index) =>
+      ValueKey<String>('free-cooking-pending-row-$index');
 
   /// The ingredient rows.
   final List<FreeCookingRow> rows;
@@ -66,18 +71,23 @@ class _FreeCookingRowListState extends State<FreeCookingRowList> {
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
     final rows = widget.rows;
-    final pending = widget.pendingText;
+    // What is being spoken shows as the rows it will give.
+    final pending = switch (widget.pendingText) {
+      final text? => previewFreeCookingRows(text),
+      null => const <String>[],
+    };
     final onPick = widget.onPick;
     return ListView.builder(
       controller: _controller,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-      itemCount: rows.length + (pending == null ? 0 : 1),
+      itemCount: rows.length + pending.length,
       itemBuilder: (context, index) {
-        if (index == rows.length) {
+        if (index >= rows.length) {
           return Opacity(
             opacity: AppGraphit.pendingRowOpacity,
             child: FreeCookingRowTile(
-              row: FreeCookingRow(text: pending!),
+              key: FreeCookingRowList.pendingRowKey(index - rows.length),
+              row: FreeCookingRow(text: pending[index - rows.length]),
               isPending: true,
             ),
           );

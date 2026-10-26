@@ -864,8 +864,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   shows as its hint) and adds rows by voice or with "Schreiben". A tap on
   the large voice zone starts listening; it keeps listening after each pause
   until the next tap. Rows are cut before each amount, at commas, and at
-  "und", so "500 g Hähnchen 40 g Butter" gives two rows. While a row is
-  spoken it shows faded. Each row shows a filled square and the amount left
+  "und", so "500 g Hähnchen 40 g Butter" gives two rows. While the cook
+  speaks, the rows it will give show faded, already cut ("Salz und
+  Pfeffer" as two rows), and after "Aufnahme beenden" they stay until the
+  result arrives. A pause of 2 s ends what was said. Each row shows a filled square and the amount left
   when the Vorrat holds the food in a fitting unit and the row has an amount,
   or "fehlt"; the title counts "2 von 3 da". Only the food that matches the
   name best counts: when "Testreis" is kept in pieces, "100 g Testreis"
@@ -1010,8 +1012,9 @@ and feature description docs. This is product-facing; architecture rules stay in
     "Schreiben" add more for this time, said for the chosen portions; "Gerade
     dazu" shows the last ones with "Rückgängig", and saying "nein" takes them
     back too ("no" only before a sentence mark, a number, or the end, so
-    "No-Name Senf" stays an ingredient). Listening goes on across sentences
-    until the next tap.
+    "No-Name Senf" stays an ingredient). While the cook speaks, "Gerade
+    dazu" shows the rows it will give, as in "Frei kochen". Listening goes
+    on across sentences until the next tap.
   - "Fertig gekocht" puts the meal in the pot like "Kochen" and goes on to
     "Gekocht". Leaving the Kochhelfer before that cooks nothing; what it
     added stays on the recipe page until the page closes, with "2 Zusätze
