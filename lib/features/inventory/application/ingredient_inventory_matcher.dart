@@ -1,4 +1,5 @@
 import 'package:fuzzywuzzy/fuzzywuzzy.dart' as fuzzywuzzy;
+import 'package:yamt/features/inventory/domain/ingredient_compound_head.dart';
 import 'package:yamt/features/inventory/domain/ingredient_match_lexicon.dart';
 import 'package:yamt/features/inventory/domain/ingredient_match_tokens.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -21,9 +22,8 @@ List<InventoryItem> resolveInventoryItemsById({
       .toList(growable: false);
 }
 
-/// Whether [inventoryItems] hold a food that matches [ingredient]: the same
-/// answer as [scoreInventoryItemsForIngredient] being non-empty, without
-/// ranking every item.
+/// Whether [inventoryItems] hold a food that matches [ingredient], not only
+/// weakly ([isWeakIngredientMatch]), without ranking every item.
 bool hasInventoryItemForIngredient({
   required String ingredient,
   required List<InventoryItem> inventoryItems,
@@ -32,14 +32,28 @@ bool hasInventoryItemForIngredient({
   return inventoryItems.any(
     (item) =>
         !item.isFullyConsumed &&
-        ingredientInventoryMatchScore(
-              ingredient: ingredient,
-              item: item,
-              localeCode: localeCode,
-            ) >
-            0,
+        ingredientMatchesFully(
+          ingredient: ingredient,
+          item: item,
+          localeCode: localeCode,
+        ),
   );
 }
+
+/// Whether [item] matches [ingredient] by name, and not only weakly
+/// ([isWeakIngredientMatch]), so it may supply the line.
+bool ingredientMatchesFully({
+  required String ingredient,
+  required InventoryItem item,
+  String? localeCode,
+}) =>
+    !isWeakIngredientMatch(ingredient: ingredient, item: item) &&
+    ingredientInventoryMatchScore(
+          ingredient: ingredient,
+          item: item,
+          localeCode: localeCode,
+        ) >
+        0;
 
 /// The items not used up that match [ingredient], best first, with their
 /// match score.
