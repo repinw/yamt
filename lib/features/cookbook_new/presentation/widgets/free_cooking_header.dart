@@ -82,7 +82,8 @@ class FreeCookingHeader extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                   decoration: InputDecoration(
-                    hintText: l10n.freeCookingNameHint,
+                    // Left empty, the dish takes the suggested name.
+                    hintText: rows.suggestedName ?? l10n.freeCookingNameHint,
                     border: UnderlineInputBorder(
                       borderSide: BorderSide(color: colors.rule),
                     ),

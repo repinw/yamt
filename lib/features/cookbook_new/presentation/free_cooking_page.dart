@@ -87,8 +87,6 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
   Future<void> _cook() async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    final typedName = _nameController.text.trim();
-    final name = typedName.isEmpty ? l10n.freeCookingDefaultName : typedName;
     setState(() => _isCooking = true);
     // What the cook is still saying belongs to the meal.
     await finishListening();
@@ -96,6 +94,10 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
       return;
     }
     final rows = ref.read(freeCookingRowsProvider(l10n.localeName)).value;
+    final typedName = _nameController.text.trim();
+    final name = typedName.isNotEmpty
+        ? typedName
+        : rows?.suggestedName ?? l10n.freeCookingDefaultName;
     final mealId = rows == null || rows.isEmpty
         ? null
         : await ref

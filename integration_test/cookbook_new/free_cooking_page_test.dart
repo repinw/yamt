@@ -23,6 +23,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_save_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_summary.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_actions.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_discard_dialog.dart';
@@ -164,10 +166,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(FreeCookingHeader.nameKey), 'Reis');
+    // Without a typed name the dish is named after its foods.
     await tester.tap(find.byKey(FreeCookingActions.cookKey));
     await tester.pumpAndSettle();
+    expect(meals.saved.single.name, 'Reis');
 
+    // "Gekocht" still renames it.
+    await tester.enterText(find.byKey(CookedMealSummary.nameKey), 'Reisschale');
     await _showCookbookSwitch(tester);
     await tester.tap(find.byKey(CookedMealCookbookSwitch.switchKey));
     await tester.pumpAndSettle();
@@ -177,9 +182,10 @@ void main() {
     expect(find.byKey(_startKey), findsOneWidget);
     final cooked = meals.saved.single;
     expect(cooked.isInPot, isFalse);
+    expect(cooked.name, 'Reisschale');
     final template = templates.saved.single;
     expect(template.id, isNot(cooked.id));
-    expect(template.name, 'Reis');
+    expect(template.name, 'Reisschale');
     expect(template.components.single.inventoryItemId, 'rice');
     expect(template.remainingPortions, template.totalPortions);
   });
@@ -300,6 +306,25 @@ void main() {
     expect(meal.finalNetWeight, isNull);
   });
 
+  testWidgets('an untouched name keeps a rename made meanwhile (#835)', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository()
+      ..saved = [_combinedMeal().copyWith(servedInPieces: true)];
+    await tester.pumpWidget(_app(meals: meals, voice: _FakeVoiceService('')));
+    await tester.pumpAndSettle();
+    await _openCooked(tester, 'combo');
+
+    // Another device or the detail page renames the meal.
+    await meals.save(meals.saved.single.copyWith(name: 'Reisbrei'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookedMealSaveBar.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(meals.saved.single.isInPot, isFalse);
+    expect(meals.saved.single.name, 'Reisbrei');
+  });
+
   testWidgets('weighing a combined meal shows the container and the scale', (
     tester,
   ) async {
@@ -308,6 +333,8 @@ void main() {
     await tester.pumpAndSettle();
     await _openCooked(tester, 'combo');
 
+    await tester.ensureVisible(find.byKey(CookedMealPotSection.weighKey));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(CookedMealPotSection.weighKey));
     await tester.pumpAndSettle();
 

@@ -139,15 +139,16 @@ class PreparedMealCookingService {
 
   /// Marks the meal [mealId] as cooked: it makes [totalPortions] portions, or
   /// pieces when [servedInPieces], and [potTareWeight] and [finalNetWeight]
-  /// are set when the cook weighed the pot. Portions eaten so far keep their
-  /// share. Returns the cooked meal. Throws when the meal is gone or no longer
-  /// in the pot.
+  /// are set when the cook weighed the pot. A non-empty [name] renames the
+  /// meal. Portions eaten so far keep their share. Returns the cooked meal.
+  /// Throws when the meal is gone or no longer in the pot.
   Future<PreparedMeal> finishCooking({
     required String mealId,
     required int totalPortions,
     required bool servedInPieces,
     required int? potTareWeight,
     required int? finalNetWeight,
+    String? name,
   }) async {
     final meals = await _mealRepository.readAllForChange();
     final meal = meals.firstWhere(
@@ -158,7 +159,9 @@ class PreparedMealCookingService {
       // Another device already marked it as cooked.
       throw StateError('Meal $mealId is not in the pot.');
     }
+    final newName = name?.trim() ?? '';
     final cooked = meal.copyWith(
+      name: newName.isEmpty ? meal.name : newName,
       totalPortions: totalPortions,
       remainingPortions: meal.remainingRatio * totalPortions,
       potTareWeight: potTareWeight,

@@ -854,8 +854,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   free cooking row without an amount.
 - The "Kochen" button offers "Frei kochen", a recipe from a link, and an AI
   idea. The header offers the kitchen utensils.
-- "Frei kochen" is a meal without a recipe. The cook names the dish (empty
-  means "Frei gekocht") and adds rows by voice or with "Schreiben". A tap on
+- "Frei kochen" is a meal without a recipe. The cook names the dish (left
+  empty, it is named after its first three foods, those with an amount
+  before seasonings, for example "Reis, Hähnchen, Salz", which the field
+  shows as its hint) and adds rows by voice or with "Schreiben". A tap on
   the large voice zone starts listening; it keeps listening after each pause
   until the next tap. Rows are cut before each amount, at commas, and at
   "und", so "500 g Hähnchen 40 g Butter" gives two rows. While a row is
@@ -872,7 +874,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   other rows stay open on the meal. The meal is "Im Topf" until it is marked
   as cooked. Leaving the page with rows asks before it discards them.
 - The screen stays on while free cooking or the "Gekocht" page is open.
-- "Kochen" goes straight on to the "Gekocht" page: the ingredients with
+- "Kochen" goes straight on to the "Gekocht" page: the dish's name, which
+  can still be changed and is saved with the step, the ingredients with
   their amounts and kcal, open rows with "Füllen" (opens the meal's detail
   page), and "Aufteilen": a "Portionen | Stück" switch, the count
   (stepper), the "Behälter" from the kitchen utensils, and "Auf der Waage".

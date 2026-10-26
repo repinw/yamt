@@ -59,6 +59,9 @@ class CookedMealPage extends ConsumerStatefulWidget {
 
 class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   final _grossController = TextEditingController();
+
+  /// The meal's name, made once the meal arrives.
+  CookedMealNameController? _name;
   int? _portions;
 
   /// Pieces or portions as picked; until then the meal's own unit.
@@ -97,6 +100,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   void dispose() {
     _arrivalTimer.cancel();
     _grossController.dispose();
+    _name?.dispose();
     _wakeLock.release();
     super.dispose();
   }
@@ -198,6 +202,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     required bool isSaving,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final name = _name ??= CookedMealNameController(meal.name);
     final portions = _portions ?? meal.totalPortions;
     final inPieces = _inPieces ?? meal.isServedInPieces;
     final utensilsAsync = ref.watch(kitchenUtensilListProvider);
@@ -226,6 +231,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
             children: [
               CookedMealSummary(
                 meal: meal,
+                nameController: name,
                 onFill: () => unawaited(
                   PreparedMealDetailFlow.open(
                     context: context,
@@ -279,6 +285,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                       toCookbook: _toCookbook,
                       tareWeight: utensil?.weightGrams,
                       netWeight: pot.netWeight,
+                      name: name.changedName,
                     ).whenComplete(() => _saving = false),
                   );
                 },
