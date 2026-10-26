@@ -1,7 +1,8 @@
 name: CI
 
-# Pull requests run only analyze, the unit and widget tests and the provider
-# hash check, so they stay fast. The emulator tests run after the merge: a
+# Pull requests run only analyze, the unit and widget tests (also in parallel
+# across a clock change) and the provider hash check, so they stay fast. The
+# emulator tests run after the merge: a
 # push to master runs the integration tests that the pushed commits affect,
 # and the nightly run, a release tag and a manual run run all of them. A
 # failed run after the merge opens an issue.
@@ -90,6 +91,40 @@ jobs:
       - name: Provider hashes are current
         if: ${{ !cancelled() }}
         run: tool/check_provider_hashes.sh
+
+  # The runner is in UTC, which has no clock change, so a test that steps
+  # days by 24 hours passes there and fails on a machine in Europe/Berlin.
+  # This job runs the whole suite in a time zone like Europe/Berlin whose
+  # clock change falls next to the day of the run (tool/clock_change_tz.sh).
+  clock-change:
+    name: Unit tests across a clock change (${{ matrix.change }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        change:
+          - fall -1
+          - fall 0
+          - fall 1
+          - spring -1
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Unit and widget tests
+        run: |
+          tz=$(tool/clock_change_tz.sh ${{ matrix.change }})
+          echo "TZ=$tz"
+          TZ="$tz" flutter test
 
   integration-targets:
     name: List integration tests
