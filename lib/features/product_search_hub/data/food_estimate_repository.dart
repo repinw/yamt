@@ -48,10 +48,7 @@ FoodEstimateRepository foodEstimateRepository(Ref ref) {
 /// Estimates the nutrition of food from photos and a description.
 class FoodEstimateRepository {
   /// Creates a food estimate repository.
-  new({
-    required this._imagePicker,
-    required this._templateClient,
-  });
+  new({required this._imagePicker, required this._templateClient});
 
   final ImagePicker _imagePicker;
   final FoodEstimateTemplateClient _templateClient;
@@ -104,7 +101,7 @@ class FoodEstimateRepository {
   static Future<FoodEstimatePhoto> _photoOf(XFile file) async {
     final bytes = await file.readAsBytes();
     final mimeType = lookupMimeType(file.name, headerBytes: bytes);
-    return (mimeType: mimeType ?? 'image/jpeg', bytes: bytes);
+    return (mimeType: mimeType ?? 'image/jpeg', bytes: bytes, address: null);
   }
 
   FoodEstimate _parseEstimate(Map<String, dynamic> json) {

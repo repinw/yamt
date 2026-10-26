@@ -138,6 +138,10 @@ class _FakePhotoRepository implements ProductPhotoRepository {
       done: Completer<void>().future,
     );
   }
+
+  @override
+  Future<Uint8List> readPrivatePhoto(String address) =>
+      throw UnimplementedError();
 }
 
 class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {

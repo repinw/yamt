@@ -254,6 +254,11 @@ class ProductPhotoRepository {
     );
   }
 
+  /// The private food photo at [address], from the image cache or else
+  /// downloaded (#763).
+  Future<Uint8List> readPrivatePhoto(String address) =>
+      _imageCache.getSingleFile(address).then((file) => file.readAsBytes());
+
   /// Storage and the user's id. Throws a [StateError] when signed out.
   ({FirebaseStorage storage, String ownerId}) _signedIn() {
     final storage = _storage;

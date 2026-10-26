@@ -38,7 +38,11 @@ void main() {
     await repository.loadEstimate(
       description: '  Döner ohne Zwiebeln ',
       photos: [
-        (mimeType: 'image/jpeg', bytes: Uint8List.fromList([1, 2])),
+        (
+          mimeType: 'image/jpeg',
+          bytes: Uint8List.fromList([1, 2]),
+          address: null,
+        ),
       ],
     );
 

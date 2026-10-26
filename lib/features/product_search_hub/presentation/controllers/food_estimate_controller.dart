@@ -1,3 +1,6 @@
+import 'dart:developer' show log;
+
+import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -20,6 +23,8 @@ class FoodEstimateState {
   const new({
     this.photos = const <FoodEstimatePhoto>[],
     this.estimate = const AsyncData<FoodEstimate?>(null),
+    this.isLoadingPhotos = false,
+    this.keptAddresses = const <String>[],
   });
 
   /// Photos in the order the user added them.
@@ -28,17 +33,31 @@ class FoodEstimateState {
   /// The latest estimate; loading while the AI works.
   final AsyncValue<FoodEstimate?> estimate;
 
+  /// Whether stored photos are still being read.
+  final bool isLoadingPhotos;
+
+  /// Addresses of stored photos that could not be read, for example
+  /// offline. The AI does not see them, but the food keeps them (#763).
+  final List<String> keptAddresses;
+
   /// Whether another photo fits.
-  bool get canAddPhoto => photos.length < foodEstimateMaxPhotos;
+  // Stored photos come first, so none is added while they load.
+  bool get canAddPhoto =>
+      !isLoadingPhotos &&
+      photos.length + keptAddresses.length < foodEstimateMaxPhotos;
 
   /// Copies the state.
   FoodEstimateState copyWith({
     List<FoodEstimatePhoto>? photos,
     AsyncValue<FoodEstimate?>? estimate,
+    bool? isLoadingPhotos,
+    List<String>? keptAddresses,
   }) {
     return FoodEstimateState(
       photos: photos ?? this.photos,
       estimate: estimate ?? this.estimate,
+      isLoadingPhotos: isLoadingPhotos ?? this.isLoadingPhotos,
+      keptAddresses: keptAddresses ?? this.keptAddresses,
     );
   }
 }
@@ -61,18 +80,81 @@ class FoodEstimateController extends _$FoodEstimateController {
     );
   }
 
+  /// Starts from the stored photos at [addresses], which keep their
+  /// addresses, so they are not stored twice (#763). A photo that cannot be
+  /// read keeps only its address; photos the user added meanwhile come
+  /// after them. Analyzing waits until they are read.
+  Future<void> loadStoredPhotos(List<String> addresses) async {
+    final repository = ref.read(productPhotoRepositoryProvider);
+    state = state.copyWith(isLoadingPhotos: true);
+    final stored = addresses.take(foodEstimateMaxPhotos).toList();
+    final read = await Future.wait([
+      for (final address in stored) _readStored(repository, address),
+    ]);
+    if (!ref.mounted) return;
+    final kept = [
+      for (final (i, photo) in read.indexed)
+        if (photo == null) stored[i],
+    ];
+    state = state.copyWith(
+      photos: [
+        ...read.nonNulls,
+        ...state.photos,
+      ].take(foodEstimateMaxPhotos - kept.length).toList(),
+      isLoadingPhotos: false,
+      keptAddresses: kept,
+    );
+  }
+
+  static Future<FoodEstimatePhoto?> _readStored(
+    ProductPhotoRepository repository,
+    String address,
+  ) async {
+    try {
+      final bytes = await repository.readPrivatePhoto(address);
+      final mimeType = lookupMimeType(address, headerBytes: bytes);
+      return (
+        mimeType: mimeType ?? 'image/jpeg',
+        bytes: bytes,
+        address: address,
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Reading a stored food photo failed.',
+        name: 'FoodEstimateController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
   /// Starts storing every photo as a private food photo of the user and
-  /// returns the running uploads in the photos' order. Their addresses are
+  /// returns the running uploads in the photos' order, then the kept
+  /// addresses. Their addresses are
   /// known before the uploads end, so the food can be saved right away
   /// (#845, #763). Throws when signed out.
   Future<List<ProductPhotoUpload>> savePhotos() async {
     final repository = ref.read(productPhotoRepositoryProvider);
     return await Future.wait([
       for (final photo in state.photos)
-        repository.savePrivateFrontPhoto(
-          // The path is read only to scan a barcode, which a food photo is
-          // never scanned for.
-          ProductPhoto(path: '', bytes: photo.bytes, mimeType: photo.mimeType),
+        if (photo.address case final address?)
+          Future.value(
+            ProductPhotoUpload(frontAddress: address, done: Future.value()),
+          )
+        else
+          repository.savePrivateFrontPhoto(
+            // The path is read only to scan a barcode, which a food photo is
+            // never scanned for.
+            ProductPhoto(
+              path: '',
+              bytes: photo.bytes,
+              mimeType: photo.mimeType,
+            ),
+          ),
+      for (final address in state.keptAddresses)
+        Future.value(
+          ProductPhotoUpload(frontAddress: address, done: Future.value()),
         ),
     ]);
   }

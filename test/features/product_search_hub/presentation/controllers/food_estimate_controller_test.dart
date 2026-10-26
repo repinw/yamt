@@ -6,7 +6,10 @@ import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'food_estimate_repository.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'product_photo_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -36,6 +39,30 @@ class _FakeFoodEstimateRepository implements FoodEstimateRepository {
   }
 }
 
+/// Stored food photos by address; a new photo gets the next address.
+class _StoredPhotos implements ProductPhotoRepository {
+  final stored = <String, Uint8List>{
+    'gs://yamt/users/u1/food_photos/a.jpg': Uint8List.fromList([5]),
+  };
+  final saved = <int>[];
+
+  @override
+  Future<Uint8List> readPrivatePhoto(String address) async =>
+      stored[address] ?? (throw StateError('missing $address'));
+
+  @override
+  Future<ProductPhotoUpload> savePrivateFrontPhoto(ProductPhoto front) async {
+    saved.add(front.bytes.single);
+    return ProductPhotoUpload(
+      frontAddress: 'gs://yamt/new-${saved.length}.jpg',
+      done: Future.value(),
+    );
+  }
+
+  @override
+  Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 const _estimate = FoodEstimate(
   name: 'Apfel',
   portionGrams: 160,
@@ -49,11 +76,18 @@ const _estimate = FoodEstimate(
 );
 
 FoodEstimatePhoto _photo(int byte) =>
-    (mimeType: 'image/jpeg', bytes: Uint8List.fromList([byte]));
+    (mimeType: 'image/jpeg', bytes: Uint8List.fromList([byte]), address: null);
 
-ProviderContainer _container(FoodEstimateRepository repository) {
+ProviderContainer _container(
+  FoodEstimateRepository repository, {
+  ProductPhotoRepository? photos,
+}) {
   final container = ProviderContainer(
-    overrides: [foodEstimateRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      foodEstimateRepositoryProvider.overrideWithValue(repository),
+      if (photos != null)
+        productPhotoRepositoryProvider.overrideWithValue(photos),
+    ],
   );
   addTearDown(container.dispose);
   container.listen(foodEstimateControllerProvider, (_, _) {});
@@ -120,6 +154,81 @@ void main() {
     expect(
       container.read(foodEstimateControllerProvider).estimate.error,
       isA<FoodEstimateUnclearException>(),
+    );
+  });
+
+  test('a stored AI food starts from its photos and stores only new ones '
+      '(#763)', () async {
+    final repository = _FakeFoodEstimateRepository(() async => _estimate)
+      ..nextPhotos = [_photo(7)];
+    final photos = _StoredPhotos();
+    final container = _container(repository, photos: photos);
+    final notifier = container.read(foodEstimateControllerProvider.notifier);
+
+    await notifier.loadStoredPhotos(['gs://yamt/users/u1/food_photos/a.jpg']);
+    final loaded = container.read(foodEstimateControllerProvider).photos;
+    expect([for (final photo in loaded) photo.bytes.single], [5]);
+
+    await notifier.addPhotos(fromCamera: true);
+    final uploads = await notifier.savePhotos();
+
+    expect(
+      [for (final upload in uploads) upload.frontAddress],
+      ['gs://yamt/users/u1/food_photos/a.jpg', 'gs://yamt/new-1.jpg'],
+    );
+    expect(photos.saved, [7]);
+  });
+
+  test('a stored photo that cannot be read keeps its address and its place '
+      '(#763)', () async {
+    final repository = _FakeFoodEstimateRepository(() async => _estimate)
+      ..nextPhotos = [_photo(7)];
+    final photos = _StoredPhotos();
+    final container = _container(repository, photos: photos);
+    final notifier = container.read(foodEstimateControllerProvider.notifier);
+
+    await notifier.loadStoredPhotos([
+      'gs://yamt/users/u1/food_photos/a.jpg',
+      'gs://yamt/users/u1/food_photos/offline.jpg',
+    ]);
+    final state = container.read(foodEstimateControllerProvider);
+    expect([for (final photo in state.photos) photo.bytes.single], [5]);
+    // The unread photo still takes a place.
+    expect(state.canAddPhoto, isFalse);
+
+    await notifier.addPhotos(fromCamera: true);
+    final uploads = await notifier.savePhotos();
+
+    expect(
+      [for (final upload in uploads) upload.frontAddress],
+      [
+        'gs://yamt/users/u1/food_photos/a.jpg',
+        'gs://yamt/users/u1/food_photos/offline.jpg',
+      ],
+    );
+    expect(photos.saved, isEmpty);
+  });
+
+  test('photos the user added while stored ones load come after them '
+      '(#763)', () async {
+    final repository = _FakeFoodEstimateRepository(() async => _estimate)
+      ..nextPhotos = [_photo(7)];
+    final container = _container(repository, photos: _StoredPhotos());
+    final notifier = container.read(foodEstimateControllerProvider.notifier);
+
+    await notifier.addPhotos(fromCamera: true);
+    final loading = notifier.loadStoredPhotos([
+      'gs://yamt/users/u1/food_photos/a.jpg',
+    ]);
+    // No photo is added while stored ones load.
+    expect(container.read(foodEstimateControllerProvider).canAddPhoto, isFalse);
+    await loading;
+
+    final shown = container.read(foodEstimateControllerProvider).photos;
+    expect([for (final photo in shown) photo.bytes.single], [5, 7]);
+    expect(
+      container.read(foodEstimateControllerProvider).isLoadingPhotos,
+      isFalse,
     );
   });
 }
