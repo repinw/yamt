@@ -18,6 +18,7 @@ import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_r
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_food_estimate_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/auth_user_data_key_session.dart';
@@ -214,5 +215,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(results.single, isA<InventoryItemHubEat>());
+  });
+
+  testWidgets('the item card offers to estimate the AI food again (#763)', (
+    tester,
+  ) async {
+    await _openHub(tester, FakeInventoryItemRepository([_bowl]));
+
+    expect(find.byKey(EatItemActionsCard.reanalyzeKey), findsOneWidget);
   });
 }

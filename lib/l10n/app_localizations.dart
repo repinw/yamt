@@ -8143,6 +8143,12 @@ abstract class AppLocalizations {
   /// **'Add to stock'**
   String get foodEstimateAddToStock;
 
+  /// No description provided for @foodEstimateApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get foodEstimateApply;
+
   /// No description provided for @foodEstimateLevelLean.
   ///
   /// In en, this message translates to:

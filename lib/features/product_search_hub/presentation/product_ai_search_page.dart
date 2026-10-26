@@ -45,6 +45,7 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
     this.quickEatConfig = InventoryManualAddQuickEatConfig.standard,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
     this.offersEatInstead = false,
+    this.reestimates = false,
     this.onResult,
   });
 
@@ -72,6 +73,10 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
   /// Whether the Vorrat estimate offers to eat or plan the food instead.
   final bool offersEatInstead;
 
+  /// Whether [item], a stored AI food, is estimated again: the page starts
+  /// from its description and photos, and the result takes it over (#763).
+  final bool reestimates;
+
   /// Receives the chosen food in place of popping the page's route, when the
   /// page is the content of another route.
   final ValueChanged<ManualProductAiSearchResult>? onResult;
@@ -84,7 +89,9 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
 class _ManualProductAiSearchPageState
     extends ConsumerState<ManualProductAiSearchPage> {
   // A stored AI food starts from its description and photos (#763).
-  late final SavedFoodEstimate? _saved = widget.item.productSnapshot.aiEstimate;
+  late final SavedFoodEstimate? _saved = widget.reestimates
+      ? widget.item.productSnapshot.aiEstimate
+      : null;
   late final _description = TextEditingController(
     text: widget.initialPrompt.isEmpty
         ? _saved?.description ?? ''
@@ -134,7 +141,9 @@ class _ManualProductAiSearchPageState
           ? l10n.foodEstimateAnalyzing
           : l10n.foodEstimateAnalyze,
       confirmButtonKey: ManualProductAiSearchPage.analyzeKey,
-      onConfirm: hasInput && !isLoading ? () => unawaited(_analyze()) : null,
+      onConfirm: hasInput && !isLoading && !state.isLoadingPhotos
+          ? () => unawaited(_analyze())
+          : null,
       cancelButtonKey: const Key('food_estimate_close_button'),
       children: [
         Column(
@@ -251,6 +260,7 @@ class _ManualProductAiSearchPageState
                   quickEat.preselectedMealType ??
                   MealType.defaultForDateTime(loggedAt),
               imageBytes: photos.isEmpty ? null : photos.first.bytes,
+              takesOver: _saved != null,
             ),
           ),
         );

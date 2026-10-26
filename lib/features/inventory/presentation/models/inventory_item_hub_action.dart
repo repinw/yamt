@@ -10,6 +10,9 @@ enum InventoryItemHubAction {
   /// Swap the item's catalog product.
   replace,
 
+  /// Estimate an AI food again from its photos and description (#763).
+  reanalyze,
+
   /// Discard, consume elsewhere, or delete the item. The trash button runs
   /// it; the item card has no line for it.
   remove,

@@ -26,4 +26,22 @@ void main() {
     expect(args.includeStoreInSearch, isFalse);
     expect(args.includeWeightInSearch, isTrue);
   });
+
+  test('a request to estimate again opens the AI page (#763)', () {
+    final args = resolveProductSearchHubRouteArgs(
+      InventoryManualProductSearchRequest(
+        item: InventoryItem.create(
+          id: 'item-1',
+          name: 'Bowl',
+          entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
+          storeName: 'Store',
+          quantity: 1,
+        ),
+        startsWithAi: true,
+      ),
+    );
+
+    expect(args.mode, ProductSearchHubMode.selection);
+    expect(args.initialIntent, ProductSearchHubInitialIntent.ai);
+  });
 }

@@ -38,6 +38,7 @@ class ProductSearchHubRouteArgs {
     this.preselectedLoggedAt,
     this.autofocusSearchField = true,
     this.offersEatInstead = false,
+    this.reestimates = false,
   });
 
   /// Inventory add route args.
@@ -93,6 +94,7 @@ class ProductSearchHubRouteArgs {
     bool includeStoreInSearch = true,
     bool includeWeightInSearch = true,
     bool autofocusSearchField = true,
+    bool reestimates = false,
   }) : this(
          mode: ProductSearchHubMode.selection,
          initialIntent: initialIntent,
@@ -101,6 +103,7 @@ class ProductSearchHubRouteArgs {
          includeStoreInSearch: includeStoreInSearch,
          includeWeightInSearch: includeWeightInSearch,
          autofocusSearchField: autofocusSearchField,
+         reestimates: reestimates,
        );
 
   /// Launch mode.
@@ -134,6 +137,10 @@ class ProductSearchHubRouteArgs {
   /// food instead. Only the Vorrat's own add sheet sets it; a hub that picks
   /// an ingredient, such as the cooking flow's, must not eat it.
   final bool offersEatInstead;
+
+  /// Whether the AI page estimates [item], an AI food, again: it starts
+  /// from its photos and description and takes over the result (#763).
+  final bool reestimates;
 
   /// Whether the hub is running in diary mode.
   bool get isDiary => mode == ProductSearchHubMode.diary;
@@ -174,6 +181,10 @@ ProductSearchHubRouteArgs resolveProductSearchHubRouteArgs(Object? extra) {
   if (extra is InventoryManualProductSearchRequest) {
     return ProductSearchHubRouteArgs.selection(
       item: extra.item,
+      initialIntent: extra.startsWithAi
+          ? ProductSearchHubInitialIntent.ai
+          : ProductSearchHubInitialIntent.launcher,
+      reestimates: extra.startsWithAi,
       includeStoreInSearch: extra.includeStoreInSearch,
       includeWeightInSearch: extra.includeWeightInSearch,
     );

@@ -4,7 +4,8 @@ import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_a
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_action_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// "Item" card of the item hub: shopping list, edit and replace, drawn like a
+/// "Item" card of the item hub: estimating an AI food again, shopping list,
+/// edit and replace, drawn like a
 /// second food label. [actions] picks the lines to show. Above them come the
 /// rarer eat actions of the hub's eat page, when it passes them: the
 /// inedible part and combining with other foods. Removing the item is the
@@ -19,6 +20,9 @@ class EatItemActionsCard extends StatelessWidget {
     this.onCombine,
     super.key,
   });
+
+  /// Key of the line that estimates an AI food again.
+  static const reanalyzeKey = Key('eat_item_action_reanalyze');
 
   /// Key of the line that opens the inedible part.
   static const inedibleKey = Key('eat_item_action_inedible');
@@ -48,6 +52,14 @@ class EatItemActionsCard extends StatelessWidget {
     final colors = FoodLabelColors.of(context);
 
     final lines = <EatCardAction>[
+      if (actions.contains(InventoryItemHubAction.reanalyze))
+        (
+          key: reanalyzeKey,
+          icon: Icons.autorenew_rounded,
+          label: l10n.foodEstimateReanalyze,
+          color: colors.ink,
+          onPressed: () => onPicked(InventoryItemHubAction.reanalyze),
+        ),
       if (onInedible case final onInedible?)
         (
           key: inedibleKey,
