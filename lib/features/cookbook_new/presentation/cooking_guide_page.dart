@@ -44,6 +44,9 @@ class _CookingGuidePageState extends ConsumerState<CookingGuidePage>
   /// The sentence on the screen, or `null` for the first screen.
   int? _sentence;
 
+  /// The sentence the cook jumped away from, where back goes once.
+  int? _jumpedFrom;
+
   /// Whether "Fertig gekocht" is on its way to the pot.
   bool _isFinishing = false;
 
@@ -94,8 +97,16 @@ class _CookingGuidePageState extends ConsumerState<CookingGuidePage>
     }
   }
 
-  /// Goes back from the shown [sentence]: one sentence, or to the recipe.
+  /// Goes back from the shown [sentence]: once to where the cook jumped
+  /// from, else one sentence, or to the recipe.
   void _back(int? sentence) {
+    if (_jumpedFrom case final from?) {
+      setState(() {
+        _sentence = from;
+        _jumpedFrom = null;
+      });
+      return;
+    }
     if (sentence == null) {
       context.pop();
       return;
@@ -142,7 +153,16 @@ class _CookingGuidePageState extends ConsumerState<CookingGuidePage>
               isListening: isListening,
               pendingSpeech: pendingSpeech,
               onBack: () => _back(sentence),
-              onSentence: (index) => setState(() => _sentence = index),
+              onSentence: (index) => setState(() {
+                _sentence = index;
+                _jumpedFrom = null;
+              }),
+              onJump: (index) => setState(() {
+                if (index != sentence) {
+                  _jumpedFrom = sentence;
+                }
+                _sentence = index;
+              }),
               onDone: () => unawaited(_done()),
               onVoice: () => unawaited(toggleListening()),
               onType: () => unawaited(typeText()),

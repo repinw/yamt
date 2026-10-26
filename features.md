@@ -1017,7 +1017,11 @@ and feature description docs. This is product-facing; architecture rules stay in
     Satz" starts reading.
   - Then each sentence of the steps gets its own screen ("Satz 4 von 9 ·
     Schritt 2") with the ingredients it names. "Nächster Satz" moves on, and
-    back goes one sentence back.
+    back goes one sentence back. A bar below the sentence has one segment
+    per step, filled by the sentences read. A tap on the position or the bar
+    opens "Springen zu" with every step, the current one marked; a pick shows
+    that step's first sentence. Back then goes once to the sentence the
+    cook jumped from, and after that one sentence back again.
   - Below each sentence, "Im Topf" lists the ingredients. The voice zone and
     "Schreiben" add more for this time, said for the chosen portions; "Gerade
     dazu" shows the last ones with "Rückgängig", and saying "nein" takes them

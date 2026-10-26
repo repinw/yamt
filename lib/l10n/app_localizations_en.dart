@@ -5855,6 +5855,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookingGuideVoiceHint => '“50 g cream” · “no” takes it back';
 
   @override
+  String get cookingGuideJumpTitle => 'Jump to';
+
+  @override
   String get cookingGuideNext => 'Next sentence';
 
   @override

@@ -22,6 +22,10 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooking_guide_just_added.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooking_guide_sentence_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooking_guide_step_sheet.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_text_sheet.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_check_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_guide_added_hint.dart';
@@ -213,6 +217,18 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(CookingGuideBody.nextKey));
     await tester.pumpAndSettle();
+    // A tap on where the cook is offers every step to jump to.
+    await tester.tap(find.byKey(CookingGuideSentenceSection.jumpKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookingGuideStepSheet.stepKey(1)));
+    await tester.pumpAndSettle();
+    expect(find.text('Anbraten.'), findsOneWidget);
+    // Back after a jump goes once to where the cook jumped from, not to
+    // the first screen.
+    await tester.tap(find.byKey(CookingGuideBody.backKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Köcheln lassen.'), findsOneWidget);
+    expect(find.byKey(CookingGuideBody.nextKey), findsNothing);
     // The system back goes one sentence back, not out of the Kochhelfer.
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
@@ -221,6 +237,9 @@ void main() {
     await tester.pumpAndSettle();
 
     // Feta goes in by typing; "Rückgängig" takes it out again.
+    // The step bar pushes the tools below the test screen's fold.
+    await tester.ensureVisible(find.byKey(CookingGuideBody.typeKey));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(CookingGuideBody.typeKey));
     await tester.pumpAndSettle();
     await tester.enterText(
@@ -283,6 +302,9 @@ void main() {
     await tester.tap(find.byKey(RecipePage.cookKey));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(CookingGuideBody.startKey));
+    await tester.pumpAndSettle();
+    // The step bar pushes the tools below the test screen's fold.
+    await tester.ensureVisible(find.byKey(CookingGuideBody.typeKey));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(CookingGuideBody.typeKey));
     await tester.pumpAndSettle();

@@ -5934,6 +5934,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookingGuideVoiceHint => '„50 g Sahne“ · „nein“ macht rückgängig';
 
   @override
+  String get cookingGuideJumpTitle => 'Springen zu';
+
+  @override
   String get cookingGuideNext => 'Nächster Satz';
 
   @override

@@ -23,6 +23,7 @@ class CookingGuideBody extends StatelessWidget {
     required this.isListening,
     required this.onBack,
     required this.onSentence,
+    required this.onJump,
     required this.onDone,
     required this.onVoice,
     required this.onType,
@@ -69,6 +70,9 @@ class CookingGuideBody extends StatelessWidget {
 
   /// Shows the sentence at the given index.
   final ValueChanged<int> onSentence;
+
+  /// Jumps to the sentence at the given index, from the step sheet.
+  final ValueChanged<int> onJump;
 
   /// Puts the meal in the pot.
   final VoidCallback onDone;
@@ -117,6 +121,7 @@ class CookingGuideBody extends StatelessWidget {
                           CookingGuideSentenceSection(
                             guide: guide,
                             index: sentence,
+                            onSentence: isCooking ? null : onJump,
                           ),
                           CookingGuidePotSection(
                             ingredients: guide.ingredients,

@@ -10,6 +10,10 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'recipe_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooking_guide_body.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooking_guide_sentence_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooking_guide_step_sheet.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -46,6 +50,7 @@ void main() {
                 pendingSpeech: pending,
                 onBack: () {},
                 onSentence: (_) {},
+                onJump: (_) {},
                 onDone: () {},
                 onVoice: () {},
                 onType: () {},
@@ -65,14 +70,70 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('shows one bar segment per step and jumps to the first '
+      'sentence of a picked step', (tester) async {
+    final guide = await _guide(
+      tester,
+      steps: const [
+        'Anbraten.',
+        'Karotten schneiden. Dazugeben.',
+        '',
+        'Köcheln lassen.',
+      ],
+    );
+    final picked = <int>[];
+    final pending = ValueNotifier<String?>(null);
+    addTearDown(pending.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('de'),
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: CookingGuideBody(
+            guide: guide,
+            sentence: 1,
+            isCooking: false,
+            isListening: false,
+            pendingSpeech: pending,
+            onBack: () {},
+            onSentence: (_) {},
+            onJump: picked.add,
+            onDone: () {},
+            onVoice: () {},
+            onType: () {},
+            onUndo: () {},
+          ),
+        ),
+      ),
+    );
+
+    // The empty third step has neither a segment nor a row.
+    final bars = tester.widgetList<LinearProgressIndicator>(
+      find.byType(LinearProgressIndicator),
+    );
+    expect([for (final bar in bars) bar.value], [1, 0.5, 0]);
+
+    await tester.tap(find.byKey(CookingGuideSentenceSection.jumpKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(CookingGuideStepSheet.stepKey(3)), findsNothing);
+    await tester.tap(find.byKey(CookingGuideStepSheet.stepKey(4)));
+    await tester.pumpAndSettle();
+    expect(picked, [3]);
+    expect(find.byType(CookingGuideStepSheet), findsNothing);
+  });
 }
 
-Future<CookingGuide> _guide(WidgetTester tester) async {
+Future<CookingGuide> _guide(
+  WidgetTester tester, {
+  List<String> steps = const [
+    'Das Hackfleisch in einer großen Pfanne kräftig anbraten und salzen.',
+  ],
+}) async {
   final recipe = preparedMealTestData(id: 'stew').copyWith(
     recipeIngredients: const ['500 g Hackfleisch', '200 g Karotten', 'Salz'],
-    recipeInstructions: const [
-      'Das Hackfleisch in einer großen Pfanne kräftig anbraten und salzen.',
-    ],
+    recipeInstructions: steps,
   );
   final container = ProviderContainer(
     overrides: [
