@@ -85,9 +85,12 @@ Other features may consume these public Inventory entry points:
   items can supply a recipe ingredient, best first: a name match whose unit
   fits the amount, with the recipe's saved unit conversion. Only the items
   that match the name best supply a line by default; a weaker match does
-  not stand in when the best one is kept in another unit. A recipe line
-  that names no amount ("Salz") takes any item of its name and gives
-  nothing when cooked. `ingredientStockPick` takes a recipe's saved items
+  not stand in when the best one is kept in another unit. A weak match
+  (`isWeakIngredientMatch` in `domain/ingredient_compound_head.dart`: the
+  food only starts a compound, as "Reiswaffeln" for "Reis") never supplies
+  a line or counts as stock; it is only among the others to pick. A
+  recipe line that names no amount ("Salz") takes any item of its name and
+  gives nothing when cooked. `ingredientStockPick` takes a recipe's saved items
   among them, else the best match. The recipe page, free cooking (rows with
   an amount), plans, open rows and the Kochbuch cards use it.
 - `application/template_plan_entry.dart`: `buildTemplatePlanEntry` builds
