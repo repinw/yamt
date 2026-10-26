@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
@@ -91,15 +90,6 @@ enum ManualProductBarcodeOrigin {
   ai,
 }
 
-/// Defines inventory receipt manual product selection source.
-enum InventoryReceiptManualProductSelectionSource {
-  /// Documented member.
-  externalSearch,
-
-  /// Documented member.
-  recentInventory,
-}
-
 /// Defines inventory receipt optional nutrition type.
 enum InventoryReceiptOptionalNutritionType {
   /// Polyunsaturated fat.
@@ -107,104 +97,6 @@ enum InventoryReceiptOptionalNutritionType {
 
   /// Fiber.
   fiber,
-}
-
-/// Defines inventory receipt manual product selection.
-class InventoryReceiptManualProductSelection {
-  /// The inventory receipt manual product selection.
-  const new({
-    required this.source,
-    required this.name,
-    required this.barcode,
-    this.brand,
-    this.imageUrl,
-    this.packageWeight,
-    this.servingSize,
-    this.servingQuantity,
-    this.servingQuantityUnit,
-    this.nutrition,
-    this.externalProduct,
-    this.globalFoodItemId,
-    this.aiEstimated = false,
-  });
-
-  /// Creates a [InventoryReceiptManualProductSelection] for from search result.
-  factory fromSearchResult(OffProductSearchResult result) {
-    return InventoryReceiptManualProductSelection(
-      source: InventoryReceiptManualProductSelectionSource.externalSearch,
-      name: result.name,
-      barcode: result.code,
-      brand: result.brand,
-      imageUrl: result.imageUrl,
-      packageWeight: result.packageWeight,
-      servingSize: result.servingSize,
-      servingQuantity: result.servingQuantity,
-      servingQuantityUnit: result.servingQuantityUnit,
-      nutrition: result.nutrition,
-      externalProduct: result,
-      globalFoodItemId: result.globalFoodItemId,
-    );
-  }
-
-  /// Creates a [InventoryReceiptManualProductSelection] from inventory item.
-  factory fromInventoryItem(InventoryItem item) {
-    return InventoryReceiptManualProductSelection(
-      source: InventoryReceiptManualProductSelectionSource.recentInventory,
-      name: item.name,
-      barcode: item.normalizedBarcode ?? '',
-      brand: item.brand,
-      imageUrl: item.imageUrl,
-      packageWeight: item.weight,
-      servingSize: item.servingSize,
-      servingQuantity: item.servingQuantity,
-      servingQuantityUnit: item.servingQuantityUnit,
-      nutrition: item.nutrition,
-      globalFoodItemId: _normalizeReusableGlobalFoodItemId(
-        item.globalFoodItemId,
-      ),
-      aiEstimated: item.aiEstimated,
-    );
-  }
-
-  /// The source.
-  final InventoryReceiptManualProductSelectionSource source;
-
-  /// Whether the picked food is an AI estimate, which stays the user's own
-  /// (#701).
-  final bool aiEstimated;
-
-  /// The name.
-  final String name;
-
-  /// The barcode.
-  final String barcode;
-
-  /// The brand.
-  final String? brand;
-
-  /// The image url.
-  final String? imageUrl;
-
-  /// The package weight.
-  final String? packageWeight;
-
-  /// The serving size.
-  final String? servingSize;
-
-  /// The serving quantity.
-  final double? servingQuantity;
-
-  /// The serving quantity unit.
-  final String? servingQuantityUnit;
-
-  /// The nutrition.
-  final GlobalFoodNutrition? nutrition;
-
-  /// The external product.
-  final OffProductSearchResult? externalProduct;
-
-  /// The global food item id.
-  final String? globalFoodItemId;
 }
 
 /// Structured save payload returned by manual product save builders.
@@ -236,15 +128,4 @@ extension InventoryReceiptManualProductSavePayloadResult
       skipMissingBarcodePrompt: skipMissingBarcodePrompt,
     );
   }
-}
-
-String? _normalizeReusableGlobalFoodItemId(String? value) {
-  final normalized = value?.trim();
-  if (normalized == null || normalized.isEmpty) {
-    return null;
-  }
-  if (isPendingGlobalFoodItemId(normalized)) {
-    return null;
-  }
-  return normalized;
 }

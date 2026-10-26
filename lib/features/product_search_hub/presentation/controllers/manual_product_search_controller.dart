@@ -17,14 +17,14 @@ import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_piece_weight.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'manual_product_selection.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_weight_input.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
-import 'package:yamt/features/product_search_hub/presentation/controllers/'
-    'manual_product_selection_rules.dart';
 
 part 'manual_product_search_controller.g.dart';
 

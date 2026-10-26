@@ -4,6 +4,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/domain/nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_photo_servings.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
+import 'package:yamt/features/product_search_hub/domain/manual_product_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/manual_product_search_models.dart';
 
 const _keepValue = Object();
