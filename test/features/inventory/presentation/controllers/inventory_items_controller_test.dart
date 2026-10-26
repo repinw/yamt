@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
+import 'package:yamt/features/inventory/domain/food_estimate_level_change.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -745,7 +746,7 @@ void main() {
     expect(await repository.readAll(), <InventoryItem>[original]);
   });
 
-  test('setFoodEstimateLevel prepares a partly eaten AI food at the new '
+  test('changeAiFood prepares a partly eaten AI food at the new '
       'level and keeps its stock and photos (#763)', () async {
     const estimate = FoodEstimate(
       name: 'Rice bowl',
@@ -790,7 +791,10 @@ void main() {
 
     final saved = await container
         .read(inventoryItemsControllerProvider.notifier)
-        .setFoodEstimateLevel('a', FoodEstimateLevel.rich);
+        .changeAiFood(
+          'a',
+          (item) => item.withFoodEstimateLevel(FoodEstimateLevel.rich),
+        );
 
     expect(saved, isTrue);
     final stored = (await repository.readAll()).single;

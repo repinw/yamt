@@ -8,12 +8,14 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/data/'
     'global_food_item_repository.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
-import 'package:yamt/features/inventory/domain/food_estimate_level_change.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_stock_changes.dart';
 
 part 'inventory_item_edit_service.g.dart';
+
+/// A change of an AI food that keeps its stock, such as a new level (#763).
+typedef AiFoodChange = InventoryItem Function(InventoryItem item);
 
 /// The Vorrat item edit service provider.
 @riverpod
@@ -59,19 +61,19 @@ class InventoryItemEditService {
     return (result: saved, written: saved ? next : null);
   }
 
-  /// Prepares the AI food [itemId] at [level], also once some of it is
-  /// eaten, since the stock stays as it is (#763).
-  Future<InventoryItemChange<bool>> setLevel(
+  /// Saves [change] of the AI food [itemId], such as a new level, also once
+  /// some of it is eaten: [change] keeps the stock as it is (#763).
+  Future<InventoryItemChange<bool>> changeAiFood(
     List<InventoryItem> items,
     String itemId,
-    FoodEstimateLevel level,
+    AiFoodChange change,
   ) async {
     final index = items.indexWhere((item) => item.id == itemId);
     if (index < 0 || items[index].productSnapshot.aiEstimate == null) {
       return (result: false, written: null);
     }
     final next = List<InventoryItem>.from(items)
-      ..[index] = items[index].withFoodEstimateLevel(level);
+      ..[index] = change(items[index]);
     final saved = await _writer.save(items, next);
     return (result: saved, written: saved ? next : null);
   }
