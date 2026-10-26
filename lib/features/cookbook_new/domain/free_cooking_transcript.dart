@@ -50,6 +50,15 @@ final _amountOnly = RegExp(
   caseSensitive: false,
 );
 
+/// The rows that [pending] speech gives once it is final, as
+/// [splitFreeCookingTranscript] cuts them after any undo words, so the
+/// preview shows them while the cook speaks. Speech that gives no row yet,
+/// such as "nein", shows as it is; blank speech shows nothing.
+List<String> previewFreeCookingRows(String pending) {
+  final rows = splitFreeCookingTranscript(afterUndoWords(pending) ?? pending);
+  return rows.isEmpty && pending.trim().isNotEmpty ? [pending.trim()] : rows;
+}
+
 /// What is left of [transcript] after undo words such as "nein" at its
 /// start, or `null` when it does not start with one: "Nein, nein!" and
 /// "nein, doch nicht" leave nothing, "nein, 200 g Sahne" leaves the

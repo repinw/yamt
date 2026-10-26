@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/cookbook_new/domain/free_cooking_transcript.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Gerade dazu" in the Kochhelfer: what the microphone hears, or what the
@@ -34,7 +35,11 @@ class CookingGuideJustAdded extends StatelessWidget {
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final pending = this.pending;
-    final added = pending ?? justAdded.join(' · ');
+    // What is being spoken shows as the rows it will give.
+    final added =
+        (pending == null ? justAdded : previewFreeCookingRows(pending)).join(
+          ' · ',
+        );
     if (added.isEmpty) {
       return const SizedBox.shrink();
     }

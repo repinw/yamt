@@ -563,6 +563,7 @@ class _FakeVoiceSearchService implements VoiceSearchService {
     required ValueChanged<VoiceSearchRecognition> onResult,
     required ValueChanged<bool> onListeningStateChanged,
     required ValueChanged<VoiceSearchFailure> onError,
+    Duration? pauseFor,
   }) async {
     return VoiceSearchFailure.unavailable;
   }

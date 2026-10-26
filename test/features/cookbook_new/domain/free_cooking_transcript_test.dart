@@ -55,4 +55,11 @@ void main() {
     expect(afterUndoWords('no!name'), isNull);
     expect(afterUndoWords('Nein Sahne'), 'Sahne');
   });
+
+  test('the preview shows the rows that speech will give (#832)', () {
+    expect(previewFreeCookingRows('Salz und Pfeffer'), ['Salz', 'Pfeffer']);
+    expect(previewFreeCookingRows('nein, 200 g Sahne'), ['200 g Sahne']);
+    expect(previewFreeCookingRows('nein'), ['nein']);
+    expect(previewFreeCookingRows(' '), isEmpty);
+  });
 }
