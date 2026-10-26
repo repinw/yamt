@@ -573,7 +573,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+        effectiveDate: addLocalDays(selectedDay, -14),
       ),
     )..saveShouldFail = true;
 
@@ -640,7 +640,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+        effectiveDate: addLocalDays(selectedDay, -14),
       ),
     )..onSaveSettings = (_) => saveCompleter.future;
 
@@ -676,7 +676,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+        effectiveDate: addLocalDays(selectedDay, -14),
       ),
     )..saveShouldFail = true;
 
@@ -706,7 +706,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+        effectiveDate: addLocalDays(selectedDay, -14),
       ),
     );
 
@@ -751,7 +751,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+        effectiveDate: addLocalDays(selectedDay, -14),
       ),
     )..saveShouldFail = true;
 
@@ -847,7 +847,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
         calculatorProfile: null,
-        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+        effectiveDate: addLocalDays(selectedDay, -14),
       ),
     );
 
@@ -890,7 +890,7 @@ void main() {
     tester,
   ) async {
     final today = normalizeLocalDay(DateTime.now());
-    final goalStartDate = today.subtract(const Duration(days: 14));
+    final goalStartDate = addLocalDays(today, -14);
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2200,
@@ -899,7 +899,7 @@ void main() {
         source: CalorieGoalSource.weeklyCheckIn,
         weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
           windowStartDate: goalStartDate,
-          windowEndDate: goalStartDate.add(const Duration(days: 6)),
+          windowEndDate: addLocalDays(goalStartDate, 6),
           trendWeightChangePerDay: -0.05,
           calculatedTdeeKcal: 2400,
           lowConfidence: false,
@@ -912,7 +912,7 @@ void main() {
       selectedDay: today,
       settingsRepository: settingsRepository,
       initialWeeklyCheckIn: _weeklyCheckInCheckInData(
-        windowStartDate: today.subtract(const Duration(days: 7)),
+        windowStartDate: addLocalDays(today, -7),
       ),
     );
 
@@ -988,7 +988,7 @@ void main() {
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      today: selectedDay.add(const Duration(days: 1)),
+      today: addLocalDays(selectedDay, 1),
     );
 
     expect(find.byType(DiaryWeightMissingPromptSection), findsNothing);
@@ -998,7 +998,7 @@ void main() {
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      today: selectedDay.subtract(const Duration(days: 1)),
+      today: addLocalDays(selectedDay, -1),
       initialWeeklyCheckIn: _weeklyCheckInCheckInData(
         windowStartDate: DateTime(2026, 4, 21),
         shouldAutoOpen: false,
@@ -1014,8 +1014,8 @@ void main() {
   ) async {
     final today = normalizeLocalDay(DateTime.now());
     final snapshot = CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: today.subtract(const Duration(days: 7)),
-      windowEndDate: today.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(today, -7),
+      windowEndDate: addLocalDays(today, -1),
       trendWeightChangePerDay: -0.05,
       calculatedTdeeKcal: 2200,
       lowConfidence: false,
@@ -1080,7 +1080,7 @@ void main() {
   ) async {
     late ProviderContainer container;
     final today = normalizeLocalDay(DateTime.now());
-    final windowStartDate = today.subtract(const Duration(days: 7));
+    final windowStartDate = addLocalDays(today, -7);
     PendingCalorieGoalWeeklyCheckIn? reopened;
 
     container = await _pumpDiaryPage(
@@ -1380,7 +1380,7 @@ void main() {
       clock: () => now,
     );
 
-    now = selectedDay.add(const Duration(days: 1, hours: 8));
+    now = addLocalDays(selectedDay, 1).add(const Duration(hours: 8));
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.pump();
@@ -1440,7 +1440,7 @@ void main() {
       clock: () => now,
     );
 
-    now = selectedDay.add(const Duration(days: 1));
+    now = addLocalDays(selectedDay, 1);
     await tester.pump(const Duration(minutes: 1));
 
     final state = container.read(diaryCalendarControllerProvider);
@@ -1537,7 +1537,7 @@ Future<ProviderContainer> _pumpDiaryPage(
         initialSettings: CalorieGoalSettings.single(
           dailyKcalGoal: 2200,
           calculatorProfile: null,
-          effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+          effectiveDate: addLocalDays(selectedDay, -14),
         ),
       );
   final user = _MockUser();
@@ -1685,11 +1685,9 @@ CalorieWeekOverview _dashboardWeekOverviewForPageTest({
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
-        date: selectedDay.subtract(Duration(days: offset)),
+        date: addLocalDays(selectedDay, -offset),
         totalKcal: offset == 0 ? dayTotal : 0,
-        goalKcal: settings.goalKcalForDay(
-          selectedDay.subtract(Duration(days: offset)),
-        ),
+        goalKcal: settings.goalKcalForDay(addLocalDays(selectedDay, -offset)),
         entryCount: offset == 0 ? selectedDayEntries.length : 0,
       ),
   ];
@@ -1701,7 +1699,7 @@ CalorieWeekOverview _dashboardWeekOverviewForPageTest({
     totalConsumedKcal: dayTotal,
     totalGoalKcal: totalGoalKcal,
     remainingKcal: totalGoalKcal - dayTotal,
-    balanceStartDate: selectedDay.subtract(const Duration(days: 6)),
+    balanceStartDate: addLocalDays(selectedDay, -6),
     carryoverBeforeTodayKcal: 0,
     todayFlexibleGoalKcal: settings.goalKcalForDay(selectedDay),
     goalStartsInFuture: goalStartsInFuture,
@@ -1797,8 +1795,8 @@ CalorieWeeklyCheckInData _weeklyCheckInCheckInData({
 }) {
   final pending = PendingCalorieGoalWeeklyCheckIn(
     windowStartDate: windowStartDate,
-    windowEndDate: windowStartDate.add(const Duration(days: 6)),
-    dueDate: windowStartDate.add(const Duration(days: 7)),
+    windowEndDate: addLocalDays(windowStartDate, 6),
+    dueDate: addLocalDays(windowStartDate, 7),
     dismissedAt: dismissedAt,
   );
   return CalorieWeeklyCheckInData(
@@ -1871,8 +1869,8 @@ CalorieGoalSettings _weeklyCheckInGoalSettings(DateTime today) {
     effectiveDate: today,
     source: CalorieGoalSource.weeklyCheckIn,
     weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: today.subtract(const Duration(days: 7)),
-      windowEndDate: today.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(today, -7),
+      windowEndDate: addLocalDays(today, -1),
       trendWeightChangePerDay: -0.05,
       calculatedTdeeKcal: 2200,
       lowConfidence: false,

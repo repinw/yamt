@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_open_plans.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
@@ -158,7 +159,7 @@ void main() {
         baseGoalKcal: 2000,
       );
 
-      final futureDay = selectedDay.add(const Duration(days: 1));
+      final futureDay = addLocalDays(selectedDay, 1);
       final data = DiaryDailyBalanceData.from(
         selectedDay: futureDay,
         metrics: metrics,
@@ -192,7 +193,7 @@ void main() {
         );
 
         final data = DiaryDailyBalanceData.from(
-          selectedDay: selectedDay.add(const Duration(days: 1)),
+          selectedDay: addLocalDays(selectedDay, 1),
           metrics: metrics,
           isPauseDay: false,
           numberFormat: numberFormat,
@@ -252,7 +253,7 @@ void main() {
       );
 
       final data = DiaryDailyBalanceData.from(
-        selectedDay: selectedDay.add(const Duration(days: 2)),
+        selectedDay: addLocalDays(selectedDay, 2),
         metrics: metrics,
         isPauseDay: false,
         numberFormat: numberFormat,
@@ -276,7 +277,7 @@ void main() {
       );
 
       final data = DiaryDailyBalanceData.from(
-        selectedDay: selectedDay.add(const Duration(days: 1)),
+        selectedDay: addLocalDays(selectedDay, 1),
         metrics: metrics,
         isPauseDay: true,
         numberFormat: numberFormat,

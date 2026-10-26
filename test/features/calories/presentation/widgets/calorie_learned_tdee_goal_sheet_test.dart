@@ -104,8 +104,8 @@ CalorieGoalSettings _learnedTdeeSettings({
     countingStartDate: resolvedGoalStartDate,
     source: CalorieGoalSource.calculator,
     weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: resolvedGoalStartDate.subtract(const Duration(days: 7)),
-      windowEndDate: resolvedGoalStartDate.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(resolvedGoalStartDate, -7),
+      windowEndDate: addLocalDays(resolvedGoalStartDate, -1),
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,
@@ -275,10 +275,10 @@ void main() {
   ) async {
     _useTallView(tester);
     final today = normalizeLocalDay(DateTime.now());
-    final goalStartDate = today.subtract(const Duration(days: 2));
+    final goalStartDate = addLocalDays(today, -2);
     final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: goalStartDate.subtract(const Duration(days: 7)),
-      windowEndDate: goalStartDate.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(goalStartDate, -7),
+      windowEndDate: addLocalDays(goalStartDate, -1),
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,
@@ -305,9 +305,7 @@ void main() {
     );
     final logRepository = FakeCalorieLogRepository();
     final initialRunState = BurnWeekRunState(
-      currentWeekStartDayKey: localDayKey(
-        goalStartDate.subtract(const Duration(days: 7)),
-      ),
+      currentWeekStartDayKey: localDayKey(addLocalDays(goalStartDate, -7)),
       lastActiveDayKey: localDayKey(today),
       runWeekNumber: 3,
       starCount: 2,
@@ -352,7 +350,7 @@ void main() {
   ) async {
     _useTallView(tester);
     final today = normalizeLocalDay(DateTime.now());
-    final goalStartDate = today.subtract(const Duration(days: 6));
+    final goalStartDate = addLocalDays(today, -6);
     final initialSettings = _learnedTdeeSettings(goalStartDate: goalStartDate);
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: initialSettings,
@@ -360,9 +358,7 @@ void main() {
     final logRepository = FakeCalorieLogRepository();
     final runStateRepository = _FakeBurnWeekRunStateRepository(
       BurnWeekRunState(
-        currentWeekStartDayKey: localDayKey(
-          goalStartDate.subtract(const Duration(days: 49)),
-        ),
+        currentWeekStartDayKey: localDayKey(addLocalDays(goalStartDate, -49)),
         lastActiveDayKey: localDayKey(today),
         runWeekNumber: 8,
         starCount: 7,
@@ -428,7 +424,7 @@ void main() {
     _useTallView(tester);
     final today = normalizeLocalDay(DateTime.now());
     final initialSettings = _learnedTdeeSettings(
-      goalStartDate: today.subtract(const Duration(days: 6)),
+      goalStartDate: addLocalDays(today, -6),
     );
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: initialSettings,
@@ -600,7 +596,7 @@ void main() {
       '(#710)', (tester) async {
     _useTallView(tester);
     final today = normalizeLocalDay(DateTime.now());
-    final goalStartDate = today.subtract(const Duration(days: 6));
+    final goalStartDate = addLocalDays(today, -6);
     final initialSettings = _learnedTdeeSettings(goalStartDate: goalStartDate);
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: initialSettings,
@@ -686,7 +682,7 @@ void main() {
     _useTallView(tester);
     final today = normalizeLocalDay(DateTime.now());
     final initialSettings = _learnedTdeeSettings(
-      goalStartDate: today.subtract(const Duration(days: 20)),
+      goalStartDate: addLocalDays(today, -20),
     );
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: initialSettings,

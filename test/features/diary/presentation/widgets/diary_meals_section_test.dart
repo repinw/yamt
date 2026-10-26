@@ -648,10 +648,7 @@ void main() {
     });
 
     testWidgets("hides before the plans' day", (tester) async {
-      await pump(tester, [
-        row('a'),
-        row('b'),
-      ], selectedDay.subtract(const Duration(days: 1)));
+      await pump(tester, [row('a'), row('b')], addLocalDays(selectedDay, -1));
       expect(acceptAll, findsNothing);
     });
   });
@@ -660,7 +657,7 @@ void main() {
     await _pumpMealsSection(
       tester,
       selectedDay: selectedDay,
-      now: selectedDay.subtract(const Duration(days: 1)),
+      now: addLocalDays(selectedDay, -1),
       sections: [
         _mealSection(
           MealType.dinner,

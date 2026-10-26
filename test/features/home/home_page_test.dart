@@ -248,13 +248,11 @@ PreparedMeal _preparedMeal(String id) {
 
 CalorieWeekOverview _weekOverview(DateTime selectedDay) {
   final normalizedSelectedDay = normalizeLocalDay(selectedDay);
-  final balanceStartDate = normalizedSelectedDay.subtract(
-    const Duration(days: 6),
-  );
+  final balanceStartDate = addLocalDays(normalizedSelectedDay, -6);
   final days = [
     for (var offset = 0; offset < 7; offset += 1)
       CalorieWeekDayOverview(
-        date: balanceStartDate.add(Duration(days: offset)),
+        date: addLocalDays(balanceStartDate, offset),
         totalKcal: 0,
         goalKcal: 2000,
         entryCount: 0,
@@ -574,7 +572,7 @@ void main() {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     final today = normalizeLocalDay(DateTime.now());
-    final oldDay = today.subtract(const Duration(days: 2));
+    final oldDay = addLocalDays(today, -2);
 
     await tester.pumpWidget(
       _buildHarness(

@@ -150,18 +150,12 @@ CalorieWeekOverview _weekOverview({
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
-        date: normalizedToday.subtract(Duration(days: offset)),
-        totalKcal:
-            missingDays.contains(
-              normalizedToday.subtract(Duration(days: offset)),
-            )
+        date: addLocalDays(normalizedToday, -offset),
+        totalKcal: missingDays.contains(addLocalDays(normalizedToday, -offset))
             ? 0
             : 1000,
         goalKcal: 2000,
-        entryCount:
-            missingDays.contains(
-              normalizedToday.subtract(Duration(days: offset)),
-            )
+        entryCount: missingDays.contains(addLocalDays(normalizedToday, -offset))
             ? 0
             : 1,
       ),
@@ -189,17 +183,13 @@ CalorieWeekConsumptionSnapshot _snapshotForWeek({
   final days = [
     for (var offset = 0; offset < 7; offset += 1)
       CalorieWeekConsumptionDaySnapshot(
-        date: normalizedWeekStartDate.add(Duration(days: offset)),
+        date: addLocalDays(normalizedWeekStartDate, offset),
         totalKcal:
-            missingDays.contains(
-              normalizedWeekStartDate.add(Duration(days: offset)),
-            )
+            missingDays.contains(addLocalDays(normalizedWeekStartDate, offset))
             ? 0
             : 1000,
         entryCount:
-            missingDays.contains(
-              normalizedWeekStartDate.add(Duration(days: offset)),
-            )
+            missingDays.contains(addLocalDays(normalizedWeekStartDate, offset))
             ? 0
             : 1,
       ),
@@ -264,8 +254,8 @@ CalorieGoalSettings _learnedGoalSettings(DateTime effectiveDate) {
     effectiveDate: effectiveDate,
     source: CalorieGoalSource.calculator,
     weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: effectiveDate.subtract(const Duration(days: 7)),
-      windowEndDate: effectiveDate.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(effectiveDate, -7),
+      windowEndDate: addLocalDays(effectiveDate, -1),
       trendWeightChangePerDay: -0.05,
       calculatedTdeeKcal: 2300,
       lowConfidence: false,
@@ -282,14 +272,12 @@ void main() {
         today: today,
         weekOverview: _weekOverview(
           today: today,
-          balanceStartDate: today.subtract(const Duration(days: 6)),
+          balanceStartDate: addLocalDays(today, -6),
         ),
         todayOverview: _defaultTodayOverview(today),
-        settings: _activeGoalSettings(today.subtract(const Duration(days: 6))),
+        settings: _activeGoalSettings(addLocalDays(today, -6)),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: localDayKey(
-            today.subtract(const Duration(days: 6)),
-          ),
+          currentWeekStartDayKey: localDayKey(addLocalDays(today, -6)),
           lastActiveDayKey: localDayKey(today),
           runWeekNumber: 1,
           starCount: 0,
@@ -314,10 +302,10 @@ void main() {
         today: today,
         weekOverview: _weekOverview(
           today: today,
-          balanceStartDate: today.subtract(const Duration(days: 6)),
+          balanceStartDate: addLocalDays(today, -6),
         ),
         todayOverview: _defaultTodayOverview(today),
-        settings: _activeGoalSettings(today.subtract(const Duration(days: 6))),
+        settings: _activeGoalSettings(addLocalDays(today, -6)),
         initialRunState: BurnWeekRunState(
           currentWeekStartDayKey: localDayKey(tomorrow),
           lastActiveDayKey: localDayKey(today),
@@ -338,8 +326,8 @@ void main() {
 
     test('catches up closed weeks when no run start is stored', () async {
       final today = normalizeLocalDay(DateTime.now());
-      final cycleStart = today.subtract(const Duration(days: 18));
-      final currentWeekStart = today.subtract(const Duration(days: 4));
+      final cycleStart = addLocalDays(today, -18);
+      final currentWeekStart = addLocalDays(today, -4);
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
         today: today,
@@ -348,11 +336,11 @@ void main() {
         settings: _activeGoalSettings(cycleStart),
         initialRunState: const BurnWeekRunState.initial(),
         snapshotsByWindowEnd: <DateTime, CalorieWeekConsumptionSnapshot>{
-          cycleStart.add(const Duration(days: 6)): _snapshotForWeek(
+          addLocalDays(cycleStart, 6): _snapshotForWeek(
             weekStartDate: cycleStart,
           ),
-          cycleStart.add(const Duration(days: 13)): _snapshotForWeek(
-            weekStartDate: cycleStart.add(const Duration(days: 7)),
+          addLocalDays(cycleStart, 13): _snapshotForWeek(
+            weekStartDate: addLocalDays(cycleStart, 7),
           ),
         },
         captureController: (value) => controller = value,
@@ -374,8 +362,8 @@ void main() {
       'repairs fresh current-week state that skipped backfilled weeks',
       () async {
         final today = normalizeLocalDay(DateTime.now());
-        final cycleStart = today.subtract(const Duration(days: 18));
-        final currentWeekStart = today.subtract(const Duration(days: 4));
+        final cycleStart = addLocalDays(today, -18);
+        final currentWeekStart = addLocalDays(today, -4);
         late _RecordingBurnWeekRunController controller;
         final container = _buildContainer(
           today: today,
@@ -394,11 +382,11 @@ void main() {
             missedTrackingThisWeek: false,
           ),
           snapshotsByWindowEnd: <DateTime, CalorieWeekConsumptionSnapshot>{
-            cycleStart.add(const Duration(days: 6)): _snapshotForWeek(
+            addLocalDays(cycleStart, 6): _snapshotForWeek(
               weekStartDate: cycleStart,
             ),
-            cycleStart.add(const Duration(days: 13)): _snapshotForWeek(
-              weekStartDate: cycleStart.add(const Duration(days: 7)),
+            addLocalDays(cycleStart, 13): _snapshotForWeek(
+              weekStartDate: addLocalDays(cycleStart, 7),
             ),
           },
           captureController: (value) => controller = value,
@@ -508,9 +496,7 @@ void main() {
         ),
         settings: _learnedGoalSettings(tomorrow),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: localDayKey(
-            today.subtract(const Duration(days: 6)),
-          ),
+          currentWeekStartDayKey: localDayKey(addLocalDays(today, -6)),
           lastActiveDayKey: localDayKey(today),
           runWeekNumber: 3,
           starCount: 2,
@@ -534,7 +520,7 @@ void main() {
     test('reschedules stale learned future goal start', () async {
       final today = normalizeLocalDay(DateTime.now());
       final tomorrow = nextLocalDay(today);
-      final staleStart = tomorrow.add(const Duration(days: 2));
+      final staleStart = addLocalDays(tomorrow, 2);
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
         today: today,
@@ -583,9 +569,7 @@ void main() {
           todayOverview: _defaultTodayOverview(today),
           settings: _activeGoalSettings(today),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: localDayKey(
-              today.subtract(const Duration(days: 8)),
-            ),
+            currentWeekStartDayKey: localDayKey(addLocalDays(today, -8)),
             lastActiveDayKey: localDayKey(today),
             runWeekNumber: 2,
             starCount: 1,
@@ -615,9 +599,7 @@ void main() {
         todayOverview: _defaultTodayOverview(today),
         settings: _learnedGoalSettings(today),
         initialRunState: BurnWeekRunState(
-          currentWeekStartDayKey: localDayKey(
-            today.subtract(const Duration(days: 8)),
-          ),
+          currentWeekStartDayKey: localDayKey(addLocalDays(today, -8)),
           lastActiveDayKey: localDayKey(today),
           runWeekNumber: 3,
           starCount: 2,
@@ -641,23 +623,19 @@ void main() {
       'syncs current week with missed tracking for an earlier empty day',
       () async {
         final today = normalizeLocalDay(DateTime.now());
-        final missingDay = today.subtract(const Duration(days: 2));
+        final missingDay = addLocalDays(today, -2);
         late _RecordingBurnWeekRunController controller;
         final container = _buildContainer(
           today: today,
           weekOverview: _weekOverview(
             today: today,
-            balanceStartDate: today.subtract(const Duration(days: 6)),
+            balanceStartDate: addLocalDays(today, -6),
             missingDays: <DateTime>{missingDay},
           ),
           todayOverview: _defaultTodayOverview(today),
-          settings: _activeGoalSettings(
-            today.subtract(const Duration(days: 6)),
-          ),
+          settings: _activeGoalSettings(addLocalDays(today, -6)),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: localDayKey(
-              today.subtract(const Duration(days: 6)),
-            ),
+            currentWeekStartDayKey: localDayKey(addLocalDays(today, -6)),
             lastActiveDayKey: localDayKey(today),
             runWeekNumber: 1,
             starCount: 0,
@@ -675,7 +653,7 @@ void main() {
         expect(controller.syncCalls.single.currentDay, today);
         expect(
           controller.syncCalls.single.weekStartDate,
-          today.subtract(const Duration(days: 6)),
+          addLocalDays(today, -6),
         );
         expect(controller.syncCalls.single.missedTrackingThisWeek, isTrue);
         expect(
@@ -687,8 +665,8 @@ void main() {
 
     test('syncs closed weeks with missed tracking flags', () async {
       final today = normalizeLocalDay(DateTime.now());
-      final closedWeekStart = today.subtract(const Duration(days: 7));
-      final missingClosedWeekDay = closedWeekStart.add(const Duration(days: 3));
+      final closedWeekStart = addLocalDays(today, -7);
+      final missingClosedWeekDay = addLocalDays(closedWeekStart, 3);
       late _RecordingBurnWeekRunController controller;
       final container = _buildContainer(
         today: today,
@@ -700,16 +678,14 @@ void main() {
         settings: _activeGoalSettings(closedWeekStart),
         initialRunState: BurnWeekRunState(
           currentWeekStartDayKey: localDayKey(closedWeekStart),
-          lastActiveDayKey: localDayKey(
-            today.subtract(const Duration(days: 1)),
-          ),
+          lastActiveDayKey: localDayKey(addLocalDays(today, -1)),
           runWeekNumber: 1,
           starCount: 0,
           starBrokeThisWeek: false,
           missedTrackingThisWeek: false,
         ),
         snapshotsByWindowEnd: <DateTime, CalorieWeekConsumptionSnapshot>{
-          closedWeekStart.add(const Duration(days: 6)): _snapshotForWeek(
+          addLocalDays(closedWeekStart, 6): _snapshotForWeek(
             weekStartDate: closedWeekStart,
             missingDays: <DateTime>{missingClosedWeekDay},
           ),
@@ -740,17 +716,13 @@ void main() {
           today: today,
           weekOverview: _weekOverview(
             today: today,
-            balanceStartDate: today.subtract(const Duration(days: 6)),
-            missingDays: <DateTime>{today.subtract(const Duration(days: 2))},
+            balanceStartDate: addLocalDays(today, -6),
+            missingDays: <DateTime>{addLocalDays(today, -2)},
           ),
           todayOverview: _defaultTodayOverview(today),
-          settings: _activeGoalSettings(
-            today.subtract(const Duration(days: 6)),
-          ),
+          settings: _activeGoalSettings(addLocalDays(today, -6)),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: localDayKey(
-              today.subtract(const Duration(days: 6)),
-            ),
+            currentWeekStartDayKey: localDayKey(addLocalDays(today, -6)),
             lastActiveDayKey: localDayKey(today),
             runWeekNumber: 1,
             starCount: 0,
@@ -795,9 +767,7 @@ void main() {
           todayOverview: _defaultTodayOverview(today),
           settings: _activeGoalSettings(today),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: localDayKey(
-              today.subtract(const Duration(days: 8)),
-            ),
+            currentWeekStartDayKey: localDayKey(addLocalDays(today, -8)),
             lastActiveDayKey: localDayKey(today),
             runWeekNumber: 2,
             starCount: 1,
@@ -853,9 +823,7 @@ void main() {
           ),
           settings: _activeGoalSettings(tomorrow),
           initialRunState: BurnWeekRunState(
-            currentWeekStartDayKey: localDayKey(
-              today.subtract(const Duration(days: 6)),
-            ),
+            currentWeekStartDayKey: localDayKey(addLocalDays(today, -6)),
             lastActiveDayKey: localDayKey(today),
             runWeekNumber: 2,
             starCount: 1,

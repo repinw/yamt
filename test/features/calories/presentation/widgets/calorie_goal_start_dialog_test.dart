@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
@@ -68,9 +69,7 @@ void main() {
                     unawaited(
                       showCalorieGoalStartDialog(
                         context: context,
-                        initialGoalStartDate: DateTime.now().add(
-                          const Duration(days: 2),
-                        ),
+                        initialGoalStartDate: addLocalDays(DateTime.now(), 2),
                         onSaveGoalStart: (_) async => true,
                       ),
                     );
@@ -92,11 +91,6 @@ void main() {
     final picker = tester.widget<CalendarDatePicker>(
       find.byType(CalendarDatePicker),
     );
-    expect(
-      picker.lastDate.isAfter(
-        DateUtils.dateOnly(DateTime.now().add(const Duration(days: 2))),
-      ),
-      isTrue,
-    );
+    expect(picker.lastDate.isAfter(addLocalDays(DateTime.now(), 2)), isTrue);
   });
 }

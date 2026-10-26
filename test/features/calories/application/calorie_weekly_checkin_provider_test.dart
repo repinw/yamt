@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
@@ -128,7 +129,7 @@ void main() {
         for (var index = 0; index < 7; index += 1)
           _entry(
             'entry-$index',
-            goalStart.add(Duration(days: index, hours: 8)),
+            addLocalDays(goalStart, index).add(const Duration(hours: 8)),
             2100 + (index * 10),
           ),
       ],
@@ -137,7 +138,7 @@ void main() {
       <ManualHealthWeightEntry>[
         ManualHealthWeightEntry(day: goalStart, weightKg: 82),
         ManualHealthWeightEntry(
-          day: goalStart.add(const Duration(days: 6)),
+          day: addLocalDays(goalStart, 6),
           weightKg: 81.4,
         ),
       ],
@@ -192,7 +193,7 @@ void main() {
           for (var index = 0; index < 8; index += 1)
             _entry(
               'entry-$index',
-              goalStart.add(Duration(days: index, hours: 8)),
+              addLocalDays(goalStart, index).add(const Duration(hours: 8)),
               index == 2 ? 8000 : 2100,
             ),
         ],
@@ -201,7 +202,7 @@ void main() {
         <ManualHealthWeightEntry>[
           ManualHealthWeightEntry(day: goalStart, weightKg: 82),
           ManualHealthWeightEntry(
-            day: goalStart.add(const Duration(days: 7)),
+            day: addLocalDays(goalStart, 7),
             weightKg: 81.4,
           ),
         ],
@@ -362,7 +363,7 @@ void main() {
         for (var index = 0; index < 4; index += 1)
           _entry(
             'entry-$index',
-            goalStart.add(Duration(days: index, hours: 8)),
+            addLocalDays(goalStart, index).add(const Duration(hours: 8)),
             2100 + (index * 10),
           ),
       ],
@@ -371,7 +372,7 @@ void main() {
       <ManualHealthWeightEntry>[
         ManualHealthWeightEntry(day: goalStart, weightKg: 82),
         ManualHealthWeightEntry(
-          day: goalStart.add(const Duration(days: 6)),
+          day: addLocalDays(goalStart, 6),
           weightKg: 81.4,
         ),
       ],
@@ -415,7 +416,7 @@ void main() {
         for (var index = 0; index < 7; index += 1)
           _entry(
             'entry-$index',
-            goalStart.add(Duration(days: index, hours: 8)),
+            addLocalDays(goalStart, index).add(const Duration(hours: 8)),
             2100 + (index * 10),
           ),
       ],
@@ -460,7 +461,7 @@ void main() {
         for (var index = 0; index < 7; index += 1)
           _entry(
             'entry-$index',
-            goalStart.add(Duration(days: index, hours: 8)),
+            addLocalDays(goalStart, index).add(const Duration(hours: 8)),
             2100 + (index * 10),
           ),
       ],
@@ -518,7 +519,7 @@ void main() {
           for (var index = 0; index < 7; index += 1)
             _entry(
               'entry-$index',
-              goalStart.add(Duration(days: index, hours: 8)),
+              addLocalDays(goalStart, index).add(const Duration(hours: 8)),
               2100 + (index * 10),
             ),
         ],
@@ -526,7 +527,7 @@ void main() {
       final manualRepository = FakeManualHealthWeightRepository(
         <ManualHealthWeightEntry>[
           ManualHealthWeightEntry(
-            day: goalStart.add(const Duration(days: 6)),
+            day: addLocalDays(goalStart, 6),
             weightKg: 81.4,
           ),
         ],
@@ -659,7 +660,7 @@ void main() {
         for (var index = 0; index < 7; index += 1)
           _entry(
             'entry-$index',
-            goalStart.add(Duration(days: index, hours: 8)),
+            addLocalDays(goalStart, index).add(const Duration(hours: 8)),
             2100 + (index * 10),
           ),
       ],
@@ -711,7 +712,7 @@ void main() {
           for (var index = 0; index < 7; index += 1)
             _entry(
               'entry-$index',
-              goalStart.add(Duration(days: index, hours: 8)),
+              addLocalDays(goalStart, index).add(const Duration(hours: 8)),
               2100 + (index * 10),
             ),
         ],
@@ -882,7 +883,7 @@ void main() {
         for (var index = 0; index < 7; index += 1)
           _entry(
             'entry-$index',
-            goalStart.add(Duration(days: index, hours: 8)),
+            addLocalDays(goalStart, index).add(const Duration(hours: 8)),
             2100 + (index * 10),
           ),
       ],
@@ -891,7 +892,7 @@ void main() {
       <ManualHealthWeightEntry>[
         ManualHealthWeightEntry(day: goalStart, weightKg: 82),
         ManualHealthWeightEntry(
-          day: goalStart.add(const Duration(days: 6)),
+          day: addLocalDays(goalStart, 6),
           weightKg: 81.4,
         ),
       ],
@@ -941,7 +942,7 @@ void main() {
               for (var index = 0; index < 14; index += 1)
                 _entry(
                   'entry-$index',
-                  goalStart.add(Duration(days: index, hours: 8)),
+                  addLocalDays(goalStart, index).add(const Duration(hours: 8)),
                   3000,
                 ),
             ],
@@ -1016,7 +1017,7 @@ void main() {
         for (var index = 0; index < 14; index += 1)
           _entry(
             'entry-$index',
-            goalStart.add(Duration(days: index, hours: 8)),
+            addLocalDays(goalStart, index).add(const Duration(hours: 8)),
             3000,
           ),
       ],
@@ -1086,7 +1087,7 @@ void main() {
       for (var index = 0; index < 14; index += 1)
         _entry(
           'entry-$index',
-          goalStart.add(Duration(days: index, hours: 8)),
+          addLocalDays(goalStart, index).add(const Duration(hours: 8)),
           3000,
         ),
     ];
@@ -1158,7 +1159,7 @@ void main() {
         for (var index = 0; index < 7; index += 1)
           _entry(
             'entry-$index',
-            goalStart.add(Duration(days: index, hours: 8)),
+            addLocalDays(goalStart, index).add(const Duration(hours: 8)),
             3000,
           ),
       ],
@@ -1224,7 +1225,7 @@ void main() {
               for (var index = 0; index < 7; index += 1)
                 _entry(
                   'entry-$index',
-                  goalStart.add(Duration(days: index, hours: 8)),
+                  addLocalDays(goalStart, index).add(const Duration(hours: 8)),
                   3000,
                 ),
             ],
@@ -1748,7 +1749,7 @@ void main() {
               changedAt: today,
               dailyKcalGoal: 2100,
               calculatorProfile: const CalorieCalculatorProfile.defaults(),
-              countingStartDate: today.add(const Duration(days: 2)),
+              countingStartDate: addLocalDays(today, 2),
             ),
       );
       final logRepository = FakeCalorieLogRepository();
@@ -1800,7 +1801,7 @@ void main() {
       <ManualHealthWeightEntry>[
         ManualHealthWeightEntry(day: goalStart, weightKg: 82),
         ManualHealthWeightEntry(
-          day: goalStart.add(const Duration(days: 6)),
+          day: addLocalDays(goalStart, 6),
           weightKg: 81.4,
         ),
       ],

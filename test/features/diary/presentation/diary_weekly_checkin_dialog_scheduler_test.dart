@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/diary/presentation/'
@@ -137,8 +138,8 @@ CalorieWeeklyCheckInData _checkInData(DateTime windowStartDate) {
   return CalorieWeeklyCheckInData(
     pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: windowStartDate,
-      windowEndDate: windowStartDate.add(const Duration(days: 6)),
-      dueDate: windowStartDate.add(const Duration(days: 7)),
+      windowEndDate: addLocalDays(windowStartDate, 6),
+      dueDate: addLocalDays(windowStartDate, 7),
     ),
     shouldAutoOpen: true,
     days: const <CalorieWeeklyCheckInWindowDay>[],

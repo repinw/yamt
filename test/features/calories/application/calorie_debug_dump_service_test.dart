@@ -39,10 +39,7 @@ void main() {
     ];
     final manualWeightRepository = FakeManualHealthWeightRepository(
       <ManualHealthWeightEntry>[
-        ManualHealthWeightEntry(
-          day: day.subtract(const Duration(days: 1)),
-          weightKg: 81.5,
-        ),
+        ManualHealthWeightEntry(day: addLocalDays(day, -1), weightKg: 81.5),
       ],
     );
 

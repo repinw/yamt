@@ -335,7 +335,7 @@ void main() {
   );
 
   test('saveCalculatedGoal rejects a future goal start', () async {
-    final today = DateTime.now();
+    final today = normalizeLocalDay(DateTime.now());
     final initialSettings = CalorieGoalSettings.single(
       dailyKcalGoal: 1900,
       calculatorProfile: null,
@@ -364,7 +364,7 @@ void main() {
       goalMode: CalorieGoalMode.maintain,
       goalSpeedKgPerWeek: 0,
     );
-    final futureGoalStart = today.add(const Duration(days: 1));
+    final futureGoalStart = addLocalDays(today, 1);
 
     final saved = await container
         .read(calorieGoalControllerProvider.notifier)
@@ -589,10 +589,8 @@ void main() {
     final today = normalizeLocalDay(DateTime.now());
     final dismissedAt = today.add(const Duration(hours: 9));
     final pending = PendingCalorieGoalWeeklyCheckIn(
-      windowStartDate: today.subtract(
-        const Duration(days: weeklyCheckInWindowLengthDays),
-      ),
-      windowEndDate: today.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(today, -weeklyCheckInWindowLengthDays),
+      windowEndDate: addLocalDays(today, -1),
       dueDate: today,
       dismissedAt: dismissedAt,
     );
@@ -795,7 +793,7 @@ void main() {
     );
     final initialSettings = const CalorieGoalSettings.empty()
         .applyGoalChange(
-          changedAt: today.subtract(const Duration(days: 7)),
+          changedAt: addLocalDays(today, -7),
           dailyKcalGoal: learnedSnapshot.calculatedTdeeKcal,
           calculatorProfile: profile,
           source: CalorieGoalSource.calculator,
@@ -874,7 +872,7 @@ void main() {
   );
 
   test('shiftGoalStart allows a future official counting start', () async {
-    final today = DateTime.now();
+    final today = normalizeLocalDay(DateTime.now());
     final initialSettings = CalorieGoalSettings.single(
       dailyKcalGoal: 1900,
       calculatorProfile: null,
@@ -894,7 +892,7 @@ void main() {
 
     await container.read(calorieGoalControllerProvider.future);
 
-    final futureGoalStart = DateTime.now().add(const Duration(days: 2));
+    final futureGoalStart = addLocalDays(DateTime.now(), 2);
     final saved = await container
         .read(calorieGoalControllerProvider.notifier)
         .shiftGoalStart(goalStartDate: futureGoalStart);
@@ -919,7 +917,7 @@ void main() {
   });
 
   test('shiftGoalStart allows future counting start', () async {
-    final today = DateTime.now();
+    final today = normalizeLocalDay(DateTime.now());
     final initialSettings = CalorieGoalSettings.single(
       dailyKcalGoal: 1900,
       calculatorProfile: null,
@@ -962,22 +960,22 @@ void main() {
   });
 
   test('shiftGoalStart drops copied weekly check in metadata', () async {
-    final today = DateTime.now();
+    final today = normalizeLocalDay(DateTime.now());
     final weeklyCheckInSnapshot = CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: today.subtract(const Duration(days: 7)),
-      windowEndDate: today.subtract(const Duration(days: 1)),
+      windowStartDate: addLocalDays(today, -7),
+      windowEndDate: addLocalDays(today, -1),
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2315,
       lowConfidence: false,
     );
     final initialSettings = const CalorieGoalSettings.empty()
         .applyGoalChange(
-          changedAt: today.subtract(const Duration(days: 14)),
+          changedAt: addLocalDays(today, -14),
           dailyKcalGoal: 2200,
           calculatorProfile: null,
         )
         .applyGoalChange(
-          changedAt: today.subtract(const Duration(days: 1)),
+          changedAt: addLocalDays(today, -1),
           dailyKcalGoal: 2300,
           calculatorProfile: const CalorieCalculatorProfile(
             sex: CalorieCalculatorSex.female,
@@ -1007,7 +1005,7 @@ void main() {
 
     final saved = await container
         .read(calorieGoalControllerProvider.notifier)
-        .shiftGoalStart(goalStartDate: today.subtract(const Duration(days: 2)));
+        .shiftGoalStart(goalStartDate: addLocalDays(today, -2));
 
     expect(saved, isTrue);
     final settings = await repository.readSettings();
@@ -1016,10 +1014,7 @@ void main() {
     expect(settings.latestGoalEntry?.weeklyCheckInSnapshot, isNull);
     expect(settings.hasLearnedTdee, isFalse);
     expect(settings.latestLearnedTdeeKcal, isNull);
-    expect(
-      settings.goalKcalForDay(today.subtract(const Duration(days: 3))),
-      2200,
-    );
+    expect(settings.goalKcalForDay(addLocalDays(today, -3)), 2200);
     expect(settings.goalKcalForDay(today), 2200);
   });
 
@@ -1505,7 +1500,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
         calculatorProfile: profile,
-        effectiveDate: day.subtract(const Duration(days: 3)),
+        effectiveDate: addLocalDays(day, -3),
       ),
     );
     addTearDown(repository.dispose);
@@ -1548,7 +1543,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
         calculatorProfile: profile,
-        effectiveDate: day.subtract(const Duration(days: 3)),
+        effectiveDate: addLocalDays(day, -3),
       ),
     );
     addTearDown(repository.dispose);
@@ -1582,7 +1577,7 @@ void main() {
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
         calculatorProfile: oldProfile,
-        effectiveDate: today.subtract(const Duration(days: 20)),
+        effectiveDate: addLocalDays(today, -20),
       ),
     );
     addTearDown(repository.dispose);

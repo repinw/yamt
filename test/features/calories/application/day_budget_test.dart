@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
@@ -61,8 +62,8 @@ DayBudget _budget(CalorieWeekOverview week) =>
     resolveDayBudget(week: week, nutrition: _Nutrition());
 
 void main() {
-  final yesterday = _today.subtract(const Duration(days: 1));
-  final tomorrow = _today.add(const Duration(days: 1));
+  final yesterday = addLocalDays(_today, -1);
+  final tomorrow = addLocalDays(_today, 1);
 
   final rules =
       <

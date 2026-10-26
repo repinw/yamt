@@ -43,11 +43,14 @@ class _FakeGoalController extends CalorieGoalController {
   FutureOr<CalorieGoalSettings> build() => settings;
 }
 
-/// True where the clock changes between 2026-10-05 and 2026-10-26.
-final _hasClockChange =
-    DateTime(2026, 10, 5).timeZoneOffset !=
-    DateTime(2026, 10, 26).timeZoneOffset;
-const _needsClockChange = 'needs a time zone with a clock change, as on CI';
+/// True where the clock changes on the days Europe/Berlin changes it in
+/// 2026, 29 March and 25 October, which these cases pin.
+final bool _hasClockChange =
+    DateTime(2026, 3, 28).timeZoneOffset !=
+        DateTime(2026, 3, 30).timeZoneOffset &&
+    DateTime(2026, 10, 24).timeZoneOffset !=
+        DateTime(2026, 10, 26).timeZoneOffset;
+const _needsClockChange = 'needs the clock changes of Europe/Berlin, as on CI';
 
 /// Runs the live sync on 2026-10-27 over a week start that 3.8.1 stored a
 /// day early, and returns the stored run.

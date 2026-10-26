@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
@@ -23,7 +24,7 @@ void main() {
       photos: [
         ProgressPhoto(
           id: 'old',
-          day: start.subtract(const Duration(days: 3)),
+          day: addLocalDays(start, -3),
           pose: ProgressPhotoPose.front,
         ),
         ProgressPhoto(id: 'first', day: start, pose: ProgressPhotoPose.front),

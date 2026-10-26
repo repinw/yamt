@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -252,7 +253,7 @@ void main() {
     final toggled = settings.toggleTrainingDay(day);
     expect(toggled.isTrainingDay(day), isTrue);
     expect(toggled.goalKcalForDay(day), 2250);
-    expect(toggled.goalKcalForDay(day.add(const Duration(days: 1))), 2000);
+    expect(toggled.goalKcalForDay(addLocalDays(day, 1)), 2000);
   });
 
   test('spontaneous training day falls back to the default session kcal '
@@ -522,8 +523,8 @@ void main() {
         changedAt: day,
         source: CalorieGoalSource.weeklyCheckIn,
         weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-          windowStartDate: day.subtract(const Duration(days: 7)),
-          windowEndDate: day.subtract(const Duration(days: 1)),
+          windowStartDate: addLocalDays(day, -7),
+          windowEndDate: addLocalDays(day, -1),
           trendWeightChangePerDay: -0.07,
           lowConfidence: false,
           macroWeightKg: macroWeightKg,

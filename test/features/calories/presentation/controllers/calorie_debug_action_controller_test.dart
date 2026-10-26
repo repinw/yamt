@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/data/calorie_debug_file_exporter.dart';
@@ -264,7 +265,7 @@ CalorieWeeklyCheckInData _weeklyCheckInData() {
         weightKg: 80.2,
       ),
       CalorieWeeklyCheckInWindowDay(
-        day: windowStartDate.add(const Duration(days: 1)),
+        day: addLocalDays(windowStartDate, 1),
         hasEntries: false,
         loggedIntakeKcal: 0,
         resolvedIntakeKcal: null,
@@ -284,7 +285,7 @@ CalorieWeeklyCheckInData _weeklyCheckInData() {
       dynamicGoalTodayKcal: 2225,
     ),
     blockedReason: CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight,
-    missingIntakeDays: [windowStartDate.add(const Duration(days: 1))],
+    missingIntakeDays: [addLocalDays(windowStartDate, 1)],
     missingWeightDays: [windowEndDate],
     freshness: CalorieLearnedTdeeFreshness.urgent,
     latestLearnedTdeeAt: DateTime(2026, 2, 1, 9),
