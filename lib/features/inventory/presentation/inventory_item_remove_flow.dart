@@ -166,7 +166,7 @@ abstract final class InventoryItemRemoveFlow {
       succeeded: result != null,
       message: l10n.inventoryItemRemovedMessage,
       onUndo: () =>
-          controller.restoreConsumedItem(item.id, result!.removedAmount),
+          controller.restoreConsumedItems({item.id: result!.removedAmount}),
     );
   }
 

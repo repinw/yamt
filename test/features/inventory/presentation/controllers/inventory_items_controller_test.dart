@@ -413,7 +413,7 @@ void main() {
     expect(activityRepository.events.single.reason, 'spoiled');
   });
 
-  test('restoreConsumedItem records restored activity event', () async {
+  test('restoreConsumedItems records restored activity event', () async {
     final item = _item(id: 'a', weight: '500g').copyWith(currentAmount: 300);
     final repository = _FakeInventoryItemRepository(
       initialItems: <InventoryItem>[item],
@@ -432,7 +432,7 @@ void main() {
     await container.read(inventoryItemsControllerProvider.future);
     final restored = await container
         .read(inventoryItemsControllerProvider.notifier)
-        .restoreConsumedItem('a', 100);
+        .restoreConsumedItems({'a': 100});
 
     expect(restored, isTrue);
     expect(

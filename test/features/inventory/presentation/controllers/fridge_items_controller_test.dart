@@ -1088,7 +1088,7 @@ void main() {
     expect(repository.savedItems, isEmpty);
   });
 
-  test('restoreConsumedItem increases quantity-based stock again', () async {
+  test('restoreConsumedItems increases quantity-based stock again', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
         _item('a').copyWith(
@@ -1110,7 +1110,7 @@ void main() {
     await container.read(inventoryItemsControllerProvider.future);
     final restored = await container
         .read(inventoryItemsControllerProvider.notifier)
-        .restoreConsumedItem('a', 1);
+        .restoreConsumedItems({'a': 1});
 
     expect(restored, isTrue);
     expect(repository.savedItems.single.quantity, 1);
@@ -1121,7 +1121,7 @@ void main() {
     );
   });
 
-  test('restoreConsumedItem increases amount-based stock again', () async {
+  test('restoreConsumedItems increases amount-based stock again', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_amountItem('a')],
     );
@@ -1138,7 +1138,7 @@ void main() {
     await container.read(inventoryItemsControllerProvider.future);
     final restored = await container
         .read(inventoryItemsControllerProvider.notifier)
-        .restoreConsumedItem('a', 200);
+        .restoreConsumedItems({'a': 200});
 
     expect(restored, isTrue);
     expect(repository.savedItems.single.currentAmount, 800);
