@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_item_components.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
@@ -93,7 +94,7 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
     super.initState();
     final items = ref.read(inventoryItemsControllerProvider).value ?? [];
     _rows = [
-      for (final component in _meal.components)
+      for (final component in preparedMealComponentsByItem(_meal.components))
         PreparedMealEditRow.ofComponent(
           component,
           available: _available(items, component.inventoryItemId),

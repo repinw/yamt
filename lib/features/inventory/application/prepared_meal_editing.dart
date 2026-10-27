@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_item_components.dart';
 
 /// Handles prepared meal editing and inventory reconciliation workflows.
 class PreparedMealEditing {
@@ -201,7 +202,10 @@ class PreparedMealEditing {
     return meal.name == name &&
         meal.imageAssetId == normalizedImageAssetId &&
         meal.totalPortions == totalPortions &&
-        _hasSameComponentInputs(meal.components, items);
+        _hasSameComponentInputs(
+          preparedMealComponentsByItem(meal.components),
+          items,
+        );
   }
 
   bool _hasSameComponentInputs(

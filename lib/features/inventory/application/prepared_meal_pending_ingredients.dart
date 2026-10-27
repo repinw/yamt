@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
 import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
@@ -158,14 +159,33 @@ reconciledPendingRecipeIngredients({
   final nextPendingIngredients = <String>[];
   for (final ingredient in pendingIngredients) {
     final requirement = _parsePendingRequirement(ingredient);
-    final coverage = requirement == null
-        ? null
-        : _matchingCoverage(coverages: coverages, requirement: requirement);
+    if (requirement == null) {
+      // A row without an amount ("Salz") is done once a new food stands
+      // for it, and takes nothing, as when it is filled (#834).
+      final namer = ingredientNamesNoAmount(ingredient)
+          ? coverages.firstWhereOrNull(
+              (coverage) => ingredientMatchesFully(
+                ingredient: ingredient,
+                item: coverage.component.sourceItemSnapshot,
+              ),
+            )
+          : null;
+      if (namer == null) {
+        nextPendingIngredients.add(ingredient);
+      } else {
+        namer.filledRows.add(ingredient);
+      }
+      continue;
+    }
+    final coverage = _matchingCoverage(
+      coverages: coverages,
+      requirement: requirement,
+    );
     if (coverage == null) {
       nextPendingIngredients.add(ingredient);
       continue;
     }
-    coverage.remainingAmount -= requirement!.amount;
+    coverage.remainingAmount -= requirement.amount;
     coverage.filledRows.add(ingredient);
   }
   // shortcut: a food that fills two rows stays unlinked and opens its own
