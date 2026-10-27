@@ -1276,6 +1276,8 @@
   "diaryPlanAcceptRecipePending": "Erst alle Zutaten des Rezepts einem Vorrat zuordnen",
   "diaryPlanAcceptRecipeGone": "Das Rezept ist nicht mehr im Kochbuch",
   "diaryPlanNutritionPending": "kcal offen",
+  "diaryPlanIngredientSaveFailed": "Die Wahl konnte nicht gespeichert werden.",
+  "diaryPlanIngredientsLoadFailed": "Die Zutaten des Rezepts konnten nicht geladen werden.",
   "diaryPlanShortTag": "Fehlt im Vorrat",
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance konnte nicht geladen werden",

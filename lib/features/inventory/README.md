@@ -99,13 +99,19 @@ Other features may consume these public Inventory entry points:
 - `application/template_plan_entry.dart`: `buildTemplatePlanEntry` builds
   the plan of one portion of a Kochbuch recipe (cooked on paper from its
   assigned Vorrat items, each counted as a full pack) or Vorlage.
+- `application/template_plan_ingredients.dart`: `templatePlanIngredients`
+  lists each line of a recipe plan with the Vorrat items it counts with and
+  the items it could take instead; the plan details page shows them.
 - `application/prepared_meal_reminder_plan_service.dart`: keeps a meal's
   plans in step with its rows (reminders while a row is open, the meal's values once
   none is). The meals controller runs it after every change of the rows
   (fill, ignore, unignore, take a food out, edit, undo of an edit); a
   failure there is logged and leaves the saved rows alone. It also gives
   the reminders of a Kochbuch recipe the recipe's values once each
-  ingredient has a Vorrat item (`replanTemplatePlan`); the
+  ingredient has a Vorrat item (`replanTemplatePlan`), and counted plans
+  the new values once the recipe saves other Vorrat items, unless they hold
+  the cook's own choices for one cooking (`replanRecipePlan` plans the one
+  plan a pick on its details page was made on anew, choices and all); the
   `RecipeReminderPlanListener` around the app runs that through
   `RecipeReminderPlanController` whenever the household's recipes change.
 - `application/inventory_quick_eat_application.dart` for eating prepared

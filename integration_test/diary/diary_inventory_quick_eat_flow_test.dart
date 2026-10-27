@@ -27,8 +27,10 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_stock_picker_sheet.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -58,6 +60,7 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -65,17 +68,21 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_pot_weighing_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/prepared_meal_eat_sheet_body.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/features/shoppinglist/support/fake_shopping_list_repository.dart';
 import '../../test/helpers/auth_user_data_key_session.dart';
+import '../../test/helpers/fake_prepared_meal_template_repository.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 import '../../test/helpers/sheet_launcher.dart';
@@ -99,6 +106,7 @@ class _DiaryInventoryQuickEatHarness {
     required this.inventoryItemsByOwnerId,
     required this.preparedMealsByOwnerId,
     required this.planRepository,
+    required this.templateRepository,
   });
 
   final Widget app;
@@ -107,6 +115,7 @@ class _DiaryInventoryQuickEatHarness {
   final Map<String, List<InventoryItem>> inventoryItemsByOwnerId;
   final Map<String, List<PreparedMeal>> preparedMealsByOwnerId;
   final FakePlannedEntryRepository planRepository;
+  final FakePreparedMealTemplateRepository templateRepository;
 
   List<InventoryItem> get householdInventoryItems {
     return inventoryItemsByOwnerId[_householdId] ?? const <InventoryItem>[];
@@ -133,6 +142,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   DateTime? goalStart,
   List<CalorieEntry> calorieEntries = const <CalorieEntry>[],
   List<CalorieEntry> plans = const <CalorieEntry>[],
+  List<PreparedMeal> templates = const <PreparedMeal>[],
   // Without the household, the Vorrat stays loading, and a provider that
   // waits for it when the test ends fails its teardown.
   bool householdKnown = true,
@@ -144,6 +154,11 @@ _DiaryInventoryQuickEatHarness _buildHarness({
     );
   }
   final planRepository = FakePlannedEntryRepository(plans: List.of(plans));
+  final templateRepository = FakePreparedMealTemplateRepository(
+    templates: templates,
+  );
+  final shoppingList = FakeShoppingListRepository();
+  addTearDown(shoppingList.dispose);
   final user = _MockUser();
   when(() => user.uid).thenReturn(_userId);
   final auth = _MockFirebaseAuth();
@@ -206,6 +221,10 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       userProfileProvider.overrideWith((ref) => profileController.stream),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       plannedEntryRepositoryProvider.overrideWithValue(planRepository),
+      preparedMealTemplateRepositoryProvider.overrideWithValue(
+        templateRepository,
+      ),
+      shoppingListRepositoryProvider.overrideWithValue(shoppingList),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       calorieWeeklyCheckInDataProvider.overrideWith(
         (ref) => _emptyWeeklyCheckInData(),
@@ -262,6 +281,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
     inventoryItemsByOwnerId: inventoryItemsByOwnerId,
     preparedMealsByOwnerId: preparedMealsByOwnerId,
     planRepository: planRepository,
+    templateRepository: templateRepository,
     app: UncontrolledProviderScope(
       container: container,
       child: MaterialApp.router(
@@ -1089,6 +1109,119 @@ void main() {
       description: 'plan moved to lunch',
     );
     await _pumpUntilFound(tester, planRow, description: 'moved plan row');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the plan details pick another Vorrat item for a recipe line', (
+    tester,
+  ) async {
+    final planRow = find.byKey(
+      DiaryMealsSectionKeys.plannedEntryTile('plan-bowl'),
+    );
+    final harness = _buildHarness(
+      inventoryItems: [
+        _inventoryItem(id: 'waffles', name: 'Reiswaffeln'),
+        _inventoryItem(id: 'rice', name: 'Reis'),
+      ],
+      templates: [
+        PreparedMeal(
+          id: 'bowl',
+          name: 'Reis-Bowl',
+          totalPortions: 1,
+          remainingPortions: 1,
+          totalKcal: 0,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+          components: const <PreparedMealComponent>[],
+          recipeIngredients: const ['100 g Reis'],
+          recipeIngredientAssignments: const {
+            '100 g Reis': ['waffles'],
+          },
+        ),
+      ],
+      plans: [
+        CalorieEntry.bundle(
+          id: 'plan-bowl',
+          userId: _userId,
+          name: 'Reis-Bowl',
+          mealType: MealType.dinner,
+          totalKcal: 260,
+          totalProtein: 8,
+          totalCarbs: 52,
+          totalFat: 2,
+          bundleSourcePreparedMealId: 'bowl',
+          bundleConsumedPortions: 1,
+          bundleTotalPortions: 1,
+          bundleComponents: const [
+            CalorieEntryBundleComponent(
+              name: 'Reiswaffeln',
+              amountLabel: '100 g',
+              totalKcal: 260,
+              totalProtein: 8,
+              totalCarbs: 52,
+              totalFat: 2,
+            ),
+          ],
+          loggedAt: _selectedDay.add(const Duration(hours: 19)),
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+        ).copyWith(
+          bundleSourcePreparedMealId: null,
+          bundleSourceTemplateId: 'bowl',
+        ),
+      ],
+    );
+    await tester.pumpWidget(harness.app);
+    await _pumpUntilFound(tester, planRow, description: 'recipe plan row');
+    await tester.ensureVisible(planRow);
+    await tester.tap(planRow);
+
+    final line = find.byKey(EatComponentsList.recipeLineKey(0));
+    await _pumpUntilFound(tester, line, description: 'recipe line');
+    // The details page slides in; the line takes taps once it is in place.
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(line);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: line, matching: find.text('Reiswaffeln')),
+      findsOneWidget,
+    );
+
+    await tester.tap(line);
+    await tester.pumpAndSettle();
+    // Only Vorrat items: a plan needs one to count.
+    expect(find.byKey(RecipeStockPickerSheet.noneKey), findsNothing);
+    await tester.tap(find.byKey(RecipeStockPickerSheet.optionKey('rice')));
+    await _pumpUntil(
+      tester,
+      () =>
+          harness
+              .templateRepository
+              .templates
+              .single
+              .recipeIngredientAssignments['100 g Reis']
+              ?.single ==
+          'rice',
+      description: 'pick saved on the recipe',
+    );
+    await _pumpUntilFound(
+      tester,
+      find.descendant(of: line, matching: find.text('Reis')),
+      description: 'line with the picked item',
+    );
+    // The plan on the page follows the pick.
+    await _pumpUntil(
+      tester,
+      () =>
+          harness.planRepository.plans.single.bundleComponents.single.name ==
+          'Reis',
+      description: 'plan with the picked item',
+    );
+    // The diary refreshes the day once the plan change settles.
+    await tester.pump(const Duration(seconds: 2));
     expect(tester.takeException(), isNull);
   });
 

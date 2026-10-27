@@ -1,12 +1,17 @@
+import 'dart:developer' show log;
+
 import 'package:collection/collection.dart';
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/cookbook_new/application/ingredient_check_save_service.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_details_state.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_reminder_plan_service.dart';
 
 part 'diary_plan_details_controller.g.dart';
 
@@ -109,6 +114,68 @@ class DiaryPlanDetailsController extends _$DiaryPlanDetailsController {
   /// Takes picked portions of the cooked meal.
   void setPortions(int portions) {
     _update((current) => current.copyWith(pickedPortions: portions));
+  }
+
+  /// Saves [itemId] as the Vorrat item of [ingredient] on the recipe
+  /// [templateId], so its next cooking and the plans of the recipe without
+  /// choices of their own take it, and plans this plan anew from it.
+  /// False when the recipe is gone or the save failed.
+  Future<bool> pickIngredientItem(
+    String templateId,
+    String ingredient,
+    String itemId,
+  ) async {
+    final link = ref.keepAlive();
+    // Held for the write, so the workflow and its store stay alive.
+    final workflow = ref.listen(ingredientCheckSaveServiceProvider, (_, _) {});
+    final templates = ref.listen(planTemplatesProvider.future, (_, _) {});
+    final items = ref.listen(inventoryQuickEatItemsProvider.future, (_, _) {});
+    final plans = ref.listen(
+      preparedMealReminderPlanServiceProvider,
+      (_, _) {},
+    );
+    try {
+      // The recipe as saved now, so a change made meanwhile stays.
+      final recipe = (await templates.read()).firstWhereOrNull(
+        (template) => template.id == templateId,
+      );
+      if (recipe == null) {
+        return false;
+      }
+      final assignments = {
+        ...recipe.recipeIngredientAssignments,
+        ingredient: [itemId],
+      };
+      await workflow.read().save(
+        recipe: recipe,
+        assignments: assignments,
+        ignored: recipe.ignoredRecipeIngredients,
+        onList: const [],
+        onRecipeSaved: () {},
+      );
+      // Other plans that hold the cook's own choices keep them; this one
+      // follows the pick made on it.
+      await plans.read().replanRecipePlan(
+        planId,
+        recipe.copyWith(recipeIngredientAssignments: assignments),
+        await items.read(),
+      );
+      return true;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Saving the Vorrat item of a recipe line failed.',
+        name: 'DiaryPlanDetailsController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    } finally {
+      plans.close();
+      items.close();
+      templates.close();
+      workflow.close();
+      link.close();
+    }
   }
 
   void _update(

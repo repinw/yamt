@@ -4594,6 +4594,18 @@ abstract class AppLocalizations {
   /// **'kcal open'**
   String get diaryPlanNutritionPending;
 
+  /// No description provided for @diaryPlanIngredientSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the choice.'**
+  String get diaryPlanIngredientSaveFailed;
+
+  /// Shown on the plan details when the recipe lines of a plan could not be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the recipe\'s ingredients.'**
+  String get diaryPlanIngredientsLoadFailed;
+
   /// No description provided for @diaryPlanShortTag.
   ///
   /// In en, this message translates to:

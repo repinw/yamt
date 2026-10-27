@@ -13,12 +13,13 @@ typedef RecipeStockPick = ({String? itemId});
 
 /// Asks which of the Vorrat [candidates] supplies the food [foodName], now
 /// [selectedId]. Returns `null` when the cook closes the sheet without a
-/// pick.
+/// pick. Without [canPickNone] the sheet offers only Vorrat items.
 Future<RecipeStockPick?> showRecipeStockPicker({
   required BuildContext context,
   required String foodName,
   required List<InventoryItem> candidates,
   required String? selectedId,
+  bool canPickNone = true,
 }) => showModalBottomSheet<RecipeStockPick>(
   context: context,
   isScrollControlled: true,
@@ -27,6 +28,7 @@ Future<RecipeStockPick?> showRecipeStockPicker({
     foodName: foodName,
     candidates: candidates,
     selectedId: selectedId,
+    canPickNone: canPickNone,
   ),
 );
 
@@ -37,6 +39,7 @@ class RecipeStockPickerSheet extends StatelessWidget {
     required this.foodName,
     required this.candidates,
     required this.selectedId,
+    this.canPickNone = true,
     super.key,
   });
 
@@ -55,6 +58,9 @@ class RecipeStockPickerSheet extends StatelessWidget {
 
   /// The item picked now, or `null` for none.
   final String? selectedId;
+
+  /// Whether the sheet offers "Nicht aus dem Vorrat".
+  final bool canPickNone;
 
   @override
   Widget build(BuildContext context) {
@@ -95,16 +101,17 @@ class RecipeStockPickerSheet extends StatelessWidget {
                 trailing: item.id == selectedId ? check : null,
                 onTap: () => Navigator.of(context).pop((itemId: item.id)),
               ),
-            ListTile(
-              key: noneKey,
-              leading: const SizedBox(
-                width: AppGraphit.rowTile,
-                child: Icon(Icons.block_rounded),
+            if (canPickNone)
+              ListTile(
+                key: noneKey,
+                leading: const SizedBox(
+                  width: AppGraphit.rowTile,
+                  child: Icon(Icons.block_rounded),
+                ),
+                title: Text(l10n.recipeNotFromStock),
+                trailing: selectedId == null ? check : null,
+                onTap: () => Navigator.of(context).pop((itemId: null)),
               ),
-              title: Text(l10n.recipeNotFromStock),
-              trailing: selectedId == null ? check : null,
-              onTap: () => Navigator.of(context).pop((itemId: null)),
-            ),
           ],
         ),
       ),

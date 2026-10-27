@@ -8,21 +8,24 @@ part of 'recipe_reminder_plan_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Gives the reminders of Kochbuch recipes their values whenever a change of
-/// the household's recipes lets them count. It lives as long as
+/// Gives the plans of Kochbuch recipes their values whenever a change of
+/// the household's recipes lets a reminder count or gives a recipe other
+/// saved Vorrat items. It lives as long as
 /// `RecipeReminderPlanListener` around the app watches it.
 
 @ProviderFor(RecipeReminderPlanController)
 final recipeReminderPlanControllerProvider =
     RecipeReminderPlanControllerProvider._();
 
-/// Gives the reminders of Kochbuch recipes their values whenever a change of
-/// the household's recipes lets them count. It lives as long as
+/// Gives the plans of Kochbuch recipes their values whenever a change of
+/// the household's recipes lets a reminder count or gives a recipe other
+/// saved Vorrat items. It lives as long as
 /// `RecipeReminderPlanListener` around the app watches it.
 final class RecipeReminderPlanControllerProvider
     extends $NotifierProvider<RecipeReminderPlanController, void> {
-  /// Gives the reminders of Kochbuch recipes their values whenever a change of
-  /// the household's recipes lets them count. It lives as long as
+  /// Gives the plans of Kochbuch recipes their values whenever a change of
+  /// the household's recipes lets a reminder count or gives a recipe other
+  /// saved Vorrat items. It lives as long as
   /// `RecipeReminderPlanListener` around the app watches it.
   RecipeReminderPlanControllerProvider._()
     : super(
@@ -52,10 +55,11 @@ final class RecipeReminderPlanControllerProvider
 }
 
 String _$recipeReminderPlanControllerHash() =>
-    r'e81066a680a2727c0b5eddd088dad263103b5a7e';
+    r'736e054ce17de5acbb4f4573825978f87704a393';
 
-/// Gives the reminders of Kochbuch recipes their values whenever a change of
-/// the household's recipes lets them count. It lives as long as
+/// Gives the plans of Kochbuch recipes their values whenever a change of
+/// the household's recipes lets a reminder count or gives a recipe other
+/// saved Vorrat items. It lives as long as
 /// `RecipeReminderPlanListener` around the app watches it.
 
 abstract class _$RecipeReminderPlanController extends $Notifier<void> {
