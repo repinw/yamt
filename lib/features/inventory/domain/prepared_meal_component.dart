@@ -155,7 +155,7 @@ class PreparedMealComponent {
     double? totalFat,
     InventoryItem? sourceItemSnapshot,
     bool? addedForMeal,
-    String? pendingRecipeIngredient,
+    Object? pendingRecipeIngredient = _keepValue,
   }) {
     return PreparedMealComponent(
       inventoryItemId: inventoryItemId ?? this.inventoryItemId,
@@ -170,8 +170,9 @@ class PreparedMealComponent {
       totalFat: totalFat ?? this.totalFat,
       sourceItemSnapshot: sourceItemSnapshot ?? this.sourceItemSnapshot,
       addedForMeal: addedForMeal ?? this.addedForMeal,
-      pendingRecipeIngredient:
-          pendingRecipeIngredient ?? this.pendingRecipeIngredient,
+      pendingRecipeIngredient: pendingRecipeIngredient == _keepValue
+          ? this.pendingRecipeIngredient
+          : pendingRecipeIngredient as String?,
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_item_components.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
@@ -149,7 +150,7 @@ PreparedMealBuildResult buildPreparedMealRestoreResult({
 
 List<PreparedMealComponent> _buildEditedComponents({
   required List<InventoryItem> nextItems,
-  required Map<String, PreparedMealComponent> existingComponents,
+  required Map<String, List<PreparedMealComponent>> existingComponents,
   required List<PreparedMealItemInput> inputs,
   required int totalPortions,
   required num remainingPortions,
@@ -157,9 +158,9 @@ List<PreparedMealComponent> _buildEditedComponents({
   final seenItemIds = <String>{};
   return [
     for (final input in inputs)
-      _buildEditedComponent(
+      ..._buildEditedComponent(
         nextItems: nextItems,
-        existingComponent: existingComponents[input.itemId],
+        existing: existingComponents[input.itemId],
         input: input,
         seenItemIds: seenItemIds,
         totalPortions: totalPortions,
@@ -168,9 +169,11 @@ List<PreparedMealComponent> _buildEditedComponents({
   ];
 }
 
-PreparedMealComponent _buildEditedComponent({
+/// The components of one food of [input]: those the meal had for its item,
+/// scaled together, or a new one.
+List<PreparedMealComponent> _buildEditedComponent({
   required List<InventoryItem> nextItems,
-  required PreparedMealComponent? existingComponent,
+  required List<PreparedMealComponent>? existing,
   required PreparedMealItemInput input,
   required Set<String> seenItemIds,
   required int totalPortions,
@@ -195,8 +198,8 @@ PreparedMealComponent _buildEditedComponent({
     amount: amountToReserve,
   );
 
-  if (existingComponent != null && input.manualNutrition == null) {
-    return _scaleExistingComponent(existingComponent, input.usedAmount);
+  if (existing != null && input.manualNutrition == null) {
+    return scaledItemComponents(existing, input.usedAmount);
   }
   final sourceItem = inventoryItem;
   if (sourceItem == null) {
@@ -204,7 +207,18 @@ PreparedMealComponent _buildEditedComponent({
       PreparedMealCreationFailureReason.itemUnavailable,
     );
   }
-  return _buildNewComponent(sourceItem: sourceItem, input: input);
+  // A food with its own values keeps the row it filled, so the row opens
+  // again when the food leaves the meal.
+  final rows = {
+    for (final component in existing ?? const <PreparedMealComponent>[])
+      component.pendingRecipeIngredient,
+  };
+  return [
+    _buildNewComponent(
+      sourceItem: sourceItem,
+      input: input,
+    ).copyWith(pendingRecipeIngredient: rows.length == 1 ? rows.single : null),
+  ];
 }
 
 PreparedMealComponent _buildNewComponent({
@@ -254,30 +268,9 @@ void _reserveInventoryAmount({
   nextItems[itemIndex] = nextItem;
 }
 
-PreparedMealComponent _scaleExistingComponent(
-  PreparedMealComponent component,
-  int usedAmount,
-) {
-  if (component.usedAmount < 1) {
-    return component.copyWith(usedAmount: usedAmount);
-  }
-  final multiplier = usedAmount / component.usedAmount;
-  return component.copyWith(
-    usedAmount: usedAmount,
-    totalKcal: component.totalKcal * multiplier,
-    totalProtein: component.totalProtein * multiplier,
-    totalCarbs: component.totalCarbs * multiplier,
-    totalFat: component.totalFat * multiplier,
-  );
-}
-
-Map<String, PreparedMealComponent> _componentLookup(
+Map<String, List<PreparedMealComponent>> _componentLookup(
   List<PreparedMealComponent> components,
-) {
-  return {
-    for (final component in components) component.inventoryItemId: component,
-  };
-}
+) => components.groupListsBy((component) => component.inventoryItemId);
 
 InventoryItem? _findInventoryItem(List<InventoryItem> items, String itemId) {
   for (final item in items) {
