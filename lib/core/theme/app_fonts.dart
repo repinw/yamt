@@ -5,4 +5,7 @@ abstract final class AppFonts {
 
   /// Monospace for labels and numbers of the food label pages.
   static const mono = 'JetBrainsMono';
+
+  /// Geist, the font of the diary budget card until the whole app moves to it.
+  static const geist = 'Geist';
 }
