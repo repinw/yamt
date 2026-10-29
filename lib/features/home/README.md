@@ -24,13 +24,6 @@ Home owns the tab shell, tab navigation, and shell-level composition.
   are counted on the device (`HomeActionUsageController`), and the most used
   action of the panel gets a lime icon tile
   (`domain/home_action_ranking.dart`). The order of the actions stays fixed.
-- The same panel for a header tool on the right. A tab opens it through
-  `HomeShellMenuScope.openActions` from `core/widgets` with a builder of
-  its actions, which the shell runs on every rebuild so the actions stay
-  live; the panel hangs them from the top right below the close button and
-  gives the entry the tool names the lime tile, without counting taps. A
-  tab change closes it. No tab uses it since the Diary day type tool moved
-  into the daily card (#907).
 
 ## Does Not Own
 
