@@ -14,12 +14,10 @@ import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
-import 'package:yamt/core/widgets/home_action_entry.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_button.dart';
-import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -40,7 +38,6 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/diary_today_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_preview_tiles.dart';
 import 'package:yamt/features/home/home_page.dart';
-import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
@@ -299,43 +296,6 @@ Widget _inventoryTopChromeBranchBody() {
       InventoryHomeShellTopChrome(),
       SliverFillRemaining(hasScrollBody: false, child: SizedBox()),
     ],
-  );
-}
-
-const _headerToolKey = ValueKey<String>('home-test-header-tool');
-const _headerActionKey = ValueKey<String>('home-test-header-action');
-
-/// A tab with a header tool on the right that opens one action, which calls
-/// [onAction].
-Widget _headerToolBranchBody(VoidCallback onAction) {
-  return Builder(
-    builder: (context) => Align(
-      alignment: Alignment.topRight,
-      child: IconButton(
-        key: _headerToolKey,
-        tooltip: 'Header tool',
-        icon: const Icon(Icons.star_rounded),
-        onPressed: () => HomeShellMenuScope.maybeOf(context)!.openActions(
-          (_) => (
-            sections: [
-              HomeActionSection(
-                title: 'Header',
-                entries: [
-                  HomeActionEntry(
-                    key: _headerActionKey,
-                    icon: Icons.check_rounded,
-                    title: 'Header action',
-                    description: 'Runs the header action',
-                    onSelected: onAction,
-                  ),
-                ],
-              ),
-            ],
-            highlightedKey: _headerActionKey,
-          ),
-        ),
-      ),
-    ),
   );
 }
 
@@ -850,42 +810,6 @@ void main() {
     );
   });
 
-  testWidgets('a header tool opens its actions at the top right and runs one', (
-    tester,
-  ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-    var ran = 0;
-
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        branchBody: _headerToolBranchBody(() => ran++),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_headerToolKey));
-    await tester.pumpAndSettle();
-
-    final panel = tester.widget<HomeActionPanel>(find.byType(HomeActionPanel));
-    expect(panel.fromTop, isTrue);
-    expect(panel.highlightedKey, _headerActionKey);
-    final size = tester.view.physicalSize / tester.view.devicePixelRatio;
-    final close = tester.getCenter(find.byKey(HomeActionPanel.closeButtonKey));
-    expect(close.dy, lessThan(size.height / 4));
-    expect(close.dx, greaterThan(size.width * 3 / 4));
-    expect(
-      tester.getCenter(find.byKey(_headerActionKey)).dy,
-      greaterThan(close.dy),
-    );
-
-    await tester.tap(find.byKey(_headerActionKey));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(HomeActionPanel), findsNothing);
-    expect(ran, 1);
-  });
-
   testWidgets('leaving the diary tab returns it to today (#753)', (
     tester,
   ) async {
@@ -913,58 +837,6 @@ void main() {
         .go(AppRoutes.homeProgress);
     await tester.pumpAndSettle();
     expect(calendar.read().isSelectedToday, isTrue);
-  });
-
-  testWidgets('a tab change closes the actions of a header tool', (
-    tester,
-  ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        branchBody: _headerToolBranchBody(() {}),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_headerToolKey));
-    await tester.pumpAndSettle();
-    expect(find.byKey(_headerActionKey), findsOneWidget);
-
-    GoRouter.of(tester.element(find.byKey(_headerToolKey)))
-        .go(AppRoutes.homeProgress);
-    await tester.pumpAndSettle();
-
-    expect(find.byType(HomeActionPanel), findsNothing);
-  });
-
-  testWidgets('the bottom action shows the tab actions after a header tool', (
-    tester,
-  ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        initialLocation: AppRoutes.homeInventory,
-        branchBody: _headerToolBranchBody(() {}),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_headerToolKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(HomeActionPanel.closeButtonKey));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
-    await tester.pumpAndSettle();
-
-    final panel = tester.widget<HomeActionPanel>(find.byType(HomeActionPanel));
-    expect(panel.fromTop, isFalse);
-    expect(find.byKey(_headerActionKey), findsNothing);
-    expect(find.byKey(InventoryAddActionKeys.manualSearch), findsOneWidget);
   });
 
   testWidgets('tabs other than diary have no menu button', (tester) async {

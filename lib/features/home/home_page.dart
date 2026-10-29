@@ -81,12 +81,6 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   @override
   void didUpdateWidget(HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // A header tool's actions belong to the tab that opened them.
-    if (_panel is HomeHeaderActionsPanel &&
-        oldWidget.navigationShell.currentIndex !=
-            widget.navigationShell.currentIndex) {
-      _isMenuOpen = false;
-    }
     // Leaving the diary resets its day (#753).
     if (oldWidget.navigationShell.currentIndex == _diaryBranchIndex &&
         widget.navigationShell.currentIndex != _diaryBranchIndex) {
@@ -172,22 +166,6 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     );
   }
 
-  /// The action panel of a header tool at the top right; its own [Consumer]
-  /// runs [build], so watched providers rebuild only the open panel.
-  Widget _buildHeaderPanel(HomeHeaderActionsBuilder build) {
-    return Consumer(
-      builder: (context, ref, _) {
-        final actions = build(ref);
-        return HomeActionPanel(
-          sections: actions.sections,
-          highlightedKey: actions.highlightedKey,
-          onClose: _closeMenu,
-          fromTop: true,
-        );
-      },
-    );
-  }
-
   /// Id under which taps on [entry] are counted: its string key.
   String? _usageId(HomeActionEntry entry) {
     return switch (entry.key) {
@@ -245,7 +223,6 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       menu: switch (_panel) {
         HomeSideMenuPanel() => HomeMenuPanel(onClose: _closeMenu),
         HomeTabActionsPanel() => _buildActionPanel(currentTab),
-        HomeHeaderActionsPanel(:final build) => _buildHeaderPanel(build),
       },
       child: _buildShell(l10n, currentTab),
     );
@@ -256,7 +233,6 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       extendBody: true,
       body: HomeShellMenuScope(
         openMenu: () => _open(const HomeSideMenuPanel()),
-        openActions: (build) => _open(HomeHeaderActionsPanel(build)),
         child: Stack(
           children: [
             ContentVisibility(

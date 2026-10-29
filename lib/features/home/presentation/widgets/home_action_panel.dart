@@ -10,9 +10,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Actions of the current tab, shown at the bottom right behind the slid
 /// page, where the thumb reaches them: the counterpart of the side menu on
 /// the left.
-///
-/// A header tool on the right opens it [fromTop]: the actions then hang
-/// from the top right, under the tool that opened them.
 class HomeActionPanel extends StatelessWidget {
   /// Creates the panel with [sections].
   const new({
@@ -20,7 +17,6 @@ class HomeActionPanel extends StatelessWidget {
     required this.onClose,
     this.highlightedKey,
     this.onUsed,
-    this.fromTop = false,
     super.key,
   });
 
@@ -33,16 +29,11 @@ class HomeActionPanel extends StatelessWidget {
   /// Closes the panel.
   final VoidCallback onClose;
 
-  /// Key of the action drawn on the lime accent: the most used one, or the
-  /// current choice of a header tool.
+  /// Key of the action drawn on the lime accent: the most used one.
   final Key? highlightedKey;
 
   /// Called with an action when it is tapped, before it runs.
   final ValueChanged<HomeActionEntry>? onUsed;
-
-  /// Whether the close button sits at the top right with the actions below
-  /// it, instead of at the bottom right below the actions.
-  final bool fromTop;
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +54,11 @@ class HomeActionPanel extends StatelessWidget {
     final actions = Expanded(
       child: FractionallySizedBox(
         widthFactor: AppSizes.homeActionPanelContentWidth,
-        alignment: fromTop ? Alignment.topRight : Alignment.bottomRight,
+        alignment: Alignment.bottomRight,
         child: Align(
-          alignment: fromTop ? Alignment.topLeft : Alignment.bottomLeft,
+          alignment: Alignment.bottomLeft,
           child: SingleChildScrollView(
-            reverse: !fromTop,
+            reverse: true,
             child: _ActionSections(
               sections: sections,
               highlightedKey: highlightedKey,
@@ -88,9 +79,7 @@ class HomeActionPanel extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: fromTop
-              ? [closeButton, const SizedBox(height: AppSpacing.xl), actions]
-              : [actions, closeButton],
+          children: [actions, closeButton],
         ),
       ),
     );
