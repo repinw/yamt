@@ -8,12 +8,11 @@ part of 'diary_balance_card_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The resolved balance of [day], read by the balance card, the macro strip
-/// and the home widget, so all three show the same numbers and move to the
-/// new day together. The card and the strip add today's open plans on top
-/// when the user counts them (`diaryOpenPlansProvider`); the home widget
-/// shows what was eaten. `null` while the day's dashboard has not loaded
-/// yet.
+/// The resolved balance of [day], read by the budget card and the home
+/// widget, so both show the same numbers and move to the new day together.
+/// The card adds today's open plans on top when the user counts them
+/// (`diaryOpenPlansProvider`); the home widget shows what was eaten. `null`
+/// while the day's dashboard has not loaded yet.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.
@@ -21,12 +20,11 @@ part of 'diary_balance_card_provider.dart';
 @ProviderFor(diaryBalanceCard)
 final diaryBalanceCardProvider = DiaryBalanceCardFamily._();
 
-/// The resolved balance of [day], read by the balance card, the macro strip
-/// and the home widget, so all three show the same numbers and move to the
-/// new day together. The card and the strip add today's open plans on top
-/// when the user counts them (`diaryOpenPlansProvider`); the home widget
-/// shows what was eaten. `null` while the day's dashboard has not loaded
-/// yet.
+/// The resolved balance of [day], read by the budget card and the home
+/// widget, so both show the same numbers and move to the new day together.
+/// The card adds today's open plans on top when the user counts them
+/// (`diaryOpenPlansProvider`); the home widget shows what was eaten. `null`
+/// while the day's dashboard has not loaded yet.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.
@@ -39,12 +37,11 @@ final class DiaryBalanceCardProvider
           DiaryBalanceCardData?
         >
     with $Provider<DiaryBalanceCardData?> {
-  /// The resolved balance of [day], read by the balance card, the macro strip
-  /// and the home widget, so all three show the same numbers and move to the
-  /// new day together. The card and the strip add today's open plans on top
-  /// when the user counts them (`diaryOpenPlansProvider`); the home widget
-  /// shows what was eaten. `null` while the day's dashboard has not loaded
-  /// yet.
+  /// The resolved balance of [day], read by the budget card and the home
+  /// widget, so both show the same numbers and move to the new day together.
+  /// The card adds today's open plans on top when the user counts them
+  /// (`diaryOpenPlansProvider`); the home widget shows what was eaten. `null`
+  /// while the day's dashboard has not loaded yet.
   ///
   /// Lives in `presentation/` because it derives from the dashboard
   /// controller's state.
@@ -102,12 +99,11 @@ final class DiaryBalanceCardProvider
 
 String _$diaryBalanceCardHash() => r'e422579d44984b4119c06f15dce362507e04b0c9';
 
-/// The resolved balance of [day], read by the balance card, the macro strip
-/// and the home widget, so all three show the same numbers and move to the
-/// new day together. The card and the strip add today's open plans on top
-/// when the user counts them (`diaryOpenPlansProvider`); the home widget
-/// shows what was eaten. `null` while the day's dashboard has not loaded
-/// yet.
+/// The resolved balance of [day], read by the budget card and the home
+/// widget, so both show the same numbers and move to the new day together.
+/// The card adds today's open plans on top when the user counts them
+/// (`diaryOpenPlansProvider`); the home widget shows what was eaten. `null`
+/// while the day's dashboard has not loaded yet.
 ///
 /// Lives in `presentation/` because it derives from the dashboard
 /// controller's state.
@@ -123,12 +119,11 @@ final class DiaryBalanceCardFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The resolved balance of [day], read by the balance card, the macro strip
-  /// and the home widget, so all three show the same numbers and move to the
-  /// new day together. The card and the strip add today's open plans on top
-  /// when the user counts them (`diaryOpenPlansProvider`); the home widget
-  /// shows what was eaten. `null` while the day's dashboard has not loaded
-  /// yet.
+  /// The resolved balance of [day], read by the budget card and the home
+  /// widget, so both show the same numbers and move to the new day together.
+  /// The card adds today's open plans on top when the user counts them
+  /// (`diaryOpenPlansProvider`); the home widget shows what was eaten. `null`
+  /// while the day's dashboard has not loaded yet.
   ///
   /// Lives in `presentation/` because it derives from the dashboard
   /// controller's state.

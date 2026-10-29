@@ -15,9 +15,9 @@ class DiaryOpenPlans {
   });
 
   /// The open plans of [data], or null when its day has none to offer: no
-  /// plans, plans that count anyway, a past day whose plans are overdue, a
-  /// pause day, or a future day that is still a plan itself. [counted] is
-  /// whether the user counts them.
+  /// plans, plans that count anyway, a past day whose plans are overdue, or
+  /// a future day that is still a plan itself. A pause day offers them too,
+  /// though nothing counts there. [counted] is whether the user counts them.
   static DiaryOpenPlans? of(
     DiaryDayDashboardData data, {
     required DateTime today,
@@ -30,12 +30,8 @@ class DiaryOpenPlans {
     ];
     final day = normalizeLocalDay(data.selectedDay);
     final overview = data.weekOverview;
-    final isPauseDay = overview.days.any(
-      (entry) => isSameLocalDay(entry.date, day) && entry.isPauseDay,
-    );
     if (plans.isEmpty ||
         data.countsPlans ||
-        isPauseDay ||
         switch (DiaryDayStatus.of(
           day: day,
           today: today,

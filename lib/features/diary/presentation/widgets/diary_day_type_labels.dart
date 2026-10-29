@@ -5,7 +5,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 String diaryDayTypeEmoji(DiaryDayType type) {
   return switch (type) {
     DiaryDayType.training => '🏋️',
-    DiaryDayType.rest => '🛋️',
+    DiaryDayType.normal => '🛋️',
     DiaryDayType.pause => '⏸️',
   };
 }
@@ -14,16 +14,16 @@ String diaryDayTypeEmoji(DiaryDayType type) {
 String diaryDayTypeLabel(DiaryDayType type, AppLocalizations l10n) {
   return switch (type) {
     DiaryDayType.training => l10n.diaryDayTypeTraining,
-    DiaryDayType.rest => l10n.diaryDayTypeRest,
+    DiaryDayType.normal => l10n.diaryDayTypeNormal,
     DiaryDayType.pause => l10n.diaryDayTypePause,
   };
 }
 
-/// Short name of a diary day type, for the word under the header tool.
+/// Short name of a diary day type, for the pressed day type button.
 String diaryDayTypeShortLabel(DiaryDayType type, AppLocalizations l10n) {
   return switch (type) {
     DiaryDayType.training => l10n.diaryDayTypeTrainingShort,
-    DiaryDayType.rest => l10n.diaryDayTypeRestShort,
+    DiaryDayType.normal => l10n.diaryDayTypeNormalShort,
     DiaryDayType.pause => l10n.diaryDayTypePauseShort,
   };
 }

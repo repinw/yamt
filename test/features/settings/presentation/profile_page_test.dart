@@ -250,7 +250,7 @@ void main() {
     // training days 2.100 + 5 × 210 / 7 = 2.250. Three training days:
     // rest days 2.100 − 3 × 210 / 7 = 2.010, training days 2.220.
     expect(find.text('2.040 → 2.220 kcal'), findsOneWidget);
-    expect(find.text('4 übrige Ruhetage'), findsOneWidget);
+    expect(find.text('4 übrige normale Tage'), findsOneWidget);
     expect(find.text('2.040 → 2.010 kcal'), findsOneWidget);
     expect(find.text('2 übrige Trainingstage'), findsOneWidget);
     expect(find.text('2.250 → 2.220 kcal'), findsOneWidget);

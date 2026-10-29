@@ -60,65 +60,9 @@ void main() {
 
     final monday = container.read(diaryDayTypeStatusProvider(_monday));
     expect(monday?.type, DiaryDayType.training);
-    expect(monday?.trainingDayKcalOffset, 150);
     expect(
       container.read(diaryDayTypeStatusProvider(_tuesday))?.type,
       DiaryDayType.pause,
     );
-  });
-
-  test('shows the default session kcal without a training schedule', () {
-    final settings = const CalorieGoalSettings.empty().copyWith(
-      dailyKcalGoal: 2200,
-    );
-
-    expect(
-      DiaryDayTypeStatus.fromSettings(settings, _monday).trainingDayKcalOffset,
-      defaultTrainingDayKcalOffset,
-    );
-  });
-
-  test('marking a rest day as training toggles training once', () async {
-    final (container, controller) = await _setUp();
-
-    await container
-        .read(diaryDayTypeUpdaterProvider)
-        .select(_tuesday, DiaryDayType.training);
-
-    expect(controller.calls, ['toggleTraining']);
-  });
-
-  test('marking a pause day as rest unpauses without toggling', () async {
-    final (container, controller) = await _setUp(
-      pauseDayKeys: [localDayKey(_tuesday)],
-    );
-
-    await container
-        .read(diaryDayTypeUpdaterProvider)
-        .select(_tuesday, DiaryDayType.rest);
-
-    expect(controller.calls, ['pause:false']);
-  });
-
-  test('selecting pause on a training day pauses it', () async {
-    final (container, controller) = await _setUp();
-
-    await container
-        .read(diaryDayTypeUpdaterProvider)
-        .select(_monday, DiaryDayType.pause);
-
-    expect(controller.calls, ['pause:true']);
-  });
-
-  test('selecting pause on a pause day keeps it paused', () async {
-    final (container, controller) = await _setUp(
-      pauseDayKeys: [localDayKey(_tuesday)],
-    );
-
-    await container
-        .read(diaryDayTypeUpdaterProvider)
-        .select(_tuesday, DiaryDayType.pause);
-
-    expect(controller.calls, isEmpty);
   });
 }

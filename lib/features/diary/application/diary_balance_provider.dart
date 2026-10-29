@@ -16,53 +16,47 @@ part 'diary_balance_provider.g.dart';
 
 /// Resolved card state for the diary balance card.
 class DiaryBalanceCardData {
-  const new _({
-    this.loadedMetrics,
-    this.scheduledRestartDate,
-    this.practiceDay,
-  });
+  const new _({this.loadedMetrics, this.scheduledRestart, this.practiceDay});
 
   /// Creates loaded balance data.
   const new loaded({required DiaryBalanceLoadedMetrics loadedMetrics})
     : this._(loadedMetrics: loadedMetrics);
 
   /// Creates scheduled restart balance data.
-  const new scheduledRestart({required DateTime scheduledRestartDate})
-    : this._(scheduledRestartDate: scheduledRestartDate);
+  const new scheduledRestart({
+    required DiaryBalanceNotCountingDayData scheduledRestart,
+  }) : this._(scheduledRestart: scheduledRestart);
 
   /// Creates practice day balance data.
-  const new practiceDay({required DiaryBalancePracticeDayData practiceDay})
+  const new practiceDay({required DiaryBalanceNotCountingDayData practiceDay})
     : this._(practiceDay: practiceDay);
 
   /// Loaded daily metrics.
   final DiaryBalanceLoadedMetrics? loadedMetrics;
 
-  /// Scheduled restart date, when shown instead of metrics.
-  final DateTime? scheduledRestartDate;
+  /// A day after the run ended, before the restart on its start date.
+  final DiaryBalanceNotCountingDayData? scheduledRestart;
 
   /// Practice day data, when shown before a future goal starts.
-  final DiaryBalancePracticeDayData? practiceDay;
+  final DiaryBalanceNotCountingDayData? practiceDay;
 }
 
-/// Practice day state for the diary balance card.
+/// A day that can be tracked but does not count yet: a practice day before
+/// a future goal starts, or a day before a scheduled restart.
 ///
-/// A practice day renders like a normal day against the goal that starts on
-/// [startDate], so the user learns the card before anything counts.
-class DiaryBalancePracticeDayData {
-  /// Creates practice day data.
-  const new({
-    required this.startDate,
-    required this.futureGoalKcal,
-    required this.daily,
-  });
+/// It renders like a normal day against [daily], without carryover, so the
+/// user keeps tracking while nothing counts.
+class DiaryBalanceNotCountingDayData {
+  /// Creates the data of a day that does not count yet.
+  const new({required this.day, required this.startDate, required this.daily});
 
-  /// First official counting day.
+  /// Day of the card.
+  final DateTime day;
+
+  /// First day that counts.
   final DateTime startDate;
 
-  /// Goal that will become active on [startDate].
-  final double? futureGoalKcal;
-
-  /// Daily metrics measured against [futureGoalKcal], without carryover.
+  /// Daily metrics measured against the goal of the day, without carryover.
   final DiaryDailyBalanceMetrics daily;
 }
 
@@ -117,26 +111,31 @@ class DiaryBalanceSource {
       today: selectedDay,
       isLiveDay: isLiveDay,
     );
+    // Both days are tracked against the goal of the day, without carryover.
+    DiaryBalanceNotCountingDayData notCounting(DateTime startDate) {
+      final goalKcal = dayGoalKcal(_weekOverview);
+      return DiaryBalanceNotCountingDayData(
+        day: selectedDay,
+        startDate: startDate,
+        daily: resolveDiaryDailyBalanceMetrics(
+          flexibleGoalKcal: goalKcal,
+          totalKcal: selectedDayOverview.totalKcal,
+          goalKcal: goalKcal,
+          baseGoalKcal: goalKcal,
+        ),
+      );
+    }
+
     if (scheduledRestartDate != null) {
       return DiaryBalanceCardData.scheduledRestart(
-        scheduledRestartDate: scheduledRestartDate,
+        scheduledRestart: notCounting(scheduledRestartDate),
       );
     }
 
     final practiceStartDate = _weekOverview.nextGoalStartDate;
     if (isPracticeDay(week: _weekOverview, day: selectedDay)) {
-      final practiceGoalKcal = dayGoalKcal(_weekOverview);
       return DiaryBalanceCardData.practiceDay(
-        practiceDay: DiaryBalancePracticeDayData(
-          startDate: practiceStartDate!,
-          futureGoalKcal: _weekOverview.futureGoalKcal,
-          daily: resolveDiaryDailyBalanceMetrics(
-            flexibleGoalKcal: practiceGoalKcal,
-            totalKcal: selectedDayOverview.totalKcal,
-            goalKcal: practiceGoalKcal,
-            baseGoalKcal: practiceGoalKcal,
-          ),
-        ),
+        practiceDay: notCounting(practiceStartDate!),
       );
     }
 

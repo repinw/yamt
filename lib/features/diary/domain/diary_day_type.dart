@@ -6,17 +6,17 @@ enum DiaryDayType {
   /// Scheduled or manually marked training day.
   training,
 
-  /// Regular rest day.
-  rest,
+  /// Normal day, the baseline when it is neither training nor pause.
+  normal,
 
   /// Neutral pause day (vacation, illness).
   pause,
 }
 
-/// Day type of a diary day together with the data its picker displays.
+/// Day type of a diary day.
 class DiaryDayTypeStatus {
   /// Creates a day type status.
-  const new({required this.type, required this.trainingDayKcalOffset});
+  const new({required this.type});
 
   /// Resolves the status of [day] from calorie goal [settings].
   factory fromSettings(CalorieGoalSettings settings, DateTime day) {
@@ -25,14 +25,10 @@ class DiaryDayTypeStatus {
           ? DiaryDayType.pause
           : settings.isTrainingDay(day)
           ? DiaryDayType.training
-          : DiaryDayType.rest,
-      trainingDayKcalOffset: settings.trainingSessionKcalForDay(day),
+          : DiaryDayType.normal,
     );
   }
 
   /// Current day type.
   final DiaryDayType type;
-
-  /// kcal a training day gets more than a rest day: one session.
-  final double trainingDayKcalOffset;
 }

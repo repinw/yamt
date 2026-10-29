@@ -21,7 +21,7 @@ class DiaryPage extends ConsumerStatefulWidget {
   /// Key used by the shell and later design tests.
   static const pageKey = ValueKey<String>('diary-page');
 
-  /// Whether to render the home shell's day navigator and macro strip.
+  /// Whether to render the home shell's day navigator.
   final bool includeHomeShellChrome;
 
   @override
@@ -38,9 +38,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   DateTime? _leftAt;
 
   /// Kept so a rebuild of this page does not rebuild every day page.
-  late final Widget _dayPager = DiaryDayPager(
-    showMacroStrip: widget.includeHomeShellChrome,
-  );
+  late final Widget _dayPager = const DiaryDayPager();
 
   @override
   void initState() {

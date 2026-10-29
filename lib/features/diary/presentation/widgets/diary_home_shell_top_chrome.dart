@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_button.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_calendar_overview_sheet/diary_calendar_overview_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_day_type_toggle.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_today_button.dart';
 
 const double _diaryTopChromeMinHeight = 56;
 const double _diaryTopChromeLabelLineHeight = 40;
@@ -82,7 +83,13 @@ class _DiaryTopBar extends ConsumerWidget {
                   }
                 },
                 leadingActions: const [HomeShellMenuButton()],
-                actions: const [DiaryDayTypeToggle()],
+                actions: [
+                  if (!isSameCalendarDay(
+                    calendarState.selectedDay,
+                    calendarState.today,
+                  ))
+                    DiaryTodayButton(onPressed: () => controller().showToday()),
+                ],
               ),
             ),
           ),

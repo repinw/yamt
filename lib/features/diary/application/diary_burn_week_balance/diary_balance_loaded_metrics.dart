@@ -13,6 +13,7 @@ class DiaryBalanceLoadedMetrics {
     required this.selectedDay,
     required this.daily,
     required this.state,
+    required this.runWeekStart,
     this.budgetDetails,
     this.previousDayCarryoverKcal,
     this.isPreviousDayClosed = false,
@@ -26,6 +27,9 @@ class DiaryBalanceLoadedMetrics {
 
   /// Loaded card display state.
   final DiaryBalanceLoadedState state;
+
+  /// First day of the run week that holds the selected day.
+  final DateTime runWeekStart;
 
   /// Detailed budget and carryover breakdown for the selected day.
   final DiaryDailyBudgetDetailsData? budgetDetails;
@@ -106,6 +110,7 @@ DiaryBalanceLoadedMetrics _buildDiaryBalanceLoadedMetrics(
     selectedDay: context.selectedDayOverview.date,
     daily: daily,
     state: state,
+    runWeekStart: weekStart,
     budgetDetails: _resolveBudgetDetails(context, weekStart, state, daily),
     previousDayCarryoverKcal: context.weekOverview.previousDayCarryoverKcal,
     isPreviousDayClosed: context.weekOverview.isPreviousDayClosed,

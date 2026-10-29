@@ -29,7 +29,7 @@ class ProgressDayRow extends StatelessWidget {
         ? DiaryDayType.pause
         : day.isTrainingDay
         ? DiaryDayType.training
-        : DiaryDayType.rest;
+        : DiaryDayType.normal;
     return Opacity(
       opacity: day.isFuture ? AppProgress.futureOpacity : 1,
       child: Row(

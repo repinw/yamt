@@ -3796,18 +3796,6 @@ abstract class AppLocalizations {
   /// **'Could not print weekly check-in debug dump.'**
   String get caloriesWeeklyCheckInDebugDumpFailed;
 
-  /// No description provided for @burnWeekRunOverTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Run over'**
-  String get burnWeekRunOverTitle;
-
-  /// No description provided for @burnWeekRunRestartsOn.
-  ///
-  /// In en, this message translates to:
-  /// **'Fresh run starts on {date}.'**
-  String burnWeekRunRestartsOn(Object date);
-
   /// No description provided for @burnWeekPracticeDayBadge.
   ///
   /// In en, this message translates to:
@@ -4216,6 +4204,12 @@ abstract class AppLocalizations {
   /// **'Today'**
   String get diaryTodayTitle;
 
+  /// Screen reader label of the Today button in the diary top bar, shown while another day is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to today'**
+  String get diaryJumpToTodayAction;
+
   /// No description provided for @diaryYesterdayTitle.
   ///
   /// In en, this message translates to:
@@ -4240,11 +4234,11 @@ abstract class AppLocalizations {
   /// **'Training day'**
   String get diaryDayTypeTraining;
 
-  /// No description provided for @diaryDayTypeRest.
+  /// No description provided for @diaryDayTypeNormal.
   ///
   /// In en, this message translates to:
-  /// **'Rest day'**
-  String get diaryDayTypeRest;
+  /// **'Normal day'**
+  String get diaryDayTypeNormal;
 
   /// No description provided for @diaryDayTypePause.
   ///
@@ -4258,47 +4252,17 @@ abstract class AppLocalizations {
   /// **'Training'**
   String get diaryDayTypeTrainingShort;
 
-  /// No description provided for @diaryDayTypeRestShort.
+  /// No description provided for @diaryDayTypeNormalShort.
   ///
   /// In en, this message translates to:
-  /// **'Rest'**
-  String get diaryDayTypeRestShort;
+  /// **'Normal'**
+  String get diaryDayTypeNormalShort;
 
   /// No description provided for @diaryDayTypePauseShort.
   ///
   /// In en, this message translates to:
   /// **'Pause'**
   String get diaryDayTypePauseShort;
-
-  /// No description provided for @diaryDayTypeActionsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Day type'**
-  String get diaryDayTypeActionsTitle;
-
-  /// No description provided for @diaryDayTypeTrainingOffsetSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'+{kcal} kcal compared to a rest day'**
-  String diaryDayTypeTrainingOffsetSubtitle(int kcal);
-
-  /// No description provided for @diaryDayTypeTrainingSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Training day (calorie target active)'**
-  String get diaryDayTypeTrainingSubtitle;
-
-  /// No description provided for @diaryDayTypeRestSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Balanced calorie target for recovery'**
-  String get diaryDayTypeRestSubtitle;
-
-  /// No description provided for @diaryDayTypePauseSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Neutral day (vacation, illness). Doesn\'t break your streak.'**
-  String get diaryDayTypePauseSubtitle;
 
   /// No description provided for @diaryMealsLoadFailed.
   ///
@@ -4642,41 +4606,17 @@ abstract class AppLocalizations {
   /// **'Balance could not be loaded'**
   String get diaryBalanceLoadFailed;
 
-  /// No description provided for @diaryNutritionLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Nutrition could not be loaded'**
-  String get diaryNutritionLoadFailed;
-
-  /// No description provided for @diaryNutritionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Macronutrients'**
-  String get diaryNutritionTitle;
-
   /// No description provided for @diaryBalanceEatenLabel.
   ///
   /// In en, this message translates to:
   /// **'Eaten'**
   String get diaryBalanceEatenLabel;
 
-  /// No description provided for @diaryBalanceLeftTodayLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Left today'**
-  String get diaryBalanceLeftTodayLabel;
-
   /// No description provided for @diaryBalanceLeftLabel.
   ///
   /// In en, this message translates to:
   /// **'Left'**
   String get diaryBalanceLeftLabel;
-
-  /// No description provided for @diaryBalanceOverGoalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Over goal'**
-  String get diaryBalanceOverGoalLabel;
 
   /// No description provided for @diaryBalanceAfterPlanChip.
   ///
@@ -4689,30 +4629,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Left after plan'**
   String get diaryBalanceLeftAfterPlanLabel;
-
-  /// No description provided for @diaryBalanceWithoutPlan.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} without plan'**
-  String diaryBalanceWithoutPlan(String kcal);
-
-  /// No description provided for @diaryBalanceOverWithoutPlan.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} over without plan'**
-  String diaryBalanceOverWithoutPlan(String kcal);
-
-  /// No description provided for @diaryBalanceShowDetails.
-  ///
-  /// In en, this message translates to:
-  /// **'Show all numbers'**
-  String get diaryBalanceShowDetails;
-
-  /// No description provided for @diaryBalanceHideDetails.
-  ///
-  /// In en, this message translates to:
-  /// **'Show fewer numbers'**
-  String get diaryBalanceHideDetails;
 
   /// No description provided for @diaryMealsEmptyTitle.
   ///
@@ -4738,59 +4654,11 @@ abstract class AppLocalizations {
   /// **'Tap “Eat” below to add what you want to eat on this day.'**
   String get diaryMealsPlanEmptyHint;
 
-  /// No description provided for @diaryBalanceEatenAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} eaten'**
-  String diaryBalanceEatenAmount(String kcal);
-
-  /// Head of the diary balance card while "By plan" counts the open plans: eaten plus planned kcal.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} with plan'**
-  String diaryBalanceEatenWithPlanAmount(String kcal);
-
-  /// No description provided for @diaryBalanceOfTarget.
-  ///
-  /// In en, this message translates to:
-  /// **'of {kcal}'**
-  String diaryBalanceOfTarget(String kcal);
-
-  /// No description provided for @diaryBalanceScaleTarget.
-  ///
-  /// In en, this message translates to:
-  /// **'Goal {kcal}'**
-  String diaryBalanceScaleTarget(String kcal);
-
-  /// No description provided for @diaryMacroLeftSuffix.
-  ///
-  /// In en, this message translates to:
-  /// **'left'**
-  String get diaryMacroLeftSuffix;
-
-  /// No description provided for @diaryMacroOverSuffix.
-  ///
-  /// In en, this message translates to:
-  /// **'over'**
-  String get diaryMacroOverSuffix;
-
   /// No description provided for @diaryMacroEatenOfTarget.
   ///
   /// In en, this message translates to:
   /// **'{eaten} / {target} g'**
   String diaryMacroEatenOfTarget(String eaten, String target);
-
-  /// No description provided for @diaryAmountLeft.
-  ///
-  /// In en, this message translates to:
-  /// **'{amount} left'**
-  String diaryAmountLeft(String amount);
-
-  /// No description provided for @diaryAmountOver.
-  ///
-  /// In en, this message translates to:
-  /// **'{amount} over'**
-  String diaryAmountOver(String amount);
 
   /// No description provided for @diaryMealEntryCount.
   ///
@@ -5107,7 +4975,7 @@ abstract class AppLocalizations {
   /// No description provided for @progressDayTypeTitle.
   ///
   /// In en, this message translates to:
-  /// **'Training vs. rest day'**
+  /// **'Training vs. normal day'**
   String get progressDayTypeTitle;
 
   /// No description provided for @progressDayTypeDays.
@@ -5131,7 +4999,7 @@ abstract class AppLocalizations {
   /// No description provided for @progressDayTypeEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Log a few days to compare training and rest days.'**
+  /// **'Log a few days to compare training and normal days.'**
   String get progressDayTypeEmpty;
 
   /// No description provided for @progressLoadFailed.
@@ -5158,17 +5026,17 @@ abstract class AppLocalizations {
   /// **'Close {weekday}'**
   String diaryPreviousDayCloseAction(String weekday);
 
-  /// No description provided for @diaryPreviousDayCarryoverPerDay.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} per day'**
-  String diaryPreviousDayCarryoverPerDay(String kcal);
-
   /// No description provided for @diaryPreviousDayClosed.
   ///
   /// In en, this message translates to:
   /// **'{weekday} closed'**
   String diaryPreviousDayClosed(String weekday);
+
+  /// Snack bar when a day type change (normal, training, pause) from the diary budget card was not saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the day type.'**
+  String get diaryDayTypeSaveFailed;
 
   /// No description provided for @diaryPreviousDayCloseFailed.
   ///
@@ -5188,18 +5056,6 @@ abstract class AppLocalizations {
   /// **'Reopen {weekday}'**
   String diaryPreviousDayReopenAction(String weekday);
 
-  /// No description provided for @diaryBalanceRealEatenLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Real {kcal}'**
-  String diaryBalanceRealEatenLabel(Object kcal);
-
-  /// No description provided for @diaryBalanceBufferAdjustmentLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Buffer {kcal}'**
-  String diaryBalanceBufferAdjustmentLabel(Object kcal);
-
   /// No description provided for @diaryBalanceRealLeftLabel.
   ///
   /// In en, this message translates to:
@@ -5217,18 +5073,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ignored for learning'**
   String get diaryBalancePauseDaySubtitle;
-
-  /// No description provided for @diaryBalanceBaseGoalShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Base {value}'**
-  String diaryBalanceBaseGoalShort(String value);
-
-  /// No description provided for @diaryBalanceCarryoverShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Carryover {value}'**
-  String diaryBalanceCarryoverShort(String value);
 
   /// No description provided for @diaryBudgetDetailsTitle.
   ///
@@ -5263,7 +5107,7 @@ abstract class AppLocalizations {
   /// No description provided for @diaryBudgetDetailsRestDayAdjustmentLabel.
   ///
   /// In en, this message translates to:
-  /// **'Rest day adjustment'**
+  /// **'Normal day adjustment'**
   String get diaryBudgetDetailsRestDayAdjustmentLabel;
 
   /// No description provided for @diaryBudgetDetailsBaseGoalLabel.
@@ -6760,7 +6604,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingTrainingDaysRestResult.
   ///
   /// In en, this message translates to:
-  /// **'🛋️ Rest day ({days} days)'**
+  /// **'🛋️ Normal day ({days} days)'**
   String onboardingTrainingDaysRestResult(int days);
 
   /// No description provided for @onboardingReadyTitle.
@@ -6994,7 +6838,7 @@ abstract class AppLocalizations {
   /// No description provided for @introSportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Every session counts toward your energy use. Training days get it, rest days a little less.'**
+  /// **'Every session counts toward your energy use. Training days get it, normal days a little less.'**
   String get introSportSubtitle;
 
   /// No description provided for @introWeekDepotTitle.
@@ -7018,7 +6862,7 @@ abstract class AppLocalizations {
   /// No description provided for @introSummaryDepotHint.
   ///
   /// In en, this message translates to:
-  /// **'Your sessions are part of the weekly budget. A training day gets one session more than a rest day.'**
+  /// **'Your sessions are part of the weekly budget. A training day gets one session more than a normal day.'**
   String get introSummaryDepotHint;
 
   /// No description provided for @introStartDayTitle.
@@ -8590,7 +8434,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileTrainingBecomesRest.
   ///
   /// In en, this message translates to:
-  /// **'{date} becomes a rest day'**
+  /// **'{date} becomes a normal day'**
   String profileTrainingBecomesRest(String date);
 
   /// No description provided for @profileTrainingRunSum.
@@ -8614,7 +8458,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileTrainingOtherRestDays.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Other rest day} other{{count} other rest days}}'**
+  /// **'{count, plural, =1{Other normal day} other{{count} other normal days}}'**
   String profileTrainingOtherRestDays(int count);
 
   /// No description provided for @profileTrainingOtherTrainingDays.
@@ -10776,6 +10620,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not read Health.'**
   String get progressWeighingHealthReadFailed;
+
+  /// No description provided for @diaryBudgetKcalLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal left'**
+  String get diaryBudgetKcalLeft;
+
+  /// No description provided for @diaryBudgetKcalLeftAfterPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal left after plan'**
+  String get diaryBudgetKcalLeftAfterPlan;
+
+  /// No description provided for @diaryBudgetKcalOver.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal over'**
+  String get diaryBudgetKcalOver;
+
+  /// No description provided for @diaryBudgetOverValue.
+  ///
+  /// In en, this message translates to:
+  /// **'+{kcal}'**
+  String diaryBudgetOverValue(String kcal);
+
+  /// No description provided for @diaryBudgetPauseEaten.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal eaten'**
+  String diaryBudgetPauseEaten(String kcal);
+
+  /// No description provided for @diaryBudgetPausePlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'+ {kcal} planned'**
+  String diaryBudgetPausePlanned(String kcal);
+
+  /// No description provided for @diaryBudgetMacroLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g'**
+  String diaryBudgetMacroLeft(String grams);
+
+  /// No description provided for @diaryBudgetMacroOver.
+  ///
+  /// In en, this message translates to:
+  /// **'+{grams} g'**
+  String diaryBudgetMacroOver(String grams);
+
+  /// Diary budget card: carbohydrates label next to the grams, short enough for the macro column.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs'**
+  String get diaryBudgetCarbsLabel;
+
+  /// Diary budget card: switch segment that makes the numbers show what is left of the day's budget.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get diaryBudgetViewLeft;
+
+  /// Diary budget card: switch segment that makes the numbers show what was eaten.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten'**
+  String get diaryBudgetViewEaten;
+
+  /// Diary budget card, eaten view: words under the big kcal number, with the day's target on its own line.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal eaten\nof {target}'**
+  String diaryBudgetKcalEatenOf(String target);
+
+  /// Diary budget card, eaten view: words under the big kcal number when planned food is counted in, with the day's target on its own line.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal with plan\nof {target}'**
+  String diaryBudgetKcalWithPlanOf(String target);
+
+  /// Details of the diary budget card: kcal eaten (and counted as planned) of the day's target.
+  ///
+  /// In en, this message translates to:
+  /// **'{eaten} / {target} kcal'**
+  String diaryBudgetKcalEatenOfTarget(String eaten, String target);
+
+  /// No description provided for @diaryBudgetMacroEaten.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g eaten'**
+  String diaryBudgetMacroEaten(String grams);
+
+  /// No description provided for @diaryBudgetMacroPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} planned'**
+  String diaryBudgetMacroPlanned(String grams);
+
+  /// No description provided for @diaryBudgetBufferRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Buffer adjustment'**
+  String get diaryBudgetBufferRow;
+
+  /// No description provided for @diaryBudgetCarryoverRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Carryover from the week'**
+  String get diaryBudgetCarryoverRow;
+
+  /// No description provided for @diaryBudgetPlannedCountedRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned · counted'**
+  String get diaryBudgetPlannedCountedRow;
+
+  /// No description provided for @diaryBudgetOverRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Over'**
+  String get diaryBudgetOverRow;
+
+  /// No description provided for @diaryBudgetAllDays.
+  ///
+  /// In en, this message translates to:
+  /// **'All days'**
+  String get diaryBudgetAllDays;
+
+  /// No description provided for @diaryBudgetWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Day types in the run'**
+  String get diaryBudgetWeekTitle;
+
+  /// No description provided for @diaryBudgetRunEndedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Run ended · new run counts from {date}'**
+  String diaryBudgetRunEndedNotice(String date);
+
+  /// No description provided for @diaryBudgetWeekDaySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{day}: {type}, tap to change'**
+  String diaryBudgetWeekDaySemantics(String day, String type);
+
+  /// No description provided for @diaryBudgetTrainingDayCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 training day} other{{count} training days}}'**
+  String diaryBudgetTrainingDayCount(int count);
 }
 
 class _AppLocalizationsDelegate

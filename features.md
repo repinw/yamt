@@ -124,23 +124,19 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Daily diary page for meals, calorie balance, activity, and weight.
 - Date selection and calendar strip navigation. Swiping the diary slides to
   the previous or next day. The top bar shows yesterday, today, tomorrow, the
-  day after tomorrow, or the weekday in small capitals over the date, and on
-  the right the day type as its emoji over a short word.
+  day after tomorrow, or the weekday in small capitals over the date.
 - The diary opens with today again (#753): after the user comes back from
   another tab, and when the app returns after at least 5 minutes in the
   background or on a new date. A shorter absence, such as a camera photo or a
   permission prompt, keeps the chosen day, and a plan saved just now still
   opens its day.
-- Tapping the day type opens the day types the way the "Essen" button opens
-  its actions, but from the top right: the page slides aside, and training,
-  rest, and pause day hang below the close button, each with one line on
-  what it means (the extra kcal of a training day, a pause day does not break
-  the streak). The current type has the lime tile. Picking one saves it for
-  the shown day and closes the panel. The tool shows only while a calorie
-  goal exists. The day type picked here is outside the plan: an extra
-  training day gets one session (250 kcal by default) more, a planned
-  training day picked as rest one session less, and the other days of the
-  week keep their goals, so the week's total moves by one session.
+- A normal day is the baseline. The training and pause buttons at the top
+  right of the daily card toggle the shown day; no pressed button is a
+  normal day ("Normaler Tag", formerly "Ruhetag"). The buttons show only
+  while a calorie goal exists. The day type picked here is outside the plan:
+  an extra training day gets one session (250 kcal by default) more, a
+  planned training day made normal one session less, and the other days of
+  the week keep their goals, so the week's total moves by one session.
 - A day without logged food shows a short hint that points to the "Essen"
   button. On a future day the hint says that nothing is planned yet.
 - Meal sections for breakfast, lunch, dinner, and snacks.
@@ -172,10 +168,22 @@ and feature description docs. This is product-facing; architecture rules stay in
   the main button plans it for a picked day, today included; without the
   calories, the icon only asks for them. Accepting the plan makes it a normal
   quick entry; no Vorrat is taken.
-- Daily head in the food label look, without a card frame: the kcal left as a
-  big number over a ruler, whose bar has four equal quarters of the target
-  that fill in order. It is quiet by default; a tap shows eaten and target,
-  base and carryover, and the eaten grams per macro.
+- Daily budget card (#907), set in Geist: the kcal left as a big number
+  with "kcal übrig" and a line with a goal marker, and next to it protein,
+  carbs, and fat with the grams left and a thin line each. Over the goal
+  the number turns red as "+N" with "kcal drüber"; a macro over its target
+  shows "+N g" in normal text and only the overage part of its line is
+  red. On today and later days the macro with the lowest share of its
+  target takes its macro color. A pause day shows "Pausentag" in grey,
+  "N kcal gegessen", and "Fürs Lernen ignoriert", with the eaten grams of
+  the macros in grey. A practice day before the goal starts, and a day
+  after a run ended before the new run starts, can be tracked but do not
+  count: a note at the bottom of the card says so. The chip "Details" (not
+  saved, closed after a restart) shows eaten of target per macro, a ledger
+  (base, training or normal day, buffer, carryover, eaten, counted plans,
+  and what is left) with the link "Alle Tage" to the budget sheet, and the
+  day types of the run week, where a tap on a day moves it on from normal
+  to training to pause, past days included.
 - The main button of the eat page says "Ins Tagebuch", and "Einplanen" on a
   future day.
 - The amount on the eat page of a food in grams or milliliters reads
@@ -241,33 +249,31 @@ and feature description docs. This is product-facing; architecture rules stay in
   food of the ticked meals once per day, in its own meal, with one undo for
   all copies. Copies are always plans, also of eaten food; a combined entry
   keeps no stock source.
-- Future days are shown as a plan: the head reads "Geplant" with the kcal
-  logged and planned for that day and "von" the day's goal; the macro bars
+- Future days are shown as a plan: the card reads "kcal übrig nach Plan"
+  with the day's goal less its plans, drawn in the plan color; the macros
   count the plans too. The goal has no carryover, because the days before it
   are not finished; the training and rest day split still applies. More
   than the goal shows in the error color like on other days. Future days
   show no weekly check-in and no budget details.
-- Tomorrow can plan with today's carryover: under its number, "<Weekday>
-  abschließen" (with today's weekday) closes today and shows the carryover
-  per day it adds. Tomorrow then counts like a started day: its head shows
-  "Übrig" with the goal plus that carryover instead of the plan, like
-  today; a snack bar offers undo, and "<Weekday>
-  wieder öffnen" reverts it. The carryover stays live:
+- Tomorrow can plan with today's carryover: the button "<Wd> abschließen"
+  (today's short weekday) closes today. Tomorrow then counts like a started
+  day: the card shows "kcal übrig" with the goal plus that carryover, like
+  today; a snack bar offers undo, and "✓ <Wd> abgeschlossen" reopens the
+  day on a tap. The carryover stays live:
   food logged later today or edits to earlier days change it. When tomorrow
   starts a new 7-day run, it gets no carryover and shows no button. The
   closed day is saved on the device and counts only until midnight.
-- Plans on today, or on a closed tomorrow, are striped after the eaten share
-  in the kcal ruler and the macro bars. The chip "Nach Plan" in the head,
-  on by default, counts them: the head then reads "Übrig nach Plan" with
-  "<kcal> ohne Plan" under the number, and its details read "<kcal> mit
-  Plan" instead of "<kcal> gegessen". Each macro shows the grams left after
-  the plans, and its eaten grams count the plans too. The budget details
-  sheet then lists "Offene Pläne" under what was eaten and ends with
-  "Übrig nach Plan", what the head counts as left after the plans. The
-  sticky macro strip stripes the plans like the head, and it and the kcal
-  totals of the meal headings count them too while the chip is on; a
-  reminder without kcal is no counted row. A practice day and a scheduled
-  restart show no chip and count no plans. The choice is saved on the
+- Plans on today, or on a closed tomorrow, show in the plan color after the
+  eaten share of the kcal and macro lines. The chip "Nach Plan" shows only
+  when the day has such plans; on by default, it counts them: the card then
+  reads "kcal übrig nach Plan", the details add "<kcal> ohne Plan" and
+  "· N geplant" per macro, and the ledger a row "Geplant · eingerechnet".
+  Each macro shows the grams left after the plans. The budget sheet then
+  lists "Offene Pläne" under what was eaten and ends with "Übrig nach
+  Plan". The kcal totals of the meal headings count them too while the
+  chip is on; a reminder without kcal is no counted row. A pause day offers
+  the chip too, though nothing counts there. A practice day and a
+  scheduled restart count no plans. The choice is saved on the
   device. Plans of past days never count.
 - Plans of the last week that were never eaten or removed stay on their
   day. Today shows a line above the meals that names those days ("Offene
@@ -275,10 +281,6 @@ and feature description docs. This is product-facing; architecture rules stay in
   hides the line until a later day has plans left, saved on the device.
   Days before the first goal are left out, since the calendar cannot open
   them.
-- Nutrition bars and macro summaries: each macro shows its label, a bar of four
-  segments, and the grams left. A macro above its target shows `+X g over` and
-  stripes the overage share at the end of its bar.
-- Burn Week balance card with the daily progress.
 - Weekly check-in prompts and success/hint cards.
 - Side menu from the diary top bar. The page slides to the right as a
   shrunken card and the menu shows behind it: the user, then Profile,

@@ -1087,13 +1087,6 @@
   "caloriesWeeklyCheckInDebugDumpAction": "Wochen-Check-in-Status ausgeben",
   "caloriesWeeklyCheckInDebugDumpPrinted": "Wochen-Check-in-Debug-Ausgabe gedruckt.",
   "caloriesWeeklyCheckInDebugDumpFailed": "Wochen-Check-in-Debug-Ausgabe konnte nicht gedruckt werden.",
-  "burnWeekRunOverTitle": "Run beendet",
-  "burnWeekRunRestartsOn": "Frischer Run startet am {date}.",
-  "@burnWeekRunRestartsOn": {
-    "placeholders": {
-      "date": {}
-    }
-  },
   "burnWeekPracticeDayBadge": "Übungstag · zählt ab {date}",
   "@burnWeekPracticeDayBadge": {
     "placeholders": {
@@ -1191,20 +1184,16 @@
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
   "diaryTodayTitle": "Heute",
+  "diaryJumpToTodayAction": "Zu heute springen",
   "diaryYesterdayTitle": "Gestern",
   "diaryTomorrowTitle": "Morgen",
   "diaryDayAfterTomorrowTitle": "Übermorgen",
   "diaryDayTypeTraining": "Trainingstag",
-  "diaryDayTypeRest": "Ruhetag",
+  "diaryDayTypeNormal": "Normaler Tag",
   "diaryDayTypePause": "Pausentag",
   "diaryDayTypeTrainingShort": "Training",
-  "diaryDayTypeRestShort": "Ruhetag",
+  "diaryDayTypeNormalShort": "Normal",
   "diaryDayTypePauseShort": "Pause",
-  "diaryDayTypeActionsTitle": "Tages-Status",
-  "diaryDayTypeTrainingOffsetSubtitle": "+{kcal} kcal gegenüber einem Ruhetag",
-  "diaryDayTypeTrainingSubtitle": "Trainingstag (Kalorienziel aktiv)",
-  "diaryDayTypeRestSubtitle": "Ausgleichendes Kalorienziel für die Regeneration",
-  "diaryDayTypePauseSubtitle": "Neutraler Tag (Urlaub, Krankheit). Kein Streak-Bruch.",
   "diaryMealsLoadFailed": "Mahlzeiten konnten nicht geladen werden",
   "diaryQuickEatSourceBarcode": "Barcode",
   "diaryQuickEatSourceManualSearch": "Suche",
@@ -1279,45 +1268,15 @@
   "diaryPlanShortTag": "Fehlt im Vorrat",
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance konnte nicht geladen werden",
-  "diaryNutritionLoadFailed": "Nährwerte konnten nicht geladen werden",
-  "diaryNutritionTitle": "Makronährstoffe",
   "diaryBalanceEatenLabel": "Gegessen",
-  "diaryBalanceLeftTodayLabel": "Übrig heute",
   "diaryBalanceLeftLabel": "Übrig",
-  "diaryBalanceOverGoalLabel": "Über Ziel",
   "diaryBalanceAfterPlanChip": "Nach Plan",
   "diaryBalanceLeftAfterPlanLabel": "Übrig nach Plan",
-  "diaryBalanceWithoutPlan": "{kcal} ohne Plan",
-  "diaryBalanceOverWithoutPlan": "{kcal} drüber ohne Plan",
-  "diaryBalanceShowDetails": "Alle Zahlen anzeigen",
-  "diaryBalanceHideDetails": "Weniger Zahlen anzeigen",
   "diaryMealsEmptyTitle": "Noch nichts gegessen",
   "diaryMealsEmptyHint": "Über „Essen“ unten per Barcode, Vorrat, Suche oder KI eintragen.",
   "diaryMealsPlanEmptyTitle": "Noch nichts geplant",
   "diaryMealsPlanEmptyHint": "Über „Essen“ unten trägst du ein, was du an diesem Tag essen willst.",
-  "diaryBalanceEatenAmount": "{kcal} gegessen",
-  "diaryBalanceEatenWithPlanAmount": "{kcal} mit Plan",
-  "diaryBalanceOfTarget": "von {kcal}",
-  "diaryBalanceScaleTarget": "Ziel {kcal}",
-  "diaryMacroLeftSuffix": "übrig",
-  "diaryMacroOverSuffix": "drüber",
   "diaryMacroEatenOfTarget": "{eaten} / {target} g",
-  "diaryAmountLeft": "{amount} übrig",
-  "@diaryAmountLeft": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryAmountOver": "{amount} drüber",
-  "@diaryAmountOver": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
   "diaryMealEntryCount": "{count, plural, =1{1 Eintrag} other{{count} Einträge}}",
   "@diaryMealEntryCount": {
     "placeholders": {
@@ -1577,7 +1536,7 @@
   "progressTdeeLegendDay": "Tageswert",
   "progressTdeeLegendCheckIn": "Check-in",
   "progressTdeeEmpty": "Die Kurve beginnt mit deinem ersten Ziel.",
-  "progressDayTypeTitle": "Training vs. Ruhetag",
+  "progressDayTypeTitle": "Training vs. normaler Tag",
   "progressDayTypeDays": "{emoji} {type} · {count, plural, =1{1 Tag} other{{count} Tage}}",
   "@progressDayTypeDays": {
     "placeholders": {
@@ -1601,28 +1560,16 @@
     }
   },
   "progressEaten": "Gegessen",
-  "progressDayTypeEmpty": "Trag ein paar Tage ein, dann siehst du Training und Ruhetag im Vergleich.",
+  "progressDayTypeEmpty": "Trag ein paar Tage ein, dann siehst du Training und normale Tage im Vergleich.",
   "progressLoadFailed": "Dieser Bereich konnte nicht geladen werden.",
   "diaryBalanceBaseLabel": "Basis",
   "diaryBalancePlannedLabel": "Geplant",
   "diaryPreviousDayCloseAction": "{weekday} abschließen",
-  "diaryPreviousDayCarryoverPerDay": "{kcal} pro Tag",
   "diaryPreviousDayClosed": "{weekday} abgeschlossen",
+  "diaryDayTypeSaveFailed": "Tagesart konnte nicht geändert werden.",
   "diaryPreviousDayCloseFailed": "{weekday} konnte nicht abgeschlossen werden.",
   "diaryPreviousDayReopenFailed": "{weekday} konnte nicht wieder geöffnet werden.",
   "diaryPreviousDayReopenAction": "{weekday} wieder öffnen",
-  "diaryBalanceRealEatenLabel": "Echt {kcal}",
-  "@diaryBalanceRealEatenLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
-  "diaryBalanceBufferAdjustmentLabel": "Puffer {kcal}",
-  "@diaryBalanceBufferAdjustmentLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
   "diaryBalanceRealLeftLabel": "Echt {kcal}",
   "@diaryBalanceRealLeftLabel": {
     "placeholders": {
@@ -1631,28 +1578,12 @@
   },
   "diaryBalancePauseDayValue": "Pausentag",
   "diaryBalancePauseDaySubtitle": "Fürs Lernen ignoriert",
-  "diaryBalanceBaseGoalShort": "Basis {value}",
-  "@diaryBalanceBaseGoalShort": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryBalanceCarryoverShort": "Übertrag {value}",
-  "@diaryBalanceCarryoverShort": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "diaryBudgetDetailsTitle": "Tagesbudget-Details",
   "diaryBudgetDetailsButtonLabel": "Details",
   "diaryBudgetDetailsTodaySectionTitle": "Tagesrechnung",
   "diaryBudgetDetailsWeeklyAverageGoalLabel": "Basisziel (Wochenschnitt)",
   "diaryBudgetDetailsTrainingDayAdjustmentLabel": "Trainingstag-Anpassung",
-  "diaryBudgetDetailsRestDayAdjustmentLabel": "Ruhetag-Anpassung",
+  "diaryBudgetDetailsRestDayAdjustmentLabel": "Normaler-Tag-Anpassung",
   "diaryBudgetDetailsBaseGoalLabel": "Basis-Tagesziel",
   "diaryBudgetDetailsBaseGoalWithoutActivityLabel": "Basis-Tagesziel (ohne Aktivität)",
   "diaryBudgetDetailsExpectedActivityLabel": "Vermutete Aktivität",
@@ -2020,7 +1951,7 @@
       }
     }
   },
-  "onboardingTrainingDaysRestResult": "🛋️ Ruhetag ({days} Tage)",
+  "onboardingTrainingDaysRestResult": "🛋️ Normaler Tag ({days} Tage)",
   "@onboardingTrainingDaysRestResult": {
     "placeholders": {
       "days": {
@@ -2053,7 +1984,7 @@
   "introBodySubtitle": "Körpergewicht und Körpergröße bestimmen, wie viele Zellen in Ruhe mit Sauerstoff und Glukose versorgt werden müssen.",
   "introWeightKgUnit": "kg",
   "introSportTitle": "An welchen Tagen trainierst du?",
-  "introSportSubtitle": "Jede Einheit zählt zu deinem Verbrauch. Trainingstage bekommen sie dazu, Ruhetage etwas weniger.",
+  "introSportSubtitle": "Jede Einheit zählt zu deinem Verbrauch. Trainingstage bekommen sie dazu, normale Tage etwas weniger.",
   "introCalorieModelHighlight": "was du hineingibst",
   "introCalorieModelNote": "Die Essens-Hälfte der Gleichung ist greifbar: Was du isst, lässt sich wiegen, sehen und fast auf das Gramm genau erfassen.",
   "introInputQualityHighlight": "der niemals schläft",
@@ -2070,7 +2001,7 @@
   "introWeekDepotTitle": "Kalorien pro Tag über die Woche",
   "introIdentityPrivacyNote": "Deine Angaben dienen nur der Energieberechnung.",
   "introBodyWeighInNote": "Wieg dich am besten morgens nach dem Aufstehen. So bleiben deine Werte vergleichbar.",
-  "introSummaryDepotHint": "Deine Einheiten stecken im Wochenbudget. Ein Trainingstag bekommt eine Einheit mehr als ein Ruhetag.",
+  "introSummaryDepotHint": "Deine Einheiten stecken im Wochenbudget. Ein Trainingstag bekommt eine Einheit mehr als ein normaler Tag.",
   "introStartDayTitle": "Wann startet deine erste Woche?",
   "introStartDayToday": "Heute",
   "introStartDayTodayHint": "Trag auch nach, was du heute schon gegessen hast.",
@@ -2521,11 +2452,11 @@
   "profileTrainingRunNote": "diesen Run bis {date}",
   "profileTrainingEffectTitle": "Das ändert sich in diesem Run",
   "profileTrainingBecomesTraining": "{date} wird Trainingstag",
-  "profileTrainingBecomesRest": "{date} wird Ruhetag",
+  "profileTrainingBecomesRest": "{date} wird normaler Tag",
   "profileTrainingRunSum": "Summe des Runs",
   "profileTrainingNote": "Gilt nur für diesen Run, wie ein Tagestyp im Tagebuch. Die Summe des Runs bleibt; was vergangene Tage anders bekommen, gibt der Übertrag an die restlichen Tage weiter.",
   "profileTrainingPauseDay": "Pausentag",
-  "profileTrainingOtherRestDays": "{count, plural, =1{Übriger Ruhetag} other{{count} übrige Ruhetage}}",
+  "profileTrainingOtherRestDays": "{count, plural, =1{Übriger normaler Tag} other{{count} übrige normale Tage}}",
   "profileTrainingOtherTrainingDays": "{count, plural, =1{Übriger Trainingstag} other{{count} übrige Trainingstage}}",
   "caloriesGoalBodyStepTitle": "Deine Körperdaten",
   "caloriesGoalBodyEditInProfile": "Im Profil bearbeiten",
@@ -3171,5 +3102,30 @@
   "progressWeighingDeleteFailed": "Das Gewicht konnte nicht gelöscht werden.",
   "progressWeighingIgnoreFailed": "Das Gewicht konnte nicht geändert werden.",
   "progressWeighingOpenHealthFailed": "Health konnte nicht geöffnet werden.",
-  "progressWeighingHealthReadFailed": "Health konnte nicht gelesen werden."
+  "progressWeighingHealthReadFailed": "Health konnte nicht gelesen werden.",
+  "diaryBudgetKcalLeft": "kcal übrig",
+  "diaryBudgetKcalLeftAfterPlan": "kcal übrig nach Plan",
+  "diaryBudgetKcalOver": "kcal drüber",
+  "diaryBudgetOverValue": "+{kcal}",
+  "diaryBudgetPauseEaten": "{kcal} kcal gegessen",
+  "diaryBudgetPausePlanned": "+ {kcal} geplant",
+  "diaryBudgetMacroLeft": "{grams} g",
+  "diaryBudgetMacroOver": "+{grams} g",
+  "diaryBudgetCarbsLabel": "Kohlenh.",
+  "diaryBudgetViewLeft": "Übrig",
+  "diaryBudgetViewEaten": "Gegessen",
+  "diaryBudgetKcalEatenOf": "kcal gegessen\nvon {target}",
+  "diaryBudgetKcalWithPlanOf": "kcal mit Plan\nvon {target}",
+  "diaryBudgetKcalEatenOfTarget": "{eaten} / {target} kcal",
+  "diaryBudgetMacroEaten": "{grams} g gegessen",
+  "diaryBudgetMacroPlanned": "{grams} geplant",
+  "diaryBudgetBufferRow": "Puffer-Anpassung",
+  "diaryBudgetCarryoverRow": "Übertrag aus der Woche",
+  "diaryBudgetPlannedCountedRow": "Geplant · eingerechnet",
+  "diaryBudgetOverRow": "Drüber",
+  "diaryBudgetAllDays": "Alle Tage",
+  "diaryBudgetWeekTitle": "Tagesarten im Run",
+  "diaryBudgetRunEndedNotice": "Run beendet · neuer Run zählt ab {date}",
+  "diaryBudgetWeekDaySemantics": "{day}: {type}, tippen zum Wechseln",
+  "diaryBudgetTrainingDayCount": "{count, plural, =1{1 Trainingstag} other{{count} Trainingstage}}"
 }

@@ -1225,13 +1225,6 @@
   "caloriesWeeklyCheckInDebugDumpAction": "Print weekly check-in state",
   "caloriesWeeklyCheckInDebugDumpPrinted": "Printed weekly check-in debug dump.",
   "caloriesWeeklyCheckInDebugDumpFailed": "Could not print weekly check-in debug dump.",
-  "burnWeekRunOverTitle": "Run over",
-  "burnWeekRunRestartsOn": "Fresh run starts on {date}.",
-  "@burnWeekRunRestartsOn": {
-    "placeholders": {
-      "date": {}
-    }
-  },
   "burnWeekPracticeDayBadge": "Practice day · counts from {date}",
   "@burnWeekPracticeDayBadge": {
     "placeholders": {
@@ -1338,27 +1331,19 @@
   "caloriesUnitGram": "g",
   "caloriesUnitMilliliter": "ml",
   "diaryTodayTitle": "Today",
+  "diaryJumpToTodayAction": "Go to today",
+  "@diaryJumpToTodayAction": {
+    "description": "Screen reader label of the Today button in the diary top bar, shown while another day is selected."
+  },
   "diaryYesterdayTitle": "Yesterday",
   "diaryTomorrowTitle": "Tomorrow",
   "diaryDayAfterTomorrowTitle": "In 2 days",
   "diaryDayTypeTraining": "Training day",
-  "diaryDayTypeRest": "Rest day",
+  "diaryDayTypeNormal": "Normal day",
   "diaryDayTypePause": "Pause day",
   "diaryDayTypeTrainingShort": "Training",
-  "diaryDayTypeRestShort": "Rest",
+  "diaryDayTypeNormalShort": "Normal",
   "diaryDayTypePauseShort": "Pause",
-  "diaryDayTypeActionsTitle": "Day type",
-  "diaryDayTypeTrainingOffsetSubtitle": "+{kcal} kcal compared to a rest day",
-  "@diaryDayTypeTrainingOffsetSubtitle": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "diaryDayTypeTrainingSubtitle": "Training day (calorie target active)",
-  "diaryDayTypeRestSubtitle": "Balanced calorie target for recovery",
-  "diaryDayTypePauseSubtitle": "Neutral day (vacation, illness). Doesn't break your streak.",
   "diaryMealsLoadFailed": "Meals could not be loaded",
   "diaryQuickEatSourceBarcode": "Barcode",
   "diaryQuickEatSourceManualSearch": "Search",
@@ -1488,71 +1473,14 @@
   "diaryPlanShortTag": "Not in stock",
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance could not be loaded",
-  "diaryNutritionLoadFailed": "Nutrition could not be loaded",
-  "diaryNutritionTitle": "Macronutrients",
   "diaryBalanceEatenLabel": "Eaten",
-  "diaryBalanceLeftTodayLabel": "Left today",
   "diaryBalanceLeftLabel": "Left",
-  "diaryBalanceOverGoalLabel": "Over goal",
   "diaryBalanceAfterPlanChip": "After plan",
   "diaryBalanceLeftAfterPlanLabel": "Left after plan",
-  "diaryBalanceWithoutPlan": "{kcal} without plan",
-  "diaryBalanceOverWithoutPlan": "{kcal} over without plan",
-  "@diaryBalanceOverWithoutPlan": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "@diaryBalanceWithoutPlan": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryBalanceShowDetails": "Show all numbers",
-  "diaryBalanceHideDetails": "Show fewer numbers",
   "diaryMealsEmptyTitle": "Nothing eaten yet",
   "diaryMealsEmptyHint": "Tap “Eat” below to log food by barcode, from the inventory, search, or AI.",
   "diaryMealsPlanEmptyTitle": "Nothing planned yet",
   "diaryMealsPlanEmptyHint": "Tap “Eat” below to add what you want to eat on this day.",
-  "diaryBalanceEatenAmount": "{kcal} eaten",
-  "@diaryBalanceEatenAmount": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryBalanceEatenWithPlanAmount": "{kcal} with plan",
-  "@diaryBalanceEatenWithPlanAmount": {
-    "description": "Head of the diary balance card while \"By plan\" counts the open plans: eaten plus planned kcal.",
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryBalanceOfTarget": "of {kcal}",
-  "@diaryBalanceOfTarget": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryBalanceScaleTarget": "Goal {kcal}",
-  "@diaryBalanceScaleTarget": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryMacroLeftSuffix": "left",
-  "diaryMacroOverSuffix": "over",
   "diaryMacroEatenOfTarget": "{eaten} / {target} g",
   "@diaryMacroEatenOfTarget": {
     "placeholders": {
@@ -1560,22 +1488,6 @@
         "type": "String"
       },
       "target": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryAmountLeft": "{amount} left",
-  "@diaryAmountLeft": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryAmountOver": "{amount} over",
-  "@diaryAmountOver": {
-    "placeholders": {
-      "amount": {
         "type": "String"
       }
     }
@@ -1840,7 +1752,7 @@
   "progressTdeeLegendDay": "Daily value",
   "progressTdeeLegendCheckIn": "Check-in",
   "progressTdeeEmpty": "The curve starts with your first goal.",
-  "progressDayTypeTitle": "Training vs. rest day",
+  "progressDayTypeTitle": "Training vs. normal day",
   "progressDayTypeDays": "{emoji} {type} · {count, plural, =1{1 day} other{{count} days}}",
   "@progressDayTypeDays": {
     "placeholders": {
@@ -1864,7 +1776,7 @@
     }
   },
   "progressEaten": "Eaten",
-  "progressDayTypeEmpty": "Log a few days to compare training and rest days.",
+  "progressDayTypeEmpty": "Log a few days to compare training and normal days.",
   "progressLoadFailed": "Could not load this section.",
   "diaryBalanceBaseLabel": "Base",
   "diaryBalancePlannedLabel": "Planned",
@@ -1876,14 +1788,6 @@
       }
     }
   },
-  "diaryPreviousDayCarryoverPerDay": "{kcal} per day",
-  "@diaryPreviousDayCarryoverPerDay": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
   "diaryPreviousDayClosed": "{weekday} closed",
   "@diaryPreviousDayClosed": {
     "placeholders": {
@@ -1891,6 +1795,10 @@
         "type": "String"
       }
     }
+  },
+  "diaryDayTypeSaveFailed": "Could not change the day type.",
+  "@diaryDayTypeSaveFailed": {
+    "description": "Snack bar when a day type change (normal, training, pause) from the diary budget card was not saved."
   },
   "diaryPreviousDayCloseFailed": "Could not close {weekday}.",
   "@diaryPreviousDayCloseFailed": {
@@ -1916,18 +1824,6 @@
       }
     }
   },
-  "diaryBalanceRealEatenLabel": "Real {kcal}",
-  "@diaryBalanceRealEatenLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
-  "diaryBalanceBufferAdjustmentLabel": "Buffer {kcal}",
-  "@diaryBalanceBufferAdjustmentLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
   "diaryBalanceRealLeftLabel": "Real {kcal}",
   "@diaryBalanceRealLeftLabel": {
     "placeholders": {
@@ -1936,28 +1832,12 @@
   },
   "diaryBalancePauseDayValue": "Pause day",
   "diaryBalancePauseDaySubtitle": "Ignored for learning",
-  "diaryBalanceBaseGoalShort": "Base {value}",
-  "@diaryBalanceBaseGoalShort": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryBalanceCarryoverShort": "Carryover {value}",
-  "@diaryBalanceCarryoverShort": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "diaryBudgetDetailsTitle": "Daily budget details",
   "diaryBudgetDetailsButtonLabel": "Details",
   "diaryBudgetDetailsTodaySectionTitle": "Day's calculation",
   "diaryBudgetDetailsWeeklyAverageGoalLabel": "Base goal (weekly average)",
   "diaryBudgetDetailsTrainingDayAdjustmentLabel": "Training day adjustment",
-  "diaryBudgetDetailsRestDayAdjustmentLabel": "Rest day adjustment",
+  "diaryBudgetDetailsRestDayAdjustmentLabel": "Normal day adjustment",
   "diaryBudgetDetailsBaseGoalLabel": "Base daily goal",
   "diaryBudgetDetailsBaseGoalWithoutActivityLabel": "Base daily goal (without activity)",
   "diaryBudgetDetailsExpectedActivityLabel": "Expected activity",
@@ -2370,7 +2250,7 @@
       }
     }
   },
-  "onboardingTrainingDaysRestResult": "🛋️ Rest day ({days} days)",
+  "onboardingTrainingDaysRestResult": "🛋️ Normal day ({days} days)",
   "@onboardingTrainingDaysRestResult": {
     "placeholders": {
       "days": {
@@ -2416,11 +2296,11 @@
   "introBodySubtitle": "Body weight and height decide how many cells have to be supplied with oxygen and glucose at rest.",
   "introWeightKgUnit": "kg",
   "introSportTitle": "On which days do you train?",
-  "introSportSubtitle": "Every session counts toward your energy use. Training days get it, rest days a little less.",
+  "introSportSubtitle": "Every session counts toward your energy use. Training days get it, normal days a little less.",
   "introWeekDepotTitle": "Calories per day across the week",
   "introIdentityPrivacyNote": "Your details are used for the energy calculation only.",
   "introBodyWeighInNote": "Weigh yourself in the morning after getting up. That keeps your values comparable.",
-  "introSummaryDepotHint": "Your sessions are part of the weekly budget. A training day gets one session more than a rest day.",
+  "introSummaryDepotHint": "Your sessions are part of the weekly budget. A training day gets one session more than a normal day.",
   "introStartDayTitle": "When does your first week start?",
   "introStartDayToday": "Today",
   "introStartDayTodayHint": "Also log what you have already eaten today.",
@@ -3018,7 +2898,7 @@
       }
     }
   },
-  "profileTrainingBecomesRest": "{date} becomes a rest day",
+  "profileTrainingBecomesRest": "{date} becomes a normal day",
   "@profileTrainingBecomesRest": {
     "placeholders": {
       "date": {
@@ -3029,7 +2909,7 @@
   "profileTrainingRunSum": "Run total",
   "profileTrainingNote": "Counts for this run only, like a day type in the diary. The run total stays; the carryover passes what past days got differently on to the days left.",
   "profileTrainingPauseDay": "Pause day",
-  "profileTrainingOtherRestDays": "{count, plural, =1{Other rest day} other{{count} other rest days}}",
+  "profileTrainingOtherRestDays": "{count, plural, =1{Other normal day} other{{count} other normal days}}",
   "@profileTrainingOtherRestDays": {
     "placeholders": {
       "count": {
@@ -4184,5 +4064,139 @@
   "progressWeighingHealthReadFailed": "Could not read Health.",
   "@progressWeighingHealthReadFailed": {
     "description": "Error shown when weights cannot be read from Health."
+  },
+  "diaryBudgetKcalLeft": "kcal left",
+  "diaryBudgetKcalLeftAfterPlan": "kcal left after plan",
+  "diaryBudgetKcalOver": "kcal over",
+  "diaryBudgetOverValue": "+{kcal}",
+  "@diaryBudgetOverValue": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetPauseEaten": "{kcal} kcal eaten",
+  "@diaryBudgetPauseEaten": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetPausePlanned": "+ {kcal} planned",
+  "@diaryBudgetPausePlanned": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetMacroLeft": "{grams} g",
+  "@diaryBudgetMacroLeft": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetMacroOver": "+{grams} g",
+  "@diaryBudgetMacroOver": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetCarbsLabel": "Carbs",
+  "@diaryBudgetCarbsLabel": {
+    "description": "Diary budget card: carbohydrates label next to the grams, short enough for the macro column."
+  },
+  "diaryBudgetViewLeft": "Left",
+  "@diaryBudgetViewLeft": {
+    "description": "Diary budget card: switch segment that makes the numbers show what is left of the day's budget."
+  },
+  "diaryBudgetViewEaten": "Eaten",
+  "@diaryBudgetViewEaten": {
+    "description": "Diary budget card: switch segment that makes the numbers show what was eaten."
+  },
+  "diaryBudgetKcalEatenOf": "kcal eaten\nof {target}",
+  "@diaryBudgetKcalEatenOf": {
+    "description": "Diary budget card, eaten view: words under the big kcal number, with the day's target on its own line.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetKcalWithPlanOf": "kcal with plan\nof {target}",
+  "@diaryBudgetKcalWithPlanOf": {
+    "description": "Diary budget card, eaten view: words under the big kcal number when planned food is counted in, with the day's target on its own line.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetKcalEatenOfTarget": "{eaten} / {target} kcal",
+  "@diaryBudgetKcalEatenOfTarget": {
+    "description": "Details of the diary budget card: kcal eaten (and counted as planned) of the day's target.",
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetMacroEaten": "{grams} g eaten",
+  "@diaryBudgetMacroEaten": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetMacroPlanned": "{grams} planned",
+  "@diaryBudgetMacroPlanned": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetBufferRow": "Buffer adjustment",
+  "diaryBudgetCarryoverRow": "Carryover from the week",
+  "diaryBudgetPlannedCountedRow": "Planned · counted",
+  "diaryBudgetOverRow": "Over",
+  "diaryBudgetAllDays": "All days",
+  "diaryBudgetWeekTitle": "Day types in the run",
+  "diaryBudgetRunEndedNotice": "Run ended · new run counts from {date}",
+  "@diaryBudgetRunEndedNotice": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetWeekDaySemantics": "{day}: {type}, tap to change",
+  "@diaryBudgetWeekDaySemantics": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetTrainingDayCount": "{count, plural, =1{1 training day} other{{count} training days}}",
+  "@diaryBudgetTrainingDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

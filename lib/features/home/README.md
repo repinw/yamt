@@ -29,7 +29,8 @@ Home owns the tab shell, tab navigation, and shell-level composition.
   its actions, which the shell runs on every rebuild so the actions stay
   live; the panel hangs them from the top right below the close button and
   gives the entry the tool names the lime tile, without counting taps. A
-  tab change closes it. The Diary day type tool uses it.
+  tab change closes it. No tab uses it since the Diary day type tool moved
+  into the daily card (#907).
 
 ## Does Not Own
 

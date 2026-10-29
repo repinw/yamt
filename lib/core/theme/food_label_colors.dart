@@ -20,6 +20,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
     required this.onTile,
     required this.low,
     required this.track,
+    required this.plan,
   });
 
   /// The colors of the active theme, or the Graphit colors for its
@@ -44,6 +45,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
     onTile: Color(0xFF141414),
     low: Color(0xFFC2410C),
     track: Color(0xFFD6D6D1),
+    plan: Color(0xFF9C6B3C),
   );
 
   /// Dark Graphit colors.
@@ -60,6 +62,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
     onTile: Color(0xFFC7F23A),
     low: Color(0xFFFF7A59),
     track: Color(0xFF2A2B2B),
+    plan: Color(0xFFD3A272),
   );
 
   /// Page background.
@@ -98,6 +101,9 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
   /// Empty part of a stock bar.
   final Color track;
 
+  /// Planned food that is not eaten yet.
+  final Color plan;
+
   @override
   FoodLabelColors copyWith({
     Color? paper,
@@ -112,6 +118,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
     Color? onTile,
     Color? low,
     Color? track,
+    Color? plan,
   }) {
     return FoodLabelColors(
       paper: paper ?? this.paper,
@@ -126,6 +133,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
       onTile: onTile ?? this.onTile,
       low: low ?? this.low,
       track: track ?? this.track,
+      plan: plan ?? this.plan,
     );
   }
 
@@ -147,6 +155,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
       onTile: Color.lerp(onTile, other.onTile, t)!,
       low: Color.lerp(low, other.low, t)!,
       track: Color.lerp(track, other.track, t)!,
+      plan: Color.lerp(plan, other.plan, t)!,
     );
   }
 }

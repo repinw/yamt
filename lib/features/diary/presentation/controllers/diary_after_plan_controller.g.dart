@@ -9,20 +9,20 @@ part of 'diary_after_plan_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Whether the head counts the open plans of today, so it shows what is
-/// left after them ("Nach Plan"). On by default; the choice is saved on the
-/// device.
+/// left after them ("Nach Plan"). On whenever the diary opens; turning it
+/// off is not saved.
 
 @ProviderFor(DiaryAfterPlanController)
 final diaryAfterPlanControllerProvider = DiaryAfterPlanControllerProvider._();
 
 /// Whether the head counts the open plans of today, so it shows what is
-/// left after them ("Nach Plan"). On by default; the choice is saved on the
-/// device.
+/// left after them ("Nach Plan"). On whenever the diary opens; turning it
+/// off is not saved.
 final class DiaryAfterPlanControllerProvider
     extends $NotifierProvider<DiaryAfterPlanController, bool> {
   /// Whether the head counts the open plans of today, so it shows what is
-  /// left after them ("Nach Plan"). On by default; the choice is saved on the
-  /// device.
+  /// left after them ("Nach Plan"). On whenever the diary opens; turning it
+  /// off is not saved.
   DiaryAfterPlanControllerProvider._()
     : super(
         from: null,
@@ -51,11 +51,11 @@ final class DiaryAfterPlanControllerProvider
 }
 
 String _$diaryAfterPlanControllerHash() =>
-    r'd7c0b06cb8d1dda88c68f61f9199f6c79dbefd92';
+    r'e46789f54f9ccfd6d37661be1b1963b690d0b232';
 
 /// Whether the head counts the open plans of today, so it shows what is
-/// left after them ("Nach Plan"). On by default; the choice is saved on the
-/// device.
+/// left after them ("Nach Plan"). On whenever the diary opens; turning it
+/// off is not saved.
 
 abstract class _$DiaryAfterPlanController extends $Notifier<bool> {
   bool build();
@@ -77,16 +77,16 @@ abstract class _$DiaryAfterPlanController extends $Notifier<bool> {
 
 /// The open plans of [day], counted when the user counts them; null when the
 /// day offers none. A practice day and a scheduled restart have no "Nach
-/// Plan" head, so they offer none either: the head, the macro strip and the
-/// meal headings all follow this one answer.
+/// Plan" chip, so they offer none either: the budget card and the meal
+/// headings both follow this one answer.
 
 @ProviderFor(diaryOpenPlans)
 final diaryOpenPlansProvider = DiaryOpenPlansFamily._();
 
 /// The open plans of [day], counted when the user counts them; null when the
 /// day offers none. A practice day and a scheduled restart have no "Nach
-/// Plan" head, so they offer none either: the head, the macro strip and the
-/// meal headings all follow this one answer.
+/// Plan" chip, so they offer none either: the budget card and the meal
+/// headings both follow this one answer.
 
 final class DiaryOpenPlansProvider
     extends
@@ -94,8 +94,8 @@ final class DiaryOpenPlansProvider
     with $Provider<DiaryOpenPlans?> {
   /// The open plans of [day], counted when the user counts them; null when the
   /// day offers none. A practice day and a scheduled restart have no "Nach
-  /// Plan" head, so they offer none either: the head, the macro strip and the
-  /// meal headings all follow this one answer.
+  /// Plan" chip, so they offer none either: the budget card and the meal
+  /// headings both follow this one answer.
   DiaryOpenPlansProvider._({
     required DiaryOpenPlansFamily super.from,
     required DateTime super.argument,
@@ -147,12 +147,12 @@ final class DiaryOpenPlansProvider
   }
 }
 
-String _$diaryOpenPlansHash() => r'deaf56e7c0a634fa0079ee560325b64b8d50fc09';
+String _$diaryOpenPlansHash() => r'8bfd4ff852fa2b3acacf527e1075aa2854d89f33';
 
 /// The open plans of [day], counted when the user counts them; null when the
 /// day offers none. A practice day and a scheduled restart have no "Nach
-/// Plan" head, so they offer none either: the head, the macro strip and the
-/// meal headings all follow this one answer.
+/// Plan" chip, so they offer none either: the budget card and the meal
+/// headings both follow this one answer.
 
 final class DiaryOpenPlansFamily extends $Family
     with $FunctionalFamilyOverride<DiaryOpenPlans?, DateTime> {
@@ -167,8 +167,8 @@ final class DiaryOpenPlansFamily extends $Family
 
   /// The open plans of [day], counted when the user counts them; null when the
   /// day offers none. A practice day and a scheduled restart have no "Nach
-  /// Plan" head, so they offer none either: the head, the macro strip and the
-  /// meal headings all follow this one answer.
+  /// Plan" chip, so they offer none either: the budget card and the meal
+  /// headings both follow this one answer.
 
   DiaryOpenPlansProvider call(DateTime day) =>
       DiaryOpenPlansProvider._(argument: day, from: this);

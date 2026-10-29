@@ -1,7 +1,8 @@
 # Diary Feature
 
 Diary owns the daily log page, date selection, quick-eat buttons, logged meals,
-nutrition bars, and diary-facing Burn Week and weekly check-in composition.
+the daily budget card, and diary-facing Burn Week and weekly check-in
+composition.
 
 ## Owns
 
@@ -39,19 +40,17 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   that took stock gives it back to the Vorrat. Both use
   `DiaryEntryChangeController`. Bundles (prepared meals and combined foods) show their foods
   instead of the ruler.
-- `presentation/widgets/diary_macro_strip/` owns the compact kcal and macro
-  strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it
-  in stages as the daily card's kcal bar and macro bars scroll away; each day
-  view places the trigger sliver directly above its daily card.
+- `presentation/widgets/diary_budget_card/` owns the daily budget card
+  (#907): kcal and macro columns, the "Details" and "Nach Plan" chips, the
+  training and pause toggles that set the day type through
+  `DiaryDayTypeUpdater`, the ledger with the link to the budget sheet, the
+  run week's day types, and closing the day before. `DiaryBudgetCardData`
+  (`presentation/models/`) maps `DiaryBalanceCardData` and the day's macros
+  for it; `diary_burn_week_card/diary_balance_card.dart` loads it.
 - The diary page shows the Activity missing-weight prompt below the weekly
   check-in, and only on today.
 - `presentation/widgets/diary_day_type_labels.dart` gives the emoji and the
   names of a day type. The Fortschritt tab uses them for its day rows.
-- `presentation/widgets/diary_day_type_toggle.dart` is the day type tool on
-  the right of the top bar. It hands the day types to the home shell's
-  action panel through `HomeShellMenuScope.openActions` (`core/widgets`),
-  which shows them at the top right; a picked type is saved through
-  `DiaryDayTypeUpdater`.
 - `presentation/diary_tab_change_flow.dart` (`diaryTabLeft`) is public UI
   for `features/home`: the home shell tells the diary when the user leaves
   its tab, and the diary selects today again (#753). A plan saved later in
@@ -84,13 +83,9 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   pose.
 - `presentation/widgets/diary_meals_empty_state.dart` points to the "Essen"
   button on a day without logged food.
-- `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
-  diary-facing daily calorie balance UI.
-  The daily card uses the food label look (`FoodLabelColors`, `AppFonts`)
-  without a frame: a big kcal-left number, a ruler with four equal quarters,
-  and the macro rows. It is quiet by default (kcal and grams left only) and
-  shows all numbers after a tap. Over the target it shows the overage with an
-  "Over goal" label in the error color.
+- `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` loads
+  the day's balance and macros and shows them in the budget card
+  (`diary_budget_card/`), or the loading skeleton and the retry content.
 - `presentation/diary_home_widget_summary_provider.dart`
   (`diaryHomeWidgetSummaryProvider`) with its value type
   `application/diary_home_widget_summary.dart` (`DiaryHomeWidgetSummary`) is
@@ -146,12 +141,12 @@ Main application adapters and mappers:
 - `presentation/diary_home_widget_summary_provider.dart` (public, read by
   `features/home_widget`)
 - `application/diary_plan_start_day_provider.dart` (earliest selectable diary day)
-- `application/diary_day_type_provider.dart` (training/rest/pause status and
+- `application/diary_day_type_provider.dart` (training/normal/pause status and
   updates through the calorie goal controller)
 - `data/diary_day_dashboard_cache_repository.dart`
 - `presentation/controllers/diary_day_dashboard_controller.dart`
 - `presentation/controllers/diary_balance_details_controller.dart` (quiet or
-  detailed daily card and macro strip; saved in `AppPreferences`)
+  detailed daily card; not saved, closed after a restart)
 - `presentation/diary_calendar_controller.dart` (selected day and
   `diaryCalendarBoundsProvider`; range rules in `domain/diary_calendar_bounds.dart`)
 

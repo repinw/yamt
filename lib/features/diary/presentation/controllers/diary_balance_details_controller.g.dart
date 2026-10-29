@@ -8,19 +8,19 @@ part of 'diary_balance_details_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Whether the daily balance card shows all numbers instead of only what is
-/// left. The choice is saved on the device.
+/// Whether the budget card shows its details: the eaten grams, the ledger
+/// and the week strip. Starts closed whenever the diary opens.
 
 @ProviderFor(DiaryBalanceDetailsController)
 final diaryBalanceDetailsControllerProvider =
     DiaryBalanceDetailsControllerProvider._();
 
-/// Whether the daily balance card shows all numbers instead of only what is
-/// left. The choice is saved on the device.
+/// Whether the budget card shows its details: the eaten grams, the ledger
+/// and the week strip. Starts closed whenever the diary opens.
 final class DiaryBalanceDetailsControllerProvider
     extends $NotifierProvider<DiaryBalanceDetailsController, bool> {
-  /// Whether the daily balance card shows all numbers instead of only what is
-  /// left. The choice is saved on the device.
+  /// Whether the budget card shows its details: the eaten grams, the ledger
+  /// and the week strip. Starts closed whenever the diary opens.
   DiaryBalanceDetailsControllerProvider._()
     : super(
         from: null,
@@ -49,10 +49,10 @@ final class DiaryBalanceDetailsControllerProvider
 }
 
 String _$diaryBalanceDetailsControllerHash() =>
-    r'789aed5f0761a8a3b3f0a3378804e8947ae15f67';
+    r'8c9ef6727b0d933ec6634414363763647bbb4bd0';
 
-/// Whether the daily balance card shows all numbers instead of only what is
-/// left. The choice is saved on the device.
+/// Whether the budget card shows its details: the eaten grams, the ledger
+/// and the week strip. Starts closed whenever the diary opens.
 
 abstract class _$DiaryBalanceDetailsController extends $Notifier<bool> {
   bool build();

@@ -110,7 +110,8 @@ and the other days keep their goals, so the run total moves by one session.
 Before a goal starts counting there is no run, and the weekly schedule counts
 instead.
 
-The diary header includes a toggle (`🏋️ Trainingstag`, `🛋️ Ruhetag`, `⏸️ Pausentag`).
+The diary's daily budget card toggles a day to `Trainingstag` or `Pausentag`;
+no pressed toggle is a `Normaler Tag`.
 
 #### Daily TDEE
 
