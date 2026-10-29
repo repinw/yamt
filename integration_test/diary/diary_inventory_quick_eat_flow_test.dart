@@ -35,7 +35,7 @@ import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_balance_card_keys.dart';
+    'diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_picker_status.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_inventory_food_picker/diary_inventory_food_tile.dart';
@@ -318,14 +318,19 @@ Future<void> _pumpUntilFound(
   );
 }
 
+/// Text of [key]; while the card cross-fades a number, the incoming one,
+/// which the fade stacks last.
+String _incomingText(WidgetTester tester, Key key) =>
+    tester.widgetList<Text>(find.byKey(key)).last.data!;
+
 /// Waits until the day head shows once: while a slow device switches the
 /// head, the old and the new one are both on screen for a moment.
 Future<void> _pumpUntilOneHead(WidgetTester tester) {
   return _pumpUntil(
     tester,
     () =>
-        find.byKey(DiaryBalanceCardKeys.kcalHeadLabel).evaluate().length == 1 &&
-        find.byKey(DiaryBalanceCardKeys.kcalHeadValue).evaluate().length == 1,
+        find.byKey(DiaryBudgetCardKeys.kcalUnit).evaluate().length == 1 &&
+        find.byKey(DiaryBudgetCardKeys.kcalValue).evaluate().length == 1,
     description: 'one day head',
   );
 }
@@ -926,16 +931,16 @@ void main() {
     await tester.pumpWidget(harness.app);
     await _pumpUntilFound(
       tester,
-      find.byKey(DiaryBalanceCardKeys.kcalHeadTarget),
+      find.byKey(DiaryBudgetCardKeys.closePreviousDay),
       description: 'planned head of tomorrow',
     );
 
     await _pumpUntilOneHead(tester);
-    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'GEPLANT');
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '900');
-    // The goal without a carryover from today, which is not finished yet.
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
+    String textOf(Key key) => _incomingText(tester, key);
+    // The goal without a carryover from today, which is not finished yet,
+    // less the plan.
+    expect(textOf(DiaryBudgetCardKeys.kcalValue), '1.300');
+    expect(textOf(DiaryBudgetCardKeys.kcalUnit), 'kcal übrig nach Plan');
   });
 
   testWidgets('eat all plans of a meal at once', (tester) async {
@@ -1007,9 +1012,9 @@ void main() {
       );
 
       await _pumpUntilOneHead(tester);
-      String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
-      expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'GEPLANT');
-      expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '600');
+      String textOf(Key key) => _incomingText(tester, key);
+      expect(textOf(DiaryBudgetCardKeys.kcalUnit), 'kcal übrig nach Plan');
+      expect(textOf(DiaryBudgetCardKeys.kcalValue), '1.600');
 
       await tester.ensureVisible(planRow);
       await tester.tap(planRow);
@@ -1031,11 +1036,8 @@ void main() {
         tester,
         // The diary is offstage until the details page has closed.
         () =>
-            find
-                .byKey(DiaryBalanceCardKeys.kcalHeadValue)
-                .evaluate()
-                .isNotEmpty &&
-            textOf(DiaryBalanceCardKeys.kcalHeadValue) == '0',
+            find.byKey(DiaryBudgetCardKeys.kcalValue).evaluate().isNotEmpty &&
+            textOf(DiaryBudgetCardKeys.kcalValue) == '2.200',
         description: 'head without the deleted plan',
       );
       expect(planRow, findsNothing);
@@ -1299,45 +1301,41 @@ void main() {
       ],
     );
     await tester.pumpWidget(harness.app);
-    final closeButton = find.byKey(DiaryBalanceCardKeys.previousDayCloseButton);
+    final closeButton = find.byKey(DiaryBudgetCardKeys.closePreviousDay);
     await _pumpUntilFound(
       tester,
       closeButton,
       description: 'close button of the day before',
     );
     await _pumpUntilOneHead(tester);
-    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
+    String textOf(Key key) => _incomingText(tester, key);
+    // A planned day: the whole day is a plan, so no "Nach Plan" chip.
+    expect(textOf(DiaryBudgetCardKeys.kcalValue), '1.900');
+    expect(find.byKey(DiaryBudgetCardKeys.afterPlanChip), findsNothing);
 
     await tester.tap(closeButton);
     // Tomorrow then counts like a started day, and its plan still counts.
-    await _pumpUntil(
-      tester,
-      () => textOf(DiaryBalanceCardKeys.kcalHeadLabel) == 'ÜBRIG NACH PLAN',
-      description: 'started head after its plan',
-    );
-    expect(
-      find.byKey(DiaryBalanceCardKeys.kcalHeadWithoutPlan),
-      findsOneWidget,
-    );
+    final chip = find.byKey(DiaryBudgetCardKeys.afterPlanChip);
+    await _pumpUntilFound(tester, chip, description: 'after plan chip');
+    expect(textOf(DiaryBudgetCardKeys.kcalUnit), 'kcal übrig nach Plan');
 
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.afterPlanChip));
+    await tester.tap(chip);
     await _pumpUntil(
       tester,
-      () => textOf(DiaryBalanceCardKeys.kcalHeadLabel) == 'ÜBRIG',
+      () => textOf(DiaryBudgetCardKeys.kcalUnit) == 'kcal übrig',
       description: 'started head without its plan',
     );
-    expect(find.byKey(DiaryBalanceCardKeys.previousDayClosed), findsOneWidget);
-    expect(find.byKey(DiaryBalanceCardKeys.kcalHeadTarget), findsNothing);
+    final reopen = find.byKey(DiaryBudgetCardKeys.reopenPreviousDay);
+    expect(reopen, findsOneWidget);
 
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.previousDayReopenButton));
-    await _pumpUntil(
+    await tester.tap(reopen);
+    await _pumpUntilFound(
       tester,
-      () => textOf(DiaryBalanceCardKeys.kcalHeadLabel) == 'GEPLANT',
-      description: 'planned head after reopening',
+      closeButton,
+      description: 'close button after reopening',
     );
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
-    expect(closeButton, findsOneWidget);
+    expect(textOf(DiaryBudgetCardKeys.kcalValue), '1.900');
+    expect(chip, findsNothing);
   });
 
   testWidgets('diary prepared meal quick add shows save failure snackbar', (

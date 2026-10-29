@@ -56,9 +56,7 @@ import 'package:yamt/features/diary/presentation/controllers/'
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_balance_card_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_day_type_toggle.dart';
+    'diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -74,12 +72,10 @@ import 'package:yamt/features/health/data/manual_health_weight_repository_provid
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/inventory/application/inventory_entry_delete_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/auth_user_data_key_session.dart';
-import '../../../helpers/home_shell_test_scope.dart';
 import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 import '../support/diary_dashboard_test_support.dart';
@@ -158,50 +154,6 @@ void main() {
 
     expect(providerObserver.diaryQuickEatInventoryAddCount, 0);
     expect(providerObserver.entryDeleteServiceAddCount, 0);
-  });
-
-  testWidgets('shows day type toggle while diary dashboard refreshes', (
-    tester,
-  ) async {
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      burnWeekRunState: const BurnWeekRunState.initial().copyWith(
-        runWeekNumber: 2,
-      ),
-      dashboardState: const DiaryDayDashboardState(
-        data: null,
-        isFromCache: false,
-        isRefreshing: true,
-        error: null,
-      ),
-      body: const HomeShellTestScope(
-        child: DiaryPage(includeHomeShellChrome: true),
-      ),
-    );
-
-    expect(find.byKey(DiaryDayTypeToggle.buttonKey), findsOneWidget);
-  });
-
-  testWidgets('tapping the day type tool opens the day types in the panel', (
-    tester,
-  ) async {
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      body: const HomeShellTestScope(
-        child: DiaryPage(includeHomeShellChrome: true),
-      ),
-    );
-
-    await tester.tap(find.byKey(DiaryDayTypeToggle.buttonKey));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(HomeActionPanel), findsOneWidget);
-    expect(find.text('DAY TYPE'), findsOneWidget);
-    expect(find.text('Training day'), findsOneWidget);
-    expect(find.text('Rest day'), findsOneWidget);
-    expect(find.text('Pause day'), findsOneWidget);
   });
 
   test('diary warmup follows today without warming heavy providers', () async {
@@ -1164,9 +1116,9 @@ void main() {
       ),
     );
 
-    expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
+    expect(find.byKey(DiaryBudgetCardKeys.notCountingNote), findsOneWidget);
     expect(find.textContaining('Practice day · counts from'), findsOneWidget);
-    expect(find.byKey(DiaryBalanceCardKeys.dailyProgressTrack), findsOneWidget);
+    expect(find.byKey(DiaryBudgetCardKeys.kcalValue), findsOneWidget);
   });
 
   testWidgets('swiping the page selects the neighbouring day', (tester) async {

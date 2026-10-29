@@ -1,8 +1,10 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
+import 'package:yamt/core/constants/app_budget_card_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 
-/// Loading state for the diary Burn Week card.
+/// Loading state for the diary budget card.
 class DiaryBalanceLoading extends StatelessWidget {
   /// Creates a loading card.
   const new({super.key});
@@ -13,10 +15,16 @@ class DiaryBalanceLoading extends StatelessWidget {
     final baseColor = colors.surfaceContainerHigh;
     final highlightColor = colors.surfaceBright;
 
-    return _ShimmerSkeleton(
-      baseColor: baseColor,
-      highlightColor: highlightColor,
-      child: const _DiaryDailyBalanceSkeleton(),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: FoodLabelColors.of(context).card,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: _ShimmerSkeleton(
+        baseColor: baseColor,
+        highlightColor: highlightColor,
+        child: const _DiaryDailyBalanceSkeleton(),
+      ),
     );
   }
 }
@@ -94,26 +102,104 @@ class _ShimmerSkeletonState extends State<_ShimmerSkeleton>
   }
 }
 
+/// The budget card's shape while it loads: the toggle row, the kcal column
+/// with its line and icon buttons, and the three macros.
 class _DiaryDailyBalanceSkeleton extends StatelessWidget {
   const new();
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SkeletonBlock(width: 96, height: 12),
-        SizedBox(height: AppSpacing.xs),
-        _SkeletonBlock(width: 160, height: 56),
-        SizedBox(height: AppSpacing.lg),
-        _SkeletonBlock(height: AppFoodLabel.rulerTicks + AppFoodLabel.kcalBar),
-        SizedBox(height: AppSpacing.xl),
-        _MacroRowSkeleton(),
-        SizedBox(height: AppSpacing.sm),
-        _MacroRowSkeleton(),
-        SizedBox(height: AppSpacing.sm),
-        _MacroRowSkeleton(),
-      ],
+    return const Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(
+        AppBudgetCard.padding,
+        AppBudgetCard.topPadding,
+        AppBudgetCard.padding,
+        AppBudgetCard.padding,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppBudgetCard.sectionGap,
+        children: [
+          SizedBox(
+            height: AppSizes.minTapTarget,
+            child: Row(
+              spacing: AppBudgetCard.dayTypeGap,
+              children: [
+                Flexible(
+                  child: _SkeletonBlock(
+                    width: 148,
+                    height: AppBudgetCard.viewSwitch,
+                  ),
+                ),
+                Spacer(),
+                _SkeletonBlock(
+                  width: AppBudgetCard.dayButton,
+                  height: AppBudgetCard.dayButton,
+                ),
+                _SkeletonBlock(
+                  width: AppBudgetCard.dayButton,
+                  height: AppBudgetCard.dayButton,
+                ),
+              ],
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppBudgetCard.columnGap,
+            children: [
+              Expanded(
+                flex: AppBudgetCard.kcalColumnFlex,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.xs,
+                  children: [
+                    _SkeletonBlock(
+                      width: 132,
+                      height:
+                          AppBudgetCard.bigNumber *
+                          AppBudgetCard.bigNumberLineHeight,
+                    ),
+                    _SkeletonBlock(width: 96, height: 14),
+                    _SkeletonBlock(height: AppBudgetCard.lineBar),
+                    SizedBox(
+                      height: AppSizes.minTapTarget,
+                      child: Row(
+                        spacing: AppSpacing.md,
+                        children: [
+                          Flexible(
+                            child: _SkeletonBlock(
+                              width: AppBudgetCard.dayButton,
+                              height: AppBudgetCard.dayButton,
+                            ),
+                          ),
+                          Flexible(
+                            child: _SkeletonBlock(
+                              width: AppBudgetCard.dayButton,
+                              height: AppBudgetCard.dayButton,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                flex: AppBudgetCard.macroColumnFlex,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppBudgetCard.macroGap,
+                  children: [
+                    _MacroRowSkeleton(),
+                    _MacroRowSkeleton(),
+                    _MacroRowSkeleton(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -123,12 +209,23 @@ class _MacroRowSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      spacing: AppSpacing.md,
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.xs,
       children: [
-        _SkeletonBlock(width: AppFoodLabel.macroLabelColumn, height: 16),
-        Expanded(child: _SkeletonBlock(height: AppFoodLabel.macroBar)),
-        _SkeletonBlock(width: AppFoodLabel.macroValueColumn, height: 22),
+        Row(
+          children: [
+            Flexible(child: _SkeletonBlock(width: 52, height: 14)),
+            Spacer(),
+            Flexible(
+              child: _SkeletonBlock(
+                width: 44,
+                height: AppBudgetCard.macroValue,
+              ),
+            ),
+          ],
+        ),
+        _SkeletonBlock(height: AppBudgetCard.macroLineBar),
       ],
     );
   }
@@ -143,11 +240,16 @@ class _SkeletonBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // The shimmer paints over this block, so only its shape matters. It is
-    // square like the food label bars.
+    // round like the budget card's lines and buttons.
     return SizedBox(
       width: width,
       height: height,
-      child: ColoredBox(color: Theme.of(context).colorScheme.onSurface),
+      child: DecoratedBox(
+        decoration: ShapeDecoration(
+          color: Theme.of(context).colorScheme.onSurface,
+          shape: const StadiumBorder(),
+        ),
+      ),
     );
   }
 }

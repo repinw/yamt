@@ -2203,14 +2203,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not print weekly check-in debug dump.';
 
   @override
-  String get burnWeekRunOverTitle => 'Run over';
-
-  @override
-  String burnWeekRunRestartsOn(Object date) {
-    return 'Fresh run starts on $date.';
-  }
-
-  @override
   String burnWeekPracticeDayBadge(Object date) {
     return 'Practice day · counts from $date';
   }
@@ -2438,6 +2430,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTodayTitle => 'Today';
 
   @override
+  String get diaryJumpToTodayAction => 'Go to today';
+
+  @override
   String get diaryYesterdayTitle => 'Yesterday';
 
   @override
@@ -2450,7 +2445,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDayTypeTraining => 'Training day';
 
   @override
-  String get diaryDayTypeRest => 'Rest day';
+  String get diaryDayTypeNormal => 'Normal day';
 
   @override
   String get diaryDayTypePause => 'Pause day';
@@ -2459,29 +2454,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDayTypeTrainingShort => 'Training';
 
   @override
-  String get diaryDayTypeRestShort => 'Rest';
+  String get diaryDayTypeNormalShort => 'Normal';
 
   @override
   String get diaryDayTypePauseShort => 'Pause';
-
-  @override
-  String get diaryDayTypeActionsTitle => 'Day type';
-
-  @override
-  String diaryDayTypeTrainingOffsetSubtitle(int kcal) {
-    return '+$kcal kcal compared to a rest day';
-  }
-
-  @override
-  String get diaryDayTypeTrainingSubtitle =>
-      'Training day (calorie target active)';
-
-  @override
-  String get diaryDayTypeRestSubtitle => 'Balanced calorie target for recovery';
-
-  @override
-  String get diaryDayTypePauseSubtitle =>
-      'Neutral day (vacation, illness). Doesn\'t break your streak.';
 
   @override
   String get diaryMealsLoadFailed => 'Meals could not be loaded';
@@ -2714,44 +2690,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBalanceLoadFailed => 'Balance could not be loaded';
 
   @override
-  String get diaryNutritionLoadFailed => 'Nutrition could not be loaded';
-
-  @override
-  String get diaryNutritionTitle => 'Macronutrients';
-
-  @override
   String get diaryBalanceEatenLabel => 'Eaten';
 
   @override
-  String get diaryBalanceLeftTodayLabel => 'Left today';
-
-  @override
   String get diaryBalanceLeftLabel => 'Left';
-
-  @override
-  String get diaryBalanceOverGoalLabel => 'Over goal';
 
   @override
   String get diaryBalanceAfterPlanChip => 'After plan';
 
   @override
   String get diaryBalanceLeftAfterPlanLabel => 'Left after plan';
-
-  @override
-  String diaryBalanceWithoutPlan(String kcal) {
-    return '$kcal without plan';
-  }
-
-  @override
-  String diaryBalanceOverWithoutPlan(String kcal) {
-    return '$kcal over without plan';
-  }
-
-  @override
-  String get diaryBalanceShowDetails => 'Show all numbers';
-
-  @override
-  String get diaryBalanceHideDetails => 'Show fewer numbers';
 
   @override
   String get diaryMealsEmptyTitle => 'Nothing eaten yet';
@@ -2768,44 +2716,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap “Eat” below to add what you want to eat on this day.';
 
   @override
-  String diaryBalanceEatenAmount(String kcal) {
-    return '$kcal eaten';
-  }
-
-  @override
-  String diaryBalanceEatenWithPlanAmount(String kcal) {
-    return '$kcal with plan';
-  }
-
-  @override
-  String diaryBalanceOfTarget(String kcal) {
-    return 'of $kcal';
-  }
-
-  @override
-  String diaryBalanceScaleTarget(String kcal) {
-    return 'Goal $kcal';
-  }
-
-  @override
-  String get diaryMacroLeftSuffix => 'left';
-
-  @override
-  String get diaryMacroOverSuffix => 'over';
-
-  @override
   String diaryMacroEatenOfTarget(String eaten, String target) {
     return '$eaten / $target g';
-  }
-
-  @override
-  String diaryAmountLeft(String amount) {
-    return '$amount left';
-  }
-
-  @override
-  String diaryAmountOver(String amount) {
-    return '$amount over';
   }
 
   @override
@@ -3025,7 +2937,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progressTdeeEmpty => 'The curve starts with your first goal.';
 
   @override
-  String get progressDayTypeTitle => 'Training vs. rest day';
+  String get progressDayTypeTitle => 'Training vs. normal day';
 
   @override
   String progressDayTypeDays(String emoji, String type, int count) {
@@ -3048,7 +2960,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get progressDayTypeEmpty =>
-      'Log a few days to compare training and rest days.';
+      'Log a few days to compare training and normal days.';
 
   @override
   String get progressLoadFailed => 'Could not load this section.';
@@ -3065,14 +2977,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String diaryPreviousDayCarryoverPerDay(String kcal) {
-    return '$kcal per day';
-  }
-
-  @override
   String diaryPreviousDayClosed(String weekday) {
     return '$weekday closed';
   }
+
+  @override
+  String get diaryDayTypeSaveFailed => 'Could not change the day type.';
 
   @override
   String diaryPreviousDayCloseFailed(String weekday) {
@@ -3090,16 +3000,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String diaryBalanceRealEatenLabel(Object kcal) {
-    return 'Real $kcal';
-  }
-
-  @override
-  String diaryBalanceBufferAdjustmentLabel(Object kcal) {
-    return 'Buffer $kcal';
-  }
-
-  @override
   String diaryBalanceRealLeftLabel(Object kcal) {
     return 'Real $kcal';
   }
@@ -3109,16 +3009,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryBalancePauseDaySubtitle => 'Ignored for learning';
-
-  @override
-  String diaryBalanceBaseGoalShort(String value) {
-    return 'Base $value';
-  }
-
-  @override
-  String diaryBalanceCarryoverShort(String value) {
-    return 'Carryover $value';
-  }
 
   @override
   String get diaryBudgetDetailsTitle => 'Daily budget details';
@@ -3138,7 +3028,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Training day adjustment';
 
   @override
-  String get diaryBudgetDetailsRestDayAdjustmentLabel => 'Rest day adjustment';
+  String get diaryBudgetDetailsRestDayAdjustmentLabel =>
+      'Normal day adjustment';
 
   @override
   String get diaryBudgetDetailsBaseGoalLabel => 'Base daily goal';
@@ -4020,7 +3911,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String onboardingTrainingDaysRestResult(int days) {
-    return '🛋️ Rest day ($days days)';
+    return '🛋️ Normal day ($days days)';
   }
 
   @override
@@ -4157,7 +4048,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get introSportSubtitle =>
-      'Every session counts toward your energy use. Training days get it, rest days a little less.';
+      'Every session counts toward your energy use. Training days get it, normal days a little less.';
 
   @override
   String get introWeekDepotTitle => 'Calories per day across the week';
@@ -4172,7 +4063,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get introSummaryDepotHint =>
-      'Your sessions are part of the weekly budget. A training day gets one session more than a rest day.';
+      'Your sessions are part of the weekly budget. A training day gets one session more than a normal day.';
 
   @override
   String get introStartDayTitle => 'When does your first week start?';
@@ -5087,7 +4978,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String profileTrainingBecomesRest(String date) {
-    return '$date becomes a rest day';
+    return '$date becomes a normal day';
   }
 
   @override
@@ -5105,8 +4996,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count other rest days',
-      one: 'Other rest day',
+      other: '$count other normal days',
+      one: 'Other normal day',
     );
     return '$_temp0';
   }
@@ -6504,4 +6395,111 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get progressWeighingHealthReadFailed => 'Could not read Health.';
+
+  @override
+  String get diaryBudgetKcalLeft => 'kcal left';
+
+  @override
+  String get diaryBudgetKcalLeftAfterPlan => 'kcal left after plan';
+
+  @override
+  String get diaryBudgetKcalOver => 'kcal over';
+
+  @override
+  String diaryBudgetOverValue(String kcal) {
+    return '+$kcal';
+  }
+
+  @override
+  String diaryBudgetPauseEaten(String kcal) {
+    return '$kcal kcal eaten';
+  }
+
+  @override
+  String diaryBudgetPausePlanned(String kcal) {
+    return '+ $kcal planned';
+  }
+
+  @override
+  String diaryBudgetMacroLeft(String grams) {
+    return '$grams g';
+  }
+
+  @override
+  String diaryBudgetMacroOver(String grams) {
+    return '+$grams g';
+  }
+
+  @override
+  String get diaryBudgetCarbsLabel => 'Carbs';
+
+  @override
+  String get diaryBudgetViewLeft => 'Left';
+
+  @override
+  String get diaryBudgetViewEaten => 'Eaten';
+
+  @override
+  String diaryBudgetKcalEatenOf(String target) {
+    return 'kcal eaten\nof $target';
+  }
+
+  @override
+  String diaryBudgetKcalWithPlanOf(String target) {
+    return 'kcal with plan\nof $target';
+  }
+
+  @override
+  String diaryBudgetKcalEatenOfTarget(String eaten, String target) {
+    return '$eaten / $target kcal';
+  }
+
+  @override
+  String diaryBudgetMacroEaten(String grams) {
+    return '$grams g eaten';
+  }
+
+  @override
+  String diaryBudgetMacroPlanned(String grams) {
+    return '$grams planned';
+  }
+
+  @override
+  String get diaryBudgetBufferRow => 'Buffer adjustment';
+
+  @override
+  String get diaryBudgetCarryoverRow => 'Carryover from the week';
+
+  @override
+  String get diaryBudgetPlannedCountedRow => 'Planned · counted';
+
+  @override
+  String get diaryBudgetOverRow => 'Over';
+
+  @override
+  String get diaryBudgetAllDays => 'All days';
+
+  @override
+  String get diaryBudgetWeekTitle => 'Day types in the run';
+
+  @override
+  String diaryBudgetRunEndedNotice(String date) {
+    return 'Run ended · new run counts from $date';
+  }
+
+  @override
+  String diaryBudgetWeekDaySemantics(String day, String type) {
+    return '$day: $type, tap to change';
+  }
+
+  @override
+  String diaryBudgetTrainingDayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count training days',
+      one: '1 training day',
+    );
+    return '$_temp0';
+  }
 }

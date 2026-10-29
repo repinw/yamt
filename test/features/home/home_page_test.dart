@@ -37,6 +37,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_today_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_preview_tiles.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
@@ -564,6 +565,33 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('the diary Today button shows on another day and returns', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    final today = normalizeLocalDay(DateTime.now());
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        selectedDiaryDay: addLocalDays(today, -2),
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(DiaryTodayButton.buttonKey));
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomePage)),
+    );
+    expect(container.read(diaryCalendarControllerProvider).selectedDay, today);
+    // On today the button is gone.
+    expect(find.byKey(DiaryTodayButton.buttonKey), findsNothing);
   });
 
   testWidgets('diary calendar sheet Today action returns to the current day', (

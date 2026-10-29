@@ -93,7 +93,7 @@ class _DayTypeContent extends StatelessWidget {
             children: [
               for (final (type, average) in [
                 (DiaryDayType.training, training),
-                (DiaryDayType.rest, rest),
+                (DiaryDayType.normal, rest),
               ])
                 Text(
                   l10n.progressDayTypeDays(
@@ -172,7 +172,7 @@ class _CompareGroup extends StatelessWidget {
           isKcal: isKcal,
         ),
         _CompareBar(
-          type: DiaryDayType.rest,
+          type: DiaryDayType.normal,
           value: rest,
           share: max <= 0 ? 0 : rest / max,
           color: color.withValues(alpha: AppProgress.restBarOpacity),

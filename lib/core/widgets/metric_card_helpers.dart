@@ -27,33 +27,6 @@ class MetricDetailCardShell extends StatelessWidget {
   }
 }
 
-/// Shared skeleton block for metric loading placeholders.
-class MetricSkeletonBlock extends StatelessWidget {
-  /// Creates a skeleton block.
-  const new({required this.height, required this.color, this.width, super.key});
-
-  /// Optional width.
-  final double? width;
-
-  /// Height.
-  final double height;
-
-  /// Fill color.
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(height / 2),
-      ),
-    );
-  }
-}
-
 /// Compact retry content for metric cards.
 class MetricErrorRetryContent extends StatelessWidget {
   /// Creates retry content.

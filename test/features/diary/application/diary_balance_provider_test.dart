@@ -31,7 +31,8 @@ void main() {
         weekOverview: _weekOverview(selectedDay: selectedDay),
       );
 
-      expect(data.scheduledRestartDate, restartDate);
+      expect(data.scheduledRestart?.startDate, restartDate);
+      expect(data.scheduledRestart?.daily.targetKcal, 2000);
       expect(data.practiceDay, isNull);
       expect(data.loadedMetrics, isNull);
     },
@@ -53,9 +54,9 @@ void main() {
       ),
     );
 
-    expect(data.scheduledRestartDate, isNull);
+    expect(data.scheduledRestart, isNull);
     expect(data.practiceDay?.startDate, startDate);
-    expect(data.practiceDay?.futureGoalKcal, 2150);
+    expect(data.practiceDay?.daily.targetKcal, 2150);
     expect(data.loadedMetrics, isNull);
   });
 
@@ -84,7 +85,7 @@ void main() {
         ],
       );
 
-      expect(data.scheduledRestartDate, isNull);
+      expect(data.scheduledRestart, isNull);
       expect(data.practiceDay, isNull);
       expect(data.loadedMetrics?.selectedDay, selectedDay);
       expect(data.loadedMetrics?.daily.realEatenKcal, 800);

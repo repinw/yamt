@@ -1,9 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/utils/date_utils.dart';
-import 'package:yamt/core/widgets/content_visibility.dart';
-import 'package:yamt/core/widgets/value_animation_handoff.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_placeholder.dart';
@@ -22,16 +19,9 @@ const Curve _dayPageAnimationCurve = Curves.easeOutCubic;
 /// finished pages. Pages farther away, which the pager also keeps ready, show
 /// a [DiaryDayPlaceholder] until the pager rests next to them. Building a
 /// whole day while the finger moves would stall the swipe.
-///
-/// Only the selected day counts as visible for its bar animations. The bars
-/// of the other days wait at the values the selected day shows and, once
-/// their day is selected, animate from there to their own values.
 class DiaryDayPager extends ConsumerStatefulWidget {
   /// Creates the day pager.
-  const new({required this.showMacroStrip, super.key});
-
-  /// Whether each day shows the compact macro strip.
-  final bool showMacroStrip;
+  const new({super.key});
 
   @override
   ConsumerState<DiaryDayPager> createState() => _DiaryDayPagerState();
@@ -41,46 +31,27 @@ class _DiaryDayPagerState extends ConsumerState<DiaryDayPager> {
   /// Shared by the day pages so the weekly check-in section exists once.
   final GlobalKey _weeklyCheckInKey = GlobalKey();
 
-  /// Hands the bar values of one day to the next selected day.
-  final ValueAnimationHandoff _barHandoff = ValueAnimationHandoff();
-
-  @override
-  void dispose() {
-    _barHandoff.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final bounds = ref.watch(diaryCalendarBoundsProvider);
-    return ValueAnimationHandoffScope(
-      handoff: _barHandoff,
-      // Moving the earliest day shifts every index, so new pages start on the
-      // selected day. Jumping the old pages there stopped at their last page
-      // while Flutter had not laid out the new page count yet, and that page
-      // selected the wrong day (#817).
-      child: _DayPages(
-        key: ValueKey(bounds.earliestDay),
-        bounds: bounds,
-        showMacroStrip: widget.showMacroStrip,
-        weeklyCheckInKey: _weeklyCheckInKey,
-      ),
+    // Moving the earliest day shifts every index, so new pages start on the
+    // selected day. Jumping the old pages there stopped at their last page
+    // while Flutter had not laid out the new page count yet, and that page
+    // selected the wrong day (#817).
+    return _DayPages(
+      key: ValueKey(bounds.earliestDay),
+      bounds: bounds,
+      weeklyCheckInKey: _weeklyCheckInKey,
     );
   }
 }
 
 /// The pages of [bounds], starting on the selected day.
 class _DayPages extends ConsumerStatefulWidget {
-  const new({
-    required this.bounds,
-    required this.showMacroStrip,
-    required this.weeklyCheckInKey,
-    super.key,
-  });
+  const new({required this.bounds, required this.weeklyCheckInKey, super.key});
 
   /// Page 0 shows their earliest day.
   final DiaryCalendarBounds bounds;
-  final bool showMacroStrip;
   final GlobalKey weeklyCheckInKey;
 
   @override
@@ -140,16 +111,12 @@ class _DayPagesState extends ConsumerState<_DayPages> {
         onPageChanged: (index) => ref
             .read(diaryCalendarControllerProvider.notifier)
             .selectDay(bounds.dayAt(index)),
-        itemBuilder: (context, index) => _SelectedDayVisibility(
-          day: bounds.dayAt(index),
-          child: DiaryRestingDayGate(
-            index: index,
-            restingPage: _restingPage,
-            child: DiaryDayView(
-              day: bounds.dayAt(index),
-              showMacroStrip: widget.showMacroStrip,
-              weeklyCheckInKey: widget.weeklyCheckInKey,
-            ),
+        itemBuilder: (context, index) => DiaryRestingDayGate(
+          index: index,
+          restingPage: _restingPage,
+          child: DiaryDayView(
+            day: bounds.dayAt(index),
+            weeklyCheckInKey: widget.weeklyCheckInKey,
           ),
         ),
       ),
@@ -241,29 +208,5 @@ class _DayPagesState extends ConsumerState<_DayPages> {
         _pageController.jumpToPage(target);
       }
     });
-  }
-}
-
-/// Lets the bar animations of [day] run only while it is the selected day.
-///
-/// [child] keeps its identity, so selecting another day only notifies the
-/// animations below instead of rebuilding the page.
-class _SelectedDayVisibility extends ConsumerWidget {
-  const new({required this.day, required this.child});
-
-  final DateTime day;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isSelected = ref.watch(
-      diaryCalendarControllerProvider.select(
-        (state) => isSameCalendarDay(state.selectedDay, day),
-      ),
-    );
-    return ContentVisibility(
-      isVisible: isSelected && ContentVisibility.of(context),
-      child: child,
-    );
   }
 }

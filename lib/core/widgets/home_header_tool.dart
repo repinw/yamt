@@ -7,7 +7,7 @@ import 'package:yamt/core/widgets/app_ink_well.dart';
 /// Action of a home tab header: a symbol with a small word under it.
 ///
 /// Every header action shows its word, so the header says what it does. The
-/// symbol is usually an [Icon]; the diary day type shows an emoji [Text].
+/// symbol is usually an [Icon], but any widget fits.
 class HomeHeaderTool extends StatelessWidget {
   /// Creates a header tool.
   const new({

@@ -93,7 +93,7 @@ class DiaryWeeklyCheckInTargetsStep extends StatelessWidget {
         DiaryWeeklyCheckInFacts(
           facts: [
             _dayFact(l10n, DiaryDayType.training, trainingDayCount, targets),
-            _dayFact(l10n, DiaryDayType.rest, restDayCount, targets),
+            _dayFact(l10n, DiaryDayType.normal, restDayCount, targets),
           ],
         ),
         const SizedBox(height: AppSpacing.lg),

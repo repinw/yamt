@@ -22,13 +22,13 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_budget_card/diary_budget_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_loading.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_kcal_ruler.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/auth_user_data_key_session.dart';
@@ -57,83 +57,103 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders daily balance without weekly pacing', (tester) async {
+  testWidgets('a normal day shows the kcal left in big numbers', (
+    tester,
+  ) async {
+    await _pumpToday(tester);
+
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,200');
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), 'kcal left');
+    // No plans, so no "After plan"; the details stay closed.
+    expect(find.byKey(DiaryBudgetCardKeys.afterPlanChip), findsNothing);
+    expect(find.byKey(DiaryBudgetCardKeys.ledger), findsNothing);
+    expect(find.byKey(DiaryBudgetCardKeys.notCountingNote), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('"Eaten" shows the kcal eaten of the target until "Left"', (
+    tester,
+  ) async {
+    await _pumpToday(tester, showDetails: true);
+
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.viewSegment(eaten: true)));
+    await tester.pumpAndSettle();
+
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '800');
+    expect(
+      _textOf(tester, DiaryBudgetCardKeys.kcalUnit),
+      'kcal eaten\nof 2,000',
+    );
+    // The unit line already says eaten of target.
+    expect(find.byKey(DiaryBudgetCardKeys.kcalTotal), findsNothing);
+
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.viewSegment(eaten: false)));
+    await tester.pumpAndSettle();
+
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,200');
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), 'kcal left');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('over the target the overage shows in the error color', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 4, 28, 12);
     final selectedDay = DateTime(2026, 4, 27);
 
     await _pumpBalanceCard(
       tester,
-      now: DateTime(2026, 4, 27, 12),
+      now: now,
       selectedDay: selectedDay,
       weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
+      dayTotals: const [0, 0, 0, 0, 0, 0, 2500],
       runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: '2026-4-27',
+        currentWeekStartDayKey: localDayKey(selectedDay),
       ),
+      themeMode: ThemeMode.dark,
     );
 
-    expect(find.text('1,000 eaten'), findsOneWidget);
-    expect(find.text('LEFT TODAY'), findsOneWidget);
-    expect(find.text('Week 1'), findsNothing);
-    expect(find.text('Day 1 of 7'), findsNothing);
-    expect(
-      find.byKey(const ValueKey<String>('diary-balance-safe-zone')),
-      findsNothing,
+    final value = tester.widget<Text>(
+      find.byKey(DiaryBudgetCardKeys.kcalValue),
     );
+    expect(value.data, '+500');
     expect(
-      find.byKey(const ValueKey<String>('diary-balance-consumed-marker')),
-      findsNothing,
+      value.style?.color,
+      Theme.of(tester.element(find.byType(DiaryBalanceCard))).colorScheme.error,
     );
-    expect(_findTextContaining('1,000'), findsWidgets);
-    expect(_findTextContaining('14,000 kcal'), findsNothing);
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), 'kcal over');
   });
 
-  testWidgets('daily ruler fills its first quarter, then the next ones', (
+  testWidgets('a full negative carryover is shown, not clamped', (
     tester,
   ) async {
-    await _pumpDailyProgressBar(tester, eatenKcal: 0, targetKcal: 1200);
+    final now = DateTime(2026, 4, 28, 12);
+    final selectedDay = DateTime(2026, 4, 27);
 
-    await _pumpDailyProgressBar(tester, eatenKcal: 300, targetKcal: 1200);
-    await tester.pump(const Duration(milliseconds: 500));
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: localDayKey(selectedDay),
+      ),
+      todayFlexibleGoalKcal: -838,
+    );
 
-    double firstQuarterFill() {
-      final fill = tester.getRect(
-        find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
-      );
-      final quarter = tester.getRect(
-        find
-            .ancestor(
-              of: find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
-              matching: find.byType(ColoredBox),
-            )
-            .first,
-      );
-      return fill.width / quarter.width;
-    }
-
-    expect(firstQuarterFill(), inExclusiveRange(0, 1));
-
-    await tester.pumpAndSettle();
-
-    expect(firstQuarterFill(), closeTo(1, 0.01));
-    final fills = tester
-        .widgetList<FractionallySizedBox>(
-          find.descendant(
-            of: find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-            matching: find.byType(FractionallySizedBox),
-          ),
-        )
-        .map((box) => box.widthFactor);
-    expect(fills, [1, 0, 0, 0]);
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '+838');
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), 'kcal over');
   });
 
-  testWidgets('pause day shows special balance', (tester) async {
+  testWidgets('a pause day shows its word and what was eaten', (tester) async {
     final today = normalizeLocalDay(DateTime.now());
 
     await _pumpBalanceCard(
       tester,
       selectedDay: today,
       weekStartDate: today,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 20000],
+      dayTotals: const [0, 0, 0, 0, 0, 0, 1531],
       runState: const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: localDayKey(today),
         runWeekNumber: 2,
@@ -141,70 +161,64 @@ void main() {
       isPauseDay: true,
     );
 
-    expect(find.text('Pause day'), findsOneWidget);
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), 'Pause day');
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), '1,531 kcal eaten');
     expect(find.text('Ignored for learning'), findsOneWidget);
+    // A pause day only shows what was eaten.
+    expect(
+      find.byKey(DiaryBudgetCardKeys.viewSegment(eaten: true)),
+      findsNothing,
+    );
+    expect(find.byKey(DiaryBudgetCardKeys.detailsChip), findsOneWidget);
   });
 
-  testWidgets('recoverable over-target state keeps card quiet', (tester) async {
-    final today = normalizeLocalDay(DateTime.now());
+  testWidgets('the details chip opens the ledger and the week', (tester) async {
+    await _pumpToday(tester, showDetails: true);
+
+    expect(find.byKey(DiaryBudgetCardKeys.ledger), findsOneWidget);
+    expect(find.byKey(DiaryBudgetCardKeys.weekStrip), findsOneWidget);
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalTotal), '800 / 2,000 kcal');
+    expect(
+      find.descendant(
+        of: find.byKey(DiaryBudgetCardKeys.ledgerTotal),
+        matching: find.text('1,200'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Base'), findsOneWidget);
+    expect(find.text('−800'), findsOneWidget);
+
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.detailsChip));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(DiaryBudgetCardKeys.ledger), findsNothing);
+    expect(find.byKey(DiaryBudgetCardKeys.weekStrip), findsNothing);
+  });
+
+  testWidgets('"All days" opens the budget sheet', (tester) async {
+    final selectedDay = normalizeLocalDay(DateTime.now());
 
     await _pumpBalanceCard(
       tester,
-      selectedDay: today,
-      weekStartDate: today,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 5000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(today),
-        runWeekNumber: 2,
-      ),
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 800],
+      runState: const BurnWeekRunState.initial(),
+      showDetails: true,
     );
 
-    expect(find.text('Out of safe zone'), findsNothing);
-    expect(find.textContaining('Fasting'), findsNothing);
-  });
+    await tester.ensureVisible(find.byKey(DiaryBudgetCardKeys.allDaysLink));
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.allDaysLink));
+    await tester.pumpAndSettle();
 
-  testWidgets('learning week hides game controls and zone dialogs', (
-    tester,
-  ) async {
-    final today = normalizeLocalDay(DateTime.now());
-    final weekStartDate = addLocalDays(today, -6);
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: weekStartDate,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(weekStartDate),
-      ),
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+      findsOneWidget,
     );
-
-    expect(find.text('Too far below target'), findsNothing);
-    expect(find.byIcon(Icons.stars_rounded), findsNothing);
-    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+    expect(find.text('Daily budget details'), findsOneWidget);
   });
 
-  testWidgets('shows scheduled restart card when next run is pending', (
-    tester,
-  ) async {
-    final today = normalizeLocalDay(DateTime.now());
-    final restartDate = addLocalDays(today, 1);
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: today,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(restartDate),
-      ),
-    );
-
-    expect(find.text('Run over'), findsOneWidget);
-    expect(find.textContaining('Fresh run starts on'), findsOneWidget);
-  });
-
-  testWidgets('shows a practice badge before a future goal start', (
+  testWidgets('a practice day keeps the card and adds a note at the bottom', (
     tester,
   ) async {
     final today = normalizeLocalDay(DateTime.now());
@@ -223,33 +237,142 @@ void main() {
       futureGoalKcal: 1200,
     );
 
-    expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
+    // The day is measured against the goal that starts later.
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '300');
     expect(find.textContaining('Practice day · counts from'), findsOneWidget);
-    // The real daily card measures the day against the goal that starts later.
-    expect(find.text('Base 1,200 kcal'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byKey(DiaryBudgetCardKeys.notCountingNote)).dy,
+      greaterThan(
+        tester.getBottomLeft(find.byKey(DiaryBudgetCardKeys.kcalValue)).dy,
+      ),
+    );
   });
 
-  testWidgets('shows the practice badge for a past day before goal start', (
+  testWidgets('a pending new run shows a note like a practice day', (
     tester,
   ) async {
-    final selectedDay = addLocalDays(DateTime.now(), -7);
-    final startDate = nextLocalDay(selectedDay);
+    final today = normalizeLocalDay(DateTime.now());
+    final restartDate = addLocalDays(today, 1);
 
     await _pumpBalanceCard(
       tester,
-      selectedDay: selectedDay,
-      weekStartDate: startDate,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
-      runState: const BurnWeekRunState.initial(),
-      goalKcal: 0,
-      todayFlexibleGoalKcal: 0,
-      goalStartsInFuture: true,
-      nextGoalStartDate: startDate,
-      futureGoalKcal: 1200,
+      selectedDay: today,
+      weekStartDate: today,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 500],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: localDayKey(restartDate),
+      ),
     );
 
-    expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
-    expect(find.textContaining('Practice day · counts from'), findsOneWidget);
+    expect(find.byKey(DiaryBudgetCardKeys.notCountingNote), findsOneWidget);
+    expect(find.textContaining('Run ended · new run counts from'), findsOne);
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,500');
+  });
+
+  testWidgets('tomorrow closes the day before and offers undo', (tester) async {
+    await _pumpTomorrow(tester, isPreviousDayClosed: false);
+    final repository = _closedDayRepository(tester);
+
+    // The whole of tomorrow is a plan.
+    expect(
+      _textOf(tester, DiaryBudgetCardKeys.kcalUnit),
+      'kcal left after plan',
+    );
+    expect(find.text('Close Sunday'), findsOneWidget);
+    expect(find.byKey(DiaryBudgetCardKeys.reopenPreviousDay), findsNothing);
+
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.closePreviousDay));
+    await tester.pumpAndSettle();
+
+    expect(repository.readClosedDay(), DateTime(2026, 4, 26));
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(repository.readClosedDay(), isNull);
+  });
+
+  testWidgets('tomorrow reopens the closed day before', (tester) async {
+    await _pumpTomorrow(tester, isPreviousDayClosed: true);
+    final repository = _closedDayRepository(tester);
+    await repository.saveClosedDay(DateTime(2026, 4, 26));
+
+    // Closed, tomorrow counts like a started day.
+    expect(find.text('Sunday closed'), findsOneWidget);
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,318');
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), 'kcal left');
+
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.reopenPreviousDay));
+    await tester.pumpAndSettle();
+
+    expect(repository.readClosedDay(), isNull);
+  });
+
+  testWidgets('a closed tomorrow counts its plans until the chip is off', (
+    tester,
+  ) async {
+    await _pumpTomorrow(
+      tester,
+      isPreviousDayClosed: true,
+      showDetails: true,
+      plans: [_breakfastPlan],
+    );
+
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,018');
+    expect(
+      _textOf(tester, DiaryBudgetCardKeys.kcalUnit),
+      'kcal left after plan',
+    );
+    expect(find.text('Planned · counted'), findsOneWidget);
+    expect(
+      _textOf(tester, DiaryBudgetCardKeys.kcalTotal),
+      '1,200 / 2,218 kcal\n300 planned',
+    );
+
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.afterPlanChip));
+    await tester.pumpAndSettle();
+
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,318');
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), 'kcal left');
+    expect(find.text('Planned · counted'), findsNothing);
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalTotal), '900 / 2,218 kcal');
+  });
+
+  testWidgets('"Eaten" counts the plans in while "After plan" is on', (
+    tester,
+  ) async {
+    await _pumpTomorrow(
+      tester,
+      isPreviousDayClosed: true,
+      plans: [_breakfastPlan],
+    );
+
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.viewSegment(eaten: true)));
+    await tester.pumpAndSettle();
+
+    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,200');
+    expect(
+      _textOf(tester, DiaryBudgetCardKeys.kcalUnit),
+      'kcal with plan\nof 2,218',
+    );
+  });
+
+  testWidgets('a day without a previous-day carryover offers no close', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 4, 26, 20);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+    );
+
+    expect(find.byKey(DiaryBudgetCardKeys.closePreviousDay), findsNothing);
   });
 
   testWidgets('keeps Burn Week live sync subscribed on non-live days', (
@@ -274,476 +397,6 @@ void main() {
     expect(syncWatchCount, greaterThan(0));
   });
 
-  testWidgets('hides weekly label on non-live days without counters', (
-    tester,
-  ) async {
-    final selectedDay = addLocalDays(DateTime.now(), -1);
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: null,
-      ),
-    );
-
-    expect(find.text('Day 1 of 7'), findsNothing);
-    expect(find.byIcon(Icons.stars_rounded), findsNothing);
-    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
-  });
-
-  testWidgets('renders dark over-goal state', (tester) async {
-    final now = DateTime(2026, 4, 28, 12);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 2500],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(selectedDay),
-      ),
-      themeMode: ThemeMode.dark,
-    );
-
-    expect(find.text('2,500 eaten'), findsOneWidget);
-    expect(find.text('OVER GOAL'), findsOneWidget);
-    expect(find.text('LEFT TODAY'), findsNothing);
-    expect(find.text('500'), findsOneWidget);
-    expect(_findTextContaining('-500'), findsNothing);
-  });
-
-  testWidgets('decides future days from the clock provider', (tester) async {
-    // With the real clock this day lies in the past and shows LEFT TODAY.
-    final now = DateTime(2026, 4, 26, 12);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(selectedDay),
-      ),
-    );
-
-    expect(find.text('PLANNED'), findsOneWidget);
-    expect(find.text('LEFT TODAY'), findsNothing);
-  });
-
-  testWidgets('quiet future day shows the planned kcal of its goal', (
-    tester,
-  ) async {
-    final now = DateTime(2026, 4, 26, 12);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(selectedDay),
-      ),
-      showDetails: false,
-    );
-
-    expect(find.text('PLANNED'), findsOneWidget);
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('of 2,000'), findsOneWidget);
-    expect(_findTextContaining('Base '), findsNothing);
-  });
-
-  testWidgets('future pause day shows the pause word instead of the goal', (
-    tester,
-  ) async {
-    final now = DateTime(2026, 4, 26, 12);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 600],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(selectedDay),
-      ),
-      isPauseDay: true,
-      showDetails: false,
-    );
-
-    expect(find.text('PLANNED'), findsOneWidget);
-    expect(find.text('600'), findsOneWidget);
-    expect(
-      tester.widget<Text>(find.byKey(DiaryBalanceCardKeys.kcalHeadTarget)).data,
-      'Pause day',
-    );
-  });
-
-  testWidgets('tomorrow closes the day before and offers undo', (tester) async {
-    final now = DateTime(2026, 4, 26, 20);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: addLocalDays(selectedDay, -3),
-      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
-      runState: const BurnWeekRunState.initial(),
-      showDetails: false,
-      previousDayCarryoverKcal: 218,
-    );
-    final repository = _closedDayRepository(tester);
-
-    expect(find.text('Close Sunday'), findsOneWidget);
-    expect(find.text('+218 kcal per day'), findsOneWidget);
-    expect(find.byKey(DiaryBalanceCardKeys.previousDayClosed), findsNothing);
-
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.previousDayCloseButton));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Sunday closed'), findsOneWidget);
-    expect(repository.readClosedDay(), DateTime(2026, 4, 26));
-
-    await tester.tap(find.text('Undo'));
-    await tester.pumpAndSettle();
-
-    expect(repository.readClosedDay(), isNull);
-  });
-
-  testWidgets('tomorrow reopens the closed day before', (tester) async {
-    final now = DateTime(2026, 4, 26, 20);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: addLocalDays(selectedDay, -3),
-      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
-      runState: const BurnWeekRunState.initial(),
-      showDetails: false,
-      todayFlexibleGoalKcal: 2218,
-      previousDayCarryoverKcal: 218,
-      isPreviousDayClosed: true,
-    );
-    final repository = _closedDayRepository(tester);
-    await repository.saveClosedDay(DateTime(2026, 4, 26));
-
-    expect(find.byKey(DiaryBalanceCardKeys.previousDayClosed), findsOneWidget);
-    expect(find.text('Sunday closed'), findsOneWidget);
-
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.previousDayReopenButton));
-    await tester.pumpAndSettle();
-
-    expect(repository.readClosedDay(), isNull);
-  });
-
-  testWidgets('tomorrow counts like a started day once the day before is '
-      'closed', (tester) async {
-    final now = DateTime(2026, 4, 26, 20);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: addLocalDays(selectedDay, -3),
-      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
-      runState: const BurnWeekRunState.initial(),
-      todayFlexibleGoalKcal: 2218,
-      previousDayCarryoverKcal: 218,
-      isPreviousDayClosed: true,
-    );
-
-    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'LEFT');
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '1,318');
-    expect(find.byKey(DiaryBalanceCardKeys.kcalHeadTarget), findsNothing);
-    // Its carryover comes from finished days, so the budget sheet explains it.
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('a closed tomorrow counts its plans until the chip is off', (
-    tester,
-  ) async {
-    final now = DateTime(2026, 4, 26, 20);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: addLocalDays(selectedDay, -3),
-      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
-      runState: const BurnWeekRunState.initial(),
-      todayFlexibleGoalKcal: 2218,
-      previousDayCarryoverKcal: 218,
-      isPreviousDayClosed: true,
-      showDetails: false,
-      plans: [
-        CalorieEntry.create(
-          id: 'plan-breakfast',
-          userId: 'user-1',
-          name: 'Brötchen',
-          mealType: MealType.breakfast,
-          consumedAmount: 100,
-          consumedUnit: ConsumedUnit.grams,
-          per100Kcal: 300,
-          per100Protein: 10,
-          per100Carbs: 50,
-          per100Fat: 5,
-          loggedAt: selectedDay.add(const Duration(hours: 8)),
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ],
-    );
-
-    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'LEFT AFTER PLAN');
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '1,018');
-    expect(
-      textOf(DiaryBalanceCardKeys.kcalHeadWithoutPlan),
-      '1,318 without plan',
-    );
-
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.afterPlanChip));
-    await tester.pumpAndSettle();
-
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'LEFT');
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '1,318');
-    expect(find.byKey(DiaryBalanceCardKeys.kcalHeadWithoutPlan), findsNothing);
-    // The chip does not open the details.
-    expect(_findTextContaining(' eaten'), findsNothing);
-  });
-
-  testWidgets('the details count the plans in what is eaten by plan', (
-    tester,
-  ) async {
-    final now = DateTime(2026, 4, 26, 20);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: addLocalDays(selectedDay, -3),
-      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
-      runState: const BurnWeekRunState.initial(),
-      todayFlexibleGoalKcal: 2218,
-      previousDayCarryoverKcal: 218,
-      isPreviousDayClosed: true,
-      plans: [
-        CalorieEntry.create(
-          id: 'plan-breakfast',
-          userId: 'user-1',
-          name: 'Brötchen',
-          mealType: MealType.breakfast,
-          consumedAmount: 100,
-          consumedUnit: ConsumedUnit.grams,
-          per100Kcal: 300,
-          per100Protein: 10,
-          per100Carbs: 50,
-          per100Fat: 5,
-          loggedAt: selectedDay.add(const Duration(hours: 8)),
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ],
-    );
-
-    expect(find.text('1,200 with plan'), findsOneWidget);
-
-    // The budget details follow the card.
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton));
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyBudgetPlannedRow),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: find.byKey(DiaryBalanceCardKeys.dailyBudgetLeftRow),
-        matching: find.text('Left after plan'),
-      ),
-      findsOneWidget,
-    );
-    await tester.tap(find.byIcon(Icons.close_rounded));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.afterPlanChip));
-    await tester.pumpAndSettle();
-
-    expect(find.text('900 eaten'), findsOneWidget);
-    expect(find.text('1,200 with plan'), findsNothing);
-  });
-
-  testWidgets('a day without a previous-day carryover offers no close', (
-    tester,
-  ) async {
-    final now = DateTime(2026, 4, 26, 20);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
-      runState: const BurnWeekRunState.initial(),
-    );
-
-    expect(
-      find.byKey(DiaryBalanceCardKeys.previousDayCloseButton),
-      findsNothing,
-    );
-  });
-
-  testWidgets('quiet card shows only what is left and toggles on tap', (
-    tester,
-  ) async {
-    final now = DateTime(2026, 4, 28, 12);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1200],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(selectedDay),
-      ),
-      showDetails: false,
-    );
-
-    // A past day says what was left without "today".
-    expect(find.text('LEFT'), findsOneWidget);
-    expect(_findTextContaining(' eaten'), findsNothing);
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
-      findsNothing,
-    );
-
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.kcalHeadLabel));
-    await tester.pumpAndSettle();
-
-    expect(find.text('1,200 eaten'), findsOneWidget);
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.kcalHeadLabel));
-    await tester.pumpAndSettle();
-
-    expect(_findTextContaining(' eaten'), findsNothing);
-  });
-
-  testWidgets('renders future non-live day snapshot', (tester) async {
-    final selectedDay = addLocalDays(DateTime.now(), 1);
-    final weekStartDate = addLocalDays(selectedDay, -6);
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: weekStartDate,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: null,
-      ),
-    );
-
-    expect(find.text('PLANNED'), findsOneWidget);
-    expect(find.text('1,000'), findsOneWidget);
-    expect(find.text('of 2,000'), findsOneWidget);
-    // No carryover on a future day, so nothing to explain.
-    expect(_findTextContaining('Base '), findsNothing);
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
-      findsNothing,
-    );
-    expect(_findTextContaining(' eaten'), findsNothing);
-    expect(find.text('LEFT TODAY'), findsNothing);
-    expect(find.text('Day 7 of 7'), findsNothing);
-    expect(find.byIcon(Icons.stars_rounded), findsNothing);
-    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
-  });
-
-  testWidgets('keeps live and non-live balance cards the same height', (
-    tester,
-  ) async {
-    final today = normalizeLocalDay(DateTime.now());
-    final nonLiveDay = addLocalDays(today, -1);
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: today,
-      weekStartDate: today,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(today),
-        runWeekNumber: 2,
-      ),
-    );
-    final liveHeight = tester.getSize(find.byType(DiaryBalanceCard)).height;
-    expect(find.byIcon(Icons.stars_rounded), findsNothing);
-    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: nonLiveDay,
-      weekStartDate: nonLiveDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: null,
-      ),
-    );
-    final nonLiveHeight = tester.getSize(find.byType(DiaryBalanceCard)).height;
-    expect(find.byIcon(Icons.stars_rounded), findsNothing);
-    expect(find.byIcon(Icons.favorite_rounded), findsNothing);
-    expect(liveHeight, nonLiveHeight);
-  });
-
-  testWidgets('shows full negative carryover instead of clamping left kcal', (
-    tester,
-  ) async {
-    final now = DateTime(2026, 4, 28, 12);
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      now: now,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 0],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: localDayKey(selectedDay),
-      ),
-      todayFlexibleGoalKcal: -838,
-    );
-
-    expect(find.text('OVER GOAL'), findsOneWidget);
-    expect(find.text('838'), findsOneWidget);
-    expect(find.text('-838'), findsNothing);
-  });
-
   testWidgets('shows retry content when week overview fails', (tester) async {
     final selectedDay = addLocalDays(DateTime.now(), -1);
 
@@ -763,51 +416,6 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(DiaryBalanceCardKeys.retryButton), findsOneWidget);
-  });
-
-  testWidgets('tapping budget details button opens budget details sheet', (
-    tester,
-  ) async {
-    final selectedDay = normalizeLocalDay(DateTime.now());
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 800],
-      runState: const BurnWeekRunState.initial(),
-    );
-
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
-      findsOneWidget,
-    );
-    expect(find.text('Daily budget details'), findsOneWidget);
-  });
-
-  testWidgets('renders daily balance subtitle segments with loop', (
-    tester,
-  ) async {
-    final selectedDay = normalizeLocalDay(DateTime.now());
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 800],
-      runState: const BurnWeekRunState.initial(),
-      baseGoalKcal: 2000,
-    );
-
-    expect(_findTextContaining('Base 2,000 kcal'), findsOneWidget);
   });
 }
 
@@ -832,7 +440,7 @@ Future<void> _pumpBalanceCard(
   bool isPauseDay = false,
   ValueChanged<DateTime>? onRestartRunFrom,
   bool weekOverviewThrows = false,
-  bool showDetails = true,
+  bool showDetails = false,
   DateTime? now,
   double? previousDayCarryoverKcal,
   bool isPreviousDayClosed = false,
@@ -859,11 +467,7 @@ Future<void> _pumpBalanceCard(
   addTearDown(repository.dispose);
   when(() => auth.currentUser).thenReturn(null);
 
-  final preferences = MemoryAppPreferences(
-    initialStrings: showDetails
-        ? const {'diary_balance_details_v1': 'shown'}
-        : null,
-  );
+  final preferences = MemoryAppPreferences();
   await tester.pumpWidget(
     ProviderScope(
       observers: observers,
@@ -916,7 +520,7 @@ Future<void> _pumpBalanceCard(
         darkTheme: ThemeData.dark(),
         themeMode: themeMode,
         home: Scaffold(
-          body: Padding(
+          body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: DiaryBalanceCard(selectedDay: normalizedSelectedDay),
           ),
@@ -929,25 +533,10 @@ Future<void> _pumpBalanceCard(
   } else {
     await tester.pump();
   }
-}
-
-Future<void> _pumpDailyProgressBar(
-  WidgetTester tester, {
-  required double eatenKcal,
-  required double targetKcal,
-}) async {
-  await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 300,
-            child: DiaryKcalRuler(eatenKcal: eatenKcal, targetKcal: targetKcal),
-          ),
-        ),
-      ),
-    ),
-  );
+  if (showDetails) {
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.detailsChip));
+    await tester.pumpAndSettle();
+  }
 }
 
 CalorieWeekOverview _weekOverview({
@@ -1017,9 +606,67 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-Finder _findTextContaining(String text) {
-  return find.textContaining(text, findRichText: true);
+/// Today, 2026-04-27 at noon, with 800 kcal eaten of 2,000.
+Future<void> _pumpToday(WidgetTester tester, {bool showDetails = false}) {
+  final day = DateTime(2026, 4, 27);
+  return _pumpBalanceCard(
+    tester,
+    now: DateTime(2026, 4, 27, 12),
+    selectedDay: day,
+    weekStartDate: day,
+    dayTotals: const [0, 0, 0, 0, 0, 0, 800],
+    runState: const BurnWeekRunState.initial().copyWith(
+      currentWeekStartDayKey: localDayKey(day),
+    ),
+    baseGoalKcal: 2000,
+    showDetails: showDetails,
+  );
 }
+
+/// Tomorrow, 2026-04-27, seen on Sunday evening with 900 kcal planned and a
+/// carryover of 218 kcal per day once Sunday is closed.
+Future<void> _pumpTomorrow(
+  WidgetTester tester, {
+  required bool isPreviousDayClosed,
+  bool showDetails = false,
+  List<CalorieEntry> plans = const [],
+}) {
+  final day = DateTime(2026, 4, 27);
+  return _pumpBalanceCard(
+    tester,
+    now: DateTime(2026, 4, 26, 20),
+    selectedDay: day,
+    weekStartDate: addLocalDays(day, -3),
+    dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+    runState: const BurnWeekRunState.initial(),
+    todayFlexibleGoalKcal: isPreviousDayClosed ? 2218 : 2000,
+    previousDayCarryoverKcal: 218,
+    isPreviousDayClosed: isPreviousDayClosed,
+    showDetails: showDetails,
+    plans: plans,
+  );
+}
+
+String _textOf(WidgetTester tester, Key key) {
+  final text = tester.widget<Text>(find.byKey(key));
+  return text.data ?? text.textSpan!.toPlainText();
+}
+
+final _breakfastPlan = CalorieEntry.create(
+  id: 'plan-breakfast',
+  userId: 'user-1',
+  name: 'Brötchen',
+  mealType: MealType.breakfast,
+  consumedAmount: 100,
+  consumedUnit: ConsumedUnit.grams,
+  per100Kcal: 300,
+  per100Protein: 10,
+  per100Carbs: 50,
+  per100Fat: 5,
+  loggedAt: DateTime(2026, 4, 27, 8),
+  createdAt: DateTime(2026, 4, 26, 20),
+  updatedAt: DateTime(2026, 4, 26, 20),
+);
 
 ClosedDayRepository _closedDayRepository(WidgetTester tester) =>
     ProviderScope.containerOf(tester.element(find.byType(DiaryBalanceCard)))

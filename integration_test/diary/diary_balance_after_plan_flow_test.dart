@@ -20,12 +20,13 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
+import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_nutrition_bars/diary_nutrition_bars_content.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -165,7 +166,7 @@ void main() {
         ),
       ],
     );
-    final chip = find.byKey(DiaryBalanceCardKeys.afterPlanChip);
+    final chip = find.byKey(DiaryBudgetCardKeys.afterPlanChip);
     await _pumpUntil(
       tester,
       () => chip.evaluate().length == 1,
@@ -173,22 +174,41 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
-    // "Nach Plan" is on by default; a tap on the head shows the details.
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '500');
-    expect(find.byKey(DiaryBalanceCardKeys.kcalHeadEaten), findsNothing);
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.kcalHeadValue));
+    String textOf(Key key) {
+      final text = tester.widget<Text>(find.byKey(key));
+      return text.data ?? text.textSpan!.toPlainText();
+    }
+
+    String macroOf(DiaryBudgetMacroKind kind) =>
+        textOf(DiaryBudgetCardKeys.macroTotal(kind));
+    Future<void> openAllDays() async {
+      await tester.ensureVisible(find.byKey(DiaryBudgetCardKeys.allDaysLink));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(DiaryBudgetCardKeys.allDaysLink));
+      await tester.pumpAndSettle();
+    }
+
+    // "Nach Plan" is on by default; the details chip shows the totals.
+    expect(textOf(DiaryBudgetCardKeys.kcalValue), '500');
+    expect(textOf(DiaryBudgetCardKeys.kcalUnit), 'kcal übrig nach Plan');
+    expect(find.byKey(DiaryBudgetCardKeys.ledger), findsNothing);
+    await tester.tap(find.byKey(DiaryBudgetCardKeys.detailsChip));
     await tester.pumpAndSettle();
 
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadEaten), '1.500 mit Plan');
     // The default split of 2,000 kcal: 156 g protein, 200 g carbs, 64 g fat.
-    expect(textOf(DiaryNutritionBarsContent.proteinTotalKey), '70 / 156 g');
-    expect(textOf(DiaryNutritionBarsContent.carbsTotalKey), '160 / 200 g');
-    expect(textOf(DiaryNutritionBarsContent.fatTotalKey), '40 / 64 g');
+    expect(macroOf(DiaryBudgetMacroKind.protein), '70 / 156 g\n20 geplant');
+    expect(macroOf(DiaryBudgetMacroKind.carbs), '160 / 200 g\n60 geplant');
+    expect(macroOf(DiaryBudgetMacroKind.fat), '40 / 64 g\n10 geplant');
+    expect(
+      find.descendant(
+        of: find.byKey(DiaryBudgetCardKeys.ledgerTotal),
+        matching: find.text('Übrig nach Plan'),
+      ),
+      findsOneWidget,
+    );
 
-    // The budget details count the plans the same way.
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton));
-    await tester.pumpAndSettle();
+    // The budget sheet counts the plans the same way.
+    await openAllDays();
     expect(
       find.byKey(DiaryBalanceCardKeys.dailyBudgetPlannedRow),
       findsOneWidget,
@@ -203,18 +223,19 @@ void main() {
     await tester.tap(find.byIcon(Icons.close_rounded));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(chip);
+    await tester.pumpAndSettle();
     await tester.tap(chip);
     await tester.pumpAndSettle();
 
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '1.000');
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadEaten), '1.000 gegessen');
-    expect(textOf(DiaryNutritionBarsContent.proteinTotalKey), '50 / 156 g');
-    expect(textOf(DiaryNutritionBarsContent.carbsTotalKey), '100 / 200 g');
-    expect(textOf(DiaryNutritionBarsContent.fatTotalKey), '30 / 64 g');
+    expect(textOf(DiaryBudgetCardKeys.kcalValue), '1.000');
+    expect(textOf(DiaryBudgetCardKeys.kcalUnit), 'kcal übrig');
+    expect(macroOf(DiaryBudgetMacroKind.protein), '50 / 156 g');
+    expect(macroOf(DiaryBudgetMacroKind.carbs), '100 / 200 g');
+    expect(macroOf(DiaryBudgetMacroKind.fat), '30 / 64 g');
 
-    // Without "Nach Plan" the budget details stay at what was eaten.
-    await tester.tap(find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton));
-    await tester.pumpAndSettle();
+    // Without "Nach Plan" the budget sheet stays at what was eaten.
+    await openAllDays();
     expect(
       find.byKey(DiaryBalanceCardKeys.dailyBudgetPlannedRow),
       findsNothing,
@@ -245,7 +266,7 @@ void main() {
         ),
       ],
     );
-    final chip = find.byKey(DiaryBalanceCardKeys.afterPlanChip);
+    final chip = find.byKey(DiaryBudgetCardKeys.afterPlanChip);
     await _pumpUntil(
       tester,
       () => chip.evaluate().length == 1,
@@ -303,9 +324,9 @@ void main() {
       findsOneWidget,
     );
     // Nothing to count, so no "Nach Plan".
-    expect(find.byKey(DiaryBalanceCardKeys.afterPlanChip), findsNothing);
+    expect(find.byKey(DiaryBudgetCardKeys.afterPlanChip), findsNothing);
     expect(
-      tester.widget<Text>(find.byKey(DiaryBalanceCardKeys.kcalHeadValue)).data,
+      tester.widget<Text>(find.byKey(DiaryBudgetCardKeys.kcalValue)).data,
       '1.000',
     );
 

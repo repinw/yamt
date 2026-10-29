@@ -268,7 +268,7 @@ void main() {
 
         expect(find.text('Base goal (weekly average)'), findsOneWidget);
         expect(find.text('2,553 kcal'), findsOneWidget);
-        expect(find.text('Rest day adjustment'), findsOneWidget);
+        expect(find.text('Normal day adjustment'), findsOneWidget);
         expect(find.text('-150 kcal'), findsOneWidget);
         expect(find.text('Base daily goal'), findsOneWidget);
         expect(find.text('2,403 kcal'), findsOneWidget);

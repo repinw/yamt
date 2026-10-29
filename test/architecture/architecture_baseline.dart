@@ -118,8 +118,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/domain/calorie_goal_transition_helpers.dart': 1,
     'lib/features/calories/presentation/widgets/calorie_entry_editor_flow_handler.dart':
         1,
-    'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
-        1,
     'lib/features/home_widget/application/home_widget_action_uri_codec.dart': 1,
     'lib/features/home_widget/data/home_widget_plugin_bridge.dart': 1,
     'lib/features/household/application/household_access_recovery_utils.dart':

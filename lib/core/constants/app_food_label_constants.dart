@@ -96,13 +96,6 @@ abstract final class AppFoodLabel {
   /// Length of one dash of a dashed line.
   static const double dash = 6;
 
-  /// Height of the diary kcal bar under the ruler.
-  static const double kcalBar = 14;
-
-  /// Opacity of each quarter of the diary kcal bar, from the first to the
-  /// last. Each quarter is a lighter step of the accent.
-  static const List<double> kcalQuarterAlphas = [1, 0.74, 0.52, 0.34];
-
   /// Height of the camera tile that opens the AI food estimate.
   static const double cameraTile = 180;
 
@@ -111,18 +104,6 @@ abstract final class AppFoodLabel {
 
   /// Round camera badge in the tile that adds one more photo.
   static const double cameraBadgeSmall = 40;
-
-  /// Height of a diary macro bar.
-  static const double macroBar = 8;
-
-  /// Gap between the segments of a diary macro bar.
-  static const double macroSegmentGap = 3;
-
-  /// Width of the label column of a diary macro row.
-  static const double macroLabelColumn = 58;
-
-  /// Width of the value column of a diary macro row.
-  static const double macroValueColumn = 112;
 
   /// Highest HSL lightness of macro colored text on light paper, so bright
   /// macro colors such as the fat yellow stay readable.

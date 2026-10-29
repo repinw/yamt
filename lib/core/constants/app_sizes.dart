@@ -57,15 +57,6 @@ abstract final class AppSizes {
   /// Max width for settings-style content columns.
   static const double narrowContentMaxWidth = 560;
 
-  /// Height of the thin progress bars in the diary macro strip.
-  static const double stripProgressBarHeight = 4;
-
-  /// Stroke width of the diagonal stripes that mark a macro's overage.
-  static const double overflowStripeWidth = 1.5;
-
-  /// Horizontal distance between the overage stripes.
-  static const double overflowStripeSpacing = 4;
-
   /// Border width that separates a count badge from the image below it.
   static const double badgeBorderWidth = 2;
 
@@ -105,12 +96,6 @@ abstract final class AppSizes {
 
   /// Icon size for segmented controls.
   static const double segmentedControlIcon = 16;
-
-  /// Icon size for compact metric labels.
-  static const double compactMetricIcon = 16;
-
-  /// Gap between compact metric icons and labels.
-  static const double compactMetricIconLabelGap = 4;
 
   /// Top gap above compact metric values.
   static const double compactMetricValueTopGap = 6;
