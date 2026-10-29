@@ -91,6 +91,7 @@ flutter:
   assets:
     - assets/fonts/PlusJakartaSans-OFL.txt
     - assets/fonts/JetBrainsMono-OFL.txt
+    - assets/fonts/Geist-OFL.txt
     - assets/whats_new/
   fonts:
     - family: PlusJakartaSans
@@ -104,6 +105,18 @@ flutter:
         - asset: assets/fonts/PlusJakartaSans-Bold.ttf
           weight: 700
         - asset: assets/fonts/PlusJakartaSans-ExtraBold.ttf
+          weight: 800
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Geist-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Geist-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Geist-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Geist-ExtraBold.ttf
           weight: 800
     - family: JetBrainsMono
       fonts:

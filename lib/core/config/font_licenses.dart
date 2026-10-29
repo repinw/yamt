@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 const _fontLicenses = [
   ('Plus Jakarta Sans', 'assets/fonts/PlusJakartaSans-OFL.txt'),
   ('JetBrains Mono', 'assets/fonts/JetBrainsMono-OFL.txt'),
+  ('Geist', 'assets/fonts/Geist-OFL.txt'),
 ];
 
 /// Adds the licenses of the bundled fonts to the app's license page.
