@@ -1873,6 +1873,21 @@
   "diaryDashboardDone": "Done",
   "diaryDashboardReset": "Reset",
   "diaryDashboardAddTile": "Add tile",
+  "diaryDashboardTileMeals": "Meals",
+  "diaryDashboardMealsModeBars": "Bars",
+  "diaryDashboardMealsModeList": "List",
+  "diaryDashboardTileOverdue": "Open plans",
+  "diaryDashboardOverdueModeCount": "Count",
+  "diaryDashboardOverdueModeDays": "Days",
+  "diaryDashboardOverdueDays": "{count, plural, =1{day with open plans} other{days with open plans}}",
+  "@diaryDashboardOverdueDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDashboardOverdueNone": "No open plans",
   "diaryDashboardTileMenu": "Tile options",
   "diaryDashboardResizeTile": "Resize",
   "diaryDashboardTileWeek": "Week",

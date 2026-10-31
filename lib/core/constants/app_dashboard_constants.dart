@@ -19,6 +19,19 @@ abstract final class AppDashboard {
   /// Gap between the icon and the text of a tile caption.
   static const double captionGap = 4;
 
+  /// Size of the main icon of a small status tile, such as the overdue
+  /// plans tile.
+  static const double statusIcon = 24;
+
+  /// Share of a meal row in the meals tile that the meal name takes.
+  static const int mealNameFlex = 2;
+
+  /// Share of a meal row in the meals tile that the kcal bar takes.
+  static const int mealBarFlex = 3;
+
+  /// Share of a meal row in the meals tile that the kcal number takes.
+  static const int mealNumberFlex = 2;
+
   /// Diameter of the round edit buttons on a tile in edit mode.
   static const double editButtonSize = 28;
 

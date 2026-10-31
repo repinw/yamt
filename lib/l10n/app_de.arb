@@ -1579,6 +1579,21 @@
   "diaryDashboardDone": "Fertig",
   "diaryDashboardReset": "Zurücksetzen",
   "diaryDashboardAddTile": "Kachel hinzufügen",
+  "diaryDashboardTileMeals": "Mahlzeiten",
+  "diaryDashboardMealsModeBars": "Balken",
+  "diaryDashboardMealsModeList": "Liste",
+  "diaryDashboardTileOverdue": "Offene Pläne",
+  "diaryDashboardOverdueModeCount": "Anzahl",
+  "diaryDashboardOverdueModeDays": "Tage",
+  "diaryDashboardOverdueDays": "{count, plural, =1{Tag mit offenen Plänen} other{Tage mit offenen Plänen}}",
+  "@diaryDashboardOverdueDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDashboardOverdueNone": "Keine offenen Pläne",
   "diaryDashboardTileMenu": "Kachel anpassen",
   "diaryDashboardResizeTile": "Größe ändern",
   "diaryDashboardTileWeek": "Woche",

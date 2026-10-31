@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_budget_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_day_type_tile.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_meals_tile.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_overdue_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_week_tile.dart';
 
 part 'diary_dashboard_catalog.g.dart';
@@ -13,6 +15,8 @@ const diaryDashboardCatalog = <DiaryDashboardTile>[
   diaryBudgetTile,
   diaryWeekTile,
   diaryDayTypeTile,
+  diaryMealsTile,
+  diaryOverdueTile,
 ];
 
 /// The tiles the dashboard offers: the [diaryDashboardCatalog].

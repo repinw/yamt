@@ -3151,6 +3151,38 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryDashboardAddTile => 'Kachel hinzufügen';
 
   @override
+  String get diaryDashboardTileMeals => 'Mahlzeiten';
+
+  @override
+  String get diaryDashboardMealsModeBars => 'Balken';
+
+  @override
+  String get diaryDashboardMealsModeList => 'Liste';
+
+  @override
+  String get diaryDashboardTileOverdue => 'Offene Pläne';
+
+  @override
+  String get diaryDashboardOverdueModeCount => 'Anzahl';
+
+  @override
+  String get diaryDashboardOverdueModeDays => 'Tage';
+
+  @override
+  String diaryDashboardOverdueDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tage mit offenen Plänen',
+      one: 'Tag mit offenen Plänen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryDashboardOverdueNone => 'Keine offenen Pläne';
+
+  @override
   String get diaryDashboardTileMenu => 'Kachel anpassen';
 
   @override

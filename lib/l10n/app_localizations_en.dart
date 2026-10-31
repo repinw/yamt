@@ -3094,6 +3094,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDashboardAddTile => 'Add tile';
 
   @override
+  String get diaryDashboardTileMeals => 'Meals';
+
+  @override
+  String get diaryDashboardMealsModeBars => 'Bars';
+
+  @override
+  String get diaryDashboardMealsModeList => 'List';
+
+  @override
+  String get diaryDashboardTileOverdue => 'Open plans';
+
+  @override
+  String get diaryDashboardOverdueModeCount => 'Count';
+
+  @override
+  String get diaryDashboardOverdueModeDays => 'Days';
+
+  @override
+  String diaryDashboardOverdueDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'days with open plans',
+      one: 'day with open plans',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryDashboardOverdueNone => 'No open plans';
+
+  @override
   String get diaryDashboardTileMenu => 'Tile options';
 
   @override

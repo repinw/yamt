@@ -11,6 +11,10 @@ import 'package:yamt/features/diary/presentation/controllers/diary_overdue_plans
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Opens the last of the overdue plan [days] in the diary.
+void openLastOverduePlanDay(WidgetRef ref, List<DateTime> days) =>
+    ref.read(diaryCalendarControllerProvider.notifier).selectDay(days.last);
+
 /// A line on today that names past days with plans that were never eaten.
 /// A tap opens the last of them; the close button hides the line.
 class DiaryOverduePlansHint extends ConsumerWidget {
@@ -48,9 +52,7 @@ class DiaryOverduePlansHint extends ConsumerWidget {
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: AppInkWell(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        onTap: () => ref
-            .read(diaryCalendarControllerProvider.notifier)
-            .selectDay(days.last),
+        onTap: () => openLastOverduePlanDay(ref, days),
         child: Padding(
           padding: const EdgeInsets.only(left: AppSpacing.md),
           child: Row(
