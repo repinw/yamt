@@ -13,6 +13,12 @@ abstract final class AppDashboard {
   /// show less instead of growing further.
   static const double maxRowTextScale = 1.5;
 
+  /// Icon size in a tile caption.
+  static const double captionIcon = 14;
+
+  /// Gap between the icon and the text of a tile caption.
+  static const double captionGap = 4;
+
   /// Diameter of the round edit buttons on a tile in edit mode.
   static const double editButtonSize = 28;
 
