@@ -4191,6 +4191,17 @@
       }
     }
   },
+  "diaryBudgetWeekPauseDaySemantics": "{day}: {type}, set with the pause button",
+  "@diaryBudgetWeekPauseDaySemantics": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
   "diaryBudgetTrainingDayCount": "{count, plural, =1{1 training day} other{{count} training days}}",
   "@diaryBudgetTrainingDayCount": {
     "placeholders": {

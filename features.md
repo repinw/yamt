@@ -182,8 +182,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   saved, closed after a restart) shows eaten of target per macro, a ledger
   (base, training or normal day, buffer, carryover, eaten, counted plans,
   and what is left) with the link "Alle Tage" to the budget sheet, and the
-  day types of the run week, where a tap on a day moves it on from normal
-  to training to pause, past days included.
+  day types of the run week, where a tap on a day switches it between
+  normal and training, past days included. Pause days show there too, but a
+  tap leaves them alone: only the pause button at the top of the card sets
+  and removes a pause.
 - The main button of the eat page says "Ins Tagebuch", and "Einplanen" on a
   future day.
 - The amount on the eat page of a food in grams or milliliters reads

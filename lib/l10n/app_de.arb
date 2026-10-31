@@ -3127,5 +3127,6 @@
   "diaryBudgetWeekTitle": "Tagesarten im Run",
   "diaryBudgetRunEndedNotice": "Run beendet · neuer Run zählt ab {date}",
   "diaryBudgetWeekDaySemantics": "{day}: {type}, tippen zum Wechseln",
+  "diaryBudgetWeekPauseDaySemantics": "{day}: {type}, mit dem Pause-Knopf setzen",
   "diaryBudgetTrainingDayCount": "{count, plural, =1{1 Trainingstag} other{{count} Trainingstage}}"
 }

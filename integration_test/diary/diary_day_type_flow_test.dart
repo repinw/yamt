@@ -176,9 +176,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a tap on a day of the week strip moves it to the next type', (
-    tester,
-  ) async {
+  testWidgets('a tap on a day of the week strip switches it between normal '
+      'and training and leaves a pause day alone (#921)', (tester) async {
     final settings = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
         dailyKcalGoal: 2000,
@@ -197,7 +196,7 @@ void main() {
     await tester.tap(find.byKey(DiaryBudgetCardKeys.detailsChip));
     await tester.pumpAndSettle();
 
-    // Today, a Monday, in the strip: normal, then training, then pause.
+    // Today, a Monday, in the strip: normal, then training, then normal.
     final today = find.byWidgetPredicate(
       (widget) =>
           widget is Semantics &&
@@ -211,14 +210,24 @@ void main() {
 
     await tester.tap(today);
     await tester.pumpAndSettle();
-    final paused = await settings.readSettings();
-    expect(paused.isPauseDay(_today), isTrue);
-
-    await tester.tap(today);
-    await tester.pumpAndSettle();
     final normal = await settings.readSettings();
     expect(normal.isPauseDay(_today), isFalse);
     expect(normal.isTrainingDay(_today), isFalse);
+
+    // Only the pause button of the card sets a pause; the strip leaves it.
+    final pauseButton = find.byKey(
+      DiaryBudgetCardKeys.dayTypeButton(DiaryDayType.pause),
+    );
+    await tester.ensureVisible(pauseButton);
+    await tester.pumpAndSettle();
+    await _tap(tester, DiaryDayType.pause);
+    expect((await settings.readSettings()).isPauseDay(_today), isTrue);
+
+    await tester.ensureVisible(today);
+    await tester.pumpAndSettle();
+    await tester.tap(today);
+    await tester.pumpAndSettle();
+    expect((await settings.readSettings()).isPauseDay(_today), isTrue);
     expect(tester.takeException(), isNull);
   });
 }

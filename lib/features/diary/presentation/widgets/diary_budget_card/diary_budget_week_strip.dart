@@ -19,8 +19,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_labels.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// The seven days of the run week with their day types. A tap moves a day
-/// on to the next type: normal, training, pause.
+/// The seven days of the run week with their day types. A tap switches a
+/// day between normal and training. A pause day only shows: the pause button
+/// of the card sets and removes it (#921).
 class DiaryBudgetWeekStrip extends ConsumerWidget {
   /// Creates the strip of the run week starting on [weekStart].
   const new({
@@ -95,14 +96,17 @@ class DiaryBudgetWeekStrip extends ConsumerWidget {
                       type: types[i],
                       isSelected: isSameLocalDay(days[i], selectedDay),
                       isFuture: days[i].isAfter(normalizeLocalDay(today)),
-                      onTap: () => unawaited(
-                        selectDiaryDayTypeFlow(
-                          context,
-                          ref,
-                          day: days[i],
-                          type: _next(types[i]),
+                      onTap: switch (_toggled(types[i])) {
+                        final type? => () => unawaited(
+                          selectDiaryDayTypeFlow(
+                            context,
+                            ref,
+                            day: days[i],
+                            type: type,
+                          ),
                         ),
-                      ),
+                        null => null,
+                      },
                     ),
                   ),
               ],
@@ -113,10 +117,11 @@ class DiaryBudgetWeekStrip extends ConsumerWidget {
     );
   }
 
-  DiaryDayType _next(DiaryDayType type) => switch (type) {
+  /// The type a tap switches [type] to, or `null` for a pause day.
+  DiaryDayType? _toggled(DiaryDayType type) => switch (type) {
     DiaryDayType.normal => DiaryDayType.training,
-    DiaryDayType.training => DiaryDayType.pause,
-    DiaryDayType.pause => DiaryDayType.normal,
+    DiaryDayType.training => DiaryDayType.normal,
+    DiaryDayType.pause => null,
   };
 }
 
@@ -134,7 +139,9 @@ class _WeekDay extends StatelessWidget {
   final DiaryDayType type;
   final bool isSelected;
   final bool isFuture;
-  final VoidCallback onTap;
+
+  /// `null` for a day the strip cannot switch.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -147,12 +154,15 @@ class _WeekDay extends StatelessWidget {
     final foreground = isTraining && !isFuture ? colors.tile : colors.muted;
 
     return Semantics(
-      button: true,
+      button: onTap != null,
       selected: isSelected,
-      label: l10n.diaryBudgetWeekDaySemantics(
-        DateFormat.EEEE(locale).format(day),
-        diaryDayTypeLabel(type, l10n),
-      ),
+      label:
+          (onTap == null
+          ? l10n.diaryBudgetWeekPauseDaySemantics
+          : l10n.diaryBudgetWeekDaySemantics)(
+            DateFormat.EEEE(locale).format(day),
+            diaryDayTypeLabel(type, l10n),
+          ),
       onTap: onTap,
       excludeSemantics: true,
       child: AppInkWell(
