@@ -5182,6 +5182,72 @@ abstract class AppLocalizations {
   /// **'Meal Prep'**
   String get diaryPlanMealPrepTag;
 
+  /// No description provided for @diaryDashboardDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get diaryDashboardDone;
+
+  /// No description provided for @diaryDashboardReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get diaryDashboardReset;
+
+  /// No description provided for @diaryDashboardAddTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tile'**
+  String get diaryDashboardAddTile;
+
+  /// No description provided for @diaryDashboardTileMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Tile options'**
+  String get diaryDashboardTileMenu;
+
+  /// No description provided for @diaryDashboardResizeTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Resize'**
+  String get diaryDashboardResizeTile;
+
+  /// No description provided for @diaryDashboardHideTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get diaryDashboardHideTile;
+
+  /// No description provided for @diaryDashboardModesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get diaryDashboardModesLabel;
+
+  /// No description provided for @diaryDashboardSizesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get diaryDashboardSizesLabel;
+
+  /// No description provided for @diaryDashboardSizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{columns}×{rows}'**
+  String diaryDashboardSizeLabel(int columns, int rows);
+
+  /// No description provided for @diaryDashboardSizeWide.
+  ///
+  /// In en, this message translates to:
+  /// **'Full width'**
+  String get diaryDashboardSizeWide;
+
+  /// No description provided for @diaryDashboardTileBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily budget'**
+  String get diaryDashboardTileBudget;
+
   /// No description provided for @diaryBalanceLoadFailed.
   ///
   /// In en, this message translates to:
