@@ -26,6 +26,14 @@ settings.
   `AppRoutes.homeSettings`, or at `AppRoutes.homeSettingsAppearance`, which
   opens it scrolled to the Appearance section.
 - `presentation/pages/account_page.dart` is the account management page.
+- `presentation/settings_custom_colors_page.dart` is the color editor of
+  the design "Individuell" at `AppRoutes.homeSettingsCustomColors`, opened
+  from the Appearance section. The section's design row picks System, Light,
+  Dark or Custom (`settings_design_flow.dart`); the first switch to Custom
+  asks whether the colors start as a copy of Light or Dark. The colors and
+  the design live in `lib/core/theme/` (`AppCustomColorsController`,
+  `AppDesignController`); the editor draws its preview with the diary's
+  `DiaryBudgetLine`, `DiaryBudgetViewSwitch` and `DiaryBudgetDayTypeButtons`.
 - `presentation/profile_page.dart` is the profile page. It is a pushed page
   with its own app bar, opened from the Home side menu at
   `AppRoutes.homeProfile`. It shows who the user is, the weight (trend
@@ -67,6 +75,8 @@ Current providers:
 - `features/calories` for the profile page's body data and macro weight
   (settings repository and nutrition target resolver), and calorie goal
   settings surfaces.
+- `features/diary` for `DiaryBudgetLine`, `DiaryBudgetViewSwitch` and
+  `DiaryBudgetDayTypeButtons` in the color editor's preview.
 - `features/health` for Health connection status, actions, domain result
   models, and the recent weights of the profile page.
 - `features/home_widget` for the home-screen widget's silent/verbose choice,

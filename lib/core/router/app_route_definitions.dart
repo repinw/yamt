@@ -44,6 +44,7 @@ import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/settings/presentation/profile_page.dart';
+import 'package:yamt/features/settings/presentation/settings_custom_colors_page.dart';
 
 /// Builds the complete route tree for `GoRouter`.
 List<RouteBase> buildAppRoutes(Ref ref) {
@@ -132,6 +133,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.homeSettingsRecoveryKey,
       builder: (context, state) => const RecoveryKeyPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.homeSettingsCustomColors,
+      builder: (context, state) => const SettingsCustomColorsPage(),
     ),
     GoRoute(
       path: AppRoutes.homeSettingsHousehold,

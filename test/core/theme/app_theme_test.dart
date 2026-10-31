@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_accent.dart';
+import 'package:yamt/core/theme/app_custom_colors.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
@@ -224,7 +225,7 @@ void main() {
     }
   });
 
-  test('keeps the Graphit plan brown without a picked plan color', () {
+  test('keeps the Graphit plan brown', () {
     expect(
       AppTheme.light().extension<FoodLabelColors>()!.plan,
       FoodLabelColors.light.plan,
@@ -235,13 +236,67 @@ void main() {
     );
   });
 
-  test('a picked plan color applies to light and dark alike', () {
-    const picked = Color(0xFF2E7D32);
-    for (final theme in [
-      AppTheme.light(plan: picked),
-      AppTheme.dark(plan: picked),
-    ]) {
-      expect(theme.extension<FoodLabelColors>()!.plan, picked);
-    }
+  group('custom', () {
+    test('a copy of the light design keeps its colors', () {
+      final light = AppTheme.light();
+      final custom = AppTheme.custom(AppCustomColors.copyOf(light));
+      final labels = custom.extension<FoodLabelColors>()!;
+      final metrics = custom.extension<MetricAccentColors>()!;
+
+      expect(custom.brightness, Brightness.light);
+      expect(labels.paper, FoodLabelColors.light.paper);
+      expect(labels.ink, FoodLabelColors.light.ink);
+      expect(labels.plan, FoodLabelColors.light.plan);
+      expect(custom.colorScheme.primary, light.colorScheme.primary);
+      expect(custom.colorScheme.error, light.colorScheme.error);
+      expect(metrics.protein, light.extension<MetricAccentColors>()!.protein);
+      expect(metrics.macrosAsPicked, isTrue);
+      expect(metrics.allMacrosColored, isFalse);
+    });
+
+    test('every picked color reaches the theme', () {
+      const picked = Color(0xFF2E7D32);
+      final base = AppCustomColors.copyOf(AppTheme.dark());
+      for (final key in AppCustomColor.values) {
+        final theme = AppTheme.custom(base.withColor(key, picked));
+        final labels = theme.extension<FoodLabelColors>()!;
+        final metrics = theme.extension<MetricAccentColors>()!;
+        final actual = switch (key) {
+          AppCustomColor.paper => theme.colorScheme.surface,
+          AppCustomColor.card => labels.card,
+          AppCustomColor.ink => theme.colorScheme.onSurface,
+          AppCustomColor.muted => theme.colorScheme.onSurfaceVariant,
+          AppCustomColor.lines => theme.colorScheme.outlineVariant,
+          AppCustomColor.accent => theme.colorScheme.primary,
+          AppCustomColor.plan => labels.plan,
+          AppCustomColor.protein => metrics.protein,
+          AppCustomColor.carbs => metrics.carbs,
+          AppCustomColor.fat => metrics.fat,
+          AppCustomColor.signal => theme.colorScheme.error,
+        };
+        expect(actual, picked, reason: key.name);
+        expect(theme.brightness, Brightness.dark);
+      }
+    });
+
+    test('snack bars take the text color with paper as text', () {
+      final colors = AppCustomColors.copyOf(AppTheme.light());
+      final scheme = AppTheme.custom(colors).colorScheme;
+
+      expect(scheme.inverseSurface, colors[AppCustomColor.ink]);
+      expect(scheme.onInverseSurface, colors[AppCustomColor.paper]);
+    });
+
+    test('carries "Makros immer bunt" to the metric colors', () {
+      final colors = AppCustomColors.copyOf(AppTheme.light());
+
+      expect(
+        AppTheme.custom(colors)
+            .withAllMacrosColored(value: true)
+            .extension<MetricAccentColors>()!
+            .allMacrosColored,
+        isTrue,
+      );
+    });
   });
 }

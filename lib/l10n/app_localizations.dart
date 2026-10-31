@@ -5605,29 +5605,155 @@ abstract class AppLocalizations {
   /// **'Emerald'**
   String get settingsAccentEmerald;
 
-  /// No description provided for @settingsPlanColorTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Plan color'**
-  String get settingsPlanColorTitle;
-
-  /// No description provided for @settingsPlanColorDefault.
-  ///
-  /// In en, this message translates to:
-  /// **'Default'**
-  String get settingsPlanColorDefault;
-
-  /// No description provided for @settingsPlanColorCustom.
+  /// No description provided for @settingsDesignCustom.
   ///
   /// In en, this message translates to:
   /// **'Custom'**
-  String get settingsPlanColorCustom;
+  String get settingsDesignCustom;
 
-  /// No description provided for @settingsPlanColorReset.
+  /// No description provided for @settingsCustomBaseTitle.
   ///
   /// In en, this message translates to:
-  /// **'Reset color'**
-  String get settingsPlanColorReset;
+  /// **'Start from which design?'**
+  String get settingsCustomBaseTitle;
+
+  /// No description provided for @settingsCustomBaseMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom starts as a copy. Then you can change every color.'**
+  String get settingsCustomBaseMessage;
+
+  /// No description provided for @settingsCustomColorsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit colors'**
+  String get settingsCustomColorsTitle;
+
+  /// No description provided for @settingsCustomColorsBasedOnLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on Light'**
+  String get settingsCustomColorsBasedOnLight;
+
+  /// No description provided for @settingsCustomColorsBasedOnDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on Dark'**
+  String get settingsCustomColorsBasedOnDark;
+
+  /// No description provided for @settingsCustomColorsReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset colors'**
+  String get settingsCustomColorsReset;
+
+  /// No description provided for @settingsCustomColorsUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo last change'**
+  String get settingsCustomColorsUndo;
+
+  /// No description provided for @settingsCustomColorApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get settingsCustomColorApply;
+
+  /// No description provided for @settingsCustomColorRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get settingsCustomColorRecent;
+
+  /// No description provided for @settingsCustomColorRecentSwatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently used: {hex}'**
+  String settingsCustomColorRecentSwatch(String hex);
+
+  /// No description provided for @settingsCustomAllMacrosColored.
+  ///
+  /// In en, this message translates to:
+  /// **'Macros always in color'**
+  String get settingsCustomAllMacrosColored;
+
+  /// No description provided for @settingsCustomAllMacrosColoredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: only the lowest macro shows its color'**
+  String get settingsCustomAllMacrosColoredHint;
+
+  /// No description provided for @settingsCustomColorPaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get settingsCustomColorPaper;
+
+  /// No description provided for @settingsCustomColorCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get settingsCustomColorCard;
+
+  /// No description provided for @settingsCustomColorInk.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get settingsCustomColorInk;
+
+  /// No description provided for @settingsCustomColorMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary text'**
+  String get settingsCustomColorMuted;
+
+  /// No description provided for @settingsCustomColorLines.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines'**
+  String get settingsCustomColorLines;
+
+  /// No description provided for @settingsCustomColorAccent.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent'**
+  String get settingsCustomColorAccent;
+
+  /// No description provided for @settingsCustomColorPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get settingsCustomColorPlan;
+
+  /// No description provided for @settingsCustomColorSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'Signal'**
+  String get settingsCustomColorSignal;
+
+  /// No description provided for @settingsCustomPreviewCurry.
+  ///
+  /// In en, this message translates to:
+  /// **'Lentil curry'**
+  String get settingsCustomPreviewCurry;
+
+  /// No description provided for @settingsCustomPreviewBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein bar'**
+  String get settingsCustomPreviewBar;
+
+  /// No description provided for @settingsCustomPreviewLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Curry logged'**
+  String get settingsCustomPreviewLogged;
+
+  /// No description provided for @settingsCustomPreviewScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get settingsCustomPreviewScan;
 
   /// No description provided for @colorPickerHue.
   ///
@@ -10938,6 +11064,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Marks on today\'s kcal line where you should be by now and shows each meal\'s target'**
   String get diaryBudgetMenuPaceHint;
+
+  /// No description provided for @diaryBudgetMenuAllMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'Macros always in color'**
+  String get diaryBudgetMenuAllMacros;
+
+  /// No description provided for @diaryBudgetMenuAllMacrosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: only the lowest macro shows its color'**
+  String get diaryBudgetMenuAllMacrosHint;
 }
 
 class _AppLocalizationsDelegate

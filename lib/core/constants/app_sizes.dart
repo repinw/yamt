@@ -207,6 +207,22 @@ abstract final class AppSizes {
   /// Height of a gradient track of the color picker.
   static const double colorPickerTrack = 28;
 
-  /// Diameter of the preview swatch of the color picker.
-  static const double colorPickerPreview = 56;
+  /// Diameter of the wheel in the color panel of the design "Individuell",
+  /// small enough to leave the preview in view.
+  static const double customColorWheel = 168;
+
+  /// Diameter of the marker on the color wheel.
+  static const double colorWheelMarker = 24;
+
+  /// Width of the white ring around that marker.
+  static const double colorWheelMarkerRing = 3;
+
+  /// Diameter of a swatch in the color strip of the design "Individuell".
+  static const double customColorSwatch = 36;
+
+  /// Width of one swatch with its name in that strip.
+  static const double customColorChipWidth = 64;
+
+  /// Diameter of a color dot in the sample of a design.
+  static const double customColorDot = 14;
 }

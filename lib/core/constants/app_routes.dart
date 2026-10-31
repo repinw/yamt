@@ -170,6 +170,9 @@ abstract final class AppRoutes {
   /// Recovery key route, opened from the account settings.
   static const homeSettingsRecoveryKey = '/home/settings/account/recovery-key';
 
+  /// Color editor of the design "Individuell", opened from the settings.
+  static const homeSettingsCustomColors = '/home/settings/colors';
+
   /// Household settings route.
   static const homeSettingsHousehold = '/home/settings/household';
 

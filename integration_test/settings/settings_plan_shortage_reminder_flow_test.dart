@@ -7,9 +7,7 @@ import 'package:yamt/core/device/local_notifications.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
-import 'package:yamt/core/theme/app_accent_controller.dart';
-import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/core/theme/app_theme_mode_controller.dart';
+import 'package:yamt/core/theme/app_themes.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/health/data/'
@@ -56,11 +54,11 @@ Future<MemoryAppPreferences> _pumpSettings(
       ],
       child: Consumer(
         builder: (context, ref, _) {
-          final accent = ref.watch(appAccentControllerProvider);
+          final themes = ref.watch(appThemesProvider);
           return MaterialApp(
-            theme: AppTheme.light(accent: accent),
-            darkTheme: AppTheme.dark(accent: accent),
-            themeMode: ref.watch(appThemeModeControllerProvider),
+            theme: themes.light,
+            darkTheme: themes.dark,
+            themeMode: themes.mode,
             locale: const Locale('de'),
             localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

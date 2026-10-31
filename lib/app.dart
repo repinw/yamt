@@ -8,10 +8,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/router/app_router.dart';
-import 'package:yamt/core/theme/app_accent_controller.dart';
-import 'package:yamt/core/theme/app_plan_color_controller.dart';
-import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/core/theme/app_theme_mode_controller.dart';
+import 'package:yamt/core/theme/app_themes.dart';
 import 'package:yamt/core/theme/native_theme_mode.dart';
 import 'package:yamt/core/widgets/keyboard_back_scope.dart';
 import 'package:yamt/core/widgets/keyboard_done_bar.dart';
@@ -77,7 +74,7 @@ class _YAMTState extends ConsumerState<YAMT> {
     // Once at start, for a choice saved before the launch screen followed it,
     // and on every change.
     _nativeThemeModeSubscription ??= ref.listenManual<ThemeMode>(
-      appThemeModeControllerProvider,
+      appThemesProvider.select((themes) => themes.mode),
       (_, mode) => unawaited(applyNativeThemeMode(mode)),
       fireImmediately: true,
     );
@@ -98,15 +95,14 @@ class _YAMTState extends ConsumerState<YAMT> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
-    final accent = ref.watch(appAccentControllerProvider);
-    final plan = ref.watch(appPlanColorControllerProvider);
+    final themes = ref.watch(appThemesProvider);
 
     return MaterialApp.router(
       title: 'YAMT',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(accent: accent, plan: plan),
-      darkTheme: AppTheme.dark(accent: accent, plan: plan),
-      themeMode: ref.watch(appThemeModeControllerProvider),
+      theme: themes.light,
+      darkTheme: themes.dark,
+      themeMode: themes.mode,
       routerConfig: router,
       // Above the router, so the system back closes an open keyboard
       // before it reaches a page.

@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/app_accent.dart';
+import 'package:yamt/core/theme/app_custom_colors.dart';
+import 'package:yamt/core/theme/app_custom_theme_colors.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
@@ -13,14 +15,13 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 /// button in the user's accent (lime by default), and rounded controls on
 /// soft surfaces without frames.
 abstract final class AppTheme {
-  /// Builds standard light Material 3 theme with Graphit colors, [accent]
-  /// and the user's [plan] color, if any.
-  static ThemeData light({AppAccent accent = AppAccent.lime, Color? plan}) {
+  /// Builds standard light Material 3 theme with Graphit colors and
+  /// [accent].
+  static ThemeData light({AppAccent accent = AppAccent.lime}) {
     final tones = accent.light;
     final labelColors = FoodLabelColors.light.copyWith(
-      plan: plan,
       accent: tones.fill,
-      onAccent: _onAccent(tones.fill, FoodLabelColors.light.onAccent),
+      onAccent: readableOn(tones.fill, FoodLabelColors.light.onAccent),
       accentText: tones.text,
     );
     final colorScheme = ColorScheme(
@@ -57,14 +58,13 @@ abstract final class AppTheme {
     return _theme(colorScheme, labelColors);
   }
 
-  /// Builds standard dark Material 3 theme with Graphit colors, [accent]
-  /// and the user's [plan] color, if any.
-  static ThemeData dark({AppAccent accent = AppAccent.lime, Color? plan}) {
+  /// Builds standard dark Material 3 theme with Graphit colors and
+  /// [accent].
+  static ThemeData dark({AppAccent accent = AppAccent.lime}) {
     final tones = accent.dark;
     final labelColors = FoodLabelColors.dark.copyWith(
-      plan: plan,
       accent: tones.fill,
-      onAccent: _onAccent(tones.fill, FoodLabelColors.dark.onAccent),
+      onAccent: readableOn(tones.fill, FoodLabelColors.dark.onAccent),
       accentText: tones.text,
       onTile: tones.fill,
     );
@@ -99,17 +99,21 @@ abstract final class AppTheme {
 
     return _theme(colorScheme, labelColors);
   }
+
+  /// Builds the design "Individuell" from the user's [colors].
+  static ThemeData custom(AppCustomColors colors) {
+    final labelColors = colors.labelColors;
+    final colorScheme = colors.colorSchemeWith(labelColors);
+    return _theme(
+      colorScheme,
+      labelColors,
+      metrics: colors.metricColorsWith(colorScheme),
+    );
+  }
 }
 
 const _white = Color(0xFFFFFFFF);
 const _black = Color(0xFF000000);
-
-/// Text on [fill]: [dark] or white, whichever reads better.
-Color _onAccent(Color fill, Color dark) {
-  return contrastRatio(fill, dark) >= contrastRatio(fill, _white)
-      ? dark
-      : _white;
-}
 
 /// Weights of the Graphit type scale: 800 for titles, names and numbers,
 /// 600 to 700 for actions and labels, and the default 400 for text.
@@ -137,7 +141,11 @@ const _controlMinimumSize = Size(AppSizes.minTapTarget, AppSizes.minTapTarget);
 
 const _buttonPadding = EdgeInsets.symmetric(horizontal: AppSpacing.xxl);
 
-ThemeData _theme(ColorScheme colorScheme, FoodLabelColors labelColors) {
+ThemeData _theme(
+  ColorScheme colorScheme,
+  FoodLabelColors labelColors, {
+  MetricAccentColors? metrics,
+}) {
   final base = ThemeData(
     useMaterial3: true,
     brightness: colorScheme.brightness,
@@ -146,7 +154,10 @@ ThemeData _theme(ColorScheme colorScheme, FoodLabelColors labelColors) {
     textTheme: _textWeights,
     scaffoldBackgroundColor: colorScheme.surface,
     dividerColor: colorScheme.outlineVariant,
-    extensions: [labelColors, MetricAccentColors.fromColorScheme(colorScheme)],
+    extensions: [
+      labelColors,
+      metrics ?? MetricAccentColors.fromColorScheme(colorScheme),
+    ],
   );
   final buttonLabel = base.textTheme.labelLarge;
 

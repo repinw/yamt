@@ -96,3 +96,9 @@ double contrastRatio(Color a, Color b) {
   final lb = b.computeLuminance();
   return la > lb ? (la + 0.05) / (lb + 0.05) : (lb + 0.05) / (la + 0.05);
 }
+
+/// Text on [fill]: [dark] or white, whichever reads better.
+Color readableOn(Color fill, Color dark) {
+  const white = Color(0xFFFFFFFF);
+  return contrastRatio(fill, dark) >= contrastRatio(fill, white) ? dark : white;
+}

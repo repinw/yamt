@@ -195,7 +195,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   the number turns red as "+N" with "kcal drüber"; a macro over its target
   shows "+N g" in normal text and only the overage part of its line is
   red. On today and later days the macro with the lowest share of its
-  target takes its macro color. A pause day shows "Pausentag" in grey,
+  target takes its macro color; with "Makros immer bunt" every macro
+  does. A pause day shows "Pausentag" in grey,
   "N kcal gegessen", and "Fürs Lernen ignoriert", with the eaten grams of
   the macros in grey. A practice day before the goal starts, and a day
   after a run ended before the new run starts, can be tracked but do not
@@ -1190,26 +1191,47 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Household management entry point.
 - Health connection entry point.
 - Calorie goal-start and calorie calculator entry points.
-- Theme: System (default), Light, or Dark, as segments under Darstellung
-  above the accent color. A tap switches the app at once. The choice is
-  saved on the device only. The home-screen widget keeps following the
-  system.
-- Accent color: Lime (default), Pink, Violet, Cyan, or Emerald, picked in a
-  sheet under Darstellung. A tap recolors the app at once and the sheet stays
-  open. The choice is saved on the device only. It recolors what is lime by
-  default (main buttons, the tab marker, the kcal number and bar, links,
-  selected chips such as training days) and the home-screen widget's kcal
-  value and bar. Macro, weight, activity, and onboarding chapter colors stay
-  the same.
-- Plan color ("Plan-Farbe"): the one color for everything planned (brown by
-  default): the plan part of the daily budget card's lines, "N geplant" and
-  the plan pill, the dashed frame and Meal-Prep tag of planned diary rows,
-  the planned part of Vorrat stock bars, and the dots of days with plans in
-  the calendars. Picked freely in a sheet under Darstellung with sliders for
-  hue, saturation and brightness, without a readability check; the app takes
-  the color when a slider is let go. A custom color applies to light and
-  dark alike. "Farbe zurücksetzen" goes back to the default brown. The
-  choice is saved on the device only.
+- Design: System (default), Light, Dark, or Individuell, as segments under
+  Darstellung. A tap switches the app at once. The choice is saved on the
+  device only. The home-screen widget keeps following the system.
+- Accent color (System, Light and Dark only): Lime (default), Pink, Violet,
+  Cyan, or Emerald, picked in a sheet under Darstellung. A tap recolors the
+  app at once and the sheet stays open. The choice is saved on the device
+  only. It recolors what is lime by default (main buttons, the tab marker,
+  the kcal number and bar, links, selected chips such as training days) and
+  the home-screen widget's kcal value and bar. In these designs macro,
+  plan, weight, activity, and onboarding chapter colors are fixed; the plan
+  color is brown. A plan color picked under the earlier "Plan-Farbe" row (never
+  released) is dropped on purpose; own plan colors live in Individuell.
+- Individuell: the first switch asks "Worauf aufbauen?" with a sample of
+  Hell and Dunkel; the own colors start as a copy of that design with the
+  picked accent (cancel keeps the design). The Darstellung section then
+  shows "Farben bearbeiten" (with "Aufgebaut auf Hell/Dunkel") instead of
+  the accent row. The editor shows a small diary day in the own colors
+  (the app's snack bar on top, the budget card, a lunch with a plan, the scan
+  button), a row of swatches (Eiweiß, Kohlenh., Fett, Plan, Akzent, Signal,
+  Hintergrund, Karten, Text, Nebentext, Linien), and the switch "Makros
+  immer bunt" under it. Nothing scrolls: the preview shrinks when room is
+  short. A tap on a swatch or on a part of the preview opens a panel for
+  that color in place of the swatches, so the preview stays in view: a
+  color wheel (hue around, saturation out from the middle), beside it the
+  last six taken colors ("Zuletzt", saved on the device), a brightness
+  slider, "Abbrechen" and "Übernehmen". There is no readability check. The
+  whole app, the editor and the panel too, follows every move;
+  "Übernehmen", or a tap on another color, saves the color and puts it
+  first in "Zuletzt"; "Abbrechen", back, or leaving the editor drops it.
+  The undo arrow takes back the last saved color or reset, step by step,
+  while the editor is open.
+  Signal is the error color (errors, deleting, the over part of budget
+  lines); snack bars take the card tinted with the accent, text in the
+  text color.
+  "Makros immer bunt" shows every macro of the budget card in its color
+  instead of only the lowest one; it is one choice for every design, off by
+  default, and the reset leaves it alone. The reset icon ("Farben
+  zurücksetzen") asks "Worauf aufbauen?" again and starts the colors over
+  as a copy of Hell or Dunkel; cancel keeps them. Picked
+  macro colors show as picked, also as text on light paper. The choice is
+  saved on the device only; the home-screen widget does not follow it yet.
 - Language display.
 - "Erinnerung für fehlende Zutaten" switch (on by default) and its time
   ("Uhrzeit", 17:00 by default) in the App section; the time row is greyed

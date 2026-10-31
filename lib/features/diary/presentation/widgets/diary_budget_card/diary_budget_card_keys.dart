@@ -74,4 +74,9 @@ abstract final class DiaryBudgetCardKeys {
 
   /// The menu's switch for the pace marker on the kcal line.
   static const paceSwitch = ValueKey<String>('diary-budget-menu-pace');
+
+  /// The menu's switch that shows every macro in its color.
+  static const allMacrosSwitch = ValueKey<String>(
+    'diary-budget-menu-all-macros',
+  );
 }
