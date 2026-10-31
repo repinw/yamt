@@ -3216,70 +3216,27 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryDashboardOverdueNone => 'Keine offenen Pläne';
 
   @override
+  String get diaryDashboardSaveFailed =>
+      'Kachel-Anordnung konnte nicht gespeichert werden.';
+
+  @override
+  String get diaryDashboardTileLoadFailed =>
+      'Kachel konnte nicht geladen werden.';
+
+  @override
   String get diaryDashboardTileMenu => 'Kachel anpassen';
 
   @override
   String get diaryDashboardResizeTile => 'Größe ändern';
 
   @override
-  String get diaryDashboardTileWeek => 'Woche';
-
-  @override
   String get diaryDashboardTileDayType => 'Tagesart';
-
-  @override
-  String get diaryDashboardModeStrip => 'Tage';
-
-  @override
-  String get diaryDashboardModeNumbers => 'Zahl';
 
   @override
   String get diaryDashboardModeIcon => 'Symbol';
 
   @override
   String get diaryDashboardModeToggle => 'Knöpfe';
-
-  @override
-  String diaryWeekTileLeftCaption(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'übrig · noch $count Tage',
-      one: 'übrig · noch 1 Tag',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String diaryWeekTileOverCaption(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'drüber · noch $count Tage',
-      one: 'drüber · noch 1 Tag',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get diaryWeekTileDayUnder => 'unter dem Ziel';
-
-  @override
-  String get diaryWeekTileDayOver => 'über dem Ziel';
-
-  @override
-  String get diaryWeekTileDayPlanned => 'geplant';
-
-  @override
-  String get diaryWeekTileDayToday => 'heute';
-
-  @override
-  String get diaryWeekTileDayOpen => 'keine Daten';
-
-  @override
-  String diaryWeekTileDaySemantics(String day, String state) {
-    return '$day: $state';
-  }
 
   @override
   String diaryDayTypeTileSemantics(String type) {

@@ -4,57 +4,42 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_budget_card_data_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_budget_eaten_view_controller.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_watch.dart';
+import 'package:yamt/features/diary/presentation/models/diary_kcal_tile_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_kcal_texts.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_budget_details_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_tile_parts.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_kcal_tile_layouts.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_load_error.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_no_value.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Mode id of the kcal tile: the number with its caption.
-const diaryKcalTileNumberMode = 'number';
-
-/// Mode id of the kcal tile: the number over the kcal line.
-const diaryKcalTileBarMode = 'bar';
-
-/// Mode id of the kcal tile: a ring of eaten against the target.
-const diaryKcalTileRingMode = 'ring';
 
 /// The kcal left of the day, as the budget card's big number shows them.
 const diaryKcalTile = DiaryDashboardTile(
-  id: 'kcal',
+  spec: diaryKcalTileSpec,
   icon: Icons.local_fire_department_outlined,
   label: _label,
-  sizes: [
-    DiaryTileSize.s1x1,
-    DiaryTileSize.s2x1,
-    DiaryTileSize.s2x2,
-    DiaryTileSize.s4x1,
-  ],
-  defaultSize: DiaryTileSize.s2x1,
   modes: [
     DiaryTileMode(
-      id: diaryKcalTileNumberMode,
+      id: DiaryTileModes.number,
       icon: Icons.pin_outlined,
       label: _numberLabel,
     ),
     DiaryTileMode(
-      id: diaryKcalTileBarMode,
+      id: DiaryTileModes.bar,
       icon: Icons.linear_scale,
       label: _barLabel,
     ),
     DiaryTileMode(
-      id: diaryKcalTileRingMode,
+      id: DiaryTileModes.ring,
       icon: Icons.data_usage,
       label: _ringLabel,
     ),
   ],
   builder: _build,
-  visibleByDefault: false,
 );
 
 String _label(AppLocalizations l10n) => l10n.diaryDashboardTileKcal;
@@ -74,9 +59,12 @@ class _KcalTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final data = watchDiaryBudgetCardData(ref, args.day);
+    if (DiaryTileLoadError.watchFailed(ref, args.day)) {
+      return DiaryTileLoadError(size: args.size);
+    }
+    final data = ref.watch(diaryBudgetCardDataProvider(args.day));
     if (data == null) {
-      return DiaryTileNumber('–', color: FoodLabelColors.of(context).muted);
+      return const DiaryTileNoValue();
     }
     final numberFormat = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
@@ -87,11 +75,11 @@ class _KcalTile extends ConsumerWidget {
       showEaten: ref.watch(diaryBudgetEatenViewControllerProvider),
       numberFormat: numberFormat,
     );
-    final content = switch (args.mode) {
-      diaryKcalTileBarMode => DiaryKcalBarLayout(view: view, size: args.size),
-      diaryKcalTileRingMode => DiaryKcalRingLayout(view: view, size: args.size),
-      _ => DiaryKcalNumberLayout(view: view, size: args.size),
-    };
+    final content = DiaryKcalTileLayout(
+      view: view,
+      size: args.size,
+      mode: args.mode,
+    );
 
     final details = data.isPauseDay ? null : data.budgetDetails;
     if (details == null) return content;
@@ -139,6 +127,8 @@ DiaryKcalTileView _view(
       target: null,
       scale: metrics.targetKcal,
       eatenColor: colors.muted,
+      overColor: colors.muted,
+      pace: null,
     );
   }
 
@@ -167,5 +157,10 @@ DiaryKcalTileView _view(
     target: metrics.targetKcal,
     scale: metrics.targetKcal,
     eatenColor: data.isPlannedDay ? colors.plan : colors.accent,
+    // Going over is the miss for every weight goal but gaining.
+    overColor: data.overIsMiss
+        ? Theme.of(context).colorScheme.error
+        : colors.ink,
+    pace: data.paceKcal,
   );
 }

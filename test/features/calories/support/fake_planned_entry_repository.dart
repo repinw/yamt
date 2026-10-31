@@ -32,6 +32,9 @@ class FakePlannedEntryRepository extends PlannedEntryRepository {
 
   @override
   Future<Set<DateTime>> loadPlannedDays(DateTime first, DateTime last) async {
+    if (loadShouldFail) {
+      throw StateError('Plan read failed.');
+    }
     final from = normalizeLocalDay(first);
     final to = normalizeLocalDay(last);
     return {

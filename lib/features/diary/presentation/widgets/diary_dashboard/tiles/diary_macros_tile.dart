@@ -2,57 +2,43 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
+import 'package:yamt/core/theme/metric_accent_colors.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_budget_card_data_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_budget_eaten_view_controller.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_watch.dart';
+import 'package:yamt/features/diary/presentation/models/diary_macro_tile_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_macro_style.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_tile_parts.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_macros_tile_layouts.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_load_error.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_no_value.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Mode id of the macros tile: three thin lines.
-const diaryMacrosTileBarsMode = 'bars';
-
-/// Mode id of the macros tile: three small rings.
-const diaryMacrosTileRingsMode = 'rings';
-
-/// Mode id of the macros tile: three numbers.
-const diaryMacrosTileNumbersMode = 'numbers';
 
 /// Protein, carbs, and fat of the day against their targets, as the budget
 /// card's macro column shows them.
 const diaryMacrosTile = DiaryDashboardTile(
-  id: 'macros',
+  spec: diaryMacrosTileSpec,
   icon: Icons.pie_chart_outline,
   label: _label,
-  sizes: [
-    DiaryTileSize.s2x1,
-    DiaryTileSize.s2x2,
-    DiaryTileSize.s4x1,
-    DiaryTileSize.s4x2,
-  ],
-  defaultSize: DiaryTileSize.s4x1,
   modes: [
     DiaryTileMode(
-      id: diaryMacrosTileBarsMode,
+      id: DiaryTileModes.bars,
       icon: Icons.view_headline,
       label: _barsLabel,
     ),
     DiaryTileMode(
-      id: diaryMacrosTileRingsMode,
+      id: DiaryTileModes.rings,
       icon: Icons.data_usage,
       label: _ringsLabel,
     ),
     DiaryTileMode(
-      id: diaryMacrosTileNumbersMode,
+      id: DiaryTileModes.numbers,
       icon: Icons.pin_outlined,
       label: _numbersLabel,
     ),
   ],
   builder: _build,
-  visibleByDefault: false,
 );
 
 String _label(AppLocalizations l10n) => l10n.diaryDashboardTileMacros;
@@ -73,27 +59,36 @@ class _MacrosTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final data = watchDiaryBudgetCardData(ref, args.day);
+    if (DiaryTileLoadError.watchFailed(ref, args.day)) {
+      return DiaryTileLoadError(size: args.size);
+    }
+    final data = ref.watch(diaryBudgetCardDataProvider(args.day));
     final showEaten = ref.watch(diaryBudgetEatenViewControllerProvider);
     if (data == null || data.macros.isEmpty) {
-      return DiaryTileNumber('–', color: FoodLabelColors.of(context).muted);
+      return const DiaryTileNoValue();
     }
+    // As the budget card: the lowest macro takes its color, all of them
+    // when the user wants them colored, none on a pause or past day.
+    final allColored =
+        MetricAccentColors.of(context).allMacrosColored &&
+        !data.isPauseDay &&
+        !data.status.isPast;
     final macros = [
       for (final macro in data.macros)
-        _view(context, data: data, macro: macro, showEaten: showEaten),
+        _view(
+          context,
+          data: data,
+          macro: macro,
+          isColored: allColored || macro.kind == data.lowestMacro,
+          showEaten: showEaten,
+        ),
     ];
 
-    return switch (args.mode) {
-      diaryMacrosTileRingsMode => DiaryMacrosRingsLayout(
-        macros: macros,
-        size: args.size,
-      ),
-      diaryMacrosTileNumbersMode => DiaryMacrosNumbersLayout(
-        macros: macros,
-        size: args.size,
-      ),
-      _ => DiaryMacrosBarsLayout(macros: macros, size: args.size),
-    };
+    return DiaryMacrosTileLayout(
+      macros: macros,
+      size: args.size,
+      mode: args.mode,
+    );
   }
 }
 
@@ -102,6 +97,7 @@ DiaryMacroTileView _view(
   BuildContext context, {
   required DiaryBudgetCardData data,
   required DiaryBudgetMacro macro,
+  required bool isColored,
   required bool showEaten,
 }) {
   final l10n = AppLocalizations.of(context)!;
@@ -136,7 +132,9 @@ DiaryMacroTileView _view(
           ),
     labelColor: isPauseDay
         ? colors.muted
-        : diaryBudgetMacroTextColor(context, macroColor),
+        : isColored
+        ? diaryBudgetMacroTextColor(context, macroColor)
+        : colors.muted,
     valueColor: isPauseDay ? colors.muted : colors.ink,
     eaten: macro.eaten,
     planned: macro.planned,
@@ -146,6 +144,8 @@ DiaryMacroTileView _view(
         ? colors.muted
         : data.isPlannedDay
         ? colors.plan
-        : macroColor,
+        : isColored
+        ? macroColor
+        : colors.ink,
   );
 }

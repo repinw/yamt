@@ -8,23 +8,32 @@ part of 'diary_dashboard_layout_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The diary dashboard layout of the signed-in user, resolved against the
-/// tile catalog. Drags change it live; [save] stores it.
+/// The diary dashboard layout of the signed-in user, resolved against
+/// [diaryDashboardTileSpecs]. Drags change it live; [save] stores it.
+///
+/// The actions that save return false when the layout was not saved; the
+/// layout on screen keeps the change.
 
 @ProviderFor(DiaryDashboardLayoutController)
 final diaryDashboardLayoutControllerProvider =
     DiaryDashboardLayoutControllerProvider._();
 
-/// The diary dashboard layout of the signed-in user, resolved against the
-/// tile catalog. Drags change it live; [save] stores it.
+/// The diary dashboard layout of the signed-in user, resolved against
+/// [diaryDashboardTileSpecs]. Drags change it live; [save] stores it.
+///
+/// The actions that save return false when the layout was not saved; the
+/// layout on screen keeps the change.
 final class DiaryDashboardLayoutControllerProvider
     extends
         $NotifierProvider<
           DiaryDashboardLayoutController,
           DiaryDashboardLayout
         > {
-  /// The diary dashboard layout of the signed-in user, resolved against the
-  /// tile catalog. Drags change it live; [save] stores it.
+  /// The diary dashboard layout of the signed-in user, resolved against
+  /// [diaryDashboardTileSpecs]. Drags change it live; [save] stores it.
+  ///
+  /// The actions that save return false when the layout was not saved; the
+  /// layout on screen keeps the change.
   DiaryDashboardLayoutControllerProvider._()
     : super(
         from: null,
@@ -53,10 +62,13 @@ final class DiaryDashboardLayoutControllerProvider
 }
 
 String _$diaryDashboardLayoutControllerHash() =>
-    r'b815e6b54cefa00114eb17cac8dacf42fd959532';
+    r'6d8b1e8b50dfccd3b385d639db08f1d8424f37f5';
 
-/// The diary dashboard layout of the signed-in user, resolved against the
-/// tile catalog. Drags change it live; [save] stores it.
+/// The diary dashboard layout of the signed-in user, resolved against
+/// [diaryDashboardTileSpecs]. Drags change it live; [save] stores it.
+///
+/// The actions that save return false when the layout was not saved; the
+/// layout on screen keeps the change.
 
 abstract class _$DiaryDashboardLayoutController
     extends $Notifier<DiaryDashboardLayout> {

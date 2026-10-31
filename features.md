@@ -191,12 +191,16 @@ and feature description docs. This is product-facing; architecture rules stay in
   the cell of the tile under the finger, and the others slide aside. In
   edit mode a short hold drags, a tap or the "⋯" corner button opens the
   tile menu (display mode, size, "Ausblenden"), and the corner handle
-  resizes the tile to the closest size it offers. The bar above the grid
-  adds hidden tiles back at the end, resets to the default layout and
-  leaves with "Fertig". With every tile hidden, a button leads back into
-  edit mode. The layout is saved per user on the device; a tile that a
-  later version adds shows after the tile before it in the catalog, or
-  starts hidden when it is not part of the default layout.
+  resizes the tile to the closest size it offers. A dragged tile scrolls
+  the page at the top edge and above the home bar. The bar above the grid
+  shows once the first drag ends; it adds hidden tiles back at the end,
+  resets to the default layout and leaves with "Fertig". With every tile
+  hidden, a button leads back into edit mode. The layout is saved per user
+  on the device; a change that was not saved says so in a snack bar. A
+  tile that a later version adds shows after the tile before it in the
+  catalog, or starts hidden when it is not part of the default layout.
+  While the "Offene Pläne" tile shows, the overdue plans line below the
+  dashboard hides.
 - Daily budget card (#907), set in Geist: the kcal left as a big number
   with "kcal übrig" and a line with a goal marker, and next to it protein,
   carbs, and fat with the grams left and a thin line each. When the day's
@@ -339,7 +343,7 @@ and feature description docs. This is product-facing; architecture rules stay in
     dropped. The budget, the macro targets, the widget, and the free kcal
     notices use the budget with the carryover. "Details" shows it as a chip
     ("2.200 − 125 aus der Woche") and a ledger row.
-- The week card sits between the budget card and the steps card in the modes
+- The week card sits between the tile dashboard and the steps card in the modes
   "Anzeigen" and "Mit Übertrag", with no title and no total: one field for
   each day of the run that holds the shown day, named "Mo" to "So", with
   "Heute" in bold and the shown day framed. A finished day's field fills like

@@ -5314,6 +5314,18 @@ abstract class AppLocalizations {
   /// **'No open plans'**
   String get diaryDashboardOverdueNone;
 
+  /// No description provided for @diaryDashboardSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the tile layout.'**
+  String get diaryDashboardSaveFailed;
+
+  /// No description provided for @diaryDashboardTileLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this tile.'**
+  String get diaryDashboardTileLoadFailed;
+
   /// No description provided for @diaryDashboardTileMenu.
   ///
   /// In en, this message translates to:
@@ -5326,29 +5338,11 @@ abstract class AppLocalizations {
   /// **'Resize'**
   String get diaryDashboardResizeTile;
 
-  /// No description provided for @diaryDashboardTileWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'Week'**
-  String get diaryDashboardTileWeek;
-
   /// No description provided for @diaryDashboardTileDayType.
   ///
   /// In en, this message translates to:
   /// **'Day type'**
   String get diaryDashboardTileDayType;
-
-  /// No description provided for @diaryDashboardModeStrip.
-  ///
-  /// In en, this message translates to:
-  /// **'Days'**
-  String get diaryDashboardModeStrip;
-
-  /// No description provided for @diaryDashboardModeNumbers.
-  ///
-  /// In en, this message translates to:
-  /// **'Number'**
-  String get diaryDashboardModeNumbers;
 
   /// No description provided for @diaryDashboardModeIcon.
   ///
@@ -5361,54 +5355,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Buttons'**
   String get diaryDashboardModeToggle;
-
-  /// No description provided for @diaryWeekTileLeftCaption.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{left · 1 day to go} other{left · {count} days to go}}'**
-  String diaryWeekTileLeftCaption(int count);
-
-  /// No description provided for @diaryWeekTileOverCaption.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{over · 1 day to go} other{over · {count} days to go}}'**
-  String diaryWeekTileOverCaption(int count);
-
-  /// No description provided for @diaryWeekTileDayUnder.
-  ///
-  /// In en, this message translates to:
-  /// **'under target'**
-  String get diaryWeekTileDayUnder;
-
-  /// No description provided for @diaryWeekTileDayOver.
-  ///
-  /// In en, this message translates to:
-  /// **'over target'**
-  String get diaryWeekTileDayOver;
-
-  /// No description provided for @diaryWeekTileDayPlanned.
-  ///
-  /// In en, this message translates to:
-  /// **'planned'**
-  String get diaryWeekTileDayPlanned;
-
-  /// No description provided for @diaryWeekTileDayToday.
-  ///
-  /// In en, this message translates to:
-  /// **'today'**
-  String get diaryWeekTileDayToday;
-
-  /// No description provided for @diaryWeekTileDayOpen.
-  ///
-  /// In en, this message translates to:
-  /// **'no data'**
-  String get diaryWeekTileDayOpen;
-
-  /// No description provided for @diaryWeekTileDaySemantics.
-  ///
-  /// In en, this message translates to:
-  /// **'{day}: {state}'**
-  String diaryWeekTileDaySemantics(String day, String state);
 
   /// No description provided for @diaryDayTypeTileSemantics.
   ///

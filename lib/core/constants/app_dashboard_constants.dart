@@ -32,6 +32,11 @@ abstract final class AppDashboard {
   /// Share of a meal row in the meals tile that the kcal number takes.
   static const int mealNumberFlex = 2;
 
+  /// Largest share of a macro's row in the macros tile that its name or its
+  /// ring takes; a longer name ends with an ellipsis, and the grams shrink
+  /// into the rest.
+  static const double macroNameShare = 0.7;
+
   /// Stroke of a large progress ring in a tile.
   static const double ringStroke = 7;
 
@@ -58,14 +63,13 @@ abstract final class AppDashboard {
   /// tile shows the change with one decimal.
   static const double weightFlatKgPerWeek = 0.05;
 
-  /// Diameter of the round edit buttons on a tile in edit mode.
-  static const double editButtonSize = 28;
+  /// Diameter of the round edit buttons on a tile in edit mode: the corner
+  /// radius, so each sits in its corner like a badge on the outline and
+  /// covers little of the content. Their tap areas stay bigger.
+  static const double editButtonSize = tileRadius;
 
   /// Icon size inside the edit buttons.
-  static const double editButtonIcon = 16;
-
-  /// Gap between an edit button and the tile's corner.
-  static const double editButtonInset = 4;
+  static const double editButtonIcon = 12;
 
   /// Width of the outline of a tile in edit mode.
   static const double editOutline = 1.5;
@@ -85,20 +89,9 @@ abstract final class AppDashboard {
   /// Tiles sliding to their new cells.
   static const Duration reflow = Duration(milliseconds: 200);
 
-  /// Diameter of a day mark in the week tile.
-  static const double weekMark = 14;
-
-  /// Diameter of the selected day's mark in the week tile.
-  static const double weekMarkSelected = 18;
-
-  /// Icon size inside a week tile day mark.
-  static const double weekMarkIcon = 10;
-
-  /// Outline of a planned or today mark in the week tile.
-  static const double weekMarkOutline = 1.5;
-
-  /// Gap between the balance number and the day marks of a wide week tile.
-  static const double weekNumberGap = 12;
+  /// Speed of the page scroll per pixel a dragged tile reaches past the
+  /// edge, like a reorderable list.
+  static const double autoScrollVelocity = 50;
 
   /// Icon size of a day type button in the day type tile.
   static const double dayTypeIcon = 18;

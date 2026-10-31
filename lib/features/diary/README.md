@@ -43,7 +43,7 @@ check-in composition.
   `DiaryEntryChangeController`. Bundles (prepared meals and combined foods) show their foods
   instead of the ruler.
 - `presentation/widgets/diary_steps_card/diary_steps_card.dart` shows the steps of the day
-  below the tile dashboard, with one slot per day of the run week that fills
+  below the week card, with one slot per day of the run week that fills
   day by day. With a steps goal it names the goal and a line fills up to
   it. After a week that met the goal on average, today's card asks whether
   the goal goes up by 100 steps. A tap opens `diary_steps_card_menu.dart` with the steps goal and the
@@ -52,13 +52,17 @@ check-in composition.
   are off.
 - `presentation/widgets/diary_dashboard/` owns the tile dashboard of a
   diary day (#930): the grid (`DiaryDashboard`), edit mode, the tile and add
-  sheets, and the tiles under `tiles/`. A tile is a `DiaryDashboardTile`
-  (id, sizes, display modes, builder) in `diary_dashboard_catalog.dart`;
-  the budget card is the wide tile `budget`. The layout
+  sheets, and the tiles with their shared parts (number, caption, ring,
+  sparkline) under `tiles/`. Each tile's id, sizes and display modes are a
+  `DiaryTileSpec` in `domain/diary_dashboard_tiles.dart`; a
+  `DiaryDashboardTile` in `diary_dashboard_catalog.dart` adds its icon,
+  names and builder. The budget card is the wide tile `budget`. The layout
   (`domain/diary_dashboard_layout.dart`, packed by
   `domain/diary_dashboard_packing.dart`) is saved per user in the device
   preferences (`data/diary_dashboard_layout_repository.dart`) and resolved
-  against the catalog on every read, so new tiles sort themselves in.
+  against the specs on every read, so new tiles sort themselves in.
+  `presentation/diary_dashboard_flow.dart` shows a snack bar when a change
+  was not saved.
 - `presentation/widgets/diary_budget_card/` owns the daily budget card
   (#907): the gold foil (#945, `HoloFoilCard` from `core/widgets`) when eaten
   plus open planned kcal land within 5 % of the target
@@ -73,7 +77,7 @@ check-in composition.
   `DiaryBalanceCardData` and the day's macros for it;
   `diary_burn_week_card/diary_balance_card.dart` loads it.
 - `presentation/widgets/diary_week_card/diary_week_card.dart` (#911) is the
-  week card between the budget card and the steps card: seven day fields of
+  week card between the tile dashboard and the steps card: seven day fields of
   the goal run that holds the shown day (fewer for a run that a new goal cut
   short). Each finished day fills like the kcal line against its budget; with
   the budget card's details open, numbers stand under the finished days.

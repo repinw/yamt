@@ -38,25 +38,22 @@ class DiaryTileMode {
 ///
 /// The grid gives a tile of fixed size a card frame with padding and the
 /// exact size of its cells; [builder] fills the inside and must look right
-/// at every size of [sizes] and every mode of [modes]: a small size shows
-/// less, never squeezed text. A wide tile brings its own frame and sets its
-/// own height. Taps inside work as usual; a long press belongs to the grid.
+/// at every size and every mode of [spec]: a small size shows less, never
+/// squeezed text. A wide tile brings its own frame and sets its own height.
+/// Taps inside work as usual; a long press belongs to the grid.
 @immutable
 class DiaryDashboardTile {
-  /// Creates the tile [id].
+  /// Creates the tile of [spec].
   const new({
-    required this.id,
+    required this.spec,
     required this.icon,
     required this.label,
-    required this.sizes,
-    required this.defaultSize,
     required this.modes,
     required this.builder,
-    this.visibleByDefault = true,
   });
 
-  /// Stable id, saved in the layout.
-  final String id;
+  /// What the layout knows of the tile: its id, sizes and modes.
+  final DiaryTileSpec spec;
 
   /// Icon in the add sheet and the tile menu.
   final IconData icon;
@@ -64,28 +61,15 @@ class DiaryDashboardTile {
   /// Name in the add sheet and the tile menu.
   final String Function(AppLocalizations l10n) label;
 
-  /// Sizes the tile offers, smallest first.
-  final List<DiaryTileSize> sizes;
-
-  /// Size of a newly shown tile.
-  final DiaryTileSize defaultSize;
-
-  /// Display modes; the first is the default.
+  /// How the tile menu shows the modes of [spec], in the same order.
   final List<DiaryTileMode> modes;
-
-  /// Whether the default layout shows the tile.
-  final bool visibleByDefault;
 
   /// Builds the inside of the tile.
   final Widget Function(DiaryTileArgs args) builder;
 
-  /// What the layout needs to know of the tile.
-  DiaryTileSpec get spec => DiaryTileSpec(
-    id: id,
-    sizes: sizes,
-    defaultSize: defaultSize,
-    modes: [for (final mode in modes) mode.id],
-    defaultMode: modes.first.id,
-    visibleByDefault: visibleByDefault,
-  );
+  /// Stable id, saved in the layout.
+  String get id => spec.id;
+
+  /// Sizes the tile offers, smallest first.
+  List<DiaryTileSize> get sizes => spec.sizes;
 }

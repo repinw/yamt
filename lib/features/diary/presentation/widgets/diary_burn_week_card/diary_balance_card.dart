@@ -6,10 +6,10 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_budget_card_data_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_budget_eaten_view_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_watch.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_loading.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
@@ -26,7 +26,7 @@ class DiaryBalanceCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final day = normalizeLocalDay(selectedDay);
-    final data = watchDiaryBudgetCardData(ref, day);
+    final data = ref.watch(diaryBudgetCardDataProvider(day));
     final showError = ref.watch(
       diaryDayDashboardControllerProvider(day).select((s) => s.showError),
     );

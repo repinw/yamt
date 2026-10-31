@@ -1,38 +1,36 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_dashboard_constants.dart';
-import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/application/diary_day_tdee_provider.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_tile_parts.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_caption.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_load_error.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_no_value.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number_body.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_number_format.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Mode id of the daily TDEE in kcal.
-const _numberMode = 'number';
-
-/// Mode id of the day's goal against the daily TDEE.
-const _compareMode = 'compare';
-
 /// The daily TDEE the app learned, alone or against the day's goal.
 const diaryTdeeTile = DiaryDashboardTile(
-  id: 'tdee',
+  spec: diaryTdeeTileSpec,
   icon: Icons.local_fire_department_outlined,
   label: _label,
-  sizes: [DiaryTileSize.s1x1, DiaryTileSize.s2x1, DiaryTileSize.s4x1],
-  defaultSize: DiaryTileSize.s2x1,
   modes: [
-    DiaryTileMode(id: _numberMode, icon: Icons.pin_outlined, label: _number),
     DiaryTileMode(
-      id: _compareMode,
+      id: DiaryTileModes.number,
+      icon: Icons.pin_outlined,
+      label: _number,
+    ),
+    DiaryTileMode(
+      id: DiaryTileModes.compare,
       icon: Icons.compare_arrows_rounded,
       label: _compare,
     ),
   ],
   builder: _build,
-  visibleByDefault: false,
 );
 
 String _label(AppLocalizations l10n) => l10n.diaryDashboardTileTdee;
@@ -53,26 +51,22 @@ class DiaryTdeeTileContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final dash = DiaryTileNumber(
-      l10n.profileNoValue,
-      color: FoodLabelColors.of(context).muted,
-    );
+    const dash = DiaryTileNoValue();
     return ref
         .watch(diaryDayTdeeProvider(args.day))
         .when(
           data: (data) => switch ((args.mode, data)) {
-            (_compareMode, (tdeeKcal: final tdee?, goalKcal: final goal?)) =>
+            (
+              DiaryTileModes.compare,
+              (tdeeKcal: final tdee?, goalKcal: final goal?),
+            ) =>
               _CompareView(size: args.size, tdeeKcal: tdee, goalKcal: goal),
-            (_numberMode, (tdeeKcal: final tdee?, goalKcal: _)) => _NumberView(
-              size: args.size,
-              tdeeKcal: tdee,
-            ),
+            (DiaryTileModes.number, (tdeeKcal: final tdee?, goalKcal: _)) =>
+              _NumberView(size: args.size, tdeeKcal: tdee),
             _ => dash,
           },
           loading: () => dash,
-          // The tile is optional; the Fortschritt tab shows load errors.
-          error: (_, _) => dash,
+          error: (_, _) => DiaryTileLoadError(size: args.size),
         );
   }
 }

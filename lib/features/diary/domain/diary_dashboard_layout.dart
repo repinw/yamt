@@ -49,7 +49,6 @@ class DiaryTileSpec {
     required this.sizes,
     required this.defaultSize,
     required this.modes,
-    required this.defaultMode,
     this.visibleByDefault = true,
   });
 
@@ -62,14 +61,14 @@ class DiaryTileSpec {
   /// Size of a newly shown tile.
   final DiaryTileSize defaultSize;
 
-  /// Ids of the display modes the tile offers.
+  /// Ids of the display modes the tile offers; the first is the default.
   final List<String> modes;
-
-  /// Mode of a newly shown tile.
-  final String defaultMode;
 
   /// Whether the default layout shows the tile. Others start hidden.
   final bool visibleByDefault;
+
+  /// Mode of a newly shown tile.
+  String get defaultMode => modes.first;
 }
 
 /// One shown tile: which tile, at which size, in which mode.

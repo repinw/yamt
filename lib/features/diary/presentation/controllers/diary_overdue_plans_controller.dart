@@ -13,9 +13,9 @@ const _dismissedKey = 'diary_overdue_plans_dismissed_v1';
 
 /// The days of the last week before [today] that the calendar can open
 /// and whose plans were never eaten or removed, oldest first; empty when
-/// there are none.
+/// there are none. Loading and a failed load stay visible as such.
 @riverpod
-List<DateTime> diaryOverduePlanDays(Ref ref, DateTime today) {
+AsyncValue<List<DateTime>> diaryOverduePlanDays(Ref ref, DateTime today) {
   final day = normalizeLocalDay(today);
   final lookback = addLocalDays(day, -diaryOverduePlanLookbackDays);
   // Only days the calendar can open; it starts at the first goal.
@@ -26,18 +26,15 @@ List<DateTime> diaryOverduePlanDays(Ref ref, DateTime today) {
   final earliest = selectable.isAfter(lookback) ? selectable : lookback;
   final latest = addLocalDays(day, -1);
   if (earliest.isAfter(latest)) {
-    return const [];
+    return const AsyncData([]);
   }
-  final planned =
-      ref
-          .watch(
-            diaryPlanDaysProvider(
-              DiaryCalendarBounds(earliestDay: earliest, latestDay: latest),
-            ),
-          )
-          .value ??
-      const <DateTime>{};
-  return planned.sorted((a, b) => a.compareTo(b));
+  return ref
+      .watch(
+        diaryPlanDaysProvider(
+          DiaryCalendarBounds(earliestDay: earliest, latestDay: latest),
+        ),
+      )
+      .whenData((planned) => planned.sorted((a, b) => a.compareTo(b)));
 }
 
 /// The [diaryOverduePlanDays] of [today] for the hint, or null when there
@@ -47,7 +44,9 @@ List<DateTime> diaryOverduePlanDays(Ref ref, DateTime today) {
 class DiaryOverduePlansController extends _$DiaryOverduePlansController {
   @override
   List<DateTime>? build(DateTime today) {
-    final days = ref.watch(diaryOverduePlanDaysProvider(today));
+    // The hint only shows known overdue days; it stays away while they
+    // load or when they fail to load.
+    final days = ref.watch(diaryOverduePlanDaysProvider(today)).value ?? [];
     final dismissed = DateTime.tryParse(
       ref.watch(appPreferencesProvider).getStringSync(_dismissedKey) ?? '',
     );

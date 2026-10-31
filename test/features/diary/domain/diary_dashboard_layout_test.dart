@@ -6,28 +6,24 @@ const _budget = DiaryTileSpec(
   sizes: [DiaryTileSize.wide],
   defaultSize: DiaryTileSize.wide,
   modes: ['card'],
-  defaultMode: 'card',
 );
 const _kcal = DiaryTileSpec(
   id: 'kcal',
   sizes: [DiaryTileSize.s1x1, DiaryTileSize.s2x1, DiaryTileSize.s2x2],
   defaultSize: DiaryTileSize.s2x1,
   modes: ['number', 'ring'],
-  defaultMode: 'number',
 );
 const _weight = DiaryTileSpec(
   id: 'weight',
   sizes: [DiaryTileSize.s2x1],
   defaultSize: DiaryTileSize.s2x1,
   modes: ['sparkline'],
-  defaultMode: 'sparkline',
 );
 const _overdue = DiaryTileSpec(
   id: 'overdue',
   sizes: [DiaryTileSize.s2x1],
   defaultSize: DiaryTileSize.s2x1,
   modes: ['count'],
-  defaultMode: 'count',
   visibleByDefault: false,
 );
 

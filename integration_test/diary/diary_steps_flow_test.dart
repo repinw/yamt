@@ -147,6 +147,18 @@ Widget _buildApp(
   );
 }
 
+/// The diary with its tile dashboard is taller than the default test
+/// screen, and the meals below it build lazily; a tall view keeps them
+/// built.
+void _useTallView(WidgetTester tester) {
+  final view = tester.view;
+  view.physicalSize = Size(
+    view.physicalSize.width,
+    3000 * view.devicePixelRatio,
+  );
+  addTearDown(tester.view.resetPhysicalSize);
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -164,6 +176,7 @@ void main() {
     addTearDown(settings.dispose);
     addTearDown(log.dispose);
 
+    _useTallView(tester);
     await tester.pumpWidget(_buildApp(settings, log));
     await tester.pumpAndSettle();
 

@@ -3,51 +3,45 @@ import 'package:yamt/core/constants/app_dashboard_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
+import 'package:yamt/features/diary/presentation/models/diary_macro_tile_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_line.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_tile_parts.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_caption.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number_body.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_ring.dart';
 
-/// What the macros tile shows of one macro, ready to draw.
-typedef DiaryMacroTileView = ({
-  /// One-letter name.
-  String letter,
+/// The inside of the macros tile at [size] in display mode [mode].
+class DiaryMacrosTileLayout extends StatelessWidget {
+  /// Creates the layout of [macros].
+  const new({
+    required this.macros,
+    required this.size,
+    required this.mode,
+    super.key,
+  });
 
-  /// Full name.
-  String label,
+  /// The three macros.
+  final List<DiaryMacroTileView> macros;
 
-  /// Grams left, over, or eaten.
-  String value,
+  /// Size of the tile.
+  final DiaryTileSize size;
 
-  /// Eaten of target, or null when the value says it already.
-  String? total,
+  /// Id of the display mode.
+  final String mode;
 
-  /// Color of the name.
-  Color labelColor,
-
-  /// Color of the value.
-  Color valueColor,
-
-  /// Eaten grams.
-  double eaten,
-
-  /// Counted planned grams.
-  double planned,
-
-  /// Target grams, or null on a pause day.
-  double? target,
-
-  /// Grams of a full line or ring without a target.
-  double scale,
-
-  /// Color of the eaten part.
-  Color eatenColor,
-});
+  @override
+  Widget build(BuildContext context) => switch (mode) {
+    DiaryTileModes.rings => _RingsLayout(macros: macros, size: size),
+    DiaryTileModes.numbers => _NumbersLayout(macros: macros, size: size),
+    _ => _BarsLayout(macros: macros, size: size),
+  };
+}
 
 /// The macros as three thin lines: side by side with their letters in one
 /// row, stacked with their names in two.
-class DiaryMacrosBarsLayout extends StatelessWidget {
-  /// Creates the layout.
-  const new({required this.macros, required this.size, super.key});
+class _BarsLayout extends StatelessWidget {
+  const new({required this.macros, required this.size});
 
   /// The three macros.
   final List<DiaryMacroTileView> macros;
@@ -62,12 +56,20 @@ class DiaryMacrosBarsLayout extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.xxs,
       children: [
-        Row(
-          spacing: AppSpacing.xs,
-          children: [
-            Flexible(child: _Name(name, color: macro.labelColor)),
-            Expanded(child: _Value(macro)),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) => Row(
+            spacing: AppSpacing.xs,
+            children: [
+              // The name keeps its width; the grams shrink into the rest.
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: constraints.maxWidth * AppDashboard.macroNameShare,
+                ),
+                child: _Name(name, color: macro.labelColor),
+              ),
+              Expanded(child: _Value(macro)),
+            ],
+          ),
         ),
         DiaryBudgetLine(
           eaten: macro.eaten,
@@ -89,19 +91,31 @@ class DiaryMacrosBarsLayout extends StatelessWidget {
         ],
       );
     }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [for (final macro in macros) bar(macro, macro.label)],
+    // Shrinks while the tile grows into its second row, and with very
+    // large text.
+    return LayoutBuilder(
+      builder: (context, constraints) => FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.topStart,
+        child: ConstrainedBox(
+          constraints: BoxConstraints.tightFor(width: constraints.maxWidth)
+              .copyWith(minHeight: constraints.maxHeight),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [for (final macro in macros) bar(macro, macro.label)],
+          ),
+        ),
+      ),
     );
   }
 }
 
 /// The macros as three small rings with their letters inside; the values
 /// sit beside them on a full row and under them on two rows.
-class DiaryMacrosRingsLayout extends StatelessWidget {
-  /// Creates the layout.
-  const new({required this.macros, required this.size, super.key});
+class _RingsLayout extends StatelessWidget {
+  const new({required this.macros, required this.size});
 
   /// The three macros.
   final List<DiaryMacroTileView> macros;
@@ -126,14 +140,21 @@ class DiaryMacrosRingsLayout extends StatelessWidget {
 
     Widget item(DiaryMacroTileView macro) => switch (size) {
       DiaryTileSize.s2x1 => Center(child: ring(macro)),
-      DiaryTileSize.s4x1 => Row(
-        spacing: AppSpacing.xs,
-        children: [
-          ring(macro),
-          Expanded(
-            child: _Value(macro, alignment: AlignmentDirectional.centerStart),
-          ),
-        ],
+      DiaryTileSize.s4x1 => LayoutBuilder(
+        builder: (context, constraints) => Row(
+          spacing: AppSpacing.xs,
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: constraints.maxWidth * AppDashboard.macroNameShare,
+              ),
+              child: ring(macro),
+            ),
+            Expanded(
+              child: _Value(macro, alignment: AlignmentDirectional.centerStart),
+            ),
+          ],
+        ),
       ),
       _ => Column(
         spacing: AppSpacing.xxs,
@@ -151,11 +172,10 @@ class DiaryMacrosRingsLayout extends StatelessWidget {
   }
 }
 
-/// The macros as three numbers with their names under them; two rows add
-/// eaten of target.
-class DiaryMacrosNumbersLayout extends StatelessWidget {
-  /// Creates the layout.
-  const new({required this.macros, required this.size, super.key});
+/// The macros as three numbers with their names under them; two full-width
+/// rows add eaten of target.
+class _NumbersLayout extends StatelessWidget {
+  const new({required this.macros, required this.size});
 
   /// The three macros.
   final List<DiaryMacroTileView> macros;
@@ -165,27 +185,25 @@ class DiaryMacrosNumbersLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final twoRows = size.rows == 2;
+    // A third of two cells is too narrow for eaten of target.
+    final withTotal = size == DiaryTileSize.s4x2;
     return Row(
       spacing: AppSpacing.sm,
       children: [
         for (final macro in macros)
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: DiaryTileNumber(
-                    macro.value,
-                    color: macro.valueColor,
-                    alignment: AlignmentDirectional.bottomStart,
-                  ),
-                ),
+            child: DiaryTileNumberBody(
+              number: DiaryTileNumber(
+                macro.value,
+                color: macro.valueColor,
+                alignment: AlignmentDirectional.bottomStart,
+              ),
+              captions: [
                 DiaryTileCaption(
                   _shortName(macro, size),
                   color: macro.labelColor,
                 ),
-                if (twoRows && macro.total != null)
+                if (withTotal && macro.total != null)
                   DiaryTileCaption(macro.total!),
               ],
             ),
@@ -231,17 +249,23 @@ class _Value extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
+    // Keeps the line height in a row: the fitted box alone would take the
+    // height its aspect ratio gives the full row width.
+    return Align(
       alignment: alignment,
-      child: Text(
-        macro.value,
-        maxLines: 1,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontFamily: AppFonts.geist,
-          fontWeight: FontWeight.w700,
-          color: macro.valueColor,
-          fontFeatures: const [FontFeature.tabularFigures()],
+      heightFactor: 1,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: alignment,
+        child: Text(
+          macro.value,
+          maxLines: 1,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontFamily: AppFonts.geist,
+            fontWeight: FontWeight.w700,
+            color: macro.valueColor,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
         ),
       ),
     );
