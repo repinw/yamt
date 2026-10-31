@@ -68,6 +68,14 @@ class _DayPagesState extends ConsumerState<_DayPages> {
   /// Whether the last page movement came from a finger.
   var _isDragging = false;
 
+  /// Whether the pages themselves select a day right now.
+  var _pageSelectsDay = false;
+
+  /// Whether a day selected elsewhere waits for the pages to move to it.
+  /// Until then a running slide or settle must not select its own day
+  /// again, or it would undo the newer one (#920).
+  var _selectedDayWaits = false;
+
   @override
   void initState() {
     super.initState();
@@ -90,7 +98,14 @@ class _DayPagesState extends ConsumerState<_DayPages> {
     final bounds = widget.bounds;
     ref.listen(
       diaryCalendarControllerProvider.select((state) => state.selectedDay),
-      (_, _) => _showSelectedDay(),
+      (_, _) {
+        if (!_pageSelectsDay) {
+          _selectedDayWaits = true;
+          // The frame after it clears the wait, so a swipe selects again.
+          WidgetsBinding.instance.ensureVisualUpdate();
+        }
+        _showSelectedDay();
+      },
     );
 
     return NotificationListener<ScrollNotification>(
@@ -108,9 +123,17 @@ class _DayPagesState extends ConsumerState<_DayPages> {
         controller: _pageController,
         itemCount: bounds.dayCount,
         allowImplicitScrolling: true,
-        onPageChanged: (index) => ref
-            .read(diaryCalendarControllerProvider.notifier)
-            .selectDay(bounds.dayAt(index)),
+        onPageChanged: (index) {
+          if (_selectedDayWaits) return;
+          _pageSelectsDay = true;
+          try {
+            ref
+                .read(diaryCalendarControllerProvider.notifier)
+                .selectDay(bounds.dayAt(index));
+          } finally {
+            _pageSelectsDay = false;
+          }
+        },
         itemBuilder: (context, index) => DiaryRestingDayGate(
           index: index,
           restingPage: _restingPage,
@@ -166,10 +189,14 @@ class _DayPagesState extends ConsumerState<_DayPages> {
 
   /// Moves the pages to the selected day after the frame.
   ///
-  /// While the diary shows, never moves them while the user swipes or a page
-  /// settles, since the swipe selects its own day.
+  /// While the diary shows, never moves them while the user swipes or while
+  /// the pages slide or settle on a day they selected themselves. A day
+  /// selected elsewhere, such as today from the „Heute“ button, takes over a
+  /// running slide or settle, or it would end on the old day (#920).
   void _showSelectedDay() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final takesOver = _selectedDayWaits;
+      _selectedDayWaits = false;
       // A hidden diary (another tab, a page on top) jumps, also during a
       // slide: its muted ticker would hold the slide until it shows and then
       // undo a newer day (#753).
@@ -179,7 +206,7 @@ class _DayPagesState extends ConsumerState<_DayPages> {
           _pageController.position.isScrollingNotifier.value;
       if (!mounted ||
           !_pageController.hasClients ||
-          (isVisible && isScrolling)) {
+          (isVisible && (_isDragging || (isScrolling && !takesOver)))) {
         return;
       }
       // Bounds that moved while the diary was hidden start new pages on the
@@ -190,7 +217,7 @@ class _DayPagesState extends ConsumerState<_DayPages> {
         return;
       }
       final target = bounds.indexOf(selectedDay);
-      // A hidden slide stops even on the target, or it would go on later.
+      // A slide stops even on the target, or it would go on later.
       final page = _pageController.page;
       if (page == target && !isScrolling) {
         return;
