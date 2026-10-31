@@ -28,7 +28,7 @@ class GraphitStockBar extends StatelessWidget {
   /// color.
   final bool isLow;
 
-  /// Part of [share] kept for plans, drawn in the accent color at the end
+  /// Part of [share] kept for plans, drawn in the plan color at the end
   /// of the fill.
   final double plannedShare;
 
@@ -50,7 +50,7 @@ class GraphitStockBar extends StatelessWidget {
               fill: (clampedShare * count - index).clamp(0.0, 1.0),
               free: (freeShare * count - index).clamp(0.0, 1.0),
               fillColor: fill,
-              plannedColor: colors.accent,
+              plannedColor: colors.plan,
               trackColor: colors.track,
             ),
           ),

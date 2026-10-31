@@ -203,4 +203,10 @@ abstract final class AppSizes {
 
   /// Gap between the symbol and the word of a labeled header tool.
   static const double headerToolGap = 4;
+
+  /// Height of a gradient track of the color picker.
+  static const double colorPickerTrack = 28;
+
+  /// Diameter of the preview swatch of the color picker.
+  static const double colorPickerPreview = 56;
 }

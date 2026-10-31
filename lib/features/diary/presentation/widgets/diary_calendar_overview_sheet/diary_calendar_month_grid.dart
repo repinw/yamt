@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
@@ -183,7 +184,7 @@ class DiaryCalendarDayCell extends StatelessWidget {
       (false, DiaryCalendarDayPlan.overdue) => colors.error,
       // Today's own dot also stands for its plans.
       _ when isToday => accent,
-      (false, DiaryCalendarDayPlan.open) => colors.onSurfaceVariant,
+      (false, DiaryCalendarDayPlan.open) => FoodLabelColors.of(context).plan,
       (false, null) => null,
     };
 

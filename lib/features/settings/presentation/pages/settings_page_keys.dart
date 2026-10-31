@@ -38,6 +38,9 @@ abstract final class SettingsPageKeys {
   /// Accent color row.
   static const accentTile = ValueKey<String>('settings-accent-tile');
 
+  /// Plan color row.
+  static const planColorTile = ValueKey<String>('settings-plan-color-tile');
+
   /// Day-before reminder switch row.
   static const planShortageReminderTile = ValueKey<String>(
     'settings-plan-shortage-reminder-tile',

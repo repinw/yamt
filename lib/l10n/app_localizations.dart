@@ -5605,6 +5605,60 @@ abstract class AppLocalizations {
   /// **'Emerald'**
   String get settingsAccentEmerald;
 
+  /// No description provided for @settingsPlanColorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan color'**
+  String get settingsPlanColorTitle;
+
+  /// No description provided for @settingsPlanColorDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get settingsPlanColorDefault;
+
+  /// No description provided for @settingsPlanColorCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get settingsPlanColorCustom;
+
+  /// No description provided for @settingsPlanColorReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset color'**
+  String get settingsPlanColorReset;
+
+  /// No description provided for @colorPickerHue.
+  ///
+  /// In en, this message translates to:
+  /// **'Hue'**
+  String get colorPickerHue;
+
+  /// No description provided for @colorPickerSaturation.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturation'**
+  String get colorPickerSaturation;
+
+  /// No description provided for @colorPickerBrightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Brightness'**
+  String get colorPickerBrightness;
+
+  /// No description provided for @colorPickerPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}%'**
+  String colorPickerPercent(int value);
+
+  /// No description provided for @colorPickerDegrees.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}°'**
+  String colorPickerDegrees(int value);
+
   /// No description provided for @settingsDiaryGoalSetGoalFirst.
   ///
   /// In en, this message translates to:

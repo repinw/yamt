@@ -3391,6 +3391,37 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsAccentEmerald => 'Smaragd';
 
   @override
+  String get settingsPlanColorTitle => 'Plan-Farbe';
+
+  @override
+  String get settingsPlanColorDefault => 'Standard';
+
+  @override
+  String get settingsPlanColorCustom => 'Eigene';
+
+  @override
+  String get settingsPlanColorReset => 'Farbe zurücksetzen';
+
+  @override
+  String get colorPickerHue => 'Farbton';
+
+  @override
+  String get colorPickerSaturation => 'Sättigung';
+
+  @override
+  String get colorPickerBrightness => 'Helligkeit';
+
+  @override
+  String colorPickerPercent(int value) {
+    return '$value %';
+  }
+
+  @override
+  String colorPickerDegrees(int value) {
+    return '$value°';
+  }
+
+  @override
   String get settingsDiaryGoalSetGoalFirst => 'Zuerst Ziel setzen';
 
   @override

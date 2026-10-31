@@ -9,8 +9,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// One plan: a faded food row in a dashed frame, so it reads as not eaten
-/// yet, with a check button once its day has come.
+/// One plan: a faded food row in a dashed frame in the plan color, so it
+/// reads as not eaten yet, with a check button once its day has come.
 class DiaryPlannedEntryTile extends StatelessWidget {
   /// Creates the row for [plan].
   const new({
@@ -42,9 +42,7 @@ class DiaryPlannedEntryTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return CustomPaint(
       key: DiaryMealsSectionKeys.plannedEntryTile(plan.id),
-      foregroundPainter: _DashedFramePainter(
-        Theme.of(context).colorScheme.outlineVariant,
-      ),
+      foregroundPainter: _DashedFramePainter(FoodLabelColors.of(context).plan),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         child: Row(
@@ -92,7 +90,7 @@ class _MealPrepTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = FoodLabelColors.of(context).accentText;
+    final color = FoodLabelColors.of(context).plan;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(color: color),

@@ -13,7 +13,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Small Vorrat tile for the quick overview grid: picture, name, amount left
-/// and the stock bar, with the part open plans take in the accent color.
+/// and the stock bar, with the part open plans take in the plan color.
 class InventoryEntryTile extends StatelessWidget {
   /// Creates the tile for [entry].
   const new({

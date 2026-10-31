@@ -3336,6 +3336,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccentEmerald => 'Emerald';
 
   @override
+  String get settingsPlanColorTitle => 'Plan color';
+
+  @override
+  String get settingsPlanColorDefault => 'Default';
+
+  @override
+  String get settingsPlanColorCustom => 'Custom';
+
+  @override
+  String get settingsPlanColorReset => 'Reset color';
+
+  @override
+  String get colorPickerHue => 'Hue';
+
+  @override
+  String get colorPickerSaturation => 'Saturation';
+
+  @override
+  String get colorPickerBrightness => 'Brightness';
+
+  @override
+  String colorPickerPercent(int value) {
+    return '$value%';
+  }
+
+  @override
+  String colorPickerDegrees(int value) {
+    return '$value°';
+  }
+
+  @override
   String get settingsDiaryGoalSetGoalFirst => 'Set a goal first';
 
   @override

@@ -2039,6 +2039,29 @@
   "settingsAccentViolet": "Violet",
   "settingsAccentCyan": "Cyan",
   "settingsAccentEmerald": "Emerald",
+  "settingsPlanColorTitle": "Plan color",
+  "settingsPlanColorDefault": "Default",
+  "settingsPlanColorCustom": "Custom",
+  "settingsPlanColorReset": "Reset color",
+  "colorPickerHue": "Hue",
+  "colorPickerSaturation": "Saturation",
+  "colorPickerBrightness": "Brightness",
+  "colorPickerPercent": "{value}%",
+  "@colorPickerPercent": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "colorPickerDegrees": "{value}°",
+  "@colorPickerDegrees": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
   "settingsDiaryGoalSetGoalFirst": "Set a goal first",
   "settingsPrivacyTitle": "Privacy",
   "settingsPrivacySubtitle": "Permissions and data controls",
