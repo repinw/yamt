@@ -3085,6 +3085,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPlanMealPrepTag => 'Meal Prep';
 
   @override
+  String get diaryDashboardDone => 'Done';
+
+  @override
+  String get diaryDashboardReset => 'Reset';
+
+  @override
+  String get diaryDashboardAddTile => 'Add tile';
+
+  @override
+  String get diaryDashboardTileMenu => 'Tile options';
+
+  @override
+  String get diaryDashboardResizeTile => 'Resize';
+
+  @override
+  String get diaryDashboardHideTile => 'Hide';
+
+  @override
+  String get diaryDashboardModesLabel => 'View';
+
+  @override
+  String get diaryDashboardSizesLabel => 'Size';
+
+  @override
+  String diaryDashboardSizeLabel(int columns, int rows) {
+    return '$columns×$rows';
+  }
+
+  @override
+  String get diaryDashboardSizeWide => 'Full width';
+
+  @override
+  String get diaryDashboardTileBudget => 'Daily budget';
+
+  @override
   String get diaryBalanceLoadFailed => 'Balance could not be loaded';
 
   @override

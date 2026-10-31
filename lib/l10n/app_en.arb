@@ -1870,6 +1870,27 @@
   "diaryPlanNutritionPending": "kcal open",
   "diaryPlanShortTag": "Not in stock",
   "diaryPlanMealPrepTag": "Meal Prep",
+  "diaryDashboardDone": "Done",
+  "diaryDashboardReset": "Reset",
+  "diaryDashboardAddTile": "Add tile",
+  "diaryDashboardTileMenu": "Tile options",
+  "diaryDashboardResizeTile": "Resize",
+  "diaryDashboardHideTile": "Hide",
+  "diaryDashboardModesLabel": "View",
+  "diaryDashboardSizesLabel": "Size",
+  "diaryDashboardSizeLabel": "{columns}×{rows}",
+  "@diaryDashboardSizeLabel": {
+    "placeholders": {
+      "columns": {
+        "type": "int"
+      },
+      "rows": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDashboardSizeWide": "Full width",
+  "diaryDashboardTileBudget": "Daily budget",
   "diaryBalanceLoadFailed": "Balance could not be loaded",
   "diaryBalanceEatenLabel": "Eaten",
   "diaryBalanceLeftLabel": "Left",
