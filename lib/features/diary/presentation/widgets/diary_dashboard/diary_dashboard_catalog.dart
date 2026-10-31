@@ -7,7 +7,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/d
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_macros_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_meals_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_overdue_tile.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tdee_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_week_tile.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_weight_tile.dart';
 
 part 'diary_dashboard_catalog.g.dart';
 
@@ -17,7 +19,9 @@ const diaryDashboardCatalog = <DiaryDashboardTile>[
   diaryBudgetTile,
   diaryKcalTile,
   diaryMacrosTile,
+  diaryWeightTile,
   diaryWeekTile,
+  diaryTdeeTile,
   diaryDayTypeTile,
   diaryMealsTile,
   diaryOverdueTile,
