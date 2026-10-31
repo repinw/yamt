@@ -5188,6 +5188,72 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get diaryDashboardDone;
 
+  /// No description provided for @diaryDashboardTileKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get diaryDashboardTileKcal;
+
+  /// No description provided for @diaryDashboardKcalModeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Number'**
+  String get diaryDashboardKcalModeNumber;
+
+  /// No description provided for @diaryDashboardKcalModeBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar'**
+  String get diaryDashboardKcalModeBar;
+
+  /// No description provided for @diaryDashboardKcalModeRing.
+  ///
+  /// In en, this message translates to:
+  /// **'Ring'**
+  String get diaryDashboardKcalModeRing;
+
+  /// No description provided for @diaryDashboardTileMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'Macros'**
+  String get diaryDashboardTileMacros;
+
+  /// No description provided for @diaryDashboardMacrosModeBars.
+  ///
+  /// In en, this message translates to:
+  /// **'Bars'**
+  String get diaryDashboardMacrosModeBars;
+
+  /// No description provided for @diaryDashboardMacrosModeRings.
+  ///
+  /// In en, this message translates to:
+  /// **'Rings'**
+  String get diaryDashboardMacrosModeRings;
+
+  /// No description provided for @diaryDashboardMacrosModeNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers'**
+  String get diaryDashboardMacrosModeNumbers;
+
+  /// No description provided for @diaryDashboardMacroProteinShort.
+  ///
+  /// In en, this message translates to:
+  /// **'P'**
+  String get diaryDashboardMacroProteinShort;
+
+  /// No description provided for @diaryDashboardMacroCarbsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'C'**
+  String get diaryDashboardMacroCarbsShort;
+
+  /// No description provided for @diaryDashboardMacroFatShort.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get diaryDashboardMacroFatShort;
+
   /// No description provided for @diaryDashboardReset.
   ///
   /// In en, this message translates to:

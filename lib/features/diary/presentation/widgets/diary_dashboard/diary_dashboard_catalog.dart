@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_budget_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_day_type_tile.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_kcal_tile.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_macros_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_meals_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_overdue_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_week_tile.dart';
@@ -13,6 +15,8 @@ part 'diary_dashboard_catalog.g.dart';
 /// layout. A tile added later sorts itself in after the tile before it here.
 const diaryDashboardCatalog = <DiaryDashboardTile>[
   diaryBudgetTile,
+  diaryKcalTile,
+  diaryMacrosTile,
   diaryWeekTile,
   diaryDayTypeTile,
   diaryMealsTile,

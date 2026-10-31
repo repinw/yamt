@@ -3145,6 +3145,39 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryDashboardDone => 'Fertig';
 
   @override
+  String get diaryDashboardTileKcal => 'Kalorien';
+
+  @override
+  String get diaryDashboardKcalModeNumber => 'Zahl';
+
+  @override
+  String get diaryDashboardKcalModeBar => 'Balken';
+
+  @override
+  String get diaryDashboardKcalModeRing => 'Ring';
+
+  @override
+  String get diaryDashboardTileMacros => 'Makros';
+
+  @override
+  String get diaryDashboardMacrosModeBars => 'Balken';
+
+  @override
+  String get diaryDashboardMacrosModeRings => 'Ringe';
+
+  @override
+  String get diaryDashboardMacrosModeNumbers => 'Zahlen';
+
+  @override
+  String get diaryDashboardMacroProteinShort => 'E';
+
+  @override
+  String get diaryDashboardMacroCarbsShort => 'K';
+
+  @override
+  String get diaryDashboardMacroFatShort => 'F';
+
+  @override
   String get diaryDashboardReset => 'Zurücksetzen';
 
   @override

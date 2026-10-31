@@ -3088,6 +3088,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDashboardDone => 'Done';
 
   @override
+  String get diaryDashboardTileKcal => 'Calories';
+
+  @override
+  String get diaryDashboardKcalModeNumber => 'Number';
+
+  @override
+  String get diaryDashboardKcalModeBar => 'Bar';
+
+  @override
+  String get diaryDashboardKcalModeRing => 'Ring';
+
+  @override
+  String get diaryDashboardTileMacros => 'Macros';
+
+  @override
+  String get diaryDashboardMacrosModeBars => 'Bars';
+
+  @override
+  String get diaryDashboardMacrosModeRings => 'Rings';
+
+  @override
+  String get diaryDashboardMacrosModeNumbers => 'Numbers';
+
+  @override
+  String get diaryDashboardMacroProteinShort => 'P';
+
+  @override
+  String get diaryDashboardMacroCarbsShort => 'C';
+
+  @override
+  String get diaryDashboardMacroFatShort => 'F';
+
+  @override
   String get diaryDashboardReset => 'Reset';
 
   @override
