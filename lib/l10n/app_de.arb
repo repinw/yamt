@@ -1743,6 +1743,29 @@
   "settingsAccentViolet": "Violett",
   "settingsAccentCyan": "Cyan",
   "settingsAccentEmerald": "Smaragd",
+  "settingsPlanColorTitle": "Plan-Farbe",
+  "settingsPlanColorDefault": "Standard",
+  "settingsPlanColorCustom": "Eigene",
+  "settingsPlanColorReset": "Farbe zurücksetzen",
+  "colorPickerHue": "Farbton",
+  "colorPickerSaturation": "Sättigung",
+  "colorPickerBrightness": "Helligkeit",
+  "colorPickerPercent": "{value} %",
+  "@colorPickerPercent": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "colorPickerDegrees": "{value}°",
+  "@colorPickerDegrees": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
   "settingsDiaryGoalSetGoalFirst": "Zuerst Ziel setzen",
   "settingsPrivacyTitle": "Datenschutz",
   "settingsPrivacySubtitle": "Berechtigungen und Daten verwalten",

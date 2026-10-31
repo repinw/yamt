@@ -9,6 +9,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_accent_controller.dart';
+import 'package:yamt/core/theme/app_plan_color_controller.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_mode_controller.dart';
 import 'package:yamt/core/theme/native_theme_mode.dart';
@@ -98,12 +99,13 @@ class _YAMTState extends ConsumerState<YAMT> {
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final accent = ref.watch(appAccentControllerProvider);
+    final plan = ref.watch(appPlanColorControllerProvider);
 
     return MaterialApp.router(
       title: 'YAMT',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(accent: accent),
-      darkTheme: AppTheme.dark(accent: accent),
+      theme: AppTheme.light(accent: accent, plan: plan),
+      darkTheme: AppTheme.dark(accent: accent, plan: plan),
       themeMode: ref.watch(appThemeModeControllerProvider),
       routerConfig: router,
       // Above the router, so the system back closes an open keyboard

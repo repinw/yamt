@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/application/diary_plan_days_provider.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -119,7 +120,7 @@ void main() {
     expect(await result, today);
   });
 
-  testWidgets('dots mark open plans, and overdue plans in the error color', (
+  testWidgets('dots mark open plans in the plan color, overdue in error', (
     tester,
   ) async {
     final overdue = DateTime(2026, 4, 20);
@@ -138,9 +139,9 @@ void main() {
           .color;
     }
 
-    final colors = Theme.of(tester.element(find.text('15'))).colorScheme;
-    expect(dotColor(overdue), colors.error);
-    expect(dotColor(upcoming), colors.onSurfaceVariant);
+    final context = tester.element(find.text('15'));
+    expect(dotColor(overdue), Theme.of(context).colorScheme.error);
+    expect(dotColor(upcoming), FoodLabelColors.of(context).plan);
     expect(dotColor(DateTime(2026, 4, 15)), isNull);
   });
 }
