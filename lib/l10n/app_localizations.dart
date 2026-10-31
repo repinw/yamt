@@ -5428,6 +5428,72 @@ abstract class AppLocalizations {
   /// **'View'**
   String get diaryDashboardModesLabel;
 
+  /// No description provided for @diaryDashboardTileWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get diaryDashboardTileWeight;
+
+  /// No description provided for @diaryDashboardWeightModeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Number'**
+  String get diaryDashboardWeightModeNumber;
+
+  /// No description provided for @diaryDashboardWeightModeSparkline.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend line'**
+  String get diaryDashboardWeightModeSparkline;
+
+  /// No description provided for @diaryDashboardWeightPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'{kg} kg/week'**
+  String diaryDashboardWeightPerWeek(String kg);
+
+  /// No description provided for @diaryDashboardTileTdee.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy use (TDEE)'**
+  String get diaryDashboardTileTdee;
+
+  /// No description provided for @diaryDashboardTdeeModeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Number'**
+  String get diaryDashboardTdeeModeNumber;
+
+  /// No description provided for @diaryDashboardTdeeModeCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Against the goal'**
+  String get diaryDashboardTdeeModeCompare;
+
+  /// No description provided for @diaryDashboardTdeePerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'burned per day'**
+  String get diaryDashboardTdeePerDay;
+
+  /// No description provided for @diaryDashboardTdeeDeficit.
+  ///
+  /// In en, this message translates to:
+  /// **'deficit'**
+  String get diaryDashboardTdeeDeficit;
+
+  /// No description provided for @diaryDashboardTdeeSurplus.
+  ///
+  /// In en, this message translates to:
+  /// **'surplus'**
+  String get diaryDashboardTdeeSurplus;
+
+  /// No description provided for @diaryDashboardTdeeAgainst.
+  ///
+  /// In en, this message translates to:
+  /// **'goal {goal} · TDEE {tdee}'**
+  String diaryDashboardTdeeAgainst(String goal, String tdee);
+
   /// No description provided for @diaryDashboardSizesLabel.
   ///
   /// In en, this message translates to:

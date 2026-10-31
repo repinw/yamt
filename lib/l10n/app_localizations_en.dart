@@ -3236,6 +3236,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDashboardModesLabel => 'View';
 
   @override
+  String get diaryDashboardTileWeight => 'Weight';
+
+  @override
+  String get diaryDashboardWeightModeNumber => 'Number';
+
+  @override
+  String get diaryDashboardWeightModeSparkline => 'Trend line';
+
+  @override
+  String diaryDashboardWeightPerWeek(String kg) {
+    return '$kg kg/week';
+  }
+
+  @override
+  String get diaryDashboardTileTdee => 'Energy use (TDEE)';
+
+  @override
+  String get diaryDashboardTdeeModeNumber => 'Number';
+
+  @override
+  String get diaryDashboardTdeeModeCompare => 'Against the goal';
+
+  @override
+  String get diaryDashboardTdeePerDay => 'burned per day';
+
+  @override
+  String get diaryDashboardTdeeDeficit => 'deficit';
+
+  @override
+  String get diaryDashboardTdeeSurplus => 'surplus';
+
+  @override
+  String diaryDashboardTdeeAgainst(String goal, String tdee) {
+    return 'goal $goal · TDEE $tdee';
+  }
+
+  @override
   String get diaryDashboardSizesLabel => 'Size';
 
   @override

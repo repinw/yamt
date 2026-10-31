@@ -1949,6 +1949,34 @@
   },
   "diaryDashboardHideTile": "Hide",
   "diaryDashboardModesLabel": "View",
+  "diaryDashboardTileWeight": "Weight",
+  "diaryDashboardWeightModeNumber": "Number",
+  "diaryDashboardWeightModeSparkline": "Trend line",
+  "diaryDashboardWeightPerWeek": "{kg} kg/week",
+  "@diaryDashboardWeightPerWeek": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDashboardTileTdee": "Energy use (TDEE)",
+  "diaryDashboardTdeeModeNumber": "Number",
+  "diaryDashboardTdeeModeCompare": "Against the goal",
+  "diaryDashboardTdeePerDay": "burned per day",
+  "diaryDashboardTdeeDeficit": "deficit",
+  "diaryDashboardTdeeSurplus": "surplus",
+  "diaryDashboardTdeeAgainst": "goal {goal} · TDEE {tdee}",
+  "@diaryDashboardTdeeAgainst": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "tdee": {
+        "type": "String"
+      }
+    }
+  },
   "diaryDashboardSizesLabel": "Size",
   "diaryDashboardSizeLabel": "{columns}×{rows}",
   "@diaryDashboardSizeLabel": {

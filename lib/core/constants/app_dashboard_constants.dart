@@ -38,6 +38,26 @@ abstract final class AppDashboard {
   /// Stroke of a small progress ring in a tile.
   static const double ringStrokeSmall = 4;
 
+  /// Least height the number of a tile keeps before a caption shows below
+  /// it.
+  static const double numberMinHeight = 24;
+
+  /// Height one caption line takes at text scale 1; it grows with the text.
+  static const double captionLineHeight = 18;
+
+  /// Gap between the number and the line of a tile that shows both.
+  static const double tileInnerGap = 8;
+
+  /// Width of the line of a tile's sparkline.
+  static const double sparklineStroke = 2;
+
+  /// Radius of the dot on the newest value of a tile's sparkline.
+  static const double sparklineDotRadius = 3;
+
+  /// Weekly weight change in kg below which the trend arrow lies flat; the
+  /// tile shows the change with one decimal.
+  static const double weightFlatKgPerWeek = 0.05;
+
   /// Diameter of the round edit buttons on a tile in edit mode.
   static const double editButtonSize = 28;
 
