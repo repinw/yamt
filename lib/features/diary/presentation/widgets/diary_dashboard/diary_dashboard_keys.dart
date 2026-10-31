@@ -5,6 +5,9 @@ abstract final class DiaryDashboardKeys {
   /// The dashboard.
   static const dashboard = Key('diary_dashboard');
 
+  /// The edit button of an empty dashboard.
+  static const edit = Key('diary_dashboard_edit');
+
   /// "Fertig" of the edit bar.
   static const done = Key('diary_dashboard_done');
 

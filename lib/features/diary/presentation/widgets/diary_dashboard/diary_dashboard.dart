@@ -10,6 +10,7 @@ import 'package:yamt/features/diary/presentation/controllers/diary_dashboard_edi
 import 'package:yamt/features/diary/presentation/controllers/diary_dashboard_layout_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_catalog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_edit_bar.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_edit_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_grid_block.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_lift.dart';
@@ -59,7 +60,7 @@ class _DiaryDashboardState extends ConsumerState<DiaryDashboard> {
     final edit = ref.read(diaryDashboardEditControllerProvider.notifier);
     if (!ref.read(diaryDashboardEditControllerProvider)) edit.start();
     final rect = _rectOf(placement.id);
-    final tile = diaryDashboardTileById(placement.id);
+    final tile = ref.read(diaryDashboardTilesProvider).byId(placement.id);
     if (rect == null || tile == null) return;
     AppHapticFeedback.mediumImpact();
     _dragTarget = null;
@@ -95,6 +96,7 @@ class _DiaryDashboardState extends ConsumerState<DiaryDashboard> {
     // Lets the tiles slide before the next swap, so two tiles of different
     // size do not trade places back and forth under the finger.
     _settling = true;
+    _settleTimer?.cancel();
     _settleTimer = Timer(AppDashboard.reflow, () => _settling = false);
   }
 
@@ -108,7 +110,7 @@ class _DiaryDashboardState extends ConsumerState<DiaryDashboard> {
   void _onResizeUpdate(DiaryTilePlacement placement, Offset global) {
     final rect = _rectOf(placement.id);
     final metrics = _metrics;
-    final tile = diaryDashboardTileById(placement.id);
+    final tile = ref.read(diaryDashboardTilesProvider).byId(placement.id);
     if (rect == null || metrics == null || tile == null) return;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final span = Offset(
@@ -123,7 +125,7 @@ class _DiaryDashboardState extends ConsumerState<DiaryDashboard> {
   }
 
   Widget _slot(DiaryTilePlacement placement, {required bool editing}) {
-    final tile = diaryDashboardTileById(placement.id)!;
+    final tile = ref.read(diaryDashboardTilesProvider).byId(placement.id)!;
     return DiaryDashboardSlot(
       key: _keyOf(placement.id),
       tile: tile,
@@ -159,7 +161,10 @@ class _DiaryDashboardState extends ConsumerState<DiaryDashboard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: AppDashboard.gap,
           children: [
-            if (editing) const DiaryDashboardEditBar(),
+            if (editing)
+              const DiaryDashboardEditBar()
+            else if (layout.tiles.isEmpty)
+              const DiaryDashboardEditButton(),
             for (final block in blocks)
               switch (block) {
                 DiaryGridBlock() => DiaryDashboardGridBlock(

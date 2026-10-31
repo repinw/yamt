@@ -20,6 +20,7 @@ class DiaryDashboardAddSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final catalog = ref.watch(diaryDashboardTilesProvider);
     final hidden = ref.watch(
       diaryDashboardLayoutControllerProvider.select((l) => l.hidden),
     );
@@ -33,7 +34,7 @@ class DiaryDashboardAddSheet extends ConsumerWidget {
           label: l10n.diaryDashboardAddTile,
         ),
         for (final id in hidden)
-          if (diaryDashboardTileById(id) case final tile?)
+          if (catalog.byId(id) case final tile?)
             ListTile(
               key: DiaryDashboardKeys.addTile(id),
               leading: Icon(tile.icon),

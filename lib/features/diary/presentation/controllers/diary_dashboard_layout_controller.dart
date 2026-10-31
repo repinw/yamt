@@ -8,16 +8,17 @@ import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_d
 
 part 'diary_dashboard_layout_controller.g.dart';
 
-final List<DiaryTileSpec> _catalogSpecs = [
-  for (final tile in diaryDashboardCatalog) tile.spec,
-];
-
 /// The diary dashboard layout of the signed-in user, resolved against the
 /// tile catalog. Drags change it live; [save] stores it.
 @riverpod
 class DiaryDashboardLayoutController extends _$DiaryDashboardLayoutController {
+  late List<DiaryTileSpec> _catalogSpecs;
+
   @override
   DiaryDashboardLayout build() {
+    _catalogSpecs = [
+      for (final tile in ref.watch(diaryDashboardTilesProvider)) tile.spec,
+    ];
     final repository = ref.watch(diaryDashboardLayoutRepositoryProvider);
     try {
       final saved = repository.cachedLayout();

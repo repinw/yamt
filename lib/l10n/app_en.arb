@@ -1890,6 +1890,7 @@
     }
   },
   "diaryDashboardSizeWide": "Full width",
+  "diaryDashboardEdit": "Arrange tiles",
   "diaryDashboardTileBudget": "Daily budget",
   "diaryBalanceLoadFailed": "Balance could not be loaded",
   "diaryBalanceEatenLabel": "Eaten",
