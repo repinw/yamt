@@ -1309,6 +1309,60 @@ void main() {
     expect(pageView.controller!.page, bounds.indexOf(selectedDay));
   });
 
+  group('today during a page movement shows today (#920)', () {
+    void expectTodayShown(WidgetTester tester, ProviderContainer container) {
+      final bounds = container.read(diaryCalendarBoundsProvider);
+      expect(
+        container.read(diaryCalendarControllerProvider).isSelectedToday,
+        isTrue,
+      );
+      expect(
+        tester.widget<PageView>(find.byType(PageView)).controller!.page,
+        bounds.indexOf(selectedDay),
+      );
+    }
+
+    testWidgets('during a slide to another day', (tester) async {
+      final container = await _pumpDiaryPage(tester, selectedDay: selectedDay);
+      final calendar = container.read(diaryCalendarControllerProvider.notifier)
+        ..selectPreviousDay();
+      await _pumpFrames(tester);
+      calendar.selectPreviousDay();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      calendar.showToday();
+      await _pumpFrames(tester, count: 20);
+
+      expectTodayShown(tester, container);
+    });
+
+    testWidgets('while a swipe settles', (tester) async {
+      final container = await _pumpDiaryPage(tester, selectedDay: selectedDay);
+
+      await tester.fling(find.byType(PageView), const Offset(300, 0), 1000);
+      for (var frame = 0; frame < 30; frame++) {
+        if (!container.read(diaryCalendarControllerProvider).isSelectedToday) {
+          break;
+        }
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(
+        container.read(diaryCalendarControllerProvider).isSelectedToday,
+        isFalse,
+      );
+      final position = tester
+          .widget<PageView>(find.byType(PageView))
+          .controller!
+          .position;
+      expect(position.isScrollingNotifier.value, isTrue);
+      container.read(diaryCalendarControllerProvider.notifier).showToday();
+      await _pumpFrames(tester, count: 20);
+
+      expectTodayShown(tester, container);
+    });
+  });
+
   testWidgets('selecting another day slides the pages to it', (tester) async {
     final container = await _pumpDiaryPage(tester, selectedDay: selectedDay);
 
