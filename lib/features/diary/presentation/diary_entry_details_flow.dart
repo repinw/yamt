@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +15,14 @@ import 'package:yamt/features/diary/presentation/controllers/'
     'diary_plan_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_entry_amount_service.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_same_food_service.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_pack_choice_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _logName = 'DiaryEntryDetailsFlow';
 
 /// Changes of a logged entry from its details page. Each one saves at once
 /// and offers an undo in a snack bar.
@@ -95,6 +103,9 @@ abstract final class DiaryEntryDetailsFlow {
 
   /// Logs the food of [entry] again as a new entry at the current time and
   /// closes the page.
+  ///
+  /// When the Vorrat holds the food, the user picks the pack its stock comes
+  /// from, or eats it without stock (#326).
   static Future<void> eatAgain(
     BuildContext context, {
     required CalorieEntry entry,
@@ -105,24 +116,93 @@ abstract final class DiaryEntryDetailsFlow {
       id: const Uuid().v4(),
       now: container.read(clockProvider)(),
     );
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final saved = await _controller(container).save(repeated);
+    final packs = await _packsToRepeat(container, entry);
     if (!context.mounted) {
       return;
     }
-    if (saved) {
+    final choice = packs.isEmpty
+        ? const InventoryPackSkipped()
+        : await showInventoryPackChoiceSheet(
+            context,
+            packs: [for (final pack in packs) pack.item],
+          );
+    if (choice == null || !context.mounted) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final eaten = await switch (choice) {
+      InventoryPackChosen(:final item) => _eatAgainFromPack(
+        container,
+        repeated,
+        packs.firstWhere((pack) => pack.item.id == item.id),
+      ),
+      InventoryPackSkipped() =>
+        _controller(container)
+            .save(repeated)
+            .then(
+              (saved) => saved ? (entry: repeated, missedStock: false) : null,
+            ),
+    };
+    if (!context.mounted) {
+      return;
+    }
+    if (eaten != null) {
       context.pop();
     }
     _showResult(
       messenger,
-      succeeded: saved,
-      successMessage: l10n.caloriesEatAgainDoneMessage,
+      succeeded: eaten != null,
+      successMessage: eaten?.missedStock ?? false
+          ? l10n.caloriesEatAgainMissedStockMessage
+          : l10n.caloriesEatAgainDoneMessage,
       failureMessage: l10n.caloriesSaveFailed,
-      onUndo: () async => (await _controller(
-        container,
-      ).delete(repeated, restoreToInventory: false)).isSuccess,
+      onUndo: () async {
+        final logged = eaten!.entry;
+        final result = await _controller(container).delete(
+          logged,
+          restoreToInventory: logged.sourceInventoryItemId != null,
+        );
+        return result.isSuccess;
+      },
     );
+  }
+
+  /// The Vorrat packs [entry] can be eaten again from. A Vorrat that cannot
+  /// be read offers none, so the food is eaten without stock.
+  static Future<List<InventoryPack>> _packsToRepeat(
+    ProviderContainer container,
+    CalorieEntry entry,
+  ) async {
+    try {
+      return await _controller(container).loadPacksToRepeat(entry);
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to read the Vorrat packs of ${entry.name}.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const [];
+    }
+  }
+
+  static Future<InventoryEatAgainResult?> _eatAgainFromPack(
+    ProviderContainer container,
+    CalorieEntry repeated,
+    InventoryPack pack,
+  ) async {
+    try {
+      return await _controller(container).eatAgain(repeated, pack);
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to eat ${repeated.name} again from ${pack.item.id}.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
   }
 
   /// Plans the food of [entry] again for [day] (see [planCalorieEntryAgain])

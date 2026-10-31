@@ -32,6 +32,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_pack_choice_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
@@ -47,6 +49,7 @@ class _ItemStore implements InventoryCalorieEntryCommitStore {
 
   final FakeCalorieLogRepository diary;
   final restored = <String, int>{};
+  final taken = <String, int>{};
 
   @override
   Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
@@ -83,7 +86,20 @@ class _ItemStore implements InventoryCalorieEntryCommitStore {
   commitEntryAndInventoryItems({
     required CalorieEntry entry,
     required List<PendingInventoryConsumption> pendingConsumptions,
-  }) => throw UnimplementedError();
+  }) async {
+    await diary.saveEntry(entry);
+    for (final pending in pendingConsumptions) {
+      taken[pending.itemId] = pending.amount;
+    }
+    return [
+      for (final pending in pendingConsumptions)
+        InventoryCalorieEntryCommitResult(
+          itemId: pending.itemId,
+          quantity: 1,
+          currentAmount: 300 - pending.amount,
+        ),
+    ];
+  }
 }
 
 class _Items with InventoryItemWholeListWrites {
@@ -253,6 +269,39 @@ void main() {
     expect(logRepository.entries, hasLength(2));
     expect(logRepository.entries.map((entry) => entry.name), ['Skyr', 'Skyr']);
     expect(logRepository.entries.last.consumedAmount, 200);
+  });
+
+  testWidgets('"Nochmal" takes the stock from the Vorrat pack picked', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: [_entry(sourceItemId: 'skyr')],
+    );
+    addTearDown(logRepository.dispose);
+    final itemStore = _ItemStore(logRepository);
+    await _openDetails(
+      tester,
+      logRepository,
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(const _Items()),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(itemStore),
+      ],
+    );
+
+    await tester.tap(find.byKey(DiaryEntryDetailsPage.saveButtonKey));
+    await _pumpUntilFound(
+      tester,
+      find.byKey(inventoryPackChoiceRowKey('skyr')),
+    );
+    expect(find.byKey(inventoryPackChoiceSkipKey), findsOneWidget);
+    await tester.tap(find.byKey(inventoryPackChoiceRowKey('skyr')));
+    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryEntryDetailsPage), findsNothing);
+    expect(logRepository.entries, hasLength(2));
+    expect(logRepository.entries.last.sourceInventoryItemId, 'skyr');
+    expect(itemStore.taken, {'skyr': 200});
   });
 
   testWidgets('the plan icon plans the food again for a picked day', (

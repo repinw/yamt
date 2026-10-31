@@ -30,6 +30,10 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'eat_sheet/inventory_item_eat_sheet_body.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_pack_choice_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_rest_to_stock_dialog.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
@@ -396,6 +400,57 @@ void main() {
     expect(find.text('Planned for the day'), findsOneWidget);
   });
 
+  testWidgets('diary mode plans a later day from the picked Vorrat pack', (
+    tester,
+  ) async {
+    final inventoryController = _SuccessfulInventoryItemsController();
+    final plans = FakePlannedEntryRepository();
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        firebaseAuth: firebaseAuth,
+        overrides: [
+          plannedEntryRepositoryProvider.overrideWithValue(plans),
+          clockProvider.overrideWithValue(() => DateTime(2026, 4, 12, 20)),
+          inventoryItemRepositoryProvider.overrideWithValue(
+            _StockedInventoryRepository([_stockedPack()]),
+          ),
+        ],
+        onRun: (context, container, l10n) async {
+          await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.diary(),
+            sourceKey: '4006381333931',
+            result: _manualResult(
+              item: _manualItemWithNutrition(barcode: '4006381333931'),
+              eatSelection: EatSelection(
+                inventoryAmount: 200,
+                loggedAt: DateTime(2026, 4, 13, 12),
+                mealType: MealType.lunch,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(inventoryPackChoiceRowKey('stocked')));
+    await tester.pumpAndSettle();
+
+    // The plan keeps the pack, so accepting it takes the stock there.
+    final plan = plans.plans.single;
+    expect(plan.consumedAmount, 200);
+    expect(plan.sourceInventoryItemId, 'stocked');
+    expect(plan.sourceInventoryAmountToRestore, 200);
+    expect(inventoryController.addedItems, isEmpty);
+    expect(find.text('Planned for tomorrow'), findsOneWidget);
+  });
+
   testWidgets('a failed plan says the entry was not saved', (tester) async {
     final inventoryController = _SuccessfulInventoryItemsController();
     final plans = FakePlannedEntryRepository()..writeShouldFail = true;
@@ -518,6 +573,105 @@ void main() {
     // The whole package goes into the Vorrat, and 200 g of it are eaten.
     expect(inventoryController.addedItems.single.currentAmount, 500);
     expect(inventoryController.updatedItems, isEmpty);
+    expect(inventoryController.stagedConsumptions.single.amount, 200);
+  });
+
+  testWidgets('diary mode eats the picked amount from the picked Vorrat pack', (
+    tester,
+  ) async {
+    final inventoryController = _SuccessfulInventoryItemsController();
+    final commitStore = _RecordingCommitStore();
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        firebaseAuth: firebaseAuth,
+        commitStore: commitStore,
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            _StockedInventoryRepository([_stockedPack()]),
+          ),
+        ],
+        onRun: (context, container, l10n) async {
+          await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.diary(),
+            sourceKey: '4006381333931',
+            result: _manualResult(
+              item: _manualItemWithNutrition(barcode: '4006381333931'),
+              eatSelection: EatSelection(
+                inventoryAmount: 200,
+                loggedAt: DateTime.utc(2026, 4, 13, 12),
+                mealType: MealType.lunch,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+    expect(find.text('Take from inventory?'), findsOneWidget);
+    await tester.tap(find.byKey(inventoryPackChoiceRowKey('stocked')));
+    await tester.pumpAndSettle();
+
+    // The amount picked before is eaten from the pack at once: no second
+    // eat page, and nothing new goes into the Vorrat.
+    expect(find.byType(InventoryItemEatSheetBody), findsNothing);
+    final pending = commitStore.pendings.single;
+    expect(pending.itemId, 'stocked');
+    expect(pending.amount, 200);
+    expect(commitStore.entries.single.consumedAmount, 200);
+    expect(commitStore.entries.single.sourceInventoryItemId, 'stocked');
+    expect(inventoryController.addedItems, isEmpty);
+  });
+
+  testWidgets('diary mode without taking stock eats the food as before', (
+    tester,
+  ) async {
+    final inventoryController = _SuccessfulInventoryItemsController();
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        firebaseAuth: firebaseAuth,
+        commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(
+            _StockedInventoryRepository([_stockedPack()]),
+          ),
+        ],
+        onRun: (context, container, l10n) async {
+          await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.diary(),
+            sourceKey: '4006381333931',
+            result: _manualResult(
+              item: _manualItemWithNutrition(barcode: '4006381333931'),
+              eatSelection: EatSelection(
+                inventoryAmount: 200,
+                loggedAt: DateTime.utc(2026, 4, 13, 12),
+                mealType: MealType.lunch,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(inventoryPackChoiceSkipKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No'));
+    await tester.pumpAndSettle();
+
+    expect(inventoryController.addedItems.single.currentAmount, 200);
     expect(inventoryController.stagedConsumptions.single.amount, 200);
   });
 
@@ -1133,6 +1287,27 @@ class _SuccessfulInventoryCalorieEntryCommitStore
   }) => throw UnimplementedError();
 }
 
+/// Records the entries and stock that go out together.
+class _RecordingCommitStore
+    extends _SuccessfulInventoryCalorieEntryCommitStore {
+  final entries = <CalorieEntry>[];
+  final pendings = <PendingInventoryConsumption>[];
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) {
+    entries.add(entry);
+    pendings.addAll(pendingConsumptions);
+    return super.commitEntryAndInventoryItems(
+      entry: entry,
+      pendingConsumptions: pendingConsumptions,
+    );
+  }
+}
+
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 class _MockUser extends Mock implements User;
@@ -1210,11 +1385,15 @@ InventoryItem _manualItem() {
   );
 }
 
-InventoryItem _manualItemWithNutrition({String? weight = '500 g'}) {
+InventoryItem _manualItemWithNutrition({
+  String? weight = '500 g',
+  String? barcode,
+}) {
   return InventoryItem.create(
     id: 'manual-item',
     name: 'Muesli',
     brand: 'Grain Co',
+    barcode: barcode,
     entryDate: DateTime.utc(2026, 4, 13),
     storeName: 'Manual',
     quantity: 1,
@@ -1230,4 +1409,30 @@ InventoryItem _manualItemWithNutrition({String? weight = '500 g'}) {
       per100Fat: 6,
     ),
   );
+}
+
+/// An opened pack of the Muesli with the barcode 4006381333931.
+InventoryItem _stockedPack() =>
+    _manualItemWithNutrition(barcode: '4006381333931')
+        .copyWith(id: 'stocked', currentAmount: 300);
+
+/// A Vorrat that holds [_items].
+class _StockedInventoryRepository with InventoryItemWholeListWrites {
+  new(this._items);
+
+  final List<InventoryItem> _items;
+
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield _items;
+  }
+
+  @override
+  Future<List<InventoryItem>> readAll() async => _items;
+
+  @override
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
 }

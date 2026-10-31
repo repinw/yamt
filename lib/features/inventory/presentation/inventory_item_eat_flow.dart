@@ -51,6 +51,18 @@ class InventoryItemEatFlow {
     if (request == null || !context.mounted) {
       return null;
     }
+    return await logRequest(context: context, item: item, request: request);
+  }
+
+  /// Logs [request], an amount picked before, for [item].
+  ///
+  /// Reserves the stock from [item] itself. Returns the saved entry, or null
+  /// when saving fails.
+  static Future<CalorieEntry?> logRequest({
+    required BuildContext context,
+    required InventoryItem item,
+    required InventoryItemEatRequest request,
+  }) async {
     final container = ProviderScope.containerOf(context, listen: false);
     final pending = container
         .read(inventoryItemEatControllerProvider.notifier)

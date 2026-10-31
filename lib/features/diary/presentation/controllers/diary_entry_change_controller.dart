@@ -8,6 +8,9 @@ import 'package:yamt/features/inventory/application/'
     'inventory_entry_amount_service.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_entry_delete_service.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_same_food_service.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
 
 part 'diary_entry_change_controller.g.dart';
 
@@ -33,6 +36,24 @@ class DiaryEntryChangeController extends _$DiaryEntryChangeController {
         }
         return saved;
       });
+
+  /// The Vorrat packs that [entry]'s food can be eaten again from, in
+  /// eating order.
+  Future<List<InventoryPack>> loadPacksToRepeat(CalorieEntry entry) =>
+      ref.whileAlive(
+        inventorySameFoodServiceProvider,
+        (service) => service.loadPacksToRepeat(entry),
+      );
+
+  /// Saves [repeated] with the stock of [pack]. Returns null when nothing
+  /// was saved.
+  Future<InventoryEatAgainResult?> eatAgain(
+    CalorieEntry repeated,
+    InventoryPack pack,
+  ) => ref.whileAlive(
+    inventorySameFoodServiceProvider,
+    (service) => service.eatAgain(repeated, pack),
+  );
 
   /// Stores [entry] with [amount] and moves its stock with it.
   Future<InventoryEntryAmountChange> changeAmount(

@@ -143,7 +143,12 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Tapping a logged entry opens its item details in the food label look of
   the eat page: image, brand and name, the nutrition label per 100 g or ml
   and for the eaten amount, and the amount on the ruler. The main button
-  "Nochmal" logs the food again; once the amount changed it reads
+  "Nochmal" logs the food again; when the Vorrat holds the food (the
+  entry's own pack, a pack with its barcode, or one with its name and
+  brand), it first asks "Vom Vorrat abziehen?" with the packs to pick from,
+  or "Nicht abziehen". A picked pack gives at most what it has left; when
+  it runs empty the message says so, and the undo gives the stock back
+  (#326). Once the amount changed the button reads
   "Speichern" and stores the amount, with totals from the entry's per-100
   values, and closes the page. Icons beside it remove the entry (an entry
   from the Vorrat asks whether its stock goes back) and plan the food again
@@ -834,7 +839,18 @@ and feature description docs. This is product-facing; architecture rules stay in
   eaten, the app asks "Soll der Rest (300 g) in den Vorrat?"; "In den Vorrat"
   keeps the whole package in the Vorrat with the eaten amount taken off. A product with g or ml but no package size is eaten in that
   unit. The eat page always shows the per-100 column.
-- Recent manual items (up to 20) shown while the search query is empty.
+- In the diary, a scanned, searched, or recent food whose barcode is in the
+  Vorrat asks "Vom Vorrat abziehen?" after "Ins Tagebuch", with a list of
+  its packs, each with the amount left, opened packs first, then the
+  oldest. A tapped pack gives the amount picked on the eat page at once;
+  only when that amount cannot be told in the pack's unit does the pack's
+  eat page open. "Nicht abziehen" eats the food as a new product as before.
+  A plan for a later day asks the same: it keeps the picked pack, so
+  accepting it takes the stock there; without a pack it is planned as
+  before (#326).
+- "Zuletzt ausgewählt" (up to 20) shows while the search query is empty:
+  foods added by hand and foods eaten from the Vorrat, last eaten or added
+  first.
 - One product per visit, in the diary as in the Vorrat: one confirmation
   logs or stores it and the page closes (#519, #532).
 

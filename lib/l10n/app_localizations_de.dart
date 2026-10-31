@@ -322,6 +322,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryRestToStockYes => 'In den Vorrat';
 
   @override
+  String get inventoryPackChoiceTitle => 'Vom Vorrat abziehen?';
+
+  @override
+  String get inventoryPackChoiceSkip => 'Nicht abziehen';
+
+  @override
   String get productSearchHubRecentlySelectedTab => 'Zuletzt ausgewählt';
 
   @override
@@ -2375,6 +2381,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesEatAgainDoneMessage => 'Nochmal eingetragen';
+
+  @override
+  String get caloriesEatAgainMissedStockMessage =>
+      'Nochmal eingetragen. Dein Vorrat hat nicht gereicht und ist jetzt leer.';
 
   @override
   String get diaryEntryAgainAction => 'Nochmal';

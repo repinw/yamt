@@ -35,6 +35,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_when_menu.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_pack_choice_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/inventory_item_whole_list_writes.dart';
@@ -42,6 +44,8 @@ import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
 
 class _MockUser extends Mock implements User;
+
+class _MockAuth extends Mock implements FirebaseAuth;
 
 /// Writes the delete and its stock change to the diary fake and records the
 /// stock that went back and came out again.
@@ -310,6 +314,31 @@ Future<void> _tapCardLine(WidgetTester tester, Key key) async {
   await tester.tap(find.byKey(key));
   await tester.pumpAndSettle();
 }
+
+/// A Vorrat with the pack `inventory-1` and a commit store that records
+/// the stock that went back and came out.
+List<Override> _stockOverrides({
+  required List<(String, int)> restored,
+  required List<(String, int)> takenBack,
+}) => [
+  firebaseAuthProvider.overrideWith((ref) {
+    final user = _MockUser();
+    when(() => user.uid).thenReturn('user-1');
+    final auth = _MockAuth();
+    when(() => auth.currentUser).thenReturn(user);
+    return auth;
+  }),
+  inventoryItemRepositoryProvider.overrideWithValue(
+    const _Items(['inventory-1']),
+  ),
+  inventoryCalorieEntryCommitStoreProvider.overrideWith(
+    (ref) => _ItemStore(
+      ref.watch(calorieLogRepositoryProvider),
+      restored: restored,
+      takenBack: takenBack,
+    ),
+  ),
+];
 
 void main() {
   testWidgets('opens the entry with its label and amount', (tester) async {
@@ -599,6 +628,75 @@ void main() {
     expect(repeated.loggedAt, _now);
     expect(_isPageOpen(), isFalse);
     expect(find.text('Logged again'), findsOneWidget);
+  });
+
+  testWidgets('"Nochmal" on a Vorrat entry asks for the pack and takes stock', (
+    tester,
+  ) async {
+    final restored = <(String, int)>[];
+    final takenBack = <(String, int)>[];
+    final repository = await _open(tester, [
+      _skyr(
+        sourceInventoryItemId: 'inventory-1',
+        sourceInventoryAmountToRestore: 200,
+      ),
+    ], overrides: _stockOverrides(restored: restored, takenBack: takenBack));
+
+    await _tapCardLine(tester, DiaryEntryDetailsPage.saveButtonKey);
+    expect(find.byKey(inventoryPackChoiceSkipKey), findsOneWidget);
+    await tester.tap(find.byKey(inventoryPackChoiceRowKey('inventory-1')));
+    await tester.pumpAndSettle();
+
+    expect(repository.entries, hasLength(2));
+    final repeated = repository.entries.last;
+    expect(repeated.loggedAt, _now);
+    expect(repeated.sourceInventoryItemId, 'inventory-1');
+    expect(repeated.sourceInventoryAmountToRestore, 200);
+    expect(takenBack, [('inventory-1', 200)]);
+    expect(_isPageOpen(), isFalse);
+    expect(find.text('Logged again'), findsOneWidget);
+
+    await _tapUndo(tester);
+
+    expect(repository.entries.single.id, 'entry-1');
+    expect(restored, [('inventory-1', 200)]);
+  });
+
+  testWidgets('"Nochmal" without taking stock logs only the food', (
+    tester,
+  ) async {
+    final takenBack = <(String, int)>[];
+    final repository = await _open(tester, [
+      _skyr(
+        sourceInventoryItemId: 'inventory-1',
+        sourceInventoryAmountToRestore: 200,
+      ),
+    ], overrides: _stockOverrides(restored: [], takenBack: takenBack));
+
+    await _tapCardLine(tester, DiaryEntryDetailsPage.saveButtonKey);
+    await tester.tap(find.byKey(inventoryPackChoiceSkipKey));
+    await tester.pumpAndSettle();
+
+    expect(repository.entries, hasLength(2));
+    expect(repository.entries.last.sourceInventoryItemId, isNull);
+    expect(takenBack, isEmpty);
+    expect(_isPageOpen(), isFalse);
+  });
+
+  testWidgets('a dismissed pack question logs nothing', (tester) async {
+    final repository = await _open(tester, [
+      _skyr(
+        sourceInventoryItemId: 'inventory-1',
+        sourceInventoryAmountToRestore: 200,
+      ),
+    ], overrides: _stockOverrides(restored: [], takenBack: []));
+
+    await _tapCardLine(tester, DiaryEntryDetailsPage.saveButtonKey);
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+
+    expect(repository.entries, hasLength(1));
+    expect(_isPageOpen(), isTrue);
   });
 
   testWidgets('shows a prepared meal with its foods and without a ruler', (
