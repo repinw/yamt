@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/theme/app_custom_colors.dart';
+import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
@@ -46,13 +48,14 @@ Future<void> _pump(
   WidgetTester tester,
   DiaryBudgetCardData data, {
   bool showDetails = false,
+  ThemeData? theme,
 }) {
   return tester.pumpWidget(
     MaterialApp(
       locale: const Locale('en'),
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(brightness: Brightness.dark),
+      theme: theme ?? ThemeData(brightness: Brightness.dark),
       home: Scaffold(
         body: SizedBox(
           width: 200,
@@ -138,4 +141,89 @@ void main() {
     expect(total.textSpan!.toPlainText(), '100 / 150 g\n20 planned');
     expect(_value(tester, DiaryBudgetMacroKind.protein).data, '50 g');
   });
+
+  testWidgets('with "Makros immer bunt" every macro takes its color', (
+    tester,
+  ) async {
+    final colors = AppCustomColors.copyOf(AppTheme.dark());
+    await _pump(
+      tester,
+      _data(),
+      theme: AppTheme.custom(colors).withAllMacrosColored(value: true),
+    );
+
+    expect(
+      _value(tester, DiaryBudgetMacroKind.protein).style?.color,
+      colors[AppCustomColor.protein],
+    );
+    expect(
+      _value(tester, DiaryBudgetMacroKind.carbs).style?.color,
+      colors[AppCustomColor.carbs],
+    );
+    expect(
+      _value(tester, DiaryBudgetMacroKind.fat).style?.color,
+      colors[AppCustomColor.fat],
+    );
+  });
+
+  testWidgets('a picked macro color keeps its brightness on light paper', (
+    tester,
+  ) async {
+    const yellow = Color(0xFFFFE600);
+    await _pump(
+      tester,
+      _data(),
+      theme: AppTheme.custom(
+        AppCustomColors.copyOf(AppTheme.light())
+            .withColor(AppCustomColor.fat, yellow),
+      ),
+    );
+
+    expect(_value(tester, DiaryBudgetMacroKind.fat).style?.color, yellow);
+  });
+
+  testWidgets('with "Makros immer bunt" an overage keeps its text in ink', (
+    tester,
+  ) async {
+    final theme = AppTheme.custom(AppCustomColors.copyOf(AppTheme.dark()))
+        .withAllMacrosColored(value: true);
+    await _pump(tester, _data(fatEaten: 75), theme: theme);
+
+    expect(
+      _value(tester, DiaryBudgetMacroKind.fat).style?.color,
+      theme.extension<FoodLabelColors>()!.ink,
+    );
+  });
+
+  for (final (name, data) in [
+    ('a pause day', _data(isPauseDay: true)),
+    ('a past day', _data(status: DiaryDayStatus.past)),
+  ]) {
+    testWidgets('with "Makros immer bunt" $name colors no macro', (
+      tester,
+    ) async {
+      final colors = AppCustomColors.copyOf(AppTheme.dark());
+      await _pump(
+        tester,
+        data,
+        theme: AppTheme.custom(colors).withAllMacrosColored(value: true),
+      );
+
+      final macroColors = {
+        colors[AppCustomColor.protein],
+        colors[AppCustomColor.carbs],
+        colors[AppCustomColor.fat],
+      };
+      final texts = tester.widgetList<Text>(
+        find.descendant(
+          of: find.byType(DiaryBudgetMacroColumn),
+          matching: find.byType(Text),
+        ),
+      );
+      expect(texts, isNotEmpty);
+      for (final text in texts) {
+        expect(macroColors, isNot(contains(text.style?.color)));
+      }
+    });
+  }
 }

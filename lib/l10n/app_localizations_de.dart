@@ -3391,16 +3391,83 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsAccentEmerald => 'Smaragd';
 
   @override
-  String get settingsPlanColorTitle => 'Plan-Farbe';
+  String get settingsDesignCustom => 'Individuell';
 
   @override
-  String get settingsPlanColorDefault => 'Standard';
+  String get settingsCustomBaseTitle => 'Worauf aufbauen?';
 
   @override
-  String get settingsPlanColorCustom => 'Eigene';
+  String get settingsCustomBaseMessage =>
+      'Individuell startet als Kopie. Danach kannst du jede Farbe ändern.';
 
   @override
-  String get settingsPlanColorReset => 'Farbe zurücksetzen';
+  String get settingsCustomColorsTitle => 'Farben bearbeiten';
+
+  @override
+  String get settingsCustomColorsBasedOnLight => 'Aufgebaut auf Hell';
+
+  @override
+  String get settingsCustomColorsBasedOnDark => 'Aufgebaut auf Dunkel';
+
+  @override
+  String get settingsCustomColorsReset => 'Farben zurücksetzen';
+
+  @override
+  String get settingsCustomColorsUndo => 'Letzte Änderung rückgängig';
+
+  @override
+  String get settingsCustomColorApply => 'Übernehmen';
+
+  @override
+  String get settingsCustomColorRecent => 'Zuletzt';
+
+  @override
+  String settingsCustomColorRecentSwatch(String hex) {
+    return 'Zuletzt verwendet: $hex';
+  }
+
+  @override
+  String get settingsCustomAllMacrosColored => 'Makros immer bunt';
+
+  @override
+  String get settingsCustomAllMacrosColoredHint =>
+      'Aus: nur das niedrigste Makro ist farbig';
+
+  @override
+  String get settingsCustomColorPaper => 'Hintergrund';
+
+  @override
+  String get settingsCustomColorCard => 'Karten';
+
+  @override
+  String get settingsCustomColorInk => 'Text';
+
+  @override
+  String get settingsCustomColorMuted => 'Nebentext';
+
+  @override
+  String get settingsCustomColorLines => 'Linien';
+
+  @override
+  String get settingsCustomColorAccent => 'Akzent';
+
+  @override
+  String get settingsCustomColorPlan => 'Plan';
+
+  @override
+  String get settingsCustomColorSignal => 'Signal';
+
+  @override
+  String get settingsCustomPreviewCurry => 'Linsen-Curry';
+
+  @override
+  String get settingsCustomPreviewBar => 'Proteinriegel';
+
+  @override
+  String get settingsCustomPreviewLogged => 'Curry gebucht';
+
+  @override
+  String get settingsCustomPreviewScan => 'Scannen';
 
   @override
   String get colorPickerHue => 'Farbton';
@@ -6719,4 +6786,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diaryBudgetMenuPaceHint =>
       'Zeigt auf der kcal-Linie von heute, wo du jetzt stehen solltest, und bei jeder Mahlzeit ihr Ziel';
+
+  @override
+  String get diaryBudgetMenuAllMacros => 'Makros immer bunt';
+
+  @override
+  String get diaryBudgetMenuAllMacrosHint =>
+      'Aus: nur das niedrigste Makro ist farbig';
 }

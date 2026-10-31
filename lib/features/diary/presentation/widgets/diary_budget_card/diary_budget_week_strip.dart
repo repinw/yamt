@@ -15,7 +15,7 @@ import 'package:yamt/features/diary/application/diary_day_type_provider.dart';
 import 'package:yamt/features/diary/domain/diary_day_type.dart';
 import 'package:yamt/features/diary/presentation/diary_day_type_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_toggle_row.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_day_type_buttons.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_labels.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

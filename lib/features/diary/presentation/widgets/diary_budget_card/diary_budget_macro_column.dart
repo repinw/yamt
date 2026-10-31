@@ -16,8 +16,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Right column of the budget card: protein, carbs, and fat, each with the
 /// grams left (or over, or eaten) and a thin line. The macro with the
-/// lowest share of its target takes its color; over shows red only in the
-/// line.
+/// lowest share of its target takes its color, or every macro when the user
+/// picked "Makros immer bunt"; over shows red only in the line.
 class DiaryBudgetMacroColumn extends StatelessWidget {
   /// Creates the column.
   const new({
@@ -44,6 +44,11 @@ class DiaryBudgetMacroColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lowest = data.lowestMacro;
+    // As the lowest macro: no color on a pause day or a past day.
+    final allColored =
+        MetricAccentColors.of(context).allMacrosColored &&
+        !data.isPauseDay &&
+        !data.status.isPast;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppBudgetCard.macroGap,
@@ -51,7 +56,7 @@ class DiaryBudgetMacroColumn extends StatelessWidget {
         for (final macro in data.macros)
           _MacroRow(
             macro: macro,
-            isLowest: macro.kind == lowest,
+            isColored: allColored || macro.kind == lowest,
             isPauseDay: data.isPauseDay,
             isPlannedDay: data.isPlannedDay,
             showDetails: showDetails,
@@ -66,7 +71,7 @@ class DiaryBudgetMacroColumn extends StatelessWidget {
 class _MacroRow extends StatelessWidget {
   const new({
     required this.macro,
-    required this.isLowest,
+    required this.isColored,
     required this.isPauseDay,
     required this.isPlannedDay,
     required this.showDetails,
@@ -75,7 +80,7 @@ class _MacroRow extends StatelessWidget {
   });
 
   final DiaryBudgetMacro macro;
-  final bool isLowest;
+  final bool isColored;
   final bool isPauseDay;
   final bool isPlannedDay;
   final bool showDetails;
@@ -87,9 +92,13 @@ class _MacroRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final colors = FoodLabelColors.of(context);
-    final macroColor = _macroColor(MetricAccentColors.of(context));
-    // Bright macro colors are darkened as text on light paper.
-    final macroText = Theme.of(context).brightness == Brightness.light
+    final accents = MetricAccentColors.of(context);
+    final macroColor = _macroColor(accents);
+    // Bright macro colors are darkened as text on light paper, unless the
+    // user picked them.
+    final macroText =
+        Theme.of(context).brightness == Brightness.light &&
+            !accents.macrosAsPicked
         ? _darkened(macroColor, AppFoodLabel.lightLabelMaxLightness)
         : macroColor;
     final counted = macro.eaten + macro.planned;
@@ -101,9 +110,10 @@ class _MacroRow extends StatelessWidget {
         : left < 0
         ? l10n.diaryBudgetMacroOver(grams(-left))
         : l10n.diaryBudgetMacroLeft(grams(left));
+    // An overage keeps its text in ink; only its line shows red.
     final valueColor = isPauseDay
         ? colors.muted
-        : isLowest
+        : isColored && left >= 0
         ? macroText
         : colors.ink;
 
@@ -122,7 +132,7 @@ class _MacroRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.bodyMedium?.copyWith(
                   fontFamily: AppFonts.geist,
-                  color: isLowest ? macroText : colors.muted,
+                  color: isColored ? macroText : colors.muted,
                 ),
               ),
             ),
@@ -153,7 +163,7 @@ class _MacroRow extends StatelessWidget {
               ? colors.muted
               : isPlannedDay
               ? colors.plan
-              : isLowest
+              : isColored
               ? macroColor
               : null,
         ),

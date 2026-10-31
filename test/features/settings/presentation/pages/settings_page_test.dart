@@ -223,7 +223,7 @@ void main() {
       lessThan(tester.getTopLeft(find.byType(Scrollable).first).dy + 40),
     );
     expect(
-      find.byKey(SettingsPageKeys.themeModeTile).hitTestable(),
+      find.byKey(SettingsPageKeys.designTile).hitTestable(),
       findsOneWidget,
     );
   });

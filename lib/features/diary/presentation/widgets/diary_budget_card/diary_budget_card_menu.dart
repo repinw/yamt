@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_all_macros_colored_controller.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_marker_controller.dart';
@@ -22,7 +23,8 @@ Future<void> showDiaryBudgetCardMenu(
 
 /// Content of the budget card's menu: whether today's kcal line marks where
 /// the day should be by now, and while it does, the parts of the day that
-/// set the marker.
+/// set the marker; and whether every macro shows its color, the one choice
+/// for every design.
 class DiaryBudgetCardMenu extends ConsumerWidget {
   /// Creates the menu.
   const new({required this.targetKcal, super.key});
@@ -34,6 +36,7 @@ class DiaryBudgetCardMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final showPace = ref.watch(diaryPaceMarkerControllerProvider);
+    final allMacrosColored = ref.watch(appAllMacrosColoredControllerProvider);
 
     return Column(
       key: DiaryBudgetCardKeys.menu,
@@ -75,6 +78,18 @@ class DiaryBudgetCardMenu extends ConsumerWidget {
                   ],
                 )
               : const SizedBox(width: double.infinity),
+        ),
+        AppSwitchListTile(
+          key: DiaryBudgetCardKeys.allMacrosSwitch,
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.diaryBudgetMenuAllMacros),
+          subtitle: Text(l10n.diaryBudgetMenuAllMacrosHint),
+          value: allMacrosColored,
+          onChanged: (value) => unawaited(
+            ref
+                .read(appAllMacrosColoredControllerProvider.notifier)
+                .select(value: value),
+          ),
         ),
       ],
     );

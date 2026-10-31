@@ -187,4 +187,21 @@ void main() {
     expect(_editor, findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('"Makros immer bunt" saves one choice for every design', (
+    tester,
+  ) async {
+    final preferences = await _pump(tester);
+    await _open(tester);
+    final allMacros = find.byKey(DiaryBudgetCardKeys.allMacrosSwitch);
+    await tester.ensureVisible(allMacros);
+    await tester.pumpAndSettle();
+    expect(tester.widget<AppSwitchListTile>(allMacros).value, isFalse);
+
+    await tester.tap(allMacros);
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<AppSwitchListTile>(allMacros).value, isTrue);
+    expect(preferences.getStringSync('app_all_macros_colored_v1'), '1');
+  });
 }

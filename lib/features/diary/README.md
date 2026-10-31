@@ -85,6 +85,17 @@ composition.
   frame. So is `progressPhotoPoseLabel` in
   `presentation/widgets/progress_photo_capture_sheet.dart`, the name of a
   pose.
+- `presentation/widgets/diary_budget_card/diary_budget_line.dart`
+  (`DiaryBudgetLine`) is public UI for `features/settings`: the eaten,
+  planned and over parts of a budget line. The color editor of the design
+  "Individuell" draws its diary preview with it, so the preview bars look
+  like the card's.
+- `presentation/widgets/diary_budget_card/diary_budget_view_switch.dart`
+  (`DiaryBudgetViewSwitch`, "Übrig | Gegessen") and
+  `presentation/widgets/diary_budget_card/diary_budget_day_type_buttons.dart`
+  (`DiaryBudgetDayTypeButtons`, training and pause) are public UI for
+  `features/settings` too: plain widgets without controllers, which the
+  same preview shows at the top of its budget card.
 - `presentation/widgets/diary_meals_empty_state.dart` points to the "Essen"
   button on a day without logged food.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` loads

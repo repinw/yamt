@@ -32,14 +32,16 @@ abstract final class SettingsPageKeys {
   /// Language row.
   static const languageTile = ValueKey<String>('settings-language-tile');
 
-  /// Theme row (System, Light, Dark).
-  static const themeModeTile = ValueKey<String>('settings-theme-mode-tile');
+  /// Design row (System, Light, Dark, Custom).
+  static const designTile = ValueKey<String>('settings-theme-mode-tile');
 
   /// Accent color row.
   static const accentTile = ValueKey<String>('settings-accent-tile');
 
-  /// Plan color row.
-  static const planColorTile = ValueKey<String>('settings-plan-color-tile');
+  /// Row that opens the color editor of the design "Individuell".
+  static const customColorsTile = ValueKey<String>(
+    'settings-custom-colors-tile',
+  );
 
   /// Day-before reminder switch row.
   static const planShortageReminderTile = ValueKey<String>(

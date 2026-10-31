@@ -22,6 +22,7 @@ class DiaryBudgetLine extends StatelessWidget {
     this.eatenColor,
     this.scaleKcal,
     this.pace,
+    this.wrapPlanArea,
     super.key,
   });
 
@@ -45,6 +46,10 @@ class DiaryBudgetLine extends StatelessWidget {
 
   /// Amount the day should be at by now; null draws no pace marker.
   final double? pace;
+
+  /// Wraps an empty box over the planned part, as high as the line, for
+  /// example to give that part its own tap.
+  final Widget Function(Widget area)? wrapPlanArea;
 
   /// Key of the pace marker, for tests.
   static const paceKey = ValueKey<String>('diary-budget-line-pace');
@@ -145,6 +150,14 @@ class DiaryBudgetLine extends StatelessWidget {
                       key: paceKey,
                       painter: _PaceMarkerPainter(color: colors.ink, bar: bar),
                     ),
+                  ),
+                if (wrapPlanArea case final wrap? when planEnd > eatenEnd)
+                  Positioned(
+                    left: eatenEnd,
+                    top: 0,
+                    width: planEnd - eatenEnd,
+                    height: height,
+                    child: wrap(const SizedBox.expand()),
                   ),
               ],
             );

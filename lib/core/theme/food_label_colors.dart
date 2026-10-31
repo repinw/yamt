@@ -103,7 +103,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
 
   /// Planned food that is not eaten yet, and every other mark of a plan:
   /// planned rows, the planned part of a stock bar, calendar plan dots.
-  /// The user can pick their own in the settings.
+  /// The user can pick their own in the design "Individuell".
   final Color plan;
 
   @override

@@ -2039,10 +2039,38 @@
   "settingsAccentViolet": "Violet",
   "settingsAccentCyan": "Cyan",
   "settingsAccentEmerald": "Emerald",
-  "settingsPlanColorTitle": "Plan color",
-  "settingsPlanColorDefault": "Default",
-  "settingsPlanColorCustom": "Custom",
-  "settingsPlanColorReset": "Reset color",
+  "settingsDesignCustom": "Custom",
+  "settingsCustomBaseTitle": "Start from which design?",
+  "settingsCustomBaseMessage": "Custom starts as a copy. Then you can change every color.",
+  "settingsCustomColorsTitle": "Edit colors",
+  "settingsCustomColorsBasedOnLight": "Based on Light",
+  "settingsCustomColorsBasedOnDark": "Based on Dark",
+  "settingsCustomColorsReset": "Reset colors",
+  "settingsCustomColorsUndo": "Undo last change",
+  "settingsCustomColorApply": "Apply",
+  "settingsCustomColorRecent": "Recent",
+  "settingsCustomColorRecentSwatch": "Recently used: {hex}",
+  "@settingsCustomColorRecentSwatch": {
+    "placeholders": {
+      "hex": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsCustomAllMacrosColored": "Macros always in color",
+  "settingsCustomAllMacrosColoredHint": "Off: only the lowest macro shows its color",
+  "settingsCustomColorPaper": "Background",
+  "settingsCustomColorCard": "Cards",
+  "settingsCustomColorInk": "Text",
+  "settingsCustomColorMuted": "Secondary text",
+  "settingsCustomColorLines": "Lines",
+  "settingsCustomColorAccent": "Accent",
+  "settingsCustomColorPlan": "Plan",
+  "settingsCustomColorSignal": "Signal",
+  "settingsCustomPreviewCurry": "Lentil curry",
+  "settingsCustomPreviewBar": "Protein bar",
+  "settingsCustomPreviewLogged": "Curry logged",
+  "settingsCustomPreviewScan": "Scan",
   "colorPickerHue": "Hue",
   "colorPickerSaturation": "Saturation",
   "colorPickerBrightness": "Brightness",
@@ -4318,6 +4346,8 @@
     "description": "Switch in the budget card menu that marks on today's kcal line how many kcal the day should be at by now, from the parts of the day and the meal times, and shows each meal heading's kcal against its part of the day's target."
   },
   "diaryBudgetMenuPaceHint": "Marks on today's kcal line where you should be by now and shows each meal's target",
+  "diaryBudgetMenuAllMacros": "Macros always in color",
+  "diaryBudgetMenuAllMacrosHint": "Off: only the lowest macro shows its color",
   "@diaryBudgetMenuPaceHint": {
     "description": "Hint below the pace marker switch in the budget card menu."
   }

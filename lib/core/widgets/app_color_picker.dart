@@ -1,31 +1,35 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/widgets/app_color_wheel_painter.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Steps of the hue track, enough for a smooth rainbow.
-const _hueStops = 12;
+/// Degrees of hue per screen reader step.
+const _hueSemanticsStep = 15;
 
-/// A free color picker: hue, saturation and brightness, each on a slider
-/// whose track shows the colors it reaches.
+/// Saturation per screen reader step.
+const _saturationSemanticsStep = 0.1;
+
+/// A free color picker: a wheel for hue (around) and saturation (out from
+/// the middle), and a slider for brightness whose track shows the colors it
+/// reaches.
 ///
-/// [onChanged] reports every move, [onChangeEnd] the color when the finger
-/// lifts. The picker reads [color] only when it is created; give it a new
-/// key to start over from another color.
+/// [onChanged] reports every move. The picker reads [color] only when it is
+/// created; give it a new key to start over from another color.
 class AppColorPicker extends StatefulWidget {
   /// Creates the picker, starting at [color].
   const new({
     required this.color,
     required this.onChanged,
-    this.onChangeEnd,
+    required this.wheelSize,
+    required this.besideWheel,
     super.key,
   });
 
-  /// Key of the hue slider.
-  static const hueKey = ValueKey<String>('app-color-picker-hue');
-
-  /// Key of the saturation slider.
-  static const saturationKey = ValueKey<String>('app-color-picker-saturation');
+  /// Key of the wheel.
+  static const wheelKey = ValueKey<String>('app-color-picker-wheel');
 
   /// Key of the brightness slider.
   static const valueKey = ValueKey<String>('app-color-picker-value');
@@ -33,11 +37,14 @@ class AppColorPicker extends StatefulWidget {
   /// The color to start from.
   final Color color;
 
-  /// Called on every move of a slider.
+  /// Called on every move of the wheel or the slider.
   final ValueChanged<Color> onChanged;
 
-  /// Called when a slider is let go.
-  final ValueChanged<Color>? onChangeEnd;
+  /// Diameter of the wheel.
+  final double wheelSize;
+
+  /// Shown right of the wheel.
+  final Widget besideWheel;
 
   @override
   State<AppColorPicker> createState() => _AppColorPickerState();
@@ -52,57 +59,79 @@ class _AppColorPickerState extends State<AppColorPicker> {
     widget.onChanged(hsv.toColor());
   }
 
-  void _end(HSVColor hsv) => widget.onChangeEnd?.call(hsv.toColor());
+  static double _hueStep(double hue, int direction) =>
+      (hue + direction * _hueSemanticsStep) % 360;
+
+  static double _saturationStep(double saturation, int direction) =>
+      (saturation + direction * _saturationSemanticsStep).clamp(0.0, 1.0);
+
+  // The point of the wheel under [position] sets hue and saturation.
+  void _wheelAt(Offset position) {
+    final radius = widget.wheelSize / 2;
+    final offset = position - Offset(radius, radius);
+    final hue = (math.atan2(offset.dy, offset.dx) * 180 / math.pi + 360) % 360;
+    _change(
+      _hsv.withHue(hue).withSaturation(math.min(offset.distance / radius, 1)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final hsv = _hsv;
+    String degrees(double hue) => l10n.colorPickerDegrees(hue.round());
     String percent(double share) =>
         l10n.colorPickerPercent((share * 100).round());
+    // Screen readers set hue and saturation step by step, as sliders.
+    final wheel = Semantics(
+      container: true,
+      label: l10n.colorPickerHue,
+      value: degrees(hsv.hue),
+      increasedValue: degrees(_hueStep(hsv.hue, 1)),
+      decreasedValue: degrees(_hueStep(hsv.hue, -1)),
+      onIncrease: () => _change(hsv.withHue(_hueStep(hsv.hue, 1))),
+      onDecrease: () => _change(hsv.withHue(_hueStep(hsv.hue, -1))),
+      child: Semantics(
+        container: true,
+        label: l10n.colorPickerSaturation,
+        value: percent(hsv.saturation),
+        increasedValue: percent(_saturationStep(hsv.saturation, 1)),
+        decreasedValue: percent(_saturationStep(hsv.saturation, -1)),
+        onIncrease: () =>
+            _change(hsv.withSaturation(_saturationStep(hsv.saturation, 1))),
+        onDecrease: () =>
+            _change(hsv.withSaturation(_saturationStep(hsv.saturation, -1))),
+        child: GestureDetector(
+          key: AppColorPicker.wheelKey,
+          onTapUp: (details) => _wheelAt(details.localPosition),
+          onPanStart: (details) => _wheelAt(details.localPosition),
+          onPanUpdate: (details) => _wheelAt(details.localPosition),
+          child: CustomPaint(
+            size: Size.square(widget.wheelSize),
+            painter: AppColorWheelPainter(hsv),
+          ),
+        ),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSpacing.xs,
+      spacing: AppSpacing.md,
       children: [
-        _GradientSlider(
-          key: AppColorPicker.hueKey,
-          label: l10n.colorPickerHue,
-          value: hsv.hue,
-          max: 360,
-          format: (hue) => l10n.colorPickerDegrees(hue.round()),
-          colors: [
-            for (var stop = 0; stop <= _hueStops; stop++)
-              hsv
-                  .withHue(stop * 360 / _hueStops % 360)
-                  .withSaturation(1)
-                  .withValue(1)
-                  .toColor(),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: AppSpacing.lg,
+          children: [
+            wheel,
+            Expanded(child: widget.besideWheel),
           ],
-          onChanged: (hue) => _change(hsv.withHue(hue)),
-          onChangeEnd: (hue) => _end(hsv.withHue(hue)),
-        ),
-        _GradientSlider(
-          key: AppColorPicker.saturationKey,
-          label: l10n.colorPickerSaturation,
-          value: hsv.saturation,
-          max: 1,
-          format: percent,
-          colors: [
-            hsv.withSaturation(0).toColor(),
-            hsv.withSaturation(1).toColor(),
-          ],
-          onChanged: (saturation) => _change(hsv.withSaturation(saturation)),
-          onChangeEnd: (saturation) => _end(hsv.withSaturation(saturation)),
         ),
         _GradientSlider(
           key: AppColorPicker.valueKey,
           label: l10n.colorPickerBrightness,
           value: hsv.value,
-          max: 1,
-          format: percent,
+          format: (value) => l10n.colorPickerPercent((value * 100).round()),
           colors: [hsv.withValue(0).toColor(), hsv.withValue(1).toColor()],
           onChanged: (value) => _change(hsv.withValue(value)),
-          onChangeEnd: (value) => _end(hsv.withValue(value)),
         ),
       ],
     );
@@ -113,23 +142,21 @@ class _GradientSlider extends StatelessWidget {
   const new({
     required this.label,
     required this.value,
-    required this.max,
     required this.format,
     required this.colors,
     required this.onChanged,
-    required this.onChangeEnd,
     super.key,
   });
 
   final String label;
+
+  /// Brightness from 0 to 1.
   final double value;
-  final double max;
 
   /// The value as a screen reader reads it.
   final String Function(double value) format;
   final List<Color> colors;
   final ValueChanged<double> onChanged;
-  final ValueChanged<double> onChangeEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -150,11 +177,9 @@ class _GradientSlider extends StatelessWidget {
             thumbColor: theme.colorScheme.onSurface,
           ),
           child: Slider(
-            value: value.clamp(0, max),
-            max: max,
+            value: value.clamp(0, 1),
             semanticFormatterCallback: format,
             onChanged: onChanged,
-            onChangeEnd: onChangeEnd,
           ),
         ),
       ],

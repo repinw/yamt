@@ -3336,16 +3336,83 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccentEmerald => 'Emerald';
 
   @override
-  String get settingsPlanColorTitle => 'Plan color';
+  String get settingsDesignCustom => 'Custom';
 
   @override
-  String get settingsPlanColorDefault => 'Default';
+  String get settingsCustomBaseTitle => 'Start from which design?';
 
   @override
-  String get settingsPlanColorCustom => 'Custom';
+  String get settingsCustomBaseMessage =>
+      'Custom starts as a copy. Then you can change every color.';
 
   @override
-  String get settingsPlanColorReset => 'Reset color';
+  String get settingsCustomColorsTitle => 'Edit colors';
+
+  @override
+  String get settingsCustomColorsBasedOnLight => 'Based on Light';
+
+  @override
+  String get settingsCustomColorsBasedOnDark => 'Based on Dark';
+
+  @override
+  String get settingsCustomColorsReset => 'Reset colors';
+
+  @override
+  String get settingsCustomColorsUndo => 'Undo last change';
+
+  @override
+  String get settingsCustomColorApply => 'Apply';
+
+  @override
+  String get settingsCustomColorRecent => 'Recent';
+
+  @override
+  String settingsCustomColorRecentSwatch(String hex) {
+    return 'Recently used: $hex';
+  }
+
+  @override
+  String get settingsCustomAllMacrosColored => 'Macros always in color';
+
+  @override
+  String get settingsCustomAllMacrosColoredHint =>
+      'Off: only the lowest macro shows its color';
+
+  @override
+  String get settingsCustomColorPaper => 'Background';
+
+  @override
+  String get settingsCustomColorCard => 'Cards';
+
+  @override
+  String get settingsCustomColorInk => 'Text';
+
+  @override
+  String get settingsCustomColorMuted => 'Secondary text';
+
+  @override
+  String get settingsCustomColorLines => 'Lines';
+
+  @override
+  String get settingsCustomColorAccent => 'Accent';
+
+  @override
+  String get settingsCustomColorPlan => 'Plan';
+
+  @override
+  String get settingsCustomColorSignal => 'Signal';
+
+  @override
+  String get settingsCustomPreviewCurry => 'Lentil curry';
+
+  @override
+  String get settingsCustomPreviewBar => 'Protein bar';
+
+  @override
+  String get settingsCustomPreviewLogged => 'Curry logged';
+
+  @override
+  String get settingsCustomPreviewScan => 'Scan';
 
   @override
   String get colorPickerHue => 'Hue';
@@ -6608,4 +6675,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryBudgetMenuPaceHint =>
       'Marks on today\'s kcal line where you should be by now and shows each meal\'s target';
+
+  @override
+  String get diaryBudgetMenuAllMacros => 'Macros always in color';
+
+  @override
+  String get diaryBudgetMenuAllMacrosHint =>
+      'Off: only the lowest macro shows its color';
 }

@@ -17,6 +17,8 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
     required this.today,
     required this.steps,
     required this.stepsDark,
+    this.macrosAsPicked = false,
+    this.allMacrosColored = false,
   });
 
   /// Builds metric accent colors for the brightness of [colors].
@@ -133,6 +135,14 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
   /// Steps in dark mode.
   final Color stepsDark;
 
+  /// Whether the macro colors are the user's own, shown as picked: text on
+  /// light paper is not darkened then.
+  final bool macrosAsPicked;
+
+  /// Whether every macro shows its color, instead of only the one with the
+  /// lowest share of its target.
+  final bool allMacrosColored;
+
   @override
   MetricAccentColors copyWith({
     Color? activity,
@@ -147,6 +157,8 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
     Color? today,
     Color? steps,
     Color? stepsDark,
+    bool? macrosAsPicked,
+    bool? allMacrosColored,
   }) {
     return MetricAccentColors(
       activity: activity ?? this.activity,
@@ -161,6 +173,8 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
       today: today ?? this.today,
       steps: steps ?? this.steps,
       stepsDark: stepsDark ?? this.stepsDark,
+      macrosAsPicked: macrosAsPicked ?? this.macrosAsPicked,
+      allMacrosColored: allMacrosColored ?? this.allMacrosColored,
     );
   }
 
@@ -186,6 +200,8 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
       today: Color.lerp(today, other.today, t)!,
       steps: Color.lerp(steps, other.steps, t)!,
       stepsDark: Color.lerp(stepsDark, other.stepsDark, t)!,
+      macrosAsPicked: t < 0.5 ? macrosAsPicked : other.macrosAsPicked,
+      allMacrosColored: t < 0.5 ? allMacrosColored : other.allMacrosColored,
     );
   }
 
@@ -205,5 +221,21 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
         .withSaturation(saturation)
         .withLightness(resolvedLightness)
         .toColor();
+  }
+}
+
+/// The macro coloring the user picked, on any app theme.
+extension MetricAccentTheme on ThemeData {
+  /// This theme with [MetricAccentColors.allMacrosColored] set to [value].
+  ThemeData withAllMacrosColored({required bool value}) {
+    final metrics = extension<MetricAccentColors>()!;
+    return copyWith(
+      extensions: [
+        ...extensions.values.where(
+          (extension) => extension is! MetricAccentColors,
+        ),
+        metrics.copyWith(allMacrosColored: value),
+      ],
+    );
   }
 }
