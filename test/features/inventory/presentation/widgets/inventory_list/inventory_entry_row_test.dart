@@ -251,6 +251,6 @@ void main() {
           ),
         )
         .map((box) => box.color);
-    expect(colors, contains(FoodLabelColors.dark.accent));
+    expect(colors, contains(FoodLabelColors.dark.plan));
   });
 }

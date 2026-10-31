@@ -223,4 +223,25 @@ void main() {
       expect(themed.onTile, colors.onTile);
     }
   });
+
+  test('keeps the Graphit plan brown without a picked plan color', () {
+    expect(
+      AppTheme.light().extension<FoodLabelColors>()!.plan,
+      FoodLabelColors.light.plan,
+    );
+    expect(
+      AppTheme.dark().extension<FoodLabelColors>()!.plan,
+      FoodLabelColors.dark.plan,
+    );
+  });
+
+  test('a picked plan color applies to light and dark alike', () {
+    const picked = Color(0xFF2E7D32);
+    for (final theme in [
+      AppTheme.light(plan: picked),
+      AppTheme.dark(plan: picked),
+    ]) {
+      expect(theme.extension<FoodLabelColors>()!.plan, picked);
+    }
+  });
 }

@@ -13,11 +13,12 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 /// button in the user's accent (lime by default), and rounded controls on
 /// soft surfaces without frames.
 abstract final class AppTheme {
-  /// Builds standard light Material 3 theme with Graphit colors and
-  /// [accent].
-  static ThemeData light({AppAccent accent = AppAccent.lime}) {
+  /// Builds standard light Material 3 theme with Graphit colors, [accent]
+  /// and the user's [plan] color, if any.
+  static ThemeData light({AppAccent accent = AppAccent.lime, Color? plan}) {
     final tones = accent.light;
     final labelColors = FoodLabelColors.light.copyWith(
+      plan: plan,
       accent: tones.fill,
       onAccent: _onAccent(tones.fill, FoodLabelColors.light.onAccent),
       accentText: tones.text,
@@ -56,10 +57,12 @@ abstract final class AppTheme {
     return _theme(colorScheme, labelColors);
   }
 
-  /// Builds standard dark Material 3 theme with Graphit colors and [accent].
-  static ThemeData dark({AppAccent accent = AppAccent.lime}) {
+  /// Builds standard dark Material 3 theme with Graphit colors, [accent]
+  /// and the user's [plan] color, if any.
+  static ThemeData dark({AppAccent accent = AppAccent.lime, Color? plan}) {
     final tones = accent.dark;
     final labelColors = FoodLabelColors.dark.copyWith(
+      plan: plan,
       accent: tones.fill,
       onAccent: _onAccent(tones.fill, FoodLabelColors.dark.onAccent),
       accentText: tones.text,

@@ -511,7 +511,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   leer".
 - A food that open plans take stock from names that amount ("250 verplant")
   in place of the full amount, and its stock bar draws the planned part in the
-  accent color; a tile draws the planned part too. When its plans need more
+  plan color; a tile draws the planned part too. When its plans need more
   than the pack has, the row names what is missing instead, in orange ("100
   fehlen"). A cooked meal does the same
   with its planned portions ("2 Port. verplant"). A meal plan that the
@@ -1185,6 +1185,15 @@ and feature description docs. This is product-facing; architecture rules stay in
   selected chips such as training days) and the home-screen widget's kcal
   value and bar. Macro, weight, activity, and onboarding chapter colors stay
   the same.
+- Plan color ("Plan-Farbe"): the one color for everything planned (brown by
+  default): the plan part of the daily budget card's lines, "N geplant" and
+  the plan pill, the dashed frame and Meal-Prep tag of planned diary rows,
+  the planned part of Vorrat stock bars, and the dots of days with plans in
+  the calendars. Picked freely in a sheet under Darstellung with sliders for
+  hue, saturation and brightness, without a readability check; the app takes
+  the color when a slider is let go. A custom color applies to light and
+  dark alike. "Farbe zurücksetzen" goes back to the default brown. The
+  choice is saved on the device only.
 - Language display.
 - "Erinnerung für fehlende Zutaten" switch (on by default) and its time
   ("Uhrzeit", 17:00 by default) in the App section; the time row is greyed

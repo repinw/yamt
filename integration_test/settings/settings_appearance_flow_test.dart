@@ -8,8 +8,11 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/app_accent.dart';
 import 'package:yamt/core/theme/app_accent_controller.dart';
+import 'package:yamt/core/theme/app_plan_color_controller.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_mode_controller.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/app_color_picker.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/health/data/'
@@ -18,6 +21,7 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_accent_tile/settings_accent_sheet.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_plan_color_tile/settings_plan_color_sheet.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_theme_mode_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -25,7 +29,7 @@ import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 
 /// Opens the settings page at the Appearance section, in an app themed by
-/// the accent and theme mode controllers, like `lib/app.dart`.
+/// the accent, plan color and theme mode controllers, like `lib/app.dart`.
 Future<MemoryAppPreferences> _pumpSettings(WidgetTester tester) async {
   final preferences = MemoryAppPreferences();
   final settingsRepository = FakeCalorieSettingsRepository();
@@ -54,9 +58,10 @@ Future<MemoryAppPreferences> _pumpSettings(WidgetTester tester) async {
       child: Consumer(
         builder: (context, ref, _) {
           final accent = ref.watch(appAccentControllerProvider);
+          final plan = ref.watch(appPlanColorControllerProvider);
           return MaterialApp(
-            theme: AppTheme.light(accent: accent),
-            darkTheme: AppTheme.dark(accent: accent),
+            theme: AppTheme.light(accent: accent, plan: plan),
+            darkTheme: AppTheme.dark(accent: accent, plan: plan),
             themeMode: ref.watch(appThemeModeControllerProvider),
             locale: const Locale('de'),
             localizationsDelegates: appLocalizationsDelegates,
@@ -110,4 +115,31 @@ void main() {
       },
     );
   }
+
+  testWidgets('a picked plan color recolors the app, and reset brings back '
+      'the brown', (tester) async {
+    final preferences = await _pumpSettings(tester);
+
+    final tile = find.byKey(SettingsPageKeys.planColorTile);
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    final sheet = find.byType(SettingsPlanColorSheet);
+    await tester.drag(find.byKey(AppColorPicker.hueKey), const Offset(120, 0));
+    await tester.pumpAndSettle();
+    final saved = preferences.getIntSync('app_plan_color_v1');
+    expect(saved, isNotNull);
+    expect(FoodLabelColors.of(tester.element(sheet)).plan, Color(saved!));
+
+    await tester.tap(find.byKey(SettingsPlanColorSheet.resetKey));
+    await tester.pumpAndSettle();
+    expect(
+      FoodLabelColors.of(tester.element(sheet)).plan,
+      FoodLabelColors.light.plan,
+    );
+    expect(preferences.getIntSync('app_plan_color_v1'), isNull);
+    expect(tester.takeException(), isNull);
+  });
 }

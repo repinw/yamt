@@ -6,6 +6,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -688,9 +689,8 @@ void main() {
     );
   });
 
-  testWidgets('only a plan of a cooked meal carries the Meal Prep tag', (
-    tester,
-  ) async {
+  testWidgets('only a plan of a cooked meal carries the Meal Prep tag in the '
+      'plan color', (tester) async {
     await _pumpMealsSection(
       tester,
       selectedDay: selectedDay,
@@ -733,6 +733,11 @@ void main() {
         matching: find.text('MEAL PREP'),
       ),
       findsOneWidget,
+    );
+    final tag = tester.widget<Text>(find.text('MEAL PREP'));
+    expect(
+      tag.style?.color,
+      FoodLabelColors.of(tester.element(find.text('MEAL PREP'))).plan,
     );
   });
 
