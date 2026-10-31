@@ -1875,6 +1875,52 @@
   "diaryDashboardAddTile": "Add tile",
   "diaryDashboardTileMenu": "Tile options",
   "diaryDashboardResizeTile": "Resize",
+  "diaryDashboardTileWeek": "Week",
+  "diaryDashboardTileDayType": "Day type",
+  "diaryDashboardModeStrip": "Days",
+  "diaryDashboardModeNumbers": "Number",
+  "diaryDashboardModeIcon": "Icon",
+  "diaryDashboardModeToggle": "Buttons",
+  "diaryWeekTileLeftCaption": "{count, plural, =1{left · 1 day to go} other{left · {count} days to go}}",
+  "@diaryWeekTileLeftCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryWeekTileOverCaption": "{count, plural, =1{over · 1 day to go} other{over · {count} days to go}}",
+  "@diaryWeekTileOverCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryWeekTileDayUnder": "under target",
+  "diaryWeekTileDayOver": "over target",
+  "diaryWeekTileDayPlanned": "planned",
+  "diaryWeekTileDayToday": "today",
+  "diaryWeekTileDayOpen": "no data",
+  "diaryWeekTileDaySemantics": "{day}: {state}",
+  "@diaryWeekTileDaySemantics": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayTypeTileSemantics": "{type}, tap to switch training",
+  "@diaryDayTypeTileSemantics": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
   "diaryDashboardHideTile": "Hide",
   "diaryDashboardModesLabel": "View",
   "diaryDashboardSizesLabel": "Size",

@@ -3100,6 +3100,71 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDashboardResizeTile => 'Resize';
 
   @override
+  String get diaryDashboardTileWeek => 'Week';
+
+  @override
+  String get diaryDashboardTileDayType => 'Day type';
+
+  @override
+  String get diaryDashboardModeStrip => 'Days';
+
+  @override
+  String get diaryDashboardModeNumbers => 'Number';
+
+  @override
+  String get diaryDashboardModeIcon => 'Icon';
+
+  @override
+  String get diaryDashboardModeToggle => 'Buttons';
+
+  @override
+  String diaryWeekTileLeftCaption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'left · $count days to go',
+      one: 'left · 1 day to go',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryWeekTileOverCaption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'over · $count days to go',
+      one: 'over · 1 day to go',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryWeekTileDayUnder => 'under target';
+
+  @override
+  String get diaryWeekTileDayOver => 'over target';
+
+  @override
+  String get diaryWeekTileDayPlanned => 'planned';
+
+  @override
+  String get diaryWeekTileDayToday => 'today';
+
+  @override
+  String get diaryWeekTileDayOpen => 'no data';
+
+  @override
+  String diaryWeekTileDaySemantics(String day, String state) {
+    return '$day: $state';
+  }
+
+  @override
+  String diaryDayTypeTileSemantics(String type) {
+    return '$type, tap to switch training';
+  }
+
+  @override
   String get diaryDashboardHideTile => 'Hide';
 
   @override

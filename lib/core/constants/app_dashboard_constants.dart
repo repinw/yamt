@@ -45,4 +45,22 @@ abstract final class AppDashboard {
 
   /// Tiles sliding to their new cells.
   static const Duration reflow = Duration(milliseconds: 200);
+
+  /// Diameter of a day mark in the week tile.
+  static const double weekMark = 14;
+
+  /// Diameter of the selected day's mark in the week tile.
+  static const double weekMarkSelected = 18;
+
+  /// Icon size inside a week tile day mark.
+  static const double weekMarkIcon = 10;
+
+  /// Outline of a planned or today mark in the week tile.
+  static const double weekMarkOutline = 1.5;
+
+  /// Gap between the balance number and the day marks of a wide week tile.
+  static const double weekNumberGap = 12;
+
+  /// Icon size of a day type button in the day type tile.
+  static const double dayTypeIcon = 18;
 }
