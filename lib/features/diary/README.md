@@ -43,13 +43,22 @@ check-in composition.
   `DiaryEntryChangeController`. Bundles (prepared meals and combined foods) show their foods
   instead of the ruler.
 - `presentation/widgets/diary_steps_card/diary_steps_card.dart` shows the steps of the day
-  under the budget card, with one slot per day of the run week that fills
+  below the tile dashboard, with one slot per day of the run week that fills
   day by day. With a steps goal it names the goal and a line fills up to
   it. After a week that met the goal on average, today's card asks whether
   the goal goes up by 100 steps. A tap opens `diary_steps_card_menu.dart` with the steps goal and the
   switch that takes the steps out of the diary again. Health owns the
   steps, their switch and the goal; the card shows nothing while the steps
   are off.
+- `presentation/widgets/diary_dashboard/` owns the tile dashboard of a
+  diary day (#930): the grid (`DiaryDashboard`), edit mode, the tile and add
+  sheets, and the tiles under `tiles/`. A tile is a `DiaryDashboardTile`
+  (id, sizes, display modes, builder) in `diary_dashboard_catalog.dart`;
+  the budget card is the wide tile `budget`. The layout
+  (`domain/diary_dashboard_layout.dart`, packed by
+  `domain/diary_dashboard_packing.dart`) is saved per user in the device
+  preferences (`data/diary_dashboard_layout_repository.dart`) and resolved
+  against the catalog on every read, so new tiles sort themselves in.
 - `presentation/widgets/diary_budget_card/` owns the daily budget card
   (#907): the gold foil (#945, `HoloFoilCard` from `core/widgets`) when eaten
   plus open planned kcal land within 5 % of the target

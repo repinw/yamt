@@ -184,6 +184,19 @@ and feature description docs. This is product-facing; architecture rules stay in
   the day and meal plans it for a picked day, today included; without the
   calories, the button only asks for them. Accepting the plan makes it a normal
   quick entry; no Vorrat is taken.
+- Tile dashboard (#930): the top of a diary day is a grid of four columns.
+  Its tiles take sizes of 1×1, 2×1, 2×2, 4×1 or 4×2 cells, or the full
+  width at their own height (the daily budget card). A long press on a tile
+  enters edit mode for every day and keeps dragging the tile: it moves to
+  the cell of the tile under the finger, and the others slide aside. In
+  edit mode a short hold drags, a tap or the "⋯" corner button opens the
+  tile menu (display mode, size, "Ausblenden"), and the corner handle
+  resizes the tile to the closest size it offers. The bar above the grid
+  adds hidden tiles back at the end, resets to the default layout and
+  leaves with "Fertig". With every tile hidden, a button leads back into
+  edit mode. The layout is saved per user on the device; a tile that a
+  later version adds shows after the tile before it in the catalog, or
+  starts hidden when it is not part of the default layout.
 - Daily budget card (#907), set in Geist: the kcal left as a big number
   with "kcal übrig" and a line with a goal marker, and next to it protein,
   carbs, and fat with the grams left and a thin line each. When the day's
