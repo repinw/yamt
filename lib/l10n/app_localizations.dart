@@ -10765,6 +10765,12 @@ abstract class AppLocalizations {
   /// **'{day}: {type}, tap to change'**
   String diaryBudgetWeekDaySemantics(String day, String type);
 
+  /// No description provided for @diaryBudgetWeekPauseDaySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{day}: {type}, set with the pause button'**
+  String diaryBudgetWeekPauseDaySemantics(String day, String type);
+
   /// No description provided for @diaryBudgetTrainingDayCount.
   ///
   /// In en, this message translates to:

@@ -6493,6 +6493,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String diaryBudgetWeekPauseDaySemantics(String day, String type) {
+    return '$day: $type, set with the pause button';
+  }
+
+  @override
   String diaryBudgetTrainingDayCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
