@@ -62,4 +62,4 @@ final class DiaryDashboardLayoutRepositoryProvider
 }
 
 String _$diaryDashboardLayoutRepositoryHash() =>
-    r'2125a69ac79dbf495f97a5dbc0f30b639646c7c5';
+    r'8133b79bbe4fd97e4fd982a4168daebdc219be04';

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -27,14 +28,18 @@ class DiaryDashboardLayoutRepository {
   }
 
   /// The saved layout from the loaded preferences, or null when the user
-  /// never changed it or nobody is signed in.
+  /// never changed it or nobody is signed in. Throws a [FormatException]
+  /// when the stored value is no layout object, and a
+  /// `CheckedFromJsonException` when a field has the wrong shape.
   DiaryDashboardLayout? cachedLayout() {
     if (_uid == null) return null;
     final stored = _preferences.getStringSync(_key);
     if (stored == null) return null;
-    return DiaryDashboardLayout.fromJson(
-      jsonDecode(stored) as Map<String, dynamic>,
-    );
+    final json = jsonDecode(stored);
+    if (json is! Map<String, dynamic>) {
+      throw FormatException('Stored dashboard layout is no object.', stored);
+    }
+    return DiaryDashboardLayout.fromJson(json);
   }
 
   /// Saves [layout]. Throws a [StateError] when nobody is signed in or the
@@ -49,9 +54,12 @@ class DiaryDashboardLayoutRepository {
     }
   }
 
-  /// Deletes the saved layout, so the default layout shows again.
+  /// Deletes the saved layout, so the default layout shows again. Throws a
+  /// [StateError] when nobody is signed in or the preferences refuse it.
   Future<void> deleteLayout() async {
-    await _preferences.remove(_key);
+    if (!await _preferences.remove(_key)) {
+      throw StateError('Could not delete the diary dashboard layout.');
+    }
   }
 }
 
@@ -60,6 +68,8 @@ class DiaryDashboardLayoutRepository {
 DiaryDashboardLayoutRepository diaryDashboardLayoutRepository(Ref ref) {
   return DiaryDashboardLayoutRepository(
     ref.watch(appPreferencesProvider),
-    ref.watch(authStateChangesProvider).value?.uid,
+    ref.watch(
+      authStateChangesProvider.select((user) => user.asData?.value?.uid),
+    ),
   );
 }

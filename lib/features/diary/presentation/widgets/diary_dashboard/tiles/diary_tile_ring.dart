@@ -6,7 +6,7 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 
 /// A square progress ring of a tile, the ring version of the budget card's
 /// line: the eaten part from the top clockwise, the planned part after it
-/// in the plan color, and the overage in the error color on top.
+/// in the plan color, and the overage on top in [overColor].
 ///
 /// Without a [target] (a pause day) it only shows the eaten and the
 /// planned part, measured against [scale]. A [child] sits in the middle.
@@ -18,6 +18,7 @@ class DiaryTileRing extends StatelessWidget {
     this.planned = 0,
     this.scale,
     this.eatenColor,
+    this.overColor,
     this.stroke = AppDashboard.ringStroke,
     this.child,
     super.key,
@@ -37,6 +38,9 @@ class DiaryTileRing extends StatelessWidget {
 
   /// Color of the eaten part; ink by default.
   final Color? eatenColor;
+
+  /// Color of the overage; the error color by default.
+  final Color? overColor;
 
   /// Stroke width of the ring.
   final double stroke;
@@ -59,7 +63,7 @@ class DiaryTileRing extends StatelessWidget {
           track: colors.track,
           eatenColor: eatenColor ?? colors.ink,
           planColor: colors.plan,
-          overColor: Theme.of(context).colorScheme.error,
+          overColor: overColor ?? Theme.of(context).colorScheme.error,
         ),
         child: child == null
             ? null

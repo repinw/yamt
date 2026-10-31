@@ -6,32 +6,12 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
+import 'package:yamt/features/diary/presentation/models/diary_meal_kcal.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_line.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_tile_parts.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_caption.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// The kcal of one meal in the meals tile.
-@immutable
-class DiaryMealKcal {
-  /// Creates the kcal of [mealType].
-  const new({
-    required this.mealType,
-    required this.eaten,
-    required this.planned,
-  });
-
-  /// The meal.
-  final MealType mealType;
-
-  /// Eaten kcal.
-  final double eaten;
-
-  /// Planned kcal the meal heading counts on top of [eaten].
-  final double planned;
-
-  /// The kcal the meal heading shows.
-  double get total => eaten + planned;
-}
 
 /// Icon of [mealType] in the meals tile.
 IconData diaryMealIcon(MealType mealType) => switch (mealType) {
@@ -41,10 +21,49 @@ IconData diaryMealIcon(MealType mealType) => switch (mealType) {
   MealType.snack => Icons.cookie_outlined,
 };
 
+/// The inside of the meals tile at [size]: bars or names under the kcal.
+class DiaryMealsTileLayout extends StatelessWidget {
+  /// Creates the layout of [meals].
+  const new({
+    required this.meals,
+    required this.numberFormat,
+    required this.size,
+    required this.bars,
+    super.key,
+  });
+
+  /// The meals in section order.
+  final List<DiaryMealKcal> meals;
+
+  /// Formats the kcal.
+  final NumberFormat numberFormat;
+
+  /// Size of the tile.
+  final DiaryTileSize size;
+
+  /// Whether the meals show bars, where the size has room for them.
+  final bool bars;
+
+  @override
+  Widget build(BuildContext context) => switch (size) {
+    DiaryTileSize.s4x1 => _Columns(
+      meals: meals,
+      numberFormat: numberFormat,
+      bars: bars,
+    ),
+    DiaryTileSize.s2x2 || DiaryTileSize.s4x2 => _Rows(
+      meals: meals,
+      numberFormat: numberFormat,
+      bars: bars,
+      withNames: size == DiaryTileSize.s4x2,
+    ),
+    _ => _Grid(meals: meals, numberFormat: numberFormat),
+  };
+}
+
 /// The four meals of a 2×1 tile: two by two, icon and kcal.
-class DiaryMealsGrid extends StatelessWidget {
-  /// Creates the grid of [meals].
-  const new({required this.meals, required this.numberFormat, super.key});
+class _Grid extends StatelessWidget {
+  const new({required this.meals, required this.numberFormat});
 
   /// The meals in section order.
   final List<DiaryMealKcal> meals;
@@ -75,13 +94,11 @@ class DiaryMealsGrid extends StatelessWidget {
 
 /// The four meals of a 4×1 tile side by side: icon and kcal above a bar,
 /// or above the meal name.
-class DiaryMealsColumns extends StatelessWidget {
-  /// Creates the columns of [meals].
+class _Columns extends StatelessWidget {
   const new({
     required this.meals,
     required this.numberFormat,
     required this.bars,
-    super.key,
   });
 
   /// The meals in section order.
@@ -123,14 +140,12 @@ class DiaryMealsColumns extends StatelessWidget {
 
 /// The four meals of a 2×2 or 4×2 tile, one row each: icon, the meal name
 /// when [withNames], a bar when [bars], and the kcal.
-class DiaryMealsRows extends StatelessWidget {
-  /// Creates the rows of [meals].
+class _Rows extends StatelessWidget {
   const new({
     required this.meals,
     required this.numberFormat,
     required this.bars,
     required this.withNames,
-    super.key,
   });
 
   /// The meals in section order.

@@ -105,14 +105,24 @@ abstract final class AppFoodLabel {
   /// Round camera badge in the tile that adds one more photo.
   static const double cameraBadgeSmall = 40;
 
-  /// Highest HSL lightness of macro colored text on light paper, so bright
-  /// macro colors such as the fat yellow stay readable.
+  /// Highest HSL lightness of macro colored text on light paper: it darkens
+  /// bright macro colors. One that still does not read on the card, such as
+  /// the fat yellow, loses [lightLabelLightnessStep] at a time until it
+  /// reaches [lightLabelMinContrast].
   static const double lightLabelMaxLightness = 0.38;
 
   /// Lowest HSL lightness of macro colored text on dark paper, such as text
   /// over a photo in the light theme, so the dark macro colors stay
   /// readable.
   static const double darkLabelMinLightness = 0.66;
+
+  /// Least contrast of macro colored text on the light card: the 4.5:1 that
+  /// WCAG asks of normal text, with a little room.
+  static const double lightLabelMinContrast = 4.6;
+
+  /// Lightness that one step takes off a macro text color that does not
+  /// reach [lightLabelMinContrast] yet.
+  static const double lightLabelLightnessStep = 0.01;
 
   /// Width of the portion count wheel on the eat page.
   static const double countWheel = 72;

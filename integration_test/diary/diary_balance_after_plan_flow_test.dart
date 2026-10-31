@@ -104,6 +104,7 @@ Future<void> _pumpDiary(
   final auth = _MockFirebaseAuth();
   when(() => auth.currentUser).thenReturn(user);
 
+  _useTallView(tester);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -144,6 +145,18 @@ Future<void> _pumpDiary(
       ),
     ),
   );
+}
+
+/// The diary with its tile dashboard is taller than the default test
+/// screen, and the meals below it build lazily; a tall view keeps them
+/// built.
+void _useTallView(WidgetTester tester) {
+  final view = tester.view;
+  view.physicalSize = Size(
+    view.physicalSize.width,
+    3000 * view.devicePixelRatio,
+  );
+  addTearDown(tester.view.resetPhysicalSize);
 }
 
 void main() {

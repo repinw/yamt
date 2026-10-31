@@ -2,51 +2,46 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_dashboard_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
+import 'package:yamt/features/diary/presentation/models/diary_kcal_tile_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_line.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_tile_parts.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_caption.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number_body.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_ring.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-/// What the kcal tile shows, ready to draw.
-typedef DiaryKcalTileView = ({
-  /// Big number (or the pause day's word).
-  String value,
+/// The inside of the kcal tile at [size] in display mode [mode].
+class DiaryKcalTileLayout extends StatelessWidget {
+  /// Creates the layout of [view].
+  const new({
+    required this.view,
+    required this.size,
+    required this.mode,
+    super.key,
+  });
 
-  /// Number in the middle of the ring.
-  String ringValue,
+  /// Values of the tile.
+  final DiaryKcalTileView view;
 
-  /// What the big number means.
-  String caption,
+  /// Size of the tile.
+  final DiaryTileSize size;
 
-  /// What the ring's number means.
-  String ringCaption,
+  /// Id of the display mode.
+  final String mode;
 
-  /// Eaten of target, or null when the caption says it already.
-  String? total,
-
-  /// Color of the number.
-  Color color,
-
-  /// Eaten kcal of the line and the ring.
-  double eaten,
-
-  /// Counted planned kcal of the line and the ring.
-  double planned,
-
-  /// Target kcal, or null on a pause day.
-  double? target,
-
-  /// Amount of a full line or ring without a target.
-  double scale,
-
-  /// Color of the eaten part of the line and the ring.
-  Color eatenColor,
-});
+  @override
+  Widget build(BuildContext context) => switch (mode) {
+    DiaryTileModes.bar => _BarLayout(view: view, size: size),
+    DiaryTileModes.ring => _RingLayout(view: view, size: size),
+    _ => _NumberLayout(view: view, size: size),
+  };
+}
 
 /// The kcal tile as a number with its caption; one cell shows the number
 /// alone, two rows add eaten of target.
-class DiaryKcalNumberLayout extends StatelessWidget {
-  /// Creates the layout.
-  const new({required this.view, required this.size, super.key});
+class _NumberLayout extends StatelessWidget {
+  const new({required this.view, required this.size});
 
   /// Values of the tile.
   final DiaryKcalTileView view;
@@ -66,10 +61,9 @@ class DiaryKcalNumberLayout extends StatelessWidget {
     );
     if (single) return number;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(child: number),
+    return DiaryTileNumberBody(
+      number: number,
+      captions: [
         DiaryTileCaption(view.caption),
         if (size.rows == 2 && view.total != null) DiaryTileCaption(view.total!),
       ],
@@ -78,9 +72,8 @@ class DiaryKcalNumberLayout extends StatelessWidget {
 }
 
 /// The kcal tile as a number over the budget card's kcal line.
-class DiaryKcalBarLayout extends StatelessWidget {
-  /// Creates the layout.
-  const new({required this.view, required this.size, super.key});
+class _BarLayout extends StatelessWidget {
+  const new({required this.view, required this.size});
 
   /// Values of the tile.
   final DiaryKcalTileView view;
@@ -121,6 +114,8 @@ class DiaryKcalBarLayout extends StatelessWidget {
           scaleKcal: view.scale,
           compact: !twoRows,
           eatenColor: view.eatenColor,
+          overColor: view.overColor,
+          pace: view.pace,
         ),
       ],
     );
@@ -128,11 +123,11 @@ class DiaryKcalBarLayout extends StatelessWidget {
 }
 
 /// The kcal tile as a ring of eaten against the target: one cell shows the
-/// ring with the number inside, one row puts the number beside it, and two
+/// ring with the number inside, one row puts the number beside it (on two
+/// cells with only the unit, or the pause day's word, under it), and two
 /// rows the number inside a large ring.
-class DiaryKcalRingLayout extends StatelessWidget {
-  /// Creates the layout.
-  const new({required this.view, required this.size, super.key});
+class _RingLayout extends StatelessWidget {
+  const new({required this.view, required this.size});
 
   /// Values of the tile.
   final DiaryKcalTileView view;
@@ -148,6 +143,7 @@ class DiaryKcalRingLayout extends StatelessWidget {
       target: view.target,
       scale: view.scale,
       eatenColor: view.eatenColor,
+      overColor: view.overColor,
       stroke: stroke ?? AppDashboard.ringStroke,
       child: child,
     );
@@ -185,7 +181,13 @@ class DiaryKcalRingLayout extends StatelessWidget {
                     alignment: AlignmentDirectional.bottomStart,
                   ),
                 ),
-                DiaryTileCaption(view.ringCaption),
+                // Beside the ring, two cells have room for the unit alone,
+                // or for the pause day's word.
+                DiaryTileCaption(
+                  size == DiaryTileSize.s2x1 && view.target != null
+                      ? AppLocalizations.of(context)!.caloriesUnitKcal
+                      : view.ringCaption,
+                ),
               ],
             ),
           ),

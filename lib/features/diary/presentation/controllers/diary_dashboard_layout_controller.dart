@@ -4,28 +4,29 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/diary/data/diary_dashboard_layout_repository.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_catalog.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
 
 part 'diary_dashboard_layout_controller.g.dart';
 
-/// The diary dashboard layout of the signed-in user, resolved against the
-/// tile catalog. Drags change it live; [save] stores it.
+const _logName = 'DiaryDashboardLayoutController';
+
+/// The diary dashboard layout of the signed-in user, resolved against
+/// [diaryDashboardTileSpecs]. Drags change it live; [save] stores it.
+///
+/// The actions that save return false when the layout was not saved; the
+/// layout on screen keeps the change.
 @riverpod
 class DiaryDashboardLayoutController extends _$DiaryDashboardLayoutController {
-  late List<DiaryTileSpec> _catalogSpecs;
-
   @override
   DiaryDashboardLayout build() {
-    _catalogSpecs = [
-      for (final tile in ref.watch(diaryDashboardTilesProvider)) tile.spec,
-    ];
     final repository = ref.watch(diaryDashboardLayoutRepositoryProvider);
     try {
       final saved = repository.cachedLayout();
-      if (saved != null) return saved.resolve(_catalogSpecs);
+      if (saved != null) return saved.resolve(diaryDashboardTileSpecs);
     } on FormatException catch (error, stackTrace) {
       log(
         'Stored diary dashboard layout is unreadable; showing the default.',
+        name: _logName,
         error: error,
         stackTrace: stackTrace,
       );
@@ -33,11 +34,12 @@ class DiaryDashboardLayoutController extends _$DiaryDashboardLayoutController {
       log(
         'Stored diary dashboard layout has the wrong shape; showing the '
         'default.',
+        name: _logName,
         error: error,
         stackTrace: stackTrace,
       );
     }
-    return DiaryDashboardLayout.initial(_catalogSpecs);
+    return DiaryDashboardLayout.initial(diaryDashboardTileSpecs);
   }
 
   /// Moves tile [id] to [index] without saving, for a running drag.
@@ -51,42 +53,61 @@ class DiaryDashboardLayoutController extends _$DiaryDashboardLayoutController {
   }
 
   /// Switches tile [id] to display mode [mode] and saves.
-  Future<void> setMode(String id, String mode) async {
+  Future<bool> setMode(String id, String mode) {
     final tile = _placement(id);
-    if (tile == null) return;
-    state = state.update(tile.copyWith(mode: mode));
-    await save();
+    if (tile != null) state = state.update(tile.copyWith(mode: mode));
+    return save();
   }
 
   /// Gives tile [id] the [size] and saves.
-  Future<void> setSize(String id, DiaryTileSize size) async {
+  Future<bool> setSize(String id, DiaryTileSize size) {
     resize(id, size);
-    await save();
+    return save();
   }
 
   /// Hides tile [id] and saves.
-  Future<void> hide(String id) async {
+  Future<bool> hide(String id) {
     state = state.hide(id);
-    await save();
+    return save();
   }
 
   /// Shows the hidden tile [id] at the end and saves.
-  Future<void> show(String id) async {
-    final spec = _catalogSpecs.where((s) => s.id == id).firstOrNull;
-    if (spec == null) return;
-    state = state.show(spec);
-    await save();
+  Future<bool> show(String id) {
+    final spec = diaryDashboardTileSpecs.where((s) => s.id == id).firstOrNull;
+    if (spec != null) state = state.show(spec);
+    return save();
   }
 
   /// Goes back to the default layout and forgets the saved one.
-  Future<void> reset() async {
-    state = DiaryDashboardLayout.initial(_catalogSpecs);
-    await ref.read(diaryDashboardLayoutRepositoryProvider).deleteLayout();
+  Future<bool> reset() {
+    state = DiaryDashboardLayout.initial(diaryDashboardTileSpecs);
+    return _guard(
+      'Failed to delete the diary dashboard layout.',
+      (repository) => repository.deleteLayout(),
+    );
   }
 
   /// Saves the current layout.
-  Future<void> save() =>
-      ref.read(diaryDashboardLayoutRepositoryProvider).saveLayout(state);
+  Future<bool> save() {
+    final layout = state;
+    return _guard(
+      'Failed to save the diary dashboard layout.',
+      (repository) => repository.saveLayout(layout),
+    );
+  }
+
+  Future<bool> _guard(
+    String failure,
+    Future<void> Function(DiaryDashboardLayoutRepository repository) write,
+  ) async {
+    final result = await AsyncValue.guard(
+      () => write(ref.read(diaryDashboardLayoutRepositoryProvider)),
+    );
+    if (result case AsyncError(:final error, :final stackTrace)) {
+      log(failure, name: _logName, error: error, stackTrace: stackTrace);
+    }
+    return !result.hasError;
+  }
 
   DiaryTilePlacement? _placement(String id) =>
       state.tiles.where((t) => t.id == id).firstOrNull;

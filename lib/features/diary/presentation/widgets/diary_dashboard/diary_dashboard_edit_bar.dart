@@ -5,19 +5,25 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_dashboard_edit_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_dashboard_layout_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_dashboard_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_add_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The bar above the dashboard in edit mode: reset, add a hidden tile, and
 /// "Fertig".
 class DiaryDashboardEditBar extends ConsumerWidget {
-  /// Creates the bar.
-  const new({super.key});
+  /// Creates the bar of a dashboard with [tiles].
+  const new({required this.tiles, super.key});
+
+  /// The tiles the dashboard offers.
+  final List<DiaryDashboardTile> tiles;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final hasHidden = ref.watch(
       diaryDashboardLayoutControllerProvider.select((l) => l.hidden.isNotEmpty),
     );
@@ -29,7 +35,11 @@ class DiaryDashboardEditBar extends ConsumerWidget {
           TextButton(
             key: DiaryDashboardKeys.reset,
             onPressed: () => unawaited(
-              ref.read(diaryDashboardLayoutControllerProvider.notifier).reset(),
+              changeDiaryDashboardFlow(
+                context,
+                ref,
+                (layout) => layout.reset(),
+              ),
             ),
             child: Text(l10n.diaryDashboardReset),
           ),
@@ -38,12 +48,17 @@ class DiaryDashboardEditBar extends ConsumerWidget {
             key: DiaryDashboardKeys.add,
             tooltip: l10n.diaryDashboardAddTile,
             onPressed: hasHidden
-                ? () => unawaited(showDiaryDashboardAddSheet(context))
+                ? () => unawaited(showDiaryDashboardAddSheet(context, tiles))
                 : null,
             icon: const Icon(Icons.add),
           ),
           FilledButton(
             key: DiaryDashboardKeys.done,
+            // Ink, because the accent marks only one thing per screen.
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.onSurface,
+              foregroundColor: colorScheme.surface,
+            ),
             onPressed: () => ref
                 .read(diaryDashboardEditControllerProvider.notifier)
                 .finish(),

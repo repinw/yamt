@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
+import 'package:yamt/core/theme/app_accent.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -17,19 +19,28 @@ Color diaryBudgetMacroColor(BuildContext context, DiaryBudgetMacroKind kind) {
   };
 }
 
-/// [macroColor] as text color: bright macro colors are darkened on light
-/// paper, unless the user picked them.
+/// [macroColor] as text color: on light paper, bright macro colors are
+/// darkened to the lightness cap, and a color that still does not read on
+/// the card, such as the fat yellow, further until it does. Colors the user
+/// picked stay as they are.
 Color diaryBudgetMacroTextColor(BuildContext context, Color macroColor) {
   if (Theme.of(context).brightness != Brightness.light ||
       MetricAccentColors.of(context).macrosAsPicked) {
     return macroColor;
   }
+  final card = FoodLabelColors.of(context).card;
   final hsl = HSLColor.fromColor(macroColor);
-  return hsl
-      .withLightness(
-        math.min(hsl.lightness, AppFoodLabel.lightLabelMaxLightness),
-      )
-      .toColor();
+  var text = hsl.withLightness(
+    math.min(hsl.lightness, AppFoodLabel.lightLabelMaxLightness),
+  );
+  while (text.lightness >= AppFoodLabel.lightLabelLightnessStep &&
+      contrastRatio(text.toColor(), card) <
+          AppFoodLabel.lightLabelMinContrast) {
+    text = text.withLightness(
+      text.lightness - AppFoodLabel.lightLabelLightnessStep,
+    );
+  }
+  return text.toColor();
 }
 
 /// Name of the macro [kind].

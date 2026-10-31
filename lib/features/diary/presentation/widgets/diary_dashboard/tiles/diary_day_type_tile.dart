@@ -10,31 +10,33 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/application/diary_day_type_provider.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
 import 'package:yamt/features/diary/domain/diary_day_type.dart';
 import 'package:yamt/features/diary/presentation/diary_day_type_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_day_type_buttons.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_tile_parts.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_no_value.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_labels.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The day type of the selected day: normal, training, or pause.
 const diaryDayTypeTile = DiaryDashboardTile(
-  id: 'daytype',
+  spec: diaryDayTypeTileSpec,
   icon: Icons.fitness_center_rounded,
   label: _label,
-  sizes: [DiaryTileSize.s1x1, DiaryTileSize.s2x1],
-  defaultSize: DiaryTileSize.s2x1,
   modes: [
-    DiaryTileMode(id: 'icon', icon: Icons.label_outline, label: _iconLabel),
     DiaryTileMode(
-      id: 'toggle',
+      id: DiaryTileModes.icon,
+      icon: Icons.label_outline,
+      label: _iconLabel,
+    ),
+    DiaryTileMode(
+      id: DiaryTileModes.toggle,
       icon: Icons.toggle_on_outlined,
       label: _toggleLabel,
     ),
   ],
   builder: _build,
-  visibleByDefault: false,
 );
 
 String _label(AppLocalizations l10n) => l10n.diaryDashboardTileDayType;
@@ -57,18 +59,14 @@ class DiaryDayTypeTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final type = ref.watch(diaryDayTypeStatusProvider(args.day))?.type;
     if (type == null) {
-      return DiaryTileNumber(
-        '–',
-        color: FoodLabelColors.of(context).muted,
-        alignment: AlignmentDirectional.center,
-      );
+      return const DiaryTileNoValue(alignment: AlignmentDirectional.center);
     }
     final isSmall = args.size == DiaryTileSize.s1x1;
     void select(DiaryDayType next) => unawaited(
       selectDiaryDayTypeFlow(context, ref, day: args.day, type: next),
     );
 
-    if (args.mode == 'toggle') {
+    if (args.mode == DiaryTileModes.toggle) {
       if (isSmall) {
         return _CurrentTypeButton(
           type: type,

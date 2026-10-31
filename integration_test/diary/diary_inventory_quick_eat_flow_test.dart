@@ -393,6 +393,7 @@ Future<_DiaryInventoryQuickEatHarness> _pumpAndOpenInventoryQuickEat(
     today: today,
     householdKnown: false,
   );
+  _useTallView(tester);
   await tester.pumpWidget(harness.app);
   await tester.pump();
   await _openInventoryQuickEat(tester);
@@ -410,6 +411,18 @@ bool _isFinderCenterOnScreen(WidgetTester tester, Finder finder) {
     view.physicalSize.height / view.devicePixelRatio,
   );
   return (Offset.zero & logicalSize).contains(center);
+}
+
+/// The diary with its tile dashboard is taller than the default test
+/// screen, and the meals below it build lazily; a tall view keeps them
+/// built.
+void _useTallView(WidgetTester tester) {
+  final view = tester.view;
+  view.physicalSize = Size(
+    view.physicalSize.width,
+    3000 * view.devicePixelRatio,
+  );
+  addTearDown(tester.view.resetPhysicalSize);
 }
 
 void main() {
@@ -932,6 +945,7 @@ void main() {
         ),
       ],
     );
+    _useTallView(tester);
     await tester.pumpWidget(harness.app);
     // Tomorrow starts a new run week here, so it has no day before to
     // close; the head counting the plan tells it has loaded.
@@ -973,6 +987,7 @@ void main() {
     final harness = _buildHarness(
       plans: [plan('plan-pasta', 'Nudeln'), plan('plan-salad', 'Salat')],
     );
+    _useTallView(tester);
     await tester.pumpWidget(harness.app);
     final acceptAll = find.byKey(
       DiaryMealsSectionKeys.planAcceptAllButton(MealType.dinner),
@@ -1015,6 +1030,7 @@ void main() {
           ),
         ],
       );
+      _useTallView(tester);
       await tester.pumpWidget(harness.app);
       await _pumpUntilFound(
         tester,
@@ -1082,6 +1098,7 @@ void main() {
         ),
       ],
     );
+    _useTallView(tester);
     await tester.pumpWidget(harness.app);
     await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
 
@@ -1132,6 +1149,7 @@ void main() {
         ),
       ],
     );
+    _useTallView(tester);
     await tester.pumpWidget(harness.app);
     await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
 
@@ -1193,6 +1211,7 @@ void main() {
         plan('pasta', MealType.dinner, 19),
       ],
     );
+    _useTallView(tester);
     await tester.pumpWidget(harness.app);
     final copyIcon = find.byKey(
       DiaryMealsSectionKeys.mealCopyButton(MealType.dinner),
@@ -1263,6 +1282,7 @@ void main() {
         ),
       ],
     );
+    _useTallView(tester);
     await tester.pumpWidget(harness.app);
     await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
 
@@ -1313,6 +1333,7 @@ void main() {
         ),
       ],
     );
+    _useTallView(tester);
     await tester.pumpWidget(harness.app);
     final closeButton = find.byKey(DiaryBudgetCardKeys.closePreviousDay);
     await _pumpUntilFound(

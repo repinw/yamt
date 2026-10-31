@@ -28,6 +28,7 @@ class DiaryDashboardSlot extends StatelessWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
+    required this.onResizeStart,
     required this.onResizeUpdate,
     required this.onResizeEnd,
     required this.onMenu,
@@ -58,13 +59,16 @@ class DiaryDashboardSlot extends StatelessWidget {
   /// The finger moved during a drag of the tile.
   final DiaryDashboardPointerCallback onDragUpdate;
 
-  /// The drag of the tile ended.
+  /// The drag of the tile ended or was cancelled.
   final VoidCallback onDragEnd;
+
+  /// The finger grabbed the resize handle.
+  final VoidCallback onResizeStart;
 
   /// The finger moved on the resize handle.
   final DiaryDashboardPointerCallback onResizeUpdate;
 
-  /// The finger left the resize handle.
+  /// The finger left the resize handle, or the system cancelled it.
   final VoidCallback onResizeEnd;
 
   /// The tile menu should open.
@@ -77,9 +81,12 @@ class DiaryDashboardSlot extends StatelessWidget {
       child: DiaryDashboardTileBody(tile: tile, placement: placement, day: day),
     );
 
-    // The detector stays while the tile is lifted: it carries the drag.
+    // The detector stays while the tile is lifted: it carries the drag. It
+    // takes the whole tile, also where the ignored body leaves gaps in edit
+    // mode.
     return RawGestureDetector(
       key: DiaryDashboardKeys.tile(tile.id),
+      behavior: HitTestBehavior.opaque,
       gestures: {
         LongPressGestureRecognizer: _dragGesture<LongPressGestureRecognizer>(
           LongPressGestureRecognizer.new,
@@ -102,6 +109,7 @@ class DiaryDashboardSlot extends StatelessWidget {
           tile: tile,
           wide: placement.size.isWide,
           onMenu: onMenu,
+          onResizeStart: onResizeStart,
           onResizeUpdate: onResizeUpdate,
           onResizeEnd: onResizeEnd,
           child: body,
@@ -117,7 +125,10 @@ class DiaryDashboardSlot extends StatelessWidget {
         (r) => r
           ..onLongPressStart = ((d) => onDragStart(d.globalPosition))
           ..onLongPressMoveUpdate = ((d) => onDragUpdate(d.globalPosition))
-          ..onLongPressEnd = ((_) => onDragEnd()),
+          ..onLongPressEnd = ((_) => onDragEnd())
+          // Also when the system cancels the drag; a cancel before the hold
+          // is over finds no drag.
+          ..onLongPressCancel = onDragEnd,
       );
 }
 
@@ -159,6 +170,7 @@ class _EditChrome extends StatelessWidget {
     required this.tile,
     required this.wide,
     required this.onMenu,
+    required this.onResizeStart,
     required this.onResizeUpdate,
     required this.onResizeEnd,
     required this.child,
@@ -167,6 +179,7 @@ class _EditChrome extends StatelessWidget {
   final DiaryDashboardTile tile;
   final bool wide;
   final VoidCallback onMenu;
+  final VoidCallback onResizeStart;
   final DiaryDashboardPointerCallback onResizeUpdate;
   final VoidCallback onResizeEnd;
   final Widget child;
@@ -212,9 +225,11 @@ class _EditChrome extends StatelessWidget {
                     GestureRecognizerFactoryWithHandlers<_GrabRecognizer>(
                       _GrabRecognizer.new,
                       (r) => r
+                        ..onLongPressStart = ((_) => onResizeStart())
                         ..onLongPressMoveUpdate = ((d) =>
                             onResizeUpdate(d.globalPosition))
-                        ..onLongPressEnd = ((_) => onResizeEnd()),
+                        ..onLongPressEnd = ((_) => onResizeEnd())
+                        ..onLongPressCancel = onResizeEnd,
                     ),
               },
               child: _EditButton(
@@ -258,20 +273,17 @@ class _EditButton extends StatelessWidget {
           dimension: AppSizes.minTapTarget,
           child: Align(
             alignment: alignment,
-            child: Padding(
-              padding: const EdgeInsets.all(AppDashboard.editButtonInset),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colors.ink,
-                  shape: BoxShape.circle,
-                ),
-                child: SizedBox.square(
-                  dimension: AppDashboard.editButtonSize,
-                  child: Icon(
-                    icon,
-                    size: AppDashboard.editButtonIcon,
-                    color: colors.paper,
-                  ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.ink,
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox.square(
+                dimension: AppDashboard.editButtonSize,
+                child: Icon(
+                  icon,
+                  size: AppDashboard.editButtonIcon,
+                  color: colors.paper,
                 ),
               ),
             ),

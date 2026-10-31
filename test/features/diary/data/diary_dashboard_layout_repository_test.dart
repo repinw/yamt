@@ -7,6 +7,9 @@ import '../../../helpers/memory_app_preferences.dart';
 class _RefusingPreferences extends MemoryAppPreferences {
   @override
   Future<bool> setString(String key, String value) async => false;
+
+  @override
+  Future<bool> remove(String key) async => false;
 }
 
 const _layout = DiaryDashboardLayout(
@@ -60,5 +63,17 @@ void main() {
       repository.saveLayout(_layout),
       throwsA(isA<StateError>()),
     );
+    await expectLater(repository.deleteLayout(), throwsA(isA<StateError>()));
+  });
+
+  test('a stored value that is no object is a format error', () {
+    final repository = DiaryDashboardLayoutRepository(
+      MemoryAppPreferences(
+        initialStrings: {'diary_dashboard_layout_v1:anna': '[1, 2]'},
+      ),
+      'anna',
+    );
+
+    expect(repository.cachedLayout, throwsFormatException);
   });
 }

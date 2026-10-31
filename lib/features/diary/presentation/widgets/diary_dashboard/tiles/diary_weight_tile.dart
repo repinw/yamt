@@ -4,41 +4,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_dashboard_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_weight_trend_provider.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_tile_parts.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_caption.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_load_error.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_no_value.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number_body.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_sparkline.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_number_format.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Mode id of the latest weight with its weekly change.
-const _numberMode = 'number';
-
-/// Mode id of the line of the recent trend weights.
-const _sparklineMode = 'sparkline';
-
 /// The trend weight as a number or as a line of the recent days.
 const diaryWeightTile = DiaryDashboardTile(
-  id: 'weight',
+  spec: diaryWeightTileSpec,
   icon: Icons.monitor_weight_outlined,
   label: _label,
-  sizes: [
-    DiaryTileSize.s1x1,
-    DiaryTileSize.s2x1,
-    DiaryTileSize.s2x2,
-    DiaryTileSize.s4x1,
-  ],
-  defaultSize: DiaryTileSize.s2x1,
   modes: [
-    DiaryTileMode(id: _numberMode, icon: Icons.pin_outlined, label: _number),
     DiaryTileMode(
-      id: _sparklineMode,
+      id: DiaryTileModes.number,
+      icon: Icons.pin_outlined,
+      label: _number,
+    ),
+    DiaryTileMode(
+      id: DiaryTileModes.sparkline,
       icon: Icons.show_chart_rounded,
       label: _sparkline,
     ),
@@ -67,10 +61,7 @@ class DiaryWeightTileContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final today = ref.watch(diaryTodayProvider);
-    final dash = DiaryTileNumber(
-      l10n.profileNoValue,
-      color: FoodLabelColors.of(context).muted,
-    );
+    const dash = DiaryTileNoValue();
     final content = ref
         .watch(diaryDayWeightTrendProvider(args.day))
         .when(
@@ -84,8 +75,7 @@ class DiaryWeightTileContent extends ConsumerWidget {
                 null => dash,
               },
           loading: () => dash,
-          // The tile is optional; the weight list shows load errors.
-          error: (_, _) => dash,
+          error: (_, _) => DiaryTileLoadError(size: args.size),
         );
     if (args.day.isAfter(today)) return content;
 
@@ -122,7 +112,7 @@ class _WeightView extends StatelessWidget {
     final format = DiaryWeeklyCheckInNumberFormat(
       Localizations.localeOf(context).toLanguageTag(),
     );
-    final isSparkline = args.mode == _sparklineMode;
+    final isSparkline = args.mode == DiaryTileModes.sparkline;
     final number = DiaryTileNumber(
       format.kg(weightKg),
       unit: args.size == DiaryTileSize.s1x1 ? null : l10n.caloriesUnitKg,

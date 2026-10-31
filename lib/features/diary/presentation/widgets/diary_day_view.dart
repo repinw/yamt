@@ -3,7 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_dashboard_layout_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
@@ -31,6 +33,12 @@ class DiaryDayView extends ConsumerWidget {
     final dashboardData = ref
         .watch(diaryDayDashboardControllerProvider(day))
         .data;
+    // The overdue plans tile replaces the hint.
+    final showsOverdueTile = ref.watch(
+      diaryDashboardLayoutControllerProvider.select(
+        (layout) => layout.tiles.any((t) => t.id == DiaryTileIds.overdue),
+      ),
+    );
 
     return CustomScrollView(
       scrollCacheExtent: const ScrollCacheExtent.pixels(0),
@@ -54,22 +62,37 @@ class DiaryDayView extends ConsumerWidget {
             horizontalPagePadding,
             bottomPagePadding,
           ),
-          sliver: SliverList.list(
-            children: [
-              _NarrowContent(child: DiaryWeekCard(day: day)),
-              _NarrowContent(
-                child: DiaryStepsCard(
-                  day: day,
-                  weekStart: ref.watch(diaryRunWeekStartProvider(day)),
+          sliver: SliverMainAxisGroup(
+            slivers: [
+              SliverList.list(
+                children: [
+                  _NarrowContent(child: DiaryWeekCard(day: day)),
+                  _NarrowContent(
+                    child: DiaryStepsCard(
+                      day: day,
+                      weekStart: ref.watch(diaryRunWeekStartProvider(day)),
+                    ),
+                  ),
+                ],
+              ),
+              // Not in a lazy list: the weekly check-in in the header opens
+              // itself, also while the tiles above push it below the screen.
+              SliverToBoxAdapter(
+                child: DiaryPageHeader(
+                  selectedDay: day,
+                  dashboardData: dashboardData,
+                  weeklyCheckInKey: weeklyCheckInKey,
                 ),
               ),
-              DiaryPageHeader(
-                selectedDay: day,
-                dashboardData: dashboardData,
-                weeklyCheckInKey: weeklyCheckInKey,
+              SliverList.list(
+                children: [
+                  if (!showsOverdueTile)
+                    _NarrowContent(
+                      child: DiaryOverduePlansHint(selectedDay: day),
+                    ),
+                  _NarrowContent(child: DiaryMealsSection(selectedDay: day)),
+                ],
               ),
-              _NarrowContent(child: DiaryOverduePlansHint(selectedDay: day)),
-              _NarrowContent(child: DiaryMealsSection(selectedDay: day)),
             ],
           ),
         ),

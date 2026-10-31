@@ -7,6 +7,7 @@ import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/core/widgets/app_dashboard_sheet.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_dashboard_layout_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_dashboard_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -28,15 +29,15 @@ class DiaryDashboardTileSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
     final placement = ref.watch(
       diaryDashboardLayoutControllerProvider.select(
         (l) => l.tiles.where((t) => t.id == tile.id).firstOrNull,
       ),
     );
     if (placement == null) return const SizedBox.shrink();
-    final controller = ref.read(
-      diaryDashboardLayoutControllerProvider.notifier,
-    );
+    void change(Future<bool> Function(DiaryDashboardLayoutController) run) =>
+        unawaited(changeDiaryDashboardFlow(context, ref, run));
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -57,11 +58,19 @@ class DiaryDashboardTileSheet extends ConsumerWidget {
                 ChoiceChip(
                   key: DiaryDashboardKeys.mode(mode.id),
                   avatar: Icon(mode.icon),
+                  // In the label's color: the Material default would paint
+                  // the icon of a selected chip in its fill, others in the
+                  // accent.
+                  iconTheme: IconThemeData(
+                    color: placement.mode == mode.id
+                        ? colors.surface
+                        : colors.onSurface,
+                  ),
                   showCheckmark: false,
                   label: Text(mode.label(l10n)),
                   selected: placement.mode == mode.id,
                   onSelected: (_) =>
-                      unawaited(controller.setMode(tile.id, mode.id)),
+                      change((layout) => layout.setMode(tile.id, mode.id)),
                 ),
             ],
           ),
@@ -82,7 +91,7 @@ class DiaryDashboardTileSheet extends ConsumerWidget {
                   label: Text(_sizeLabel(l10n, size)),
                   selected: placement.size == size,
                   onSelected: (_) =>
-                      unawaited(controller.setSize(tile.id, size)),
+                      change((layout) => layout.setSize(tile.id, size)),
                 ),
             ],
           ),
@@ -90,7 +99,7 @@ class DiaryDashboardTileSheet extends ConsumerWidget {
         OutlinedButton.icon(
           key: DiaryDashboardKeys.hide,
           onPressed: () {
-            unawaited(controller.hide(tile.id));
+            change((layout) => layout.hide(tile.id));
             Navigator.of(context).pop();
           },
           icon: const Icon(Icons.visibility_off_outlined),

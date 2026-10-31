@@ -10,21 +10,26 @@ part of 'diary_overdue_plans_controller.dart';
 // ignore_for_file: type=lint, type=warning
 /// The days of the last week before [today] that the calendar can open
 /// and whose plans were never eaten or removed, oldest first; empty when
-/// there are none.
+/// there are none. Loading and a failed load stay visible as such.
 
 @ProviderFor(diaryOverduePlanDays)
 final diaryOverduePlanDaysProvider = DiaryOverduePlanDaysFamily._();
 
 /// The days of the last week before [today] that the calendar can open
 /// and whose plans were never eaten or removed, oldest first; empty when
-/// there are none.
+/// there are none. Loading and a failed load stay visible as such.
 
 final class DiaryOverduePlanDaysProvider
-    extends $FunctionalProvider<List<DateTime>, List<DateTime>, List<DateTime>>
-    with $Provider<List<DateTime>> {
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<DateTime>>,
+          AsyncValue<List<DateTime>>,
+          AsyncValue<List<DateTime>>
+        >
+    with $Provider<AsyncValue<List<DateTime>>> {
   /// The days of the last week before [today] that the calendar can open
   /// and whose plans were never eaten or removed, oldest first; empty when
-  /// there are none.
+  /// there are none. Loading and a failed load stay visible as such.
   DiaryOverduePlanDaysProvider._({
     required DiaryOverduePlanDaysFamily super.from,
     required DateTime super.argument,
@@ -48,20 +53,21 @@ final class DiaryOverduePlanDaysProvider
 
   @$internal
   @override
-  $ProviderElement<List<DateTime>> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<AsyncValue<List<DateTime>>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
-  List<DateTime> create(Ref ref) {
+  AsyncValue<List<DateTime>> create(Ref ref) {
     final argument = this.argument as DateTime;
     return diaryOverduePlanDays(ref, argument);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<DateTime> value) {
+  Override overrideWithValue(AsyncValue<List<DateTime>> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<List<DateTime>>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<List<DateTime>>>(value),
     );
   }
 
@@ -77,14 +83,14 @@ final class DiaryOverduePlanDaysProvider
 }
 
 String _$diaryOverduePlanDaysHash() =>
-    r'5e662edacb16c3d78331df2492cdddfaa3c6f2d3';
+    r'677ad58d61f5cbd50fb2455762fcd74f69dc2fea';
 
 /// The days of the last week before [today] that the calendar can open
 /// and whose plans were never eaten or removed, oldest first; empty when
-/// there are none.
+/// there are none. Loading and a failed load stay visible as such.
 
 final class DiaryOverduePlanDaysFamily extends $Family
-    with $FunctionalFamilyOverride<List<DateTime>, DateTime> {
+    with $FunctionalFamilyOverride<AsyncValue<List<DateTime>>, DateTime> {
   DiaryOverduePlanDaysFamily._()
     : super(
         retry: null,
@@ -96,7 +102,7 @@ final class DiaryOverduePlanDaysFamily extends $Family
 
   /// The days of the last week before [today] that the calendar can open
   /// and whose plans were never eaten or removed, oldest first; empty when
-  /// there are none.
+  /// there are none. Loading and a failed load stay visible as such.
 
   DiaryOverduePlanDaysProvider call(DateTime today) =>
       DiaryOverduePlanDaysProvider._(argument: today, from: this);
@@ -167,7 +173,7 @@ final class DiaryOverduePlansControllerProvider
 }
 
 String _$diaryOverduePlansControllerHash() =>
-    r'9212bdab2f79a50cf24870b08a7e91c845358df3';
+    r'aff182b6374464fb03d8267d8c7b1378035a6d9c';
 
 /// The [diaryOverduePlanDays] of [today] for the hint, or null when there
 /// are none or the user closed the hint for them. Closing hides the hint
