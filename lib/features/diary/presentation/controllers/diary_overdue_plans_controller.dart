@@ -12,35 +12,42 @@ part 'diary_overdue_plans_controller.g.dart';
 const _dismissedKey = 'diary_overdue_plans_dismissed_v1';
 
 /// The days of the last week before [today] that the calendar can open
-/// and whose plans were never eaten or removed, or null when there are none
-/// or the user closed the hint for them. Closing hides the hint until a
-/// later day has overdue plans; the choice is saved on the device.
+/// and whose plans were never eaten or removed, oldest first; empty when
+/// there are none.
+@riverpod
+List<DateTime> diaryOverduePlanDays(Ref ref, DateTime today) {
+  final day = normalizeLocalDay(today);
+  final lookback = addLocalDays(day, -diaryOverduePlanLookbackDays);
+  // Only days the calendar can open; it starts at the first goal.
+  final selectable = DiaryCalendarBounds.resolve(
+    today: day,
+    planStartDay: ref.watch(diaryPlanStartDayProvider),
+  ).earliestDay;
+  final earliest = selectable.isAfter(lookback) ? selectable : lookback;
+  final latest = addLocalDays(day, -1);
+  if (earliest.isAfter(latest)) {
+    return const [];
+  }
+  final planned =
+      ref
+          .watch(
+            diaryPlanDaysProvider(
+              DiaryCalendarBounds(earliestDay: earliest, latestDay: latest),
+            ),
+          )
+          .value ??
+      const <DateTime>{};
+  return planned.sorted((a, b) => a.compareTo(b));
+}
+
+/// The [diaryOverduePlanDays] of [today] for the hint, or null when there
+/// are none or the user closed the hint for them. Closing hides the hint
+/// until a later day has overdue plans; the choice is saved on the device.
 @riverpod
 class DiaryOverduePlansController extends _$DiaryOverduePlansController {
   @override
   List<DateTime>? build(DateTime today) {
-    final day = normalizeLocalDay(today);
-    final lookback = addLocalDays(day, -diaryOverduePlanLookbackDays);
-    // Only days the calendar can open; it starts at the first goal.
-    final selectable = DiaryCalendarBounds.resolve(
-      today: day,
-      planStartDay: ref.watch(diaryPlanStartDayProvider),
-    ).earliestDay;
-    final earliest = selectable.isAfter(lookback) ? selectable : lookback;
-    final latest = addLocalDays(day, -1);
-    if (earliest.isAfter(latest)) {
-      return null;
-    }
-    final planned =
-        ref
-            .watch(
-              diaryPlanDaysProvider(
-                DiaryCalendarBounds(earliestDay: earliest, latestDay: latest),
-              ),
-            )
-            .value ??
-        const <DateTime>{};
-    final days = planned.sorted((a, b) => a.compareTo(b));
+    final days = ref.watch(diaryOverduePlanDaysProvider(today));
     final dismissed = DateTime.tryParse(
       ref.watch(appPreferencesProvider).getStringSync(_dismissedKey) ?? '',
     );

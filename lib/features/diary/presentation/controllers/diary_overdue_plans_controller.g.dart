@@ -9,24 +9,118 @@ part of 'diary_overdue_plans_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// The days of the last week before [today] that the calendar can open
-/// and whose plans were never eaten or removed, or null when there are none
-/// or the user closed the hint for them. Closing hides the hint until a
-/// later day has overdue plans; the choice is saved on the device.
+/// and whose plans were never eaten or removed, oldest first; empty when
+/// there are none.
+
+@ProviderFor(diaryOverduePlanDays)
+final diaryOverduePlanDaysProvider = DiaryOverduePlanDaysFamily._();
+
+/// The days of the last week before [today] that the calendar can open
+/// and whose plans were never eaten or removed, oldest first; empty when
+/// there are none.
+
+final class DiaryOverduePlanDaysProvider
+    extends $FunctionalProvider<List<DateTime>, List<DateTime>, List<DateTime>>
+    with $Provider<List<DateTime>> {
+  /// The days of the last week before [today] that the calendar can open
+  /// and whose plans were never eaten or removed, oldest first; empty when
+  /// there are none.
+  DiaryOverduePlanDaysProvider._({
+    required DiaryOverduePlanDaysFamily super.from,
+    required DateTime super.argument,
+  }) : super(
+         retry: null,
+         name: r'diaryOverduePlanDaysProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryOverduePlanDaysHash();
+
+  @override
+  String toString() {
+    return r'diaryOverduePlanDaysProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<List<DateTime>> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  List<DateTime> create(Ref ref) {
+    final argument = this.argument as DateTime;
+    return diaryOverduePlanDays(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<DateTime> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<DateTime>>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DiaryOverduePlanDaysProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$diaryOverduePlanDaysHash() =>
+    r'5e662edacb16c3d78331df2492cdddfaa3c6f2d3';
+
+/// The days of the last week before [today] that the calendar can open
+/// and whose plans were never eaten or removed, oldest first; empty when
+/// there are none.
+
+final class DiaryOverduePlanDaysFamily extends $Family
+    with $FunctionalFamilyOverride<List<DateTime>, DateTime> {
+  DiaryOverduePlanDaysFamily._()
+    : super(
+        retry: null,
+        name: r'diaryOverduePlanDaysProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// The days of the last week before [today] that the calendar can open
+  /// and whose plans were never eaten or removed, oldest first; empty when
+  /// there are none.
+
+  DiaryOverduePlanDaysProvider call(DateTime today) =>
+      DiaryOverduePlanDaysProvider._(argument: today, from: this);
+
+  @override
+  String toString() => r'diaryOverduePlanDaysProvider';
+}
+
+/// The [diaryOverduePlanDays] of [today] for the hint, or null when there
+/// are none or the user closed the hint for them. Closing hides the hint
+/// until a later day has overdue plans; the choice is saved on the device.
 
 @ProviderFor(DiaryOverduePlansController)
 final diaryOverduePlansControllerProvider =
     DiaryOverduePlansControllerFamily._();
 
-/// The days of the last week before [today] that the calendar can open
-/// and whose plans were never eaten or removed, or null when there are none
-/// or the user closed the hint for them. Closing hides the hint until a
-/// later day has overdue plans; the choice is saved on the device.
+/// The [diaryOverduePlanDays] of [today] for the hint, or null when there
+/// are none or the user closed the hint for them. Closing hides the hint
+/// until a later day has overdue plans; the choice is saved on the device.
 final class DiaryOverduePlansControllerProvider
     extends $NotifierProvider<DiaryOverduePlansController, List<DateTime>?> {
-  /// The days of the last week before [today] that the calendar can open
-  /// and whose plans were never eaten or removed, or null when there are none
-  /// or the user closed the hint for them. Closing hides the hint until a
-  /// later day has overdue plans; the choice is saved on the device.
+  /// The [diaryOverduePlanDays] of [today] for the hint, or null when there
+  /// are none or the user closed the hint for them. Closing hides the hint
+  /// until a later day has overdue plans; the choice is saved on the device.
   DiaryOverduePlansControllerProvider._({
     required DiaryOverduePlansControllerFamily super.from,
     required DateTime super.argument,
@@ -73,12 +167,11 @@ final class DiaryOverduePlansControllerProvider
 }
 
 String _$diaryOverduePlansControllerHash() =>
-    r'9a00410081e62420d76dda9e1933648b7138bbb7';
+    r'9212bdab2f79a50cf24870b08a7e91c845358df3';
 
-/// The days of the last week before [today] that the calendar can open
-/// and whose plans were never eaten or removed, or null when there are none
-/// or the user closed the hint for them. Closing hides the hint until a
-/// later day has overdue plans; the choice is saved on the device.
+/// The [diaryOverduePlanDays] of [today] for the hint, or null when there
+/// are none or the user closed the hint for them. Closing hides the hint
+/// until a later day has overdue plans; the choice is saved on the device.
 
 final class DiaryOverduePlansControllerFamily extends $Family
     with
@@ -98,10 +191,9 @@ final class DiaryOverduePlansControllerFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The days of the last week before [today] that the calendar can open
-  /// and whose plans were never eaten or removed, or null when there are none
-  /// or the user closed the hint for them. Closing hides the hint until a
-  /// later day has overdue plans; the choice is saved on the device.
+  /// The [diaryOverduePlanDays] of [today] for the hint, or null when there
+  /// are none or the user closed the hint for them. Closing hides the hint
+  /// until a later day has overdue plans; the choice is saved on the device.
 
   DiaryOverduePlansControllerProvider call(DateTime today) =>
       DiaryOverduePlansControllerProvider._(argument: today, from: this);
@@ -110,10 +202,9 @@ final class DiaryOverduePlansControllerFamily extends $Family
   String toString() => r'diaryOverduePlansControllerProvider';
 }
 
-/// The days of the last week before [today] that the calendar can open
-/// and whose plans were never eaten or removed, or null when there are none
-/// or the user closed the hint for them. Closing hides the hint until a
-/// later day has overdue plans; the choice is saved on the device.
+/// The [diaryOverduePlanDays] of [today] for the hint, or null when there
+/// are none or the user closed the hint for them. Closing hides the hint
+/// until a later day has overdue plans; the choice is saved on the device.
 
 abstract class _$DiaryOverduePlansController
     extends $Notifier<List<DateTime>?> {

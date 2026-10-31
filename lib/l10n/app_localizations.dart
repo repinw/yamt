@@ -5200,6 +5200,54 @@ abstract class AppLocalizations {
   /// **'Add tile'**
   String get diaryDashboardAddTile;
 
+  /// No description provided for @diaryDashboardTileMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals'**
+  String get diaryDashboardTileMeals;
+
+  /// No description provided for @diaryDashboardMealsModeBars.
+  ///
+  /// In en, this message translates to:
+  /// **'Bars'**
+  String get diaryDashboardMealsModeBars;
+
+  /// No description provided for @diaryDashboardMealsModeList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get diaryDashboardMealsModeList;
+
+  /// No description provided for @diaryDashboardTileOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Open plans'**
+  String get diaryDashboardTileOverdue;
+
+  /// No description provided for @diaryDashboardOverdueModeCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get diaryDashboardOverdueModeCount;
+
+  /// No description provided for @diaryDashboardOverdueModeDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get diaryDashboardOverdueModeDays;
+
+  /// No description provided for @diaryDashboardOverdueDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{day with open plans} other{days with open plans}}'**
+  String diaryDashboardOverdueDays(int count);
+
+  /// No description provided for @diaryDashboardOverdueNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No open plans'**
+  String get diaryDashboardOverdueNone;
+
   /// No description provided for @diaryDashboardTileMenu.
   ///
   /// In en, this message translates to:
