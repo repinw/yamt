@@ -7,6 +7,7 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_fade_in.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_kcal_texts.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_line.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -53,24 +54,14 @@ class DiaryBudgetKcalColumn extends StatelessWidget {
       return _PauseKcal(data: data, numberFormat: numberFormat);
     }
 
-    final left = data.leftKcal;
     final counted = metrics.eatenKcal + data.countedPlannedKcal;
-    final value = showEaten
-        ? kcal(counted)
-        : data.isOver
-        ? l10n.diaryBudgetOverValue(kcal(-left))
-        : kcal(left);
-    final withPlans = data.countsPlans || data.isPlannedDay;
+    final (:value, :unit, :color, :amount) = diaryBudgetKcalTexts(
+      context,
+      data: data,
+      showEaten: showEaten,
+      numberFormat: numberFormat,
+    );
     final plannedKcal = kcal(data.countedPlannedKcal);
-    final unit = showEaten
-        ? withPlans
-              ? l10n.diaryBudgetKcalWithPlanOf(kcal(metrics.targetKcal))
-              : l10n.diaryBudgetKcalEatenOf(kcal(metrics.targetKcal))
-        : data.isOver
-        ? l10n.diaryBudgetKcalOver
-        : withPlans
-        ? l10n.diaryBudgetKcalLeftAfterPlan
-        : l10n.diaryBudgetKcalLeft;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: AppSpacing.xxs,
@@ -79,14 +70,10 @@ class DiaryBudgetKcalColumn extends StatelessWidget {
           value: value,
           child: _BigText(
             value,
-            size: (showEaten ? counted : left).round().abs() >= 1000
+            size: amount.round().abs() >= 1000
                 ? AppBudgetCard.bigNumberLong
                 : AppBudgetCard.bigNumber,
-            color: data.isOver
-                ? overColor
-                : data.isPlannedDay
-                ? colors.plan
-                : colors.accentText,
+            color: color,
           ),
         ),
         DiaryBudgetCrossFade(

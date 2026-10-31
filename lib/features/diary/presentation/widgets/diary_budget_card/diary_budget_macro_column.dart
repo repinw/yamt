@@ -1,9 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_budget_card_constants.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
@@ -12,6 +9,7 @@ import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.d
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_fade_in.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_line.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_macro_style.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Right column of the budget card: protein, carbs, and fat, each with the
@@ -92,24 +90,16 @@ class _MacroRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final colors = FoodLabelColors.of(context);
-    final accents = MetricAccentColors.of(context);
-    final macroColor = _macroColor(accents);
-    // Bright macro colors are darkened as text on light paper, unless the
-    // user picked them.
-    final macroText =
-        Theme.of(context).brightness == Brightness.light &&
-            !accents.macrosAsPicked
-        ? _darkened(macroColor, AppFoodLabel.lightLabelMaxLightness)
-        : macroColor;
-    final counted = macro.eaten + macro.planned;
-    final left = (macro.target - counted).round();
-    String grams(num value) => numberFormat.format(value.round());
-
-    final value = isPauseDay || showEaten
-        ? l10n.diaryBudgetMacroLeft(grams(counted))
-        : left < 0
-        ? l10n.diaryBudgetMacroOver(grams(-left))
-        : l10n.diaryBudgetMacroLeft(grams(left));
+    final macroColor = diaryBudgetMacroColor(context, macro.kind);
+    final macroText = diaryBudgetMacroTextColor(context, macroColor);
+    final left = (macro.target - macro.eaten - macro.planned).round();
+    final value = diaryBudgetMacroValue(
+      l10n,
+      macro,
+      showEaten: showEaten,
+      isPauseDay: isPauseDay,
+      numberFormat: numberFormat,
+    );
     // An overage keeps its text in ink; only its line shows red.
     final valueColor = isPauseDay
         ? colors.muted
@@ -127,7 +117,7 @@ class _MacroRow extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                _label(l10n),
+                diaryBudgetMacroLabel(l10n, macro.kind),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.bodyMedium?.copyWith(
@@ -181,18 +171,6 @@ class _MacroRow extends StatelessWidget {
       ],
     );
   }
-
-  String _label(AppLocalizations l10n) => switch (macro.kind) {
-    DiaryBudgetMacroKind.protein => l10n.caloriesProteinLabel,
-    DiaryBudgetMacroKind.carbs => l10n.diaryBudgetCarbsLabel,
-    DiaryBudgetMacroKind.fat => l10n.caloriesFatLabel,
-  };
-
-  Color _macroColor(MetricAccentColors accents) => switch (macro.kind) {
-    DiaryBudgetMacroKind.protein => accents.protein,
-    DiaryBudgetMacroKind.carbs => accents.carbs,
-    DiaryBudgetMacroKind.fat => accents.fat,
-  };
 }
 
 /// Eaten of target grams of [macro], and its counted plans; the eaten grams
@@ -236,10 +214,4 @@ class _MacroDetails extends StatelessWidget {
       style: style,
     );
   }
-}
-
-/// [color] with its HSL lightness capped at [maxLightness].
-Color _darkened(Color color, double maxLightness) {
-  final hsl = HSLColor.fromColor(color);
-  return hsl.withLightness(math.min(hsl.lightness, maxLightness)).toColor();
 }

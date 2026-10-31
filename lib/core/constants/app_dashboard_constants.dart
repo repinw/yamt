@@ -32,6 +32,12 @@ abstract final class AppDashboard {
   /// Share of a meal row in the meals tile that the kcal number takes.
   static const int mealNumberFlex = 2;
 
+  /// Stroke of a large progress ring in a tile.
+  static const double ringStroke = 7;
+
+  /// Stroke of a small progress ring in a tile.
+  static const double ringStrokeSmall = 4;
+
   /// Diameter of the round edit buttons on a tile in edit mode.
   static const double editButtonSize = 28;
 
