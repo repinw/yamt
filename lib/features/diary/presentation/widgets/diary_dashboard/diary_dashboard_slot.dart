@@ -72,33 +72,22 @@ class DiaryDashboardSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = FoodLabelColors.of(context);
-    if (lifted) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.track,
-          borderRadius: BorderRadius.circular(AppDashboard.tileRadius),
-        ),
-        child: placement.size.isWide
-            ? SizedBox(height: liftedHeight)
-            : const SizedBox.expand(),
-      );
-    }
-
-    final l10n = AppLocalizations.of(context)!;
     final body = IgnorePointer(
       ignoring: editing,
       child: DiaryDashboardTileBody(tile: tile, placement: placement, day: day),
     );
 
+    // The detector stays while the tile is lifted: it carries the drag.
     return RawGestureDetector(
       key: DiaryDashboardKeys.tile(tile.id),
       gestures: {
-        LongPressGestureRecognizer: _dragGesture(
+        LongPressGestureRecognizer: _dragGesture<LongPressGestureRecognizer>(
           LongPressGestureRecognizer.new,
         ),
         if (editing) ...{
-          _QuickHoldRecognizer: _dragGesture(_QuickHoldRecognizer.new),
+          _QuickHoldRecognizer: _dragGesture<_QuickHoldRecognizer>(
+            _QuickHoldRecognizer.new,
+          ),
           TapGestureRecognizer:
               GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
                 TapGestureRecognizer.new,
@@ -106,64 +95,18 @@ class DiaryDashboardSlot extends StatelessWidget {
               ),
         },
       },
-      child: !editing
-          ? body
-          : Stack(
-              fit: placement.size.isWide ? StackFit.loose : StackFit.expand,
-              children: [
-                body,
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                          AppDashboard.tileRadius,
-                        ),
-                        border: Border.all(
-                          color: colors.ink,
-                          width: AppDashboard.editOutline,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                PositionedDirectional(
-                  top: 0,
-                  end: 0,
-                  child: _EditButton(
-                    key: DiaryDashboardKeys.menu(tile.id),
-                    icon: Icons.more_horiz,
-                    tooltip: l10n.diaryDashboardTileMenu,
-                    onTap: onMenu,
-                  ),
-                ),
-                if (tile.sizes.length > 1)
-                  PositionedDirectional(
-                    bottom: 0,
-                    end: 0,
-                    child: RawGestureDetector(
-                      gestures: {
-                        _GrabRecognizer:
-                            GestureRecognizerFactoryWithHandlers<
-                              _GrabRecognizer
-                            >(
-                              _GrabRecognizer.new,
-                              (r) => r
-                                ..onLongPressMoveUpdate = ((d) =>
-                                    onResizeUpdate(d.globalPosition))
-                                ..onLongPressEnd = ((_) => onResizeEnd()),
-                            ),
-                      },
-                      child: _EditButton(
-                        key: DiaryDashboardKeys.resize(tile.id),
-                        icon: Icons.open_in_full,
-                        tooltip: l10n.diaryDashboardResizeTile,
-                        alignment: AlignmentDirectional.bottomEnd,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+      child: switch ((lifted, editing)) {
+        (true, _) => _Gap(height: placement.size.isWide ? liftedHeight : null),
+        (false, false) => body,
+        (false, true) => _EditChrome(
+          tile: tile,
+          wide: placement.size.isWide,
+          onMenu: onMenu,
+          onResizeUpdate: onResizeUpdate,
+          onResizeEnd: onResizeEnd,
+          child: body,
+        ),
+      },
     );
   }
 
@@ -187,6 +130,104 @@ class _QuickHoldRecognizer extends LongPressGestureRecognizer {
 /// can claim the drag as a scroll.
 class _GrabRecognizer extends LongPressGestureRecognizer {
   new() : super(duration: AppDashboard.resizeDelay);
+}
+
+/// The cell a lifted tile leaves, at [height] for a wide tile.
+class _Gap extends StatelessWidget {
+  const new({required this.height});
+
+  final double? height;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: FoodLabelColors.of(context).track,
+        borderRadius: BorderRadius.circular(AppDashboard.tileRadius),
+      ),
+      child: height == null
+          ? const SizedBox.expand()
+          : SizedBox(width: double.infinity, height: height),
+    );
+  }
+}
+
+/// The outline, the menu button and the resize handle of a tile in edit
+/// mode, over the tile.
+class _EditChrome extends StatelessWidget {
+  const new({
+    required this.tile,
+    required this.wide,
+    required this.onMenu,
+    required this.onResizeUpdate,
+    required this.onResizeEnd,
+    required this.child,
+  });
+
+  final DiaryDashboardTile tile;
+  final bool wide;
+  final VoidCallback onMenu;
+  final DiaryDashboardPointerCallback onResizeUpdate;
+  final VoidCallback onResizeEnd;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = FoodLabelColors.of(context);
+    return Stack(
+      fit: wide ? StackFit.loose : StackFit.expand,
+      children: [
+        child,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppDashboard.tileRadius),
+                border: Border.all(
+                  color: colors.ink,
+                  width: AppDashboard.editOutline,
+                ),
+              ),
+            ),
+          ),
+        ),
+        PositionedDirectional(
+          top: 0,
+          end: 0,
+          child: _EditButton(
+            key: DiaryDashboardKeys.menu(tile.id),
+            icon: Icons.more_horiz,
+            tooltip: l10n.diaryDashboardTileMenu,
+            onTap: onMenu,
+          ),
+        ),
+        if (tile.sizes.length > 1)
+          PositionedDirectional(
+            bottom: 0,
+            end: 0,
+            child: RawGestureDetector(
+              gestures: {
+                _GrabRecognizer:
+                    GestureRecognizerFactoryWithHandlers<_GrabRecognizer>(
+                      _GrabRecognizer.new,
+                      (r) => r
+                        ..onLongPressMoveUpdate = ((d) =>
+                            onResizeUpdate(d.globalPosition))
+                        ..onLongPressEnd = ((_) => onResizeEnd()),
+                    ),
+              },
+              child: _EditButton(
+                key: DiaryDashboardKeys.resize(tile.id),
+                icon: Icons.open_in_full,
+                tooltip: l10n.diaryDashboardResizeTile,
+                alignment: AlignmentDirectional.bottomEnd,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 /// A round button in a corner of a tile in edit mode.

@@ -1586,6 +1586,7 @@
   "diaryDashboardSizesLabel": "Größe",
   "diaryDashboardSizeLabel": "{columns}×{rows}",
   "diaryDashboardSizeWide": "Ganze Breite",
+  "diaryDashboardEdit": "Kacheln anordnen",
   "diaryDashboardTileBudget": "Tagesbudget",
   "diaryBalanceLoadFailed": "Balance konnte nicht geladen werden",
   "diaryBalanceEatenLabel": "Gegessen",

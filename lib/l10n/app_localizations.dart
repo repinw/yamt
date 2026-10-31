@@ -5242,6 +5242,12 @@ abstract class AppLocalizations {
   /// **'Full width'**
   String get diaryDashboardSizeWide;
 
+  /// No description provided for @diaryDashboardEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrange tiles'**
+  String get diaryDashboardEdit;
+
   /// No description provided for @diaryDashboardTileBudget.
   ///
   /// In en, this message translates to:

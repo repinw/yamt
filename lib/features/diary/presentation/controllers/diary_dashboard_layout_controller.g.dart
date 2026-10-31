@@ -53,7 +53,7 @@ final class DiaryDashboardLayoutControllerProvider
 }
 
 String _$diaryDashboardLayoutControllerHash() =>
-    r'4375e896cf26b9c0abd86626641a974962ee2358';
+    r'b815e6b54cefa00114eb17cac8dacf42fd959532';
 
 /// The diary dashboard layout of the signed-in user, resolved against the
 /// tile catalog. Drags change it live; [save] stores it.

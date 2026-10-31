@@ -3117,6 +3117,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDashboardSizeWide => 'Full width';
 
   @override
+  String get diaryDashboardEdit => 'Arrange tiles';
+
+  @override
   String get diaryDashboardTileBudget => 'Daily budget';
 
   @override
