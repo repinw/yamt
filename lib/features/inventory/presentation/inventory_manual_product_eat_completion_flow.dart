@@ -21,8 +21,11 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_eat_selection_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_save_flow.dart';
+import 'package:yamt/features/inventory/presentation/inventory_pack_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_save_outcome.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_pack_choice_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_rest_to_stock_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -84,6 +87,25 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
       name: _inventoryManualProductEatFlowLogName,
     );
     return const InventoryManualProductSaveOutcome.canceled();
+  }
+  final choice = await InventoryPackEatFlow.ask(
+    context,
+    container: container,
+    item: result.item,
+  );
+  if (!context.mounted || choice == null) {
+    return const InventoryManualProductSaveOutcome.canceled();
+  }
+  if (choice case InventoryPackChosen(:final item)) {
+    final entry = await InventoryPackEatFlow.eat(
+      context,
+      from: result.item,
+      pack: item,
+      request: eatResult.request,
+    );
+    return entry == null
+        ? const InventoryManualProductSaveOutcome.canceled()
+        : InventoryManualProductSaveOutcome.saved(item);
   }
   final eating = container.read(inventoryItemEatControllerProvider.notifier);
   if (eating.isPlan(eatResult.request)) {

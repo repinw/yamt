@@ -183,7 +183,14 @@ already documented as a reusable presentation surface.
   search hub to the Vorrat.
 - `presentation/inventory_manual_product_eat_completion_flow.dart`:
   `saveManualProductResultForEatFlow` eats a product picked in the product
-  search hub, or plans it on a later day.
+  search hub, or plans it on a later day. When the Vorrat holds the product
+  with its barcode, it asks from which pack the stock of the eat comes
+  (`InventoryPackEatFlow`).
+- `presentation/widgets/inventory_pack_choice_sheet.dart`
+  (`showInventoryPackChoiceSheet`) asks from which Vorrat pack of a food the
+  stock of an eat comes, or whether none gives it, and returns an
+  `InventoryPackChoice`. The diary uses it for "Nochmal" with the packs of
+  `InventorySameFoodService.loadPacksToRepeat`.
 - `presentation/inventory_item_eat_flow.dart`: `InventoryItemEatFlow.eat` opens
   the eat sheet for an inventory item, stages the stock from the item the
   caller shows, and logs the calorie entry. `undoPlan` deletes a plan for an

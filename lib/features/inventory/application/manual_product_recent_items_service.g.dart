@@ -8,13 +8,13 @@ part of 'manual_product_recent_items_service.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Application service for recent manual product candidates.
+/// Application service for recent product candidates.
 
 @ProviderFor(manualProductRecentItemsService)
 final manualProductRecentItemsServiceProvider =
     ManualProductRecentItemsServiceProvider._();
 
-/// Application service for recent manual product candidates.
+/// Application service for recent product candidates.
 
 final class ManualProductRecentItemsServiceProvider
     extends
@@ -24,7 +24,7 @@ final class ManualProductRecentItemsServiceProvider
           ManualProductRecentItemsService
         >
     with $Provider<ManualProductRecentItemsService> {
-  /// Application service for recent manual product candidates.
+  /// Application service for recent product candidates.
   ManualProductRecentItemsServiceProvider._()
     : super(
         from: null,

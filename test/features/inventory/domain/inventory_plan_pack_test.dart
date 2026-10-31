@@ -39,10 +39,12 @@ InventoryItem _pack(
   String name = 'Oats',
   int currentAmount = 500,
   DateTime? entryDate,
+  String? barcode,
 }) => InventoryItem.create(
   id: id,
   name: name,
   brand: 'Kölln',
+  barcode: barcode,
   nutrition: _nutrition,
   entryDate: entryDate ?? DateTime(2026, 9),
   storeName: 'Rewe',
@@ -114,6 +116,71 @@ void main() {
       ]),
       isNull,
     );
+  });
+
+  test('a pack with the barcode of the planned pack is the food', () {
+    final planned = _pack('gone', currentAmount: 0, barcode: '4000 0001');
+    final renamed = _pack('renamed', name: 'Haferflocken', barcode: '40000001');
+
+    expect(
+      inventoryPacksForPlan(_plan, [
+        planned,
+        renamed,
+        _pack('other', name: 'Muesli', barcode: '4000002'),
+      ]).map((pack) => pack.item.id),
+      ['renamed'],
+    );
+  });
+
+  group('inventoryPacksWithBarcode', () {
+    test('lists the packs with the barcode, opened first, then oldest', () {
+      final packs = inventoryPacksWithBarcode('4000-0001', [
+        _pack('newer', barcode: '40000001', entryDate: DateTime(2026, 9, 5)),
+        _pack('older', barcode: '40000001', entryDate: DateTime(2026, 8)),
+        _pack('opened', barcode: '40000001', currentAmount: 120),
+        _pack('empty', barcode: '40000001', currentAmount: 0),
+        _pack('other', barcode: '40000002'),
+        _pack('none'),
+      ]);
+
+      expect(packs.map((item) => item.id), ['opened', 'older', 'newer']);
+    });
+
+    test('finds nothing without a barcode', () {
+      expect(inventoryPacksWithBarcode(null, [_pack('none')]), isEmpty);
+      expect(inventoryPacksWithBarcode('  ', [_pack('none')]), isEmpty);
+    });
+  });
+
+  group('inventoryAmountInPack', () {
+    test('keeps the amount between packs stored alike', () {
+      expect(
+        inventoryAmountInPack(from: _pack('a'), amount: 200, pack: _pack('b')),
+        200,
+      );
+    });
+
+    test('converts grams into pieces by the piece weight', () {
+      expect(
+        inventoryAmountInPack(
+          from: _pack('a'),
+          amount: 80,
+          pack: _piecePack(pieceGrams: 40),
+        ),
+        2,
+      );
+    });
+
+    test('cannot tell grams in a pack without a size', () {
+      expect(
+        inventoryAmountInPack(
+          from: _pack('a'),
+          amount: 80,
+          pack: _piecePack(amountUnit: null),
+        ),
+        isNull,
+      );
+    });
   });
 
   group('inventoryAmountForPlan', () {

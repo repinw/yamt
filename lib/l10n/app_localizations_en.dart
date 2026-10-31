@@ -317,6 +317,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryRestToStockYes => 'To stock';
 
   @override
+  String get inventoryPackChoiceTitle => 'Take from inventory?';
+
+  @override
+  String get inventoryPackChoiceSkip => 'Don\'t take';
+
+  @override
   String get productSearchHubRecentlySelectedTab => 'Recently selected';
 
   @override
@@ -2325,6 +2331,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caloriesEatAgainDoneMessage => 'Logged again';
+
+  @override
+  String get caloriesEatAgainMissedStockMessage =>
+      'Logged again. Your inventory ran out, so it is empty now.';
 
   @override
   String get diaryEntryAgainAction => 'Again';

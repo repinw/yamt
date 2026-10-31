@@ -173,6 +173,8 @@
   },
   "inventoryRestToStockNo": "No",
   "inventoryRestToStockYes": "To stock",
+  "inventoryPackChoiceTitle": "Take from inventory?",
+  "inventoryPackChoiceSkip": "Don't take",
   "@productSearchHubStoredInVorrat": {
     "placeholders": {
       "name": {
@@ -1298,6 +1300,7 @@
   "caloriesEntryDeletedMessage": "Entry removed",
   "caloriesEntryReturnedToInventoryMessage": "Returned to inventory",
   "caloriesEatAgainDoneMessage": "Logged again",
+  "caloriesEatAgainMissedStockMessage": "Logged again. Your inventory ran out, so it is empty now.",
   "diaryEntryAgainAction": "Again",
   "caloriesEntryPer100Label": "Per 100 {unit}",
   "caloriesEntryAmountStockExhaustedMessage": "Amount changed. Your inventory ran out, so it is empty now.",

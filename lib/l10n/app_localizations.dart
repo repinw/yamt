@@ -614,6 +614,18 @@ abstract class AppLocalizations {
   /// **'To stock'**
   String get inventoryRestToStockYes;
 
+  /// No description provided for @inventoryPackChoiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take from inventory?'**
+  String get inventoryPackChoiceTitle;
+
+  /// No description provided for @inventoryPackChoiceSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t take'**
+  String get inventoryPackChoiceSkip;
+
   /// No description provided for @productSearchHubRecentlySelectedTab.
   ///
   /// In en, this message translates to:
@@ -4011,6 +4023,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Logged again'**
   String get caloriesEatAgainDoneMessage;
+
+  /// No description provided for @caloriesEatAgainMissedStockMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged again. Your inventory ran out, so it is empty now.'**
+  String get caloriesEatAgainMissedStockMessage;
 
   /// No description provided for @diaryEntryAgainAction.
   ///

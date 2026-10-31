@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_entry_delete_service.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_service.dart';
+import 'package:yamt/features/inventory/application/inventory_same_food_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -83,6 +84,14 @@ class InventoryItemEatController extends _$InventoryItemEatController {
         final result = await service.delete(entry, restoreToInventory: true);
         return result.isSuccess;
       });
+
+  /// The Vorrat packs with stock left that hold the product with
+  /// [barcode], in eating order.
+  Future<List<InventoryItem>> loadPacksWithBarcode(String? barcode) =>
+      ref.whileAlive(
+        inventorySameFoodServiceProvider,
+        (service) => service.loadPacksWithBarcode(barcode),
+      );
 
   /// Whether [request] becomes a plan: the user plans it, or its day lies
   /// after today.

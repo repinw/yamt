@@ -113,6 +113,79 @@ void main() {
     expect(recent.map((item) => item.id), <String>['valid']);
   });
 
+  test('an item eaten from the Vorrat counts from its last eat', () {
+    final recent = buildManualProductRecentItems(<InventoryItem>[
+      _item(id: 'added', name: 'Added', entryDate: DateTime.utc(2026, 1, 4)),
+      _item(
+        id: 'eaten-early',
+        name: 'Eaten early',
+        origin: InventoryItemOrigin.standard,
+        entryDate: DateTime.utc(2025, 12),
+        lastConsumedAt: DateTime.utc(2026, 1, 2),
+      ),
+      _item(
+        id: 'eaten-late',
+        name: 'Eaten late',
+        entryDate: DateTime.utc(2026),
+        lastConsumedAt: DateTime.utc(2026, 1, 6),
+      ),
+    ]);
+
+    expect(recent.map((item) => item.id), <String>[
+      'eaten-late',
+      'added',
+      'eaten-early',
+    ]);
+  });
+
+  test('service adds the items eaten from the whole Vorrat', () async {
+    final repository = _FakeInventoryItemRepository(<InventoryItem>[
+      _item(id: 'added', name: 'Added', entryDate: DateTime.utc(2026, 1, 3)),
+      _item(
+        id: 'receipt',
+        name: 'Receipt',
+        origin: InventoryItemOrigin.standard,
+        entryDate: DateTime.utc(2025, 11),
+        lastConsumedAt: DateTime.utc(2026, 1, 5),
+      ),
+      _item(
+        id: 'uneaten-receipt',
+        name: 'Uneaten receipt',
+        origin: InventoryItemOrigin.standard,
+        entryDate: DateTime.utc(2026, 1, 6),
+      ),
+    ], manualOnly: true);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final recent = await container
+        .read(manualProductRecentItemsServiceProvider)
+        .readRecentItems();
+
+    expect(recent.map((item) => item.id), <String>['receipt', 'added']);
+  });
+
+  test('a failed Vorrat read fails the recent items', () async {
+    final repository = _FakeInventoryItemRepository(<InventoryItem>[
+      _item(id: 'added', name: 'Added', entryDate: DateTime.utc(2026, 1, 3)),
+    ], failsFullRead: true);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await expectLater(
+      container.read(manualProductRecentItemsServiceProvider).readRecentItems(),
+      throwsA(isA<ParallelWaitError<Object?, Object?>>()),
+    );
+  });
+
   test('service provider reads and prepares repository items', () async {
     final repository = _FakeInventoryItemRepository(<InventoryItem>[
       _item(id: 'old', name: 'Old', entryDate: DateTime.utc(2026)),
@@ -130,11 +203,10 @@ void main() {
 
     expect(recent.map((item) => item.id), <String>['new', 'old']);
     expect(repository.readRecentManualLimit, 80);
-    expect(repository.didCallReadAll, isFalse);
   });
 
   test(
-    'service limits recent reads when repository has ten thousand items',
+    'service limits manual reads when repository has ten thousand items',
     () async {
       final items = List<InventoryItem>.generate(10000, (index) {
         return _item(
@@ -157,7 +229,6 @@ void main() {
       expect(repository.totalItems, 10000);
       expect(repository.readRecentManualLimit, 80);
       expect(repository.readRecentManualReturnedCount, 80);
-      expect(repository.didCallReadAll, isFalse);
       expect(
         recent.map((item) => item.id),
         List<String>.generate(20, (index) => 'item-${9999 - index}'),
@@ -248,12 +319,18 @@ void main() {
 class _FakeInventoryItemRepository
     with InventoryItemWholeListWrites
     implements InventoryItemRecentManualReader {
-  new(this._items);
+  new(this._items, {this.manualOnly = false, this.failsFullRead = false});
 
   final List<InventoryItem> _items;
+
+  /// Whether the recent manual read leaves out the items not added by hand,
+  /// as the Firestore query does.
+  final bool manualOnly;
+
+  /// Whether reading the whole Vorrat fails, as offline without a cache.
+  final bool failsFullRead;
   int? readRecentManualLimit;
   int? readRecentManualReturnedCount;
-  bool didCallReadAll = false;
   int get totalItems => _items.length;
 
   @override
@@ -264,7 +341,9 @@ class _FakeInventoryItemRepository
 
   @override
   Future<List<InventoryItem>> readAll() async {
-    didCallReadAll = true;
+    if (failsFullRead) {
+      throw StateError('offline');
+    }
     return List<InventoryItem>.from(_items);
   }
 
@@ -273,7 +352,9 @@ class _FakeInventoryItemRepository
     required int limit,
   }) async {
     readRecentManualLimit = limit;
-    final items = List<InventoryItem>.from(_items.take(limit));
+    final items = List<InventoryItem>.from(
+      _items.where((item) => !manualOnly || item.isManuallyAdded).take(limit),
+    );
     readRecentManualReturnedCount = items.length;
     return items;
   }
@@ -297,6 +378,7 @@ InventoryItem _item({
   String? weight,
   bool isDiscount = false,
   InventoryItemOrigin origin = InventoryItemOrigin.manualAdd,
+  DateTime? lastConsumedAt,
 }) {
   return InventoryItem.create(
     id: id,
@@ -310,5 +392,6 @@ InventoryItem _item({
     quantity: 1,
     origin: origin,
     isDiscount: isDiscount,
+    lastConsumedAt: lastConsumedAt,
   );
 }

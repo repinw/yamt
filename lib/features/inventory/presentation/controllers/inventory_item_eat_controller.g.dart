@@ -41,7 +41,7 @@ final class InventoryItemEatControllerProvider
 }
 
 String _$inventoryItemEatControllerHash() =>
-    r'f145ee563339482d58c8d7129e27bd08aef7a160';
+    r'adea53be9be62cd448bf7be56fe28ff0b4773e38';
 
 /// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry
 /// or the plan, releases a reservation, and undoes an eat or a plan.
