@@ -414,7 +414,7 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
   `AppLocalizations.supportedLocales` (see
   `test/helpers/l10n_test_utils.dart`).
 - While you work, run only the affected folders, for example
-  `flutter test test/features/diary`. Use `--coverage` only when you need it,
+  `flutter test -d flutter-tester test/features/diary`. Use `--coverage` only when you need it,
   because it is slow.
 - When you move a class, move its tests. NEVER keep a re-export.
 - If behavior changed on purpose, update the test. NEVER bend correct code to
@@ -557,7 +557,7 @@ strings. Report existing compatibility code in changed files to the user.
    analyzes the changed files one by one. An issue in a file that you did not
    change is legacy. In a file that you changed, no rule may fire more often
    than on `origin/master`.
-4. `flutter test test/architecture` passes.
+4. `flutter test -d flutter-tester test/architecture` passes.
 5. Tests of the affected features pass.
 6. `npx jscpd lib` lists no clone in a file that you changed. The project
    baseline still has clones, so the command itself fails.
