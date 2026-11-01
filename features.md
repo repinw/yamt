@@ -198,7 +198,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   is due before the day starts, each meal's share is due by its time, and
   the marker rises evenly in between (13:00 = 60 % by default).
   "Zurücksetzen" restores the default shares and times. Shares and times
-  are saved on the device. Over the goal
+  are saved on the device. Last in the menu is the switch "Makros
+  immer bunt" (off by default, saved on the device), the same choice as in
+  the Individuell color editor. Over the goal
   the number turns red as "+N" with "kcal drüber"; a macro over its target
   shows "+N g" in normal text and only the overage part of its line is
   red. On today and later days the macro with the lowest share of its
