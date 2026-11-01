@@ -5357,6 +5357,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCheckInLoadFailed => 'Could not load the check-in.';
 
   @override
+  String get diaryHoloPreviewAction => 'Preview holo budget card';
+
+  @override
   String get diaryCheckInPreviewAction => 'Preview weekly check-in';
 
   @override

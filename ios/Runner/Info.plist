@@ -91,6 +91,8 @@
 	<string>This app writes weight entries to Apple Health from YAMT.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access for voice-based product search.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>This app tilts the diary card with your phone when you hit your goal.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app may access your photo library to select receipt images.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_budget_card_constants.dart';
@@ -8,6 +9,8 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
+import 'package:yamt/core/widgets/holo_foil_card.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_holo_preview_controller.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_menu.dart';
@@ -65,47 +68,58 @@ class DiaryBudgetCard extends StatelessWidget {
           AppHapticFeedback.mediumImpact();
           openMenu();
         },
-        child: DecoratedBox(
-          key: DiaryBudgetCardKeys.card,
-          decoration: BoxDecoration(
-            color: colors.card,
+        // Hitting the target turns the card into a holo trophy.
+        child: Consumer(
+          builder: (context, ref, child) => HoloFoilCard(
+            enabled:
+                data.hitsTarget ||
+                ref.watch(diaryHoloPreviewControllerProvider),
             borderRadius: BorderRadius.circular(AppRadius.xl),
+            surface: colors.card,
+            child: child!,
           ),
-          // The toggle row's last tap area reaches into the end padding.
-          child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              AppBudgetCard.padding,
-              AppBudgetCard.topPadding,
-              AppBudgetCard.padding - AppBudgetCard.dayTypeHitOverhang,
-              AppBudgetCard.padding,
+          child: DecoratedBox(
+            key: DiaryBudgetCardKeys.card,
+            decoration: BoxDecoration(
+              color: colors.card,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: AppBudgetCard.sectionGap,
-              children: [
-                DiaryBudgetToggleRow(
-                  day: data.day,
-                  showViewSwitch: !data.isPauseDay,
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: AppBudgetCard.dayTypeHitOverhang,
+            // The toggle row's last tap area reaches into the end padding.
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppBudgetCard.padding,
+                AppBudgetCard.topPadding,
+                AppBudgetCard.padding - AppBudgetCard.dayTypeHitOverhang,
+                AppBudgetCard.padding,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppBudgetCard.sectionGap,
+                children: [
+                  DiaryBudgetToggleRow(
+                    day: data.day,
+                    showViewSwitch: !data.isPauseDay,
                   ),
-                  // Opening the details grows the card smoothly downward.
-                  child: AnimatedSize(
-                    duration: AppDurations.compactMetricExpansion,
-                    curve: Curves.easeOutCubic,
-                    alignment: Alignment.topCenter,
-                    child: _Body(
-                      data: data,
-                      showDetails: showDetails,
-                      showEaten: showEaten,
-                      today: today,
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      end: AppBudgetCard.dayTypeHitOverhang,
+                    ),
+                    // Opening the details grows the card smoothly downward.
+                    child: AnimatedSize(
+                      duration: AppDurations.compactMetricExpansion,
+                      curve: Curves.easeOutCubic,
+                      alignment: Alignment.topCenter,
+                      child: _Body(
+                        data: data,
+                        showDetails: showDetails,
+                        showEaten: showEaten,
+                        today: today,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

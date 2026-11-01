@@ -5432,6 +5432,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Check-in konnte nicht geladen werden.';
 
   @override
+  String get diaryHoloPreviewAction => 'Vorschau Holo-Budgetkarte';
+
+  @override
   String get diaryCheckInPreviewAction => 'Wochen-Check-in Vorschau';
 
   @override

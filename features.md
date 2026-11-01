@@ -176,7 +176,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   quick entry; no Vorrat is taken.
 - Daily budget card (#907), set in Geist: the kcal left as a big number
   with "kcal übrig" and a line with a goal marker, and next to it protein,
-  carbs, and fat with the grams left and a thin line each. A long press on
+  carbs, and fat with the grams left and a thin line each. When the day's
+  eaten plus open planned kcal land within ±5 % of the kcal target (#945),
+  the card becomes a gold trophy: it tilts a little with the phone (held in
+  the hand or lying on the table), fine gold glitter sparkles slowly and
+  faster while the phone moves, and a gold sheen follows the light. Open
+  plans count here even when "Nach Plan" is off. Never on a pause day or a
+  day that does not count; Reduce Motion keeps the card still. A long press on
   the card opens its menu "Tagesbudget" (#928) with the switch
   "Soll-Strich" (off by default, saved on the device). While it is on,
   today's kcal line gets a small triangle with a thin stroke where the day
