@@ -9,6 +9,7 @@ import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_marker_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_meal_shares_editor.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_pace_notification_switch.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_sheet_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -23,8 +24,8 @@ Future<void> showDiaryBudgetCardMenu(
 
 /// Content of the budget card's menu: whether today's kcal line marks where
 /// the day should be by now, and while it does, the parts of the day that
-/// set the marker; and whether every macro shows its color, the one choice
-/// for every design.
+/// set the marker and whether freed kcal send a notification; and whether
+/// every macro shows its color, the one choice for every design.
 class DiaryBudgetCardMenu extends ConsumerWidget {
   /// Creates the menu.
   const new({required this.targetKcal, super.key});
@@ -75,6 +76,7 @@ class DiaryBudgetCardMenu extends ConsumerWidget {
                       style: context.graphitKickerStyle,
                     ),
                     DiaryMealSharesEditor(targetKcal: targetKcal),
+                    const DiaryPaceNotificationSwitch(),
                   ],
                 )
               : const SizedBox(width: double.infinity),

@@ -53,6 +53,17 @@ composition.
   each meal's part. `DiaryBudgetCardData` (`presentation/models/`) maps
   `DiaryBalanceCardData` and the day's macros for it;
   `diary_burn_week_card/diary_balance_card.dart` loads it.
+- `presentation/widgets/diary_pace_notification_listener.dart`
+  (`DiaryPaceNotificationListener`) wraps the app in `lib/app.dart`: it
+  keeps today's free kcal notices (#937) scheduled through
+  `core/device/local_notifications.dart`, at app start, after every diary
+  change, on a language change, and moves today on when the app resumes.
+  `DiaryPaceNotificationController` turns them on (the switch in the budget
+  card menu, `diary_budget_card/diary_pace_notification_switch.dart`) and
+  remembers which meal had its notice today. Channel `diary_pace`; ids
+  `300000000 + meal index` in `MealType.sectionOrder`, `300000099` for the
+  debug build's test notice. `domain/diary_pace_notices.dart` computes the
+  times.
 - The diary page shows the Activity missing-weight prompt below the weekly
   check-in, and only on today.
 - `presentation/widgets/diary_day_type_labels.dart` gives the emoji and the

@@ -6798,6 +6798,44 @@ class AppLocalizationsDe extends AppLocalizations {
       'Aus: nur das niedrigste Makro ist farbig';
 
   @override
+  String get diaryBudgetMenuPaceNotice => 'Meldung bei freien kcal';
+
+  @override
+  String get diaryBudgetMenuPaceNoticeHint =>
+      'Einmal pro Tageszeit, wenn der Soll-Strich ihre kcal wieder frei gibt';
+
+  @override
+  String get diaryBudgetMenuPaceNoticeBlocked =>
+      'Benachrichtigungen sind in den Systemeinstellungen aus';
+
+  @override
+  String get diaryBudgetMenuPaceNoticeDebug => 'Test-Meldung in 5 s (Debug)';
+
+  @override
+  String get diaryPaceNoticeChannelName => 'Freie kcal';
+
+  @override
+  String diaryPaceNoticeTitle(String meal, int kcal) {
+    String _temp0 = intl.Intl.selectLogic(meal, {
+      'breakfast': 'Fürs Frühstück',
+      'lunch': 'Fürs Mittagessen',
+      'dinner': 'Fürs Abendessen',
+      'other': 'Für den Snack',
+    });
+    return '$_temp0 hast du wieder $kcal kcal frei';
+  }
+
+  @override
+  String diaryPaceNoticeMacro(String macro) {
+    String _temp0 = intl.Intl.selectLogic(macro, {
+      'protein': 'Eiweiß',
+      'carbs': 'Kohlenhydrate',
+      'other': 'Fett',
+    });
+    return 'Versuch, mehr $_temp0 zu essen.';
+  }
+
+  @override
   String get dataExportTitle => 'Exportieren';
 
   @override

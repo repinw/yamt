@@ -4352,6 +4352,41 @@
   "@diaryBudgetMenuPaceHint": {
     "description": "Hint below the pace marker switch in the budget card menu."
   },
+  "diaryBudgetMenuPaceNotice": "Notify on free kcal",
+  "@diaryBudgetMenuPaceNotice": {
+    "description": "Switch in the budget card menu, shown while the pace marker is on: a notification comes once per part of the day when the pace marker lies that meal's whole part ahead of the kcal eaten."
+  },
+  "diaryBudgetMenuPaceNoticeHint": "Once per part of the day, when the pace marker frees its kcal again",
+  "@diaryBudgetMenuPaceNoticeHint": {
+    "description": "Hint below the free kcal notification switch in the budget card menu."
+  },
+  "diaryBudgetMenuPaceNoticeBlocked": "Notifications are off in the system settings",
+  "@diaryBudgetMenuPaceNoticeBlocked": {
+    "description": "Hint below the free kcal notification switch while the system blocks the app's notifications or their channel."
+  },
+  "diaryBudgetMenuPaceNoticeDebug": "Test notification in 5 s (debug)",
+  "@diaryBudgetMenuPaceNoticeDebug": {
+    "description": "Debug-build-only button in the budget card menu that shows the free kcal notification a few seconds later."
+  },
+  "diaryPaceNoticeChannelName": "Free kcal",
+  "@diaryPaceNoticeChannelName": {
+    "description": "Android notification channel of the free kcal notification."
+  },
+  "diaryPaceNoticeTitle": "{meal, select, breakfast{For breakfast} lunch{For lunch} dinner{For dinner} other{For your snack}} you have {kcal} kcal free again",
+  "@diaryPaceNoticeTitle": {
+    "description": "Title of the notification when the pace marker frees a meal's part of the day's kcal again.",
+    "placeholders": {
+      "meal": {"type": "String"},
+      "kcal": {"type": "int"}
+    }
+  },
+  "diaryPaceNoticeMacro": "Try to eat more {macro, select, protein{protein} carbs{carbs} other{fat}}.",
+  "@diaryPaceNoticeMacro": {
+    "description": "Body of the free kcal notification: the macro with the largest share of its target left.",
+    "placeholders": {
+      "macro": {"type": "String"}
+    }
+  },
   "dataExportTitle": "Export",
   "@dataExportTitle": {
     "description": "Title of the data export page and its menu entry in Fortschritt."
