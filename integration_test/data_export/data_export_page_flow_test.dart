@@ -79,6 +79,13 @@ void main() {
   String summaryOf(WidgetTester tester) =>
       tester.widget<Text>(find.byKey(DataExportPage.summaryKey)).data!;
 
+  /// The goal [number] in the goals menu. CheckboxMenuButton hands its key
+  /// on to the MenuItemButton it builds, so the key alone finds both.
+  Finder goalEntry(int number) => find.descendant(
+    of: find.byKey(DataExportRangeChips.goalEntryKey(number)),
+    matching: find.byType(MenuItemButton),
+  );
+
   /// The summary line that the page shows for [from] to [to].
   String expectedSummary(
     WidgetTester tester, {
@@ -174,7 +181,7 @@ void main() {
 
     await tester.tap(find.byKey(DataExportRangeChips.goalsKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(DataExportRangeChips.goalEntryKey(1)));
+    await tester.tap(goalEntry(1));
     await tester.pumpAndSettle();
     // Goal 1 alone: 1 to 9 September.
     expect(
@@ -189,7 +196,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byKey(DataExportRangeChips.goalEntryKey(2)));
+    await tester.tap(goalEntry(2));
     await tester.pumpAndSettle();
     // Goals 1 and 2: everything up to today.
     expect(
