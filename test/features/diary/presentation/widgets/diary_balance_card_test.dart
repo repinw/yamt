@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/constants/app_budget_card_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
@@ -24,6 +26,10 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_budget_card/diary_budget_kcal_column.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_budget_card/diary_budget_line.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
@@ -33,6 +39,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/auth_user_data_key_session.dart';
 import '../../../../helpers/memory_app_preferences.dart';
+import '../../../../helpers/system_back_test_utils.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 import '../../../calories/support/fake_planned_entry_repository.dart';
 
@@ -417,6 +424,164 @@ void main() {
 
     expect(find.byKey(DiaryBalanceCardKeys.retryButton), findsOneWidget);
   });
+
+  group('pace marker', () {
+    final marker = find.byKey(DiaryBudgetLine.paceKey);
+
+    testWidgets('a long press on the card opens its menu', (tester) async {
+      await _pumpToday(tester);
+      expect(find.byKey(DiaryBudgetCardKeys.menu), findsNothing);
+
+      await tester.longPress(find.byKey(DiaryBudgetCardKeys.card));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(DiaryBudgetCardKeys.menu), findsOneWidget);
+      expect(find.byKey(DiaryBudgetCardKeys.paceSwitch), findsOneWidget);
+    });
+
+    testWidgets('a screen reader opens the menu with an action of the card, '
+        'without a long press', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await _pumpToday(tester);
+      final openMenu = CustomSemanticsAction(
+        label: AppLocalizations.of(
+          tester.element(find.byKey(DiaryBudgetCardKeys.card)),
+        )!.diaryBudgetMenuOpen,
+      );
+      final card = find.semantics.byPredicate(
+        (node) =>
+            node.getSemanticsData().customSemanticsActionIds?.contains(
+              CustomSemanticsAction.getIdentifier(openMenu),
+            ) ??
+            false,
+      );
+      expect(card, findsOne);
+      expect(find.byKey(DiaryBudgetCardKeys.menu), findsNothing);
+
+      tester.semantics.customAction(card, openMenu);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(DiaryBudgetCardKeys.menu), findsOneWidget);
+      semantics.dispose();
+    });
+
+    testWidgets('a tap on the card opens no menu', (tester) async {
+      await _pumpToday(tester);
+
+      await tester.tap(find.byKey(DiaryBudgetCardKeys.card));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(DiaryBudgetCardKeys.menu), findsNothing);
+    });
+
+    testWidgets('is not on the kcal line until the user turns it on', (
+      tester,
+    ) async {
+      await _pumpToday(tester);
+
+      expect(marker, findsNothing);
+    });
+
+    testWidgets("shows where today's kcal should be by now once it is on", (
+      tester,
+    ) async {
+      await _pumpToday(tester, paceMarkerOn: true);
+
+      // At 12:00 the standard day has 51.25 % of 2,000 kcal behind it.
+      expect(marker, findsOneWidget);
+      final line = tester.getRect(
+        find.descendant(
+          of: find.byType(DiaryBudgetKcalColumn),
+          matching: find.byType(DiaryBudgetLine),
+        ),
+      );
+      expect(
+        tester.getCenter(marker).dx - line.left,
+        closeTo(line.width * 0.5125 / AppBudgetCard.lineScale, 1e-3),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('is not on a past day', (tester) async {
+      final selectedDay = DateTime(2026, 4, 27);
+      await _pumpBalanceCard(
+        tester,
+        now: DateTime(2026, 4, 28, 12),
+        selectedDay: selectedDay,
+        weekStartDate: selectedDay,
+        dayTotals: const [0, 0, 0, 0, 0, 0, 800],
+        runState: const BurnWeekRunState.initial().copyWith(
+          currentWeekStartDayKey: localDayKey(selectedDay),
+        ),
+        paceMarkerOn: true,
+      );
+
+      expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,200');
+      expect(marker, findsNothing);
+    });
+
+    testWidgets('is not on a day to come', (tester) async {
+      await _pumpTomorrow(
+        tester,
+        isPreviousDayClosed: true,
+        paceMarkerOn: true,
+      );
+
+      expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), 'kcal left');
+      expect(marker, findsNothing);
+    });
+
+    testWidgets('is not on a pause day, which has no target to pace', (
+      tester,
+    ) async {
+      final today = DateTime(2026, 4, 27);
+      await _pumpBalanceCard(
+        tester,
+        now: DateTime(2026, 4, 27, 12),
+        selectedDay: today,
+        weekStartDate: today,
+        dayTotals: const [0, 0, 0, 0, 0, 0, 1531],
+        runState: const BurnWeekRunState.initial().copyWith(
+          currentWeekStartDayKey: localDayKey(today),
+          runWeekNumber: 2,
+        ),
+        isPauseDay: true,
+        paceMarkerOn: true,
+      );
+
+      expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), 'Pause day');
+      expect(marker, findsNothing);
+    });
+
+    testWidgets("the menu's switch puts it on the kcal line and takes it "
+        'off again', (tester) async {
+      await _pumpToday(tester);
+      final preferences = ProviderScope.containerOf(
+        tester.element(find.byType(DiaryBalanceCard)),
+      ).read(appPreferencesProvider);
+
+      await tester.longPress(find.byKey(DiaryBudgetCardKeys.card));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(DiaryBudgetCardKeys.paceSwitch));
+      await tester.pumpAndSettle();
+
+      expect(marker, findsOneWidget);
+      expect(preferences.getIntSync('diary_pace_marker_v1'), 1);
+
+      await pressSystemBack(tester);
+      expect(find.byKey(DiaryBudgetCardKeys.menu), findsNothing);
+      expect(marker, findsOneWidget);
+
+      await tester.longPress(find.byKey(DiaryBudgetCardKeys.card));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(DiaryBudgetCardKeys.paceSwitch));
+      await tester.pumpAndSettle();
+
+      expect(marker, findsNothing);
+      expect(preferences.getIntSync('diary_pace_marker_v1'), isNull);
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
 
 Future<void> _pumpBalanceCard(
@@ -445,6 +610,7 @@ Future<void> _pumpBalanceCard(
   double? previousDayCarryoverKcal,
   bool isPreviousDayClosed = false,
   List<CalorieEntry> plans = const <CalorieEntry>[],
+  bool paceMarkerOn = false,
 }) async {
   final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final weekOverview = _weekOverview(
@@ -467,7 +633,9 @@ Future<void> _pumpBalanceCard(
   addTearDown(repository.dispose);
   when(() => auth.currentUser).thenReturn(null);
 
-  final preferences = MemoryAppPreferences();
+  final preferences = MemoryAppPreferences(
+    initialInts: {if (paceMarkerOn) 'diary_pace_marker_v1': 1},
+  );
   await tester.pumpWidget(
     ProviderScope(
       observers: observers,
@@ -607,7 +775,11 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 /// Today, 2026-04-27 at noon, with 800 kcal eaten of 2,000.
-Future<void> _pumpToday(WidgetTester tester, {bool showDetails = false}) {
+Future<void> _pumpToday(
+  WidgetTester tester, {
+  bool showDetails = false,
+  bool paceMarkerOn = false,
+}) {
   final day = DateTime(2026, 4, 27);
   return _pumpBalanceCard(
     tester,
@@ -620,6 +792,7 @@ Future<void> _pumpToday(WidgetTester tester, {bool showDetails = false}) {
     ),
     baseGoalKcal: 2000,
     showDetails: showDetails,
+    paceMarkerOn: paceMarkerOn,
   );
 }
 
@@ -630,6 +803,7 @@ Future<void> _pumpTomorrow(
   required bool isPreviousDayClosed,
   bool showDetails = false,
   List<CalorieEntry> plans = const [],
+  bool paceMarkerOn = false,
 }) {
   final day = DateTime(2026, 4, 27);
   return _pumpBalanceCard(
@@ -644,6 +818,7 @@ Future<void> _pumpTomorrow(
     isPreviousDayClosed: isPreviousDayClosed,
     showDetails: showDetails,
     plans: plans,
+    paceMarkerOn: paceMarkerOn,
   );
 }
 

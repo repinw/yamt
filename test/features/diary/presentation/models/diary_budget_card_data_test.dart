@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
+import 'package:yamt/features/diary/application/diary_balance_provider.dart';
+import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_open_plans.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
@@ -103,6 +105,88 @@ void main() {
       expect(_data(dayLeftKcal: -1).isOver, isTrue);
       expect(_data(dayLeftKcal: 200, openPlans: plans).isOver, isTrue);
       expect(_data(dayLeftKcal: -500, isPauseDay: true).isOver, isFalse);
+    });
+  });
+
+  group('paceKcal', () {
+    final day = DateTime(2026, 4, 27);
+
+    DiaryDailyBalanceMetrics daily(double target) => DiaryDailyBalanceMetrics(
+      bufferAdjustmentKcal: 0,
+      realEatenKcal: 0,
+      eatenKcal: 0,
+      realDayLeftKcal: target,
+      dayLeftKcal: target,
+      targetKcal: target,
+    );
+
+    DiaryBalanceCardData loaded({
+      double target = 2000,
+      bool isPauseDay = false,
+    }) => DiaryBalanceCardData.loaded(
+      loadedMetrics: DiaryBalanceLoadedMetrics(
+        selectedDay: day,
+        daily: daily(target),
+        state: DiaryBalanceLoadedState(
+          isPauseDay: isPauseDay,
+          showGameControls: false,
+          runWeekNumber: 1,
+        ),
+        runWeekStart: day,
+      ),
+    );
+
+    DiaryBalanceNotCountingDayData notCounting(double target) =>
+        DiaryBalanceNotCountingDayData(
+          day: day,
+          startDate: DateTime(2026, 4, 29),
+          daily: daily(target),
+        );
+
+    double? paceKcal(DiaryBalanceCardData card, {double? paceShare}) =>
+        DiaryBudgetCardData.from(
+          card: card,
+          today: day,
+          paceShare: paceShare,
+        ).paceKcal;
+
+    test("is the day's target times the share due by now", () {
+      expect(paceKcal(loaded(), paceShare: 0.25), 500);
+      expect(paceKcal(loaded(target: 2218), paceShare: 0.5), 1109);
+      expect(paceKcal(loaded(), paceShare: 1), 2000);
+    });
+
+    test('is 0 before the day starts, so the marker still shows', () {
+      expect(paceKcal(loaded(), paceShare: 0), 0);
+    });
+
+    test('is null without a share, which is the marker off or a day that '
+        'is not today', () {
+      expect(paceKcal(loaded()), isNull);
+    });
+
+    test('is null on a pause day, which has no target to pace', () {
+      expect(paceKcal(loaded(isPauseDay: true), paceShare: 0.5), isNull);
+    });
+
+    test('marks a practice day and a day before a restart against their '
+        'own target', () {
+      expect(
+        paceKcal(
+          DiaryBalanceCardData.practiceDay(practiceDay: notCounting(1200)),
+          paceShare: 0.5,
+        ),
+        600,
+      );
+      expect(
+        paceKcal(
+          DiaryBalanceCardData.scheduledRestart(
+            scheduledRestart: notCounting(1600),
+          ),
+          paceShare: 0.25,
+        ),
+        400,
+      );
     });
   });
 }
