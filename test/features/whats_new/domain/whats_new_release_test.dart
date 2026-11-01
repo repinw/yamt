@@ -14,8 +14,8 @@ Map<String, dynamic> _notes({List<String> added = const ['A']}) => {
 
 void main() {
   group('WhatsNewRelease', () {
-    test('reads the bundled notes of 3.9.0', () {
-      final json = File('assets/whats_new/3.9.0.json').readAsStringSync();
+    test('reads the bundled notes of 3.10.0', () {
+      final json = File('assets/whats_new/3.10.0.json').readAsStringSync();
       final release = WhatsNewRelease.fromJson(
         jsonDecode(json) as Map<String, dynamic>,
       );
@@ -81,7 +81,7 @@ void main() {
       expect(
         whatsNewStep(
           running: running,
-          lastSeen: const AppVersion(3, 9, 0),
+          lastSeen: const AppVersion(3, 10, 0),
           usedBefore: true,
         ),
         WhatsNewStep.skip,

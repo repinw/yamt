@@ -1,0 +1,34 @@
+{
+  "de": {
+    "new": [
+      "Daten-Export: Essen, Ziele, Gewicht und TDEE als Markdown, PDF oder Excel teilen",
+      "Neue Tageskarte im Tagebuch, mit Goldfolie, wenn der Tag sein Ziel trifft",
+      "Darstellung „Individuell“: alle Farben selbst wählen"
+    ],
+    "improved": [
+      "Essen aus dem Tagebuch zieht auf Wunsch vom Vorrat ab",
+      "KI-Essen: Zubereitung wählen und neu analysieren",
+      "Kochhelfer: zu jedem Schritt springen"
+    ],
+    "fixed": [
+      "Check-in und Läufe zählen über die Zeitumstellung richtig",
+      "Ein Trainingstag außerhalb des Plans zählt nur an diesem Tag"
+    ]
+  },
+  "en": {
+    "new": [
+      "Data export: share food, goals, weight, and TDEE as Markdown, PDF, or Excel",
+      "New day card in the diary, with gold foil when the day hits its target",
+      "Appearance \"Individuell\": pick every color yourself"
+    ],
+    "improved": [
+      "Food eaten from the diary can come off the pantry",
+      "AI food: pick the preparation and analyze it again",
+      "Cooking helper: jump to any step"
+    ],
+    "fixed": [
+      "Check-in and runs count right across the clock change",
+      "A training day outside the plan counts on that day only"
+    ]
+  }
+}
