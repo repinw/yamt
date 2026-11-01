@@ -1,5 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/diary/data/diary_meal_shares_repository.dart';
 import 'package:yamt/features/diary/domain/diary_meal_shares.dart';
 
 part 'diary_meal_shares_controller.g.dart';
@@ -8,27 +8,18 @@ part 'diary_meal_shares_controller.g.dart';
 @riverpod
 class DiaryMealSharesController extends _$DiaryMealSharesController {
   @override
-  DiaryMealShares build() {
-    final stored = ref
-        .watch(appPreferencesProvider)
-        .getStringSync(DiaryMealShares.preferenceKey);
-    return (stored == null ? null : DiaryMealShares.decode(stored)) ??
-        DiaryMealShares.standard;
-  }
+  DiaryMealShares build() =>
+      ref.watch(diaryMealSharesRepositoryProvider).loadShares();
 
   /// Switches to [shares] and saves them.
   Future<void> select(DiaryMealShares shares) async {
     state = shares;
-    await ref
-        .read(appPreferencesProvider)
-        .setString(DiaryMealShares.preferenceKey, shares.encode());
+    await ref.read(diaryMealSharesRepositoryProvider).saveShares(shares);
   }
 
   /// Goes back to [DiaryMealShares.standard].
   Future<void> reset() async {
     state = DiaryMealShares.standard;
-    await ref
-        .read(appPreferencesProvider)
-        .remove(DiaryMealShares.preferenceKey);
+    await ref.read(diaryMealSharesRepositoryProvider).deleteShares();
   }
 }

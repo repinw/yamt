@@ -39,7 +39,7 @@ Future<DataExportReport> _report(
   if (mealShares != null) {
     await container
         .read(appPreferencesProvider)
-        .setString(DiaryMealShares.preferenceKey, mealShares);
+        .setString('diary_meal_shares_v1', mealShares);
   }
   final subscription = container.listen(
     dataExportReportProvider(range),
