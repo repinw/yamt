@@ -512,7 +512,14 @@ and feature description docs. This is product-facing; architecture rules stay in
 - **Content:** the goals that ran in the period (mode, dates, weights, pace,
   base kcal), the parts of the day, and per day the day type, the kcal and
   macro goals, what was eaten per meal and per food with its amount, the
-  weighing, the trend weight, and the TDEE. Planned entries are not exported.
+  weighing, the trend weight, the TDEE, and the TDEE daily value. The TDEE is
+  the one Fortschritt shows as its line, with training already in it; the
+  daily value ("Tageswert") is the TDEE that the smoothed food and the
+  weight trend of the day give, before the TDEE's ramp-up and daily cap, and
+  only days with entries have one. The overview and the PDF tile show the
+  average of both; the text for "Meine KI" explains the daily value and that
+  training is part of the TDEE. Planned entries are
+  not exported.
 - **PDF report:** page 1 holds the key numbers, the goals, a chart of food,
   weight, and TDEE together, weight as bars, the TDEE as a line, kcal eaten
   against the goal by day type, and the average macros against their goals
