@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
@@ -30,9 +31,10 @@ import '../../../../../support/prepared_meal_test_data.dart';
 PreparedMeal _meal() => preparedMealTestData();
 
 class _ActionDialogsHarness extends StatefulWidget {
-  const new({required this.meal});
+  const new({required this.meal, this.initialLoggedAt});
 
   final PreparedMeal meal;
+  final DateTime? initialLoggedAt;
 
   @override
   State<_ActionDialogsHarness> createState() => _ActionDialogsHarnessState();
@@ -51,6 +53,7 @@ class _ActionDialogsHarnessState extends State<_ActionDialogsHarness> {
               final result = await showPreparedMealEatSheet(
                 context,
                 widget.meal,
+                initialLoggedAt: widget.initialLoggedAt,
               );
               if (!mounted || result == null) {
                 return;
@@ -95,14 +98,20 @@ Future<void> _openEat(
   WidgetTester tester,
   PreparedMeal meal, {
   Locale locale = const Locale('en'),
+  DateTime? now,
+  DateTime? initialLoggedAt,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [if (now != null) clockProvider.overrideWithValue(() => now)],
       child: MaterialApp(
         locale: locale,
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: _ActionDialogsHarness(meal: meal),
+        home: _ActionDialogsHarness(
+          meal: meal,
+          initialLoggedAt: initialLoggedAt,
+        ),
       ),
     ),
   );
@@ -411,6 +420,23 @@ void main() {
       isNull,
     );
     expect(find.byKey(EatPageScaffold.planButtonKey), findsOneWidget);
+  });
+
+  testWidgets('a later day plans with the confirm button and hides Plan', (
+    tester,
+  ) async {
+    await _openEat(
+      tester,
+      _meal(),
+      now: DateTime(2026, 9, 26, 12),
+      initialLoggedAt: DateTime(2026, 9, 27, 12),
+    );
+
+    expect(
+      find.descendant(of: find.byKey(_confirmKey), matching: find.text('Plan')),
+      findsOneWidget,
+    );
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
   });
 
   testWidgets('a meal with open rows cannot be eaten, only planned as a '

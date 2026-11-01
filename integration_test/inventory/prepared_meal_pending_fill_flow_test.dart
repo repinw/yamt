@@ -435,7 +435,7 @@ void main() {
     // Its rows are filled, so it plans with kcal, measured in pots.
     expect(
       tester
-          .widget<IconButton>(find.byKey(EatPageScaffold.planButtonKey))
+          .widget<FilledButton>(find.byKey(EatPageScaffold.planButtonKey))
           .onPressed,
       isNotNull,
     );
@@ -462,7 +462,7 @@ void main() {
     );
     expect(
       tester
-          .widget<IconButton>(find.byKey(EatPageScaffold.planButtonKey))
+          .widget<FilledButton>(find.byKey(EatPageScaffold.planButtonKey))
           .onPressed,
       isNotNull,
     );
