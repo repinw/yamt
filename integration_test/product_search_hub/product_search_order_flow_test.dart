@@ -18,6 +18,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/product_search_hub/support/'
     'fake_product_search_sources.dart';
+import '../../test/helpers/soft_keyboard_test_utils.dart';
 
 const _openKey = Key('open_product_search');
 const _searchFieldKey = Key('product_search_hub_search_field');
@@ -123,26 +124,9 @@ Future<void> _pumpVisibleStep(
   await tester.pump(observeFor);
 }
 
-/// Waits until the soft keyboard that `enterText` opened is gone again, so
-/// the whole result list shows. Without a keyboard it returns after the
-/// timeout.
-Future<void> _waitForKeyboardClosed(
-  WidgetTester tester, {
-  Duration timeout = const Duration(seconds: 20),
-}) async {
-  const step = Duration(milliseconds: 100);
-  var seenOpen = false;
-  for (var waited = Duration.zero; waited < timeout; waited += step) {
-    await tester.pump();
-    final isOpen = tester.view.viewInsets.bottom > 0;
-    if (isOpen) {
-      seenOpen = true;
-    } else if (seenOpen) {
-      break;
-    }
-    await tester.pump(step);
-  }
-  expect(tester.view.viewInsets.bottom, 0);
+/// Waits until the soft keyboard is gone again, then shows the screen.
+Future<void> _waitForKeyboardClosed(WidgetTester tester) async {
+  await waitForKeyboardClosed(tester);
   await _pumpVisibleStep(tester);
 }
 

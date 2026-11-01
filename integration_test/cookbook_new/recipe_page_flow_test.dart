@@ -60,6 +60,7 @@ import '../../test/features/shoppinglist/support/fake_shopping_list_repository.d
 import '../../test/helpers/fake_prepared_meal_template_repository.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/helpers/memory_app_preferences.dart';
+import '../../test/helpers/soft_keyboard_test_utils.dart';
 
 const _startKey = ValueKey<String>('open-recipe');
 
@@ -251,6 +252,12 @@ void main() {
     await tester.tap(find.byKey(CookingGuideJustAdded.undoKey));
     await tester.pumpAndSettle();
     expect(find.byKey(CookingGuideJustAdded.undoKey), findsNothing);
+
+    // The emulator keyboard of the sheet can show up late. It shrinks the
+    // screen, and the voice zone below the sentence is not built until it
+    // is gone.
+    await waitForKeyboardClosed(tester);
+    await tester.pumpAndSettle();
 
     // Said: cream stays, the chives go again with "nein", and the broth
     // still being said goes in with "Fertig gekocht". Each tap starts or
