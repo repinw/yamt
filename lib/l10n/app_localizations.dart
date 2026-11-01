@@ -11236,7 +11236,7 @@ abstract class AppLocalizations {
   /// Field explanations in the text export, one Markdown list item per line.
   ///
   /// In en, this message translates to:
-  /// **'- kcal: kilocalories. P, C, F: protein, carbohydrates, fat in grams.\n- Goal: kcal and macro goal of the day. Training days have a higher kcal goal, rest days a lower one, so the week stays on target.\n- Pause day: a day without a goal, for example when ill or on holiday.\n- TDEE: estimated daily energy use, learned from weight and food.\n- Weight: weighing of the day; trend: smoothed weight.\n- Parts of the day: how the day\'s kcal goal splits over the meals.'**
+  /// **'- kcal: kilocalories. P, C, F: protein, carbohydrates, fat in grams.\n- Goal: kcal and macro goal of the day. Training days have a higher kcal goal, rest days a lower one, so the week stays on target.\n- Pause day: a day without a goal, for example when ill or on holiday.\n- TDEE: estimated daily energy use, learned from weight and food, as in Progress. Training is already part of it; training days only move the day\'s goal.\n- Daily value: the TDEE that the smoothed food and the weight trend of the day imply, before the TDEE\'s ramp-up and daily cap; it swings a lot, and the TDEE follows it slowly.\n- Weight: weighing of the day; trend: smoothed weight.\n- Parts of the day: how the day\'s kcal goal splits over the meals.'**
   String get dataExportFieldsText;
 
   /// Header of the goals in the export.
@@ -11293,13 +11293,14 @@ abstract class AppLocalizations {
   /// Averages in the export overview.
   ///
   /// In en, this message translates to:
-  /// **'Average per logged day: {kcal} kcal, protein {protein} g, carbohydrates {carbs} g, fat {fat} g. Average TDEE: {tdee} kcal.'**
+  /// **'Average per logged day: {kcal} kcal, protein {protein} g, carbohydrates {carbs} g, fat {fat} g. TDEE {tdee} kcal (as in Progress), average daily value {dayValue} kcal (from smoothed food and the weight trend, not smoothed further).'**
   String dataExportOverviewLine(
     String kcal,
     String protein,
     String carbs,
     String fat,
     String tdee,
+    String dayValue,
   );
 
   /// Weight change in the export overview.
@@ -11349,6 +11350,12 @@ abstract class AppLocalizations {
   /// **'TDEE {tdee} kcal'**
   String dataExportDayTdee(String tdee);
 
+  /// TDEE daily value of a day (from smoothed food and the weight trend, not smoothed further) in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily value {dayValue} kcal'**
+  String dataExportDayTdeeDayValue(String dayValue);
+
   /// A day without entries in the export.
   ///
   /// In en, this message translates to:
@@ -11385,6 +11392,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Average TDEE'**
   String get dataExportKpiTdee;
+
+  /// Report tile line under the average TDEE: unit, then the average TDEE daily value in kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal · daily value avg {dayValue}'**
+  String dataExportKpiTdeeDayValue(String dayValue);
 
   /// Report tile: weight change.
   ///
@@ -11535,6 +11548,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'TDEE kcal'**
   String get dataExportColumnTdee;
+
+  /// Table column: TDEE from the day's smoothed food and the weight trend, not smoothed further.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE daily value kcal'**
+  String get dataExportColumnTdeeDayValue;
 
   /// Table column.
   ///

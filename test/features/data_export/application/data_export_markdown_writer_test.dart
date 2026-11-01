@@ -72,9 +72,10 @@ void main() {
     expect(pause, contains('F 0/– g'));
   });
 
-  test('writes weight, TDEE, and meals with their foods', () {
+  test('writes weight, TDEE, daily value, and meals with their foods', () {
     expect(text, contains('Weight 83.4 kg, trend 83.6 kg'));
     expect(text, contains('TDEE 2,500 kcal'));
+    expect(text, contains('Daily value 2,650 kcal'));
     expect(text, contains('**Breakfast · 400 kcal**'));
     expect(
       text,
@@ -88,6 +89,16 @@ void main() {
     );
   });
 
+  test('explains the daily value and that training is in the TDEE', () {
+    expect(
+      text,
+      contains(
+        '- Daily value: the TDEE that the smoothed food and the weight trend',
+      ),
+    );
+    expect(text, contains('Training is already part of it'));
+  });
+
   test('a day without entries says so', () {
     expect(text, contains(labels.l10n.dataExportNoEntries));
   });
@@ -99,6 +110,7 @@ void main() {
       '90',
       '12',
       '2,500',
+      '2,650',
     );
     expect(text, contains('- $overview'));
     expect(text, contains('- ${labels.l10n.dataExportDayTypesLine(1, 1, 1)}'));

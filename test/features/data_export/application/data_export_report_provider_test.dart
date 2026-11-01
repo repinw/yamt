@@ -122,6 +122,26 @@ void main() {
     expect(report.loggedDays, isEmpty);
   });
 
+  test(
+    'a day keeps the TDEE of Fortschritt; the day value needs intake',
+    () async {
+      final report = await _report(const DataExportLastDaysRange(7));
+
+      DataExportDay dayOf(int day) =>
+          report.days.firstWhere((row) => row.day == DateTime(2026, 9, day));
+      // Every day inside a goal has the learned TDEE, as Fortschritt's line.
+      expect(report.days.every((day) => day.tdeeKcal != null), isTrue);
+      // A logged day also has its day value; a day without entries has none.
+      final logged = report.loggedDays.first;
+      expect(logged.tdeeDayValueKcal, isNotNull);
+      final unlogged = report.days.where((day) => day.entryCount == 0);
+      for (final day in unlogged) {
+        expect(day.tdeeDayValueKcal, isNull);
+      }
+      expect(dayOf(24).tdeeKcal, isNot(dayOf(24).tdeeDayValueKcal));
+    },
+  );
+
   test('weights land on their days; others stay empty', () async {
     final report = await _report(const DataExportLastDaysRange(7));
 

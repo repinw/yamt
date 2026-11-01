@@ -6781,7 +6781,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataExportFieldsText =>
-      '- kcal: kilocalories. P, C, F: protein, carbohydrates, fat in grams.\n- Goal: kcal and macro goal of the day. Training days have a higher kcal goal, rest days a lower one, so the week stays on target.\n- Pause day: a day without a goal, for example when ill or on holiday.\n- TDEE: estimated daily energy use, learned from weight and food.\n- Weight: weighing of the day; trend: smoothed weight.\n- Parts of the day: how the day\'s kcal goal splits over the meals.';
+      '- kcal: kilocalories. P, C, F: protein, carbohydrates, fat in grams.\n- Goal: kcal and macro goal of the day. Training days have a higher kcal goal, rest days a lower one, so the week stays on target.\n- Pause day: a day without a goal, for example when ill or on holiday.\n- TDEE: estimated daily energy use, learned from weight and food, as in Progress. Training is already part of it; training days only move the day\'s goal.\n- Daily value: the TDEE that the smoothed food and the weight trend of the day imply, before the TDEE\'s ramp-up and daily cap; it swings a lot, and the TDEE follows it slowly.\n- Weight: weighing of the day; trend: smoothed weight.\n- Parts of the day: how the day\'s kcal goal splits over the meals.';
 
   @override
   String get dataExportGoalsHeader => 'Goals';
@@ -6826,8 +6826,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String carbs,
     String fat,
     String tdee,
+    String dayValue,
   ) {
-    return 'Average per logged day: $kcal kcal, protein $protein g, carbohydrates $carbs g, fat $fat g. Average TDEE: $tdee kcal.';
+    return 'Average per logged day: $kcal kcal, protein $protein g, carbohydrates $carbs g, fat $fat g. TDEE $tdee kcal (as in Progress), average daily value $dayValue kcal (from smoothed food and the weight trend, not smoothed further).';
   }
 
   @override
@@ -6870,6 +6871,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String dataExportDayTdeeDayValue(String dayValue) {
+    return 'Daily value $dayValue kcal';
+  }
+
+  @override
   String get dataExportNoEntries => 'No entries';
 
   @override
@@ -6894,6 +6900,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataExportKpiTdee => 'Average TDEE';
+
+  @override
+  String dataExportKpiTdeeDayValue(String dayValue) {
+    return 'kcal · daily value avg $dayValue';
+  }
 
   @override
   String get dataExportKpiWeight => 'Weight';
@@ -6971,6 +6982,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataExportColumnTdee => 'TDEE kcal';
+
+  @override
+  String get dataExportColumnTdeeDayValue => 'TDEE daily value kcal';
 
   @override
   String get dataExportColumnMeal => 'Meal';

@@ -38,6 +38,7 @@ List<List<Object?>> _days(DataExportReport report, DataExportLabels t) {
       l10n.dataExportColumnWeight,
       l10n.dataExportColumnTrend,
       l10n.dataExportColumnTdee,
+      l10n.dataExportColumnTdeeDayValue,
     ],
     for (final day in report.days)
       [
@@ -54,6 +55,10 @@ List<List<Object?>> _days(DataExportReport report, DataExportLabels t) {
         if (day.weightKg case final weight?) _round(weight, 2) else null,
         if (day.trendWeightKg case final trend?) _round(trend, 2) else null,
         if (day.tdeeKcal case final tdee?) _round(tdee) else null,
+        if (day.tdeeDayValueKcal case final dayValue?)
+          _round(dayValue)
+        else
+          null,
       ],
   ];
 }

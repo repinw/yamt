@@ -60,8 +60,14 @@ class DataExportReport {
   }
 
   /// Average TDEE over the days that have one; null without one.
-  double? get averageTdeeKcal {
-    final values = [for (final day in days) ?day.tdeeKcal];
+  double? get averageTdeeKcal =>
+      _average([for (final day in days) ?day.tdeeKcal]);
+
+  /// Average TDEE day value over the days that have one; null without one.
+  double? get averageTdeeDayValueKcal =>
+      _average([for (final day in days) ?day.tdeeDayValueKcal]);
+
+  static double? _average(List<double> values) {
     if (values.isEmpty) return null;
     return values.fold<double>(0, (sum, value) => sum + value) / values.length;
   }
@@ -126,6 +132,7 @@ class DataExportDay {
     required this.weightKg,
     required this.trendWeightKg,
     required this.tdeeKcal,
+    required this.tdeeDayValueKcal,
   });
 
   /// The local day.
@@ -155,8 +162,14 @@ class DataExportDay {
   /// Trend weight of the day.
   final double? trendWeightKg;
 
-  /// Estimated TDEE of the day.
+  /// TDEE of the day, the value Fortschritt shows as its line. Training is
+  /// part of it.
   final double? tdeeKcal;
+
+  /// TDEE that the day's smoothed intake and weight trend imply, before the
+  /// TDEE's ramp-up and daily cap (Fortschritt's "Tageswert"); null without
+  /// intake.
+  final double? tdeeDayValueKcal;
 
   /// Whether the day counts its goals; a pause day and a day before the
   /// first goal have none.

@@ -193,7 +193,12 @@ class _Kpis extends pw.StatelessWidget {
           (
             l10n.dataExportKpiTdee,
             t.whole(report.averageTdeeKcal),
-            l10n.dataExportKcalUnit,
+            switch (report.averageTdeeDayValueKcal) {
+              final dayValue? => l10n.dataExportKpiTdeeDayValue(
+                t.whole(dayValue),
+              ),
+              null => l10n.dataExportKcalUnit,
+            },
           ),
           (
             l10n.dataExportKpiWeight,

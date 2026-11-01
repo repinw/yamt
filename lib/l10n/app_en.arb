@@ -4476,7 +4476,7 @@
   "@dataExportFieldsHeader": {
     "description": "Header of the field explanations in the text export."
   },
-  "dataExportFieldsText": "- kcal: kilocalories. P, C, F: protein, carbohydrates, fat in grams.\n- Goal: kcal and macro goal of the day. Training days have a higher kcal goal, rest days a lower one, so the week stays on target.\n- Pause day: a day without a goal, for example when ill or on holiday.\n- TDEE: estimated daily energy use, learned from weight and food.\n- Weight: weighing of the day; trend: smoothed weight.\n- Parts of the day: how the day's kcal goal splits over the meals.",
+  "dataExportFieldsText": "- kcal: kilocalories. P, C, F: protein, carbohydrates, fat in grams.\n- Goal: kcal and macro goal of the day. Training days have a higher kcal goal, rest days a lower one, so the week stays on target.\n- Pause day: a day without a goal, for example when ill or on holiday.\n- TDEE: estimated daily energy use, learned from weight and food, as in Progress. Training is already part of it; training days only move the day's goal.\n- Daily value: the TDEE that the smoothed food and the weight trend of the day imply, before the TDEE's ramp-up and daily cap; it swings a lot, and the TDEE follows it slowly.\n- Weight: weighing of the day; trend: smoothed weight.\n- Parts of the day: how the day's kcal goal splits over the meals.",
   "@dataExportFieldsText": {
     "description": "Field explanations in the text export, one Markdown list item per line."
   },
@@ -4547,7 +4547,7 @@
   "@dataExportOverviewHeader": {
     "description": "Header of the overview in the export."
   },
-  "dataExportOverviewLine": "Average per logged day: {kcal} kcal, protein {protein} g, carbohydrates {carbs} g, fat {fat} g. Average TDEE: {tdee} kcal.",
+  "dataExportOverviewLine": "Average per logged day: {kcal} kcal, protein {protein} g, carbohydrates {carbs} g, fat {fat} g. TDEE {tdee} kcal (as in Progress), average daily value {dayValue} kcal (from smoothed food and the weight trend, not smoothed further).",
   "@dataExportOverviewLine": {
     "description": "Averages in the export overview.",
     "placeholders": {
@@ -4564,6 +4564,9 @@
         "type": "String"
       },
       "tdee": {
+        "type": "String"
+      },
+      "dayValue": {
         "type": "String"
       }
     }
@@ -4659,6 +4662,15 @@
       }
     }
   },
+  "dataExportDayTdeeDayValue": "Daily value {dayValue} kcal",
+  "@dataExportDayTdeeDayValue": {
+    "description": "TDEE daily value of a day (from smoothed food and the weight trend, not smoothed further) in the export.",
+    "placeholders": {
+      "dayValue": {
+        "type": "String"
+      }
+    }
+  },
   "dataExportNoEntries": "No entries",
   "@dataExportNoEntries": {
     "description": "A day without entries in the export."
@@ -4706,6 +4718,15 @@
   "dataExportKpiTdee": "Average TDEE",
   "@dataExportKpiTdee": {
     "description": "Report tile: average TDEE."
+  },
+  "dataExportKpiTdeeDayValue": "kcal · daily value avg {dayValue}",
+  "@dataExportKpiTdeeDayValue": {
+    "description": "Report tile line under the average TDEE: unit, then the average TDEE daily value in kcal.",
+    "placeholders": {
+      "dayValue": {
+        "type": "String"
+      }
+    }
   },
   "dataExportKpiWeight": "Weight",
   "@dataExportKpiWeight": {
@@ -4811,6 +4832,10 @@
   "dataExportColumnTdee": "TDEE kcal",
   "@dataExportColumnTdee": {
     "description": "Table column."
+  },
+  "dataExportColumnTdeeDayValue": "TDEE daily value kcal",
+  "@dataExportColumnTdeeDayValue": {
+    "description": "Table column: TDEE from the day's smoothed food and the weight trend, not smoothed further."
   },
   "dataExportColumnMeal": "Meal",
   "@dataExportColumnMeal": {

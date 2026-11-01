@@ -44,6 +44,7 @@ DataExportDay exportDay(
   double? weightKg,
   double? trendWeightKg,
   double? tdeeKcal,
+  double? tdeeDayValueKcal,
 }) => DataExportDay(
   day: day,
   dayType: type,
@@ -55,6 +56,7 @@ DataExportDay exportDay(
   weightKg: weightKg,
   trendWeightKg: trendWeightKg,
   tdeeKcal: tdeeKcal,
+  tdeeDayValueKcal: tdeeDayValueKcal,
 );
 
 /// A one goal report over [days].
@@ -81,8 +83,8 @@ DataExportReport exportReport(
   days: days,
 );
 
-/// A report of three days: a logged normal day with a weighing and TDEE, a
-/// logged training day, and a pause day without entries.
+/// A report of three days: a logged normal day with a weighing, TDEE, and
+/// TDEE day value, a logged training day, and a pause day without entries.
 DataExportReport sampleReport() => exportReport([
   exportDay(
     DateTime(2026, 9, 20),
@@ -92,6 +94,7 @@ DataExportReport sampleReport() => exportReport([
     weightKg: 83.4,
     trendWeightKg: 83.6,
     tdeeKcal: 2500,
+    tdeeDayValueKcal: 2650,
   ),
   exportDay(
     DateTime(2026, 9, 21),
