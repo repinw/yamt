@@ -60,6 +60,9 @@ abstract final class AppSizes {
   /// Border width that separates a count badge from the image below it.
   static const double badgeBorderWidth = 2;
 
+  /// Border width that marks the picked one of several choice tiles.
+  static const double selectedBorder = 2;
+
   /// Minimum size of a tap target.
   static const double minTapTarget = 48;
 

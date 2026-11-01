@@ -484,6 +484,39 @@ and feature description docs. This is product-facing; architecture rules stay in
   fresh start of the data key. Their location, device, and time metadata is
   removed before the upload.
 
+### Data Export
+
+- "Exportieren" in the Fortschritt "Mehr" menu and "Daten exportieren" in
+  Einstellungen › App open the same page. The user picks who the export is
+  for and the period, then "Teilen" opens the system share sheet
+  ("Speichern" for "Für mich").
+- **Für wen:** "Meine KI" shares a text file (`.txt`, Markdown inside) or
+  copies the text to the clipboard ("Kopieren"), with a ready question on
+  top, the fields explained, the goals, an overview, and every day with its
+  meals and foods. "Ernährungsberater" shares a PDF report and
+  an Excel table (`.xlsx`). "Für mich" saves the PDF report on the device
+  ("Speichern" opens the system save dialog).
+- **Zeitraum:** the current goal (default), "Alle Daten" (every goal), one
+  or more goals from a menu ("Ziele", ticking a goal adds the goals in
+  between, tapping a goal inside ends the range there), the last 7 days,
+  4 weeks, or 3 months, or days from a calendar. A line under the chips
+  says what the export holds: days, entries, and weighings. Nothing
+  before the start of the first goal is offered: longer ranges start there
+  and the calendar starts on that day.
+- **Content:** the goals that ran in the period (mode, dates, weights, pace,
+  base kcal), the parts of the day, and per day the day type, the kcal and
+  macro goals, what was eaten per meal and per food with its amount, the
+  weighing, the trend weight, and the TDEE. Planned entries are not exported.
+- **PDF report:** page 1 holds the key numbers, the goals, a chart of food,
+  weight, and TDEE together, weight as bars, the TDEE as a line, kcal eaten
+  against the goal by day type, and the average macros against their goals
+  with the eaten parts of the day. The pages after it list every day with
+  its foods.
+- **Excel:** sheets for days, meals (with each meal's part of the kcal goal),
+  foods, and goals with the parts of the day; numbers stay numbers.
+- The data is end-to-end encrypted, so the files are written on the device.
+  A line on the page says the file is not encrypted.
+
 ## Activity And Weight
 
 - Activity and weight section used by the diary.

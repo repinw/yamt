@@ -92,6 +92,15 @@ class SettingsPage extends ConsumerWidget {
                                 l10n.commonNotImplementedYet,
                               ),
                             ),
+                            SettingsTile(
+                              key: SettingsPageKeys.dataExportTile,
+                              icon: Icons.ios_share_rounded,
+                              title: l10n.settingsDataExportTitle,
+                              subtitle: l10n.dataExportActionDescription,
+                              onTap: () => unawaited(
+                                context.push(AppRoutes.homeProgressExport),
+                              ),
+                            ),
                             const SettingsHomeWidgetTile(),
                             const _AboutTile(),
                           ],

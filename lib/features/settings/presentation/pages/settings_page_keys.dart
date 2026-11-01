@@ -56,6 +56,9 @@ abstract final class SettingsPageKeys {
   /// Privacy row.
   static const privacyTile = ValueKey<String>('settings-privacy-tile');
 
+  /// Tile that opens the data export.
+  static const dataExportTile = ValueKey<String>('settings-data-export-tile');
+
   /// About row.
   static const aboutTile = ValueKey<String>('settings-about-tile');
 
