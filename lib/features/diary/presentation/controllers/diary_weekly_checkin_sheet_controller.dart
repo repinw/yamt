@@ -98,12 +98,7 @@ class DiaryWeeklyCheckInSheetController
         plan: plan,
         step: previous.step,
         useMeasured: previous.useMeasured && plan.measurement != null,
-        trainingDays: Set<DateTime>.unmodifiable({
-          ...previous.trainingDays.where(
-            (day) => plan.nextRunDays.contains(day) && plan.canChangeDay(day),
-          ),
-          ...plan.fixedTrainingDays,
-        }),
+        trainingDays: plan.nextRun.keepTrainingDays(previous.trainingDays),
       );
     }
     return DiaryWeeklyCheckInSheetState(
@@ -111,7 +106,7 @@ class DiaryWeeklyCheckInSheetController
       step: DiaryWeeklyCheckInStep.review,
       useMeasured: plan.measurement != null,
       // The user picks the days; "Wie letzter Run" plans the last ones again.
-      trainingDays: Set<DateTime>.unmodifiable(plan.fixedTrainingDays),
+      trainingDays: Set<DateTime>.unmodifiable(plan.nextRun.fixedTrainingDays),
     );
   }
 
@@ -142,7 +137,7 @@ class DiaryWeeklyCheckInSheetController
   /// Turns [day] into a training day or back into a rest day.
   void toggleTrainingDay(DateTime day) {
     _update((current) {
-      if (!current.plan.canChangeDay(day)) {
+      if (!current.plan.nextRun.canChangeDay(day)) {
         return current;
       }
       final days = Set<DateTime>.of(current.trainingDays);
@@ -157,7 +152,9 @@ class DiaryWeeklyCheckInSheetController
   void resetTrainingDays() {
     _update(
       (current) => current.copyWith(
-        trainingDays: Set.unmodifiable(current.plan.suggestedTrainingDays),
+        trainingDays: Set.unmodifiable(
+          current.plan.nextRun.suggestedTrainingDays,
+        ),
       ),
     );
   }
@@ -166,7 +163,7 @@ class DiaryWeeklyCheckInSheetController
   void clearTrainingDays() {
     _update(
       (current) => current.copyWith(
-        trainingDays: Set.unmodifiable(current.plan.fixedTrainingDays),
+        trainingDays: Set.unmodifiable(current.plan.nextRun.fixedTrainingDays),
       ),
     );
   }

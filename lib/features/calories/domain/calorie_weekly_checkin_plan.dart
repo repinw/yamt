@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/macro_day_targets.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
@@ -22,10 +23,7 @@ class CalorieWeeklyCheckInPlan {
     required this.nextRunNumber,
     required this.reviewedDays,
     required this.previousTrainingDayCount,
-    required this.nextRunDays,
-    required this.suggestedTrainingDays,
-    required this.pauseDays,
-    required this.pastDays,
+    required this.nextRun,
     required this.hasWeeklyTrainingSchedule,
     required this.sessionKcal,
     required this.previousTdeeKcal,
@@ -51,34 +49,12 @@ class CalorieWeeklyCheckInPlan {
   /// Training days of the reviewed run.
   final int previousTrainingDayCount;
 
-  /// The seven days of the next run, first to last.
-  final List<DateTime> nextRunDays;
-
-  /// Days of the next run that train on the weekdays of the reviewed run.
-  /// Past days and pause days keep their type.
-  final Set<DateTime> suggestedTrainingDays;
-
-  /// Days of the next run that are pause days. They cannot train.
-  final Set<DateTime> pauseDays;
-
-  /// Days of the next run before today, after a late check-in. They keep
-  /// their type, because their calorie goals were already in use.
-  final Set<DateTime> pastDays;
+  /// The run that the check-in plans, with the days it may change.
+  final CalorieCheckInRun nextRun;
 
   /// Whether the goal has weekly training days. Like the diary targets, the
   /// macros then count training even in a run without a session.
   final bool hasWeeklyTrainingSchedule;
-
-  /// Whether the planning may change the type of [day]. Pause days and past
-  /// days keep their type, so [suggestedTrainingDays] holds them as they are.
-  bool canChangeDay(DateTime day) =>
-      !pauseDays.contains(day) && !pastDays.contains(day);
-
-  /// The days of [nextRunDays] that keep their type and train.
-  Set<DateTime> get fixedTrainingDays => {
-    for (final day in suggestedTrainingDays)
-      if (!canChangeDay(day)) day,
-  };
 
   /// kcal of one training session.
   final double sessionKcal;

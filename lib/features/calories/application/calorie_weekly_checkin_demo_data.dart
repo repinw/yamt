@@ -4,6 +4,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
@@ -124,12 +125,14 @@ CalorieWeeklyCheckInPlan calorieWeeklyCheckInDemoPlan({
     nextRunNumber: _demoRunNumber + 1,
     reviewedDays: (start: window.windowStartDate, end: window.windowEndDate),
     previousTrainingDayCount: _demoTrainingOffsets.length,
-    nextRunDays: nextRunDays,
-    suggestedTrainingDays: {
-      for (final offset in _demoTrainingOffsets) nextRunDays[offset],
-    },
-    pauseDays: const {},
-    pastDays: const {},
+    nextRun: CalorieCheckInRun(
+      days: nextRunDays,
+      suggestedTrainingDays: {
+        for (final offset in _demoTrainingOffsets) nextRunDays[offset],
+      },
+      pauseDays: const {},
+      pastDays: const {},
+    ),
     hasWeeklyTrainingSchedule: true,
     sessionKcal: _demoSessionKcal,
     previousTdeeKcal: _demoPreviousTdeeKcal,

@@ -49,7 +49,8 @@ class DiaryWeeklyCheckInTrainingStep extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final weekday = DateFormat.E(locale);
     final date = DateFormat.d(locale);
-    final days = plan.nextRunDays;
+    final run = plan.nextRun;
+    final days = run.days;
     final accent =
         theme.extension<IntroAccentColors>()?.amber ??
         IntroAccentColors.fallback.amber;
@@ -79,14 +80,14 @@ class DiaryWeeklyCheckInTrainingStep extends StatelessWidget {
                 label: _shortLabel(weekday.format(day)),
                 caption: date.format(day),
                 isTraining: trainingDays.contains(day),
-                isEnabled: plan.canChangeDay(day),
+                isEnabled: run.canChangeDay(day),
               ),
           ],
           onToggle: (index) {
-            if (plan.canChangeDay(days[index])) onToggle(days[index]);
+            if (run.canChangeDay(days[index])) onToggle(days[index]);
           },
         ),
-        if (days.any((day) => !plan.canChangeDay(day))) ...[
+        if (days.any((day) => !run.canChangeDay(day))) ...[
           const SizedBox(height: AppSpacing.xs),
           Text(
             l10n.diaryCheckInFixedDaysHint,
@@ -109,7 +110,7 @@ class DiaryWeeklyCheckInTrainingStep extends StatelessWidget {
           sessionKcal: plan.sessionKcal,
           accent: accent,
           onToggle: (index) {
-            if (plan.canChangeDay(days[index])) onToggle(days[index]);
+            if (run.canChangeDay(days[index])) onToggle(days[index]);
           },
         ),
         const SizedBox(height: AppSpacing.md),

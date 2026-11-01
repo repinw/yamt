@@ -93,11 +93,6 @@ Future<CalorieWeeklyCheckInPlan?> _buildPlan(
     throw StateError('Weekly check-in plan was disposed.');
   }
 
-  final reviewedRun = settings.runTrainingPlan(windowEnd);
-  final nextRun = settings.runTrainingPlan(today);
-  final reviewedWeekdays = {
-    for (final day in reviewedRun.trainingDays) day.weekday,
-  };
   final calculation = checkInData.isReady ? checkInData.calculation : null;
   final profile = settings.calculatorProfile;
   final goalProfile =
@@ -112,22 +107,12 @@ Future<CalorieWeeklyCheckInPlan?> _buildPlan(
       start: normalizeLocalDay(pending.windowStartDate),
       end: windowEnd,
     ),
-    previousTrainingDayCount: reviewedRun.trainingDays.length,
-    nextRunDays: nextRun.days,
+    previousTrainingDayCount: settings
+        .runTrainingPlan(windowEnd)
+        .trainingDays
+        .length,
     nextRunNumber: resolveCalorieGoalRunNumber(settings: settings, day: today),
-    suggestedTrainingDays: {
-      for (final day in nextRun.days)
-        // Past days and pause days keep their type.
-        if (day.isBefore(today) || nextRun.pauseDays.contains(day)
-            ? nextRun.trainingDays.contains(day)
-            : reviewedWeekdays.contains(day.weekday))
-          day,
-    },
-    pauseDays: nextRun.pauseDays,
-    pastDays: {
-      for (final day in nextRun.days)
-        if (day.isBefore(today)) day,
-    },
+    nextRun: settings.checkInRun(reviewedDay: windowEnd, today: today),
     hasWeeklyTrainingSchedule:
         goalProfile?.trainingWeekdays.isNotEmpty ?? false,
     sessionKcal: settings.trainingSessionKcalForDay(today),

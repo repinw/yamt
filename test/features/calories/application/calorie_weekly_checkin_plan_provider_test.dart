@@ -82,8 +82,8 @@ void main() {
 
       expect(plan, isNotNull);
       expect(plan!.reviewedRunNumber, 2);
-      expect(plan.nextRunDays.first, DateTime(2026, 9, 15));
-      expect(plan.suggestedTrainingDays, {
+      expect(plan.nextRun.days.first, DateTime(2026, 9, 15));
+      expect(plan.nextRun.suggestedTrainingDays, {
         DateTime(2026, 9, 17),
         DateTime(2026, 9, 21),
       });
@@ -135,9 +135,12 @@ void main() {
     ))!;
 
     expect(plan.nextRunNumber, 3);
-    expect(plan.pastDays, {DateTime(2026, 9, 15), DateTime(2026, 9, 16)});
-    expect(plan.canChangeDay(DateTime(2026, 9, 16)), isFalse);
-    expect(plan.suggestedTrainingDays, {
+    expect(plan.nextRun.pastDays, {
+      DateTime(2026, 9, 15),
+      DateTime(2026, 9, 16),
+    });
+    expect(plan.nextRun.canChangeDay(DateTime(2026, 9, 16)), isFalse);
+    expect(plan.nextRun.suggestedTrainingDays, {
       DateTime(2026, 9, 17),
       DateTime(2026, 9, 21),
     });
@@ -162,9 +165,9 @@ void main() {
       calorieWeeklyCheckInPlanProvider.future,
     ))!;
 
-    expect(plan.canChangeDay(DateTime(2026, 9, 17)), isFalse);
-    expect(plan.suggestedTrainingDays, contains(DateTime(2026, 9, 17)));
-    expect(plan.fixedTrainingDays, {DateTime(2026, 9, 17)});
+    expect(plan.nextRun.canChangeDay(DateTime(2026, 9, 17)), isFalse);
+    expect(plan.nextRun.suggestedTrainingDays, contains(DateTime(2026, 9, 17)));
+    expect(plan.nextRun.fixedTrainingDays, {DateTime(2026, 9, 17)});
   });
 
   test('a failed goal progress still gives a plan without a chart', () async {

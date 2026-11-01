@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 
@@ -16,10 +17,12 @@ CalorieWeeklyCheckInPlan _plan({
     nextRunNumber: 5,
     reviewedDays: (start: DateTime(2026, 8, 25), end: DateTime(2026, 8, 31)),
     previousTrainingDayCount: 3,
-    nextRunDays: days,
-    suggestedTrainingDays: {days[0], days[2], days[4]},
-    pauseDays: const {},
-    pastDays: {days[0]},
+    nextRun: CalorieCheckInRun(
+      days: days,
+      suggestedTrainingDays: {days[0], days[2], days[4]},
+      pauseDays: const {},
+      pastDays: {days[0]},
+    ),
     hasWeeklyTrainingSchedule: hasWeeklyTrainingSchedule,
     sessionKcal: 350,
     previousTdeeKcal: 2164,
@@ -80,12 +83,5 @@ void main() {
     final withSession = _plan().targetsFor(useMeasured: true, trainingDays: 3);
 
     expect(withSchedule.macros.protein, withSession.macros.protein);
-  });
-
-  test('only days that are neither past nor pause days can change', () {
-    final plan = _plan();
-
-    expect(plan.canChangeDay(plan.nextRunDays[0]), isFalse);
-    expect(plan.canChangeDay(plan.nextRunDays[1]), isTrue);
   });
 }

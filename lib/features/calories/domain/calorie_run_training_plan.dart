@@ -39,6 +39,64 @@ class CalorieRunTrainingPlan {
   ];
 }
 
+/// The run that a weekly check-in plans, seen on the day of the check-in.
+///
+/// It answers which days the check-in may change: past days of a late
+/// check-in and pause days keep their type.
+@immutable
+class CalorieCheckInRun {
+  /// Creates the run of a check-in.
+  const new({
+    required this.days,
+    required this.suggestedTrainingDays,
+    required this.pauseDays,
+    required this.pastDays,
+  });
+
+  /// The seven days of the run, first to last.
+  final List<DateTime> days;
+
+  /// Days of the run that train on the weekdays of the reviewed run.
+  /// Past days and pause days keep their type.
+  final Set<DateTime> suggestedTrainingDays;
+
+  /// Days of the run that are pause days. They cannot train.
+  final Set<DateTime> pauseDays;
+
+  /// Days of the run before the check-in day, after a late check-in. They
+  /// keep their type, because their calorie goals were already in use.
+  final Set<DateTime> pastDays;
+
+  /// Whether the check-in may change the type of [day]. Pause days and past
+  /// days keep their type, so [suggestedTrainingDays] holds them as they are.
+  bool canChangeDay(DateTime day) =>
+      !pauseDays.contains(day) && !pastDays.contains(day);
+
+  /// The days of [days] that keep their type and train.
+  Set<DateTime> get fixedTrainingDays => {
+    for (final day in suggestedTrainingDays)
+      if (!canChangeDay(day)) day,
+  };
+
+  /// [trainingDays] picked for an earlier plan, limited to the days of this
+  /// run that may change, plus the [fixedTrainingDays].
+  Set<DateTime> keepTrainingDays(Set<DateTime> trainingDays) =>
+      Set<DateTime>.unmodifiable({
+        ...trainingDays.where((day) => days.contains(day) && canChangeDay(day)),
+        ...fixedTrainingDays,
+      });
+
+  /// Rest days of the run with [trainingDays]. Pause days are neither.
+  int restDayCount(Set<DateTime> trainingDays) =>
+      days.length -
+      trainingDays.length -
+      pauseDays.difference(trainingDays).length;
+
+  /// The choice that saves [trainingDays] as the training days of this run.
+  CalorieRunTrainingChoice choice(Set<DateTime> trainingDays) =>
+      (runDay: days.first, trainingDays: trainingDays);
+}
+
 /// Training days of the current 7-day run on [CalorieGoalSettings].
 extension CalorieRunTraining on CalorieGoalSettings {
   /// The training plan of the run that contains [day].
@@ -52,6 +110,35 @@ extension CalorieRunTraining on CalorieGoalSettings {
       days: List<DateTime>.unmodifiable(days),
       trainingDays: Set<DateTime>.unmodifiable(days.where(isTrainingDay)),
       pauseDays: Set<DateTime>.unmodifiable(days.where(isPauseDay)),
+    );
+  }
+
+  /// The run that a check-in on [today] plans, suggesting the weekdays of
+  /// the run that contains [reviewedDay].
+  CalorieCheckInRun checkInRun({
+    required DateTime reviewedDay,
+    required DateTime today,
+  }) {
+    final checkInDay = normalizeLocalDay(today);
+    final next = runTrainingPlan(checkInDay);
+    final reviewedWeekdays = {
+      for (final reviewedRunDay in runTrainingPlan(reviewedDay).trainingDays)
+        reviewedRunDay.weekday,
+    };
+    return CalorieCheckInRun(
+      days: next.days,
+      suggestedTrainingDays: Set<DateTime>.unmodifiable({
+        for (final runDay in next.days)
+          if (runDay.isBefore(checkInDay) || next.pauseDays.contains(runDay)
+              ? next.trainingDays.contains(runDay)
+              : reviewedWeekdays.contains(runDay.weekday))
+            runDay,
+      }),
+      pauseDays: next.pauseDays,
+      pastDays: Set<DateTime>.unmodifiable({
+        for (final runDay in next.days)
+          if (runDay.isBefore(checkInDay)) runDay,
+      }),
     );
   }
 
