@@ -259,7 +259,7 @@ abstract final class InventoryItemHubFlow {
               .swapItemCandidate(
                 itemId: item.id,
                 resolvedProduct: request.resolvedProduct,
-                requiresGlobalPersistence: request.requiresGlobalPersistence,
+                sharing: request.sharing,
                 weight: request.weight,
                 aiEstimated: request.aiEstimated,
                 aiEstimate: request.aiEstimate,

@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/data/'
     'global_food_item_repository.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
+import 'package:yamt/features/inventory/domain/food_sharing.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_stock_changes.dart';
@@ -103,27 +104,28 @@ class InventoryItemEditService {
     return (result: saved, written: saved ? next : null);
   }
 
-  /// Points a full item at another product.
-  ///
-  /// An [aiEstimated] product stays the user's own: it gets no catalog
-  /// document and no barcode candidate, and the item keeps its pending id
-  /// (#701), and keeps its [aiEstimate] (#763).
+  /// Points a full item at another product and shares it as [sharing]
+  /// says. An [aiEstimated] product keeps its [aiEstimate] (#763).
   Future<InventoryItemChange<bool>> swap(
     List<InventoryItem> items, {
     required String itemId,
     required GlobalFoodItem resolvedProduct,
-    required bool requiresGlobalPersistence,
+    required FoodSharing sharing,
     String? weight,
     bool aiEstimated = false,
     SavedFoodEstimate? aiEstimate,
   }) async {
+    assert(
+      !aiEstimated || !sharing.sharesAnything,
+      'An AI food stays private (#701).',
+    );
     final index = items.indexWhere((item) => item.id == itemId);
     if (index < 0 || !items[index].isFullyAvailable) {
       return (result: false, written: null);
     }
     final inCatalog =
-        !aiEstimated &&
-        (!requiresGlobalPersistence || await _saveProduct(resolvedProduct));
+        sharing.catalogIdAtOnce ||
+        (sharing.catalogProduct && await _saveProduct(resolvedProduct));
     final next = List<InventoryItem>.from(items)
       ..[index] = buildSwappedItem(
         sourceItem: items[index],
@@ -137,7 +139,10 @@ class InventoryItemEditService {
       return (result: false, written: null);
     }
     final barcode = resolvedProduct.normalizedBarcode;
-    if (inCatalog && barcode != null && barcode.isNotEmpty) {
+    if (inCatalog &&
+        sharing.barcodeCandidate &&
+        barcode != null &&
+        barcode.isNotEmpty) {
       await _barcodeCandidates.recordSelection(
         barcode: barcode,
         globalFoodItem: resolvedProduct,

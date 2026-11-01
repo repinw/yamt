@@ -302,7 +302,8 @@ class InventoryItem {
 
   /// Whether the food is the user's own and never reaches anything that
   /// other users read: the shared catalog, the barcode candidates, and the
-  /// shared serving suggestions (#655, #701). Every such writer asks this.
+  /// shared serving suggestions (#655, #701). `FoodSharing` builds on it for
+  /// the catalog and the barcodes; the serving suggestions ask it directly.
   bool get staysPrivate => aiEstimated;
 
   /// To json.

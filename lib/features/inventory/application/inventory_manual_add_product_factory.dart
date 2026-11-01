@@ -1,6 +1,7 @@
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
+import 'package:yamt/features/inventory/domain/food_sharing.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -76,8 +77,8 @@ GlobalFoodItem buildInventoryManualAddGlobalFoodItem({
 
 /// Builds inventory item persisted from manual add selection.
 ///
-/// Without [inCatalog], [globalProduct] is not in the shared catalog, so the
-/// item gets its pending id instead of the catalog id.
+/// Without [inCatalog], the item gets its pending id instead of the catalog
+/// id of [globalProduct], see [FoodSharing.catalogIdAtOnce].
 InventoryItem buildInventoryManualAddSavedItem({
   required String id,
   required GlobalFoodItem globalProduct,
@@ -91,11 +92,9 @@ InventoryItem buildInventoryManualAddSavedItem({
 }) {
   final item = InventoryItem.create(
     id: id,
-    // An AI estimate gets no catalog document, so it keeps a pending id
-    // like a swapped one (#701).
-    globalFoodItemId: aiEstimated || !inCatalog
-        ? buildPendingGlobalFoodItemId(globalProduct.resolvedFoodFingerprint)
-        : globalProduct.id,
+    globalFoodItemId: inCatalog
+        ? globalProduct.id
+        : buildPendingGlobalFoodItemId(globalProduct.resolvedFoodFingerprint),
     name: globalProduct.name,
     entryDate: now,
     storeName: storeName,

@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
 import 'package:yamt/features/inventory/domain/food_estimate_level_change.dart';
+import 'package:yamt/features/inventory/domain/food_sharing.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -253,6 +254,12 @@ GlobalFoodItem _globalProduct({
     packageWeight: packageWeight,
   );
 }
+
+final _sharesNewProduct = FoodSharing.forSwap(
+  staysPrivate: false,
+  requiresGlobalPersistence: true,
+  picksCatalogProduct: true,
+);
 
 void main() {
   test(
@@ -937,7 +944,7 @@ void main() {
               barcode: '4061458029995',
               packageWeight: '1000 g',
             ),
-            requiresGlobalPersistence: true,
+            sharing: _sharesNewProduct,
             weight: '1000 g',
           );
 
@@ -993,7 +1000,11 @@ void main() {
             barcode: '4061458029995',
             packageWeight: '1000 g',
           ),
-          requiresGlobalPersistence: true,
+          sharing: FoodSharing.forSwap(
+            staysPrivate: true,
+            requiresGlobalPersistence: true,
+            picksCatalogProduct: true,
+          ),
           weight: '1000 g',
           aiEstimated: true,
         );
@@ -1092,7 +1103,7 @@ void main() {
           .swapItemCandidate(
             itemId: 'a',
             resolvedProduct: _globalProduct(id: 'off-123', barcode: '123'),
-            requiresGlobalPersistence: true,
+            sharing: _sharesNewProduct,
             weight: '1000 g',
           );
 

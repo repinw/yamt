@@ -38,7 +38,7 @@ void main() {
       );
 
       expect(request?.resolvedProduct, candidateItem);
-      expect(request?.requiresGlobalPersistence, isTrue);
+      expect(request?.sharing.catalogProduct, isTrue);
       expect(request?.weight, '500 g');
     });
 
@@ -130,7 +130,7 @@ void main() {
           matcher: GlobalFoodItemMatcher(),
         );
 
-        expect(request.requiresGlobalPersistence, isTrue);
+        expect(request.sharing.catalogProduct, isTrue);
         expect(request.weight, '950 ml');
         expect(request.resolvedProduct.id, 'off-4006381333931');
         expect(request.resolvedProduct.name, 'Manual Milk');
@@ -153,7 +153,7 @@ void main() {
         matcher: GlobalFoodItemMatcher(),
       );
 
-      expect(request.requiresGlobalPersistence, isFalse);
+      expect(request.sharing.catalogProduct, isFalse);
       expect(request.weight, '250 g');
       expect(request.resolvedProduct.id, 'global-1');
       expect(request.resolvedProduct.packageWeight, '250 g');
@@ -171,12 +171,25 @@ void main() {
           matcher: GlobalFoodItemMatcher(),
         );
 
-        expect(request.requiresGlobalPersistence, isTrue);
+        expect(request.sharing.catalogProduct, isTrue);
         expect(request.weight, '100 g');
         expect(request.resolvedProduct.id, startsWith('global-food-'));
         expect(request.resolvedProduct.packageWeight, '100 g');
       },
     );
+
+    test('keeps an AI food private (#701)', () {
+      final request = buildInventoryItemCandidateSwapRequestFromManualResult(
+        result: InventoryReceiptManualProductResult(
+          item: _item(weight: '300 g').copyWith(aiEstimated: true),
+          action: InventoryReceiptManualProductAction.addToInventory,
+        ),
+        matcher: GlobalFoodItemMatcher(),
+      );
+
+      expect(request.aiEstimated, isTrue);
+      expect(request.sharing.sharesAnything, isFalse);
+    });
   });
 }
 
