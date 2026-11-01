@@ -8,8 +8,7 @@ import 'package:yamt/features/household/application/'
     'household_scoped_list_feed.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_item_discard_service.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_item_edit_service.dart';
+import 'package:yamt/features/inventory/application/inventory_item_edit_service.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_item_mutation_service.dart';
 import 'package:yamt/features/inventory/application/inventory_item_writer.dart';
@@ -17,6 +16,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
+import 'package:yamt/features/inventory/domain/food_sharing.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -253,7 +253,7 @@ class InventoryItemsController extends _$InventoryItemsController {
   Future<bool> swapItemCandidate({
     required String itemId,
     required GlobalFoodItem resolvedProduct,
-    required bool requiresGlobalPersistence,
+    required FoodSharing sharing,
     String? weight,
     bool aiEstimated = false,
     SavedFoodEstimate? aiEstimate,
@@ -264,7 +264,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         items,
         itemId: itemId,
         resolvedProduct: resolvedProduct,
-        requiresGlobalPersistence: requiresGlobalPersistence,
+        sharing: sharing,
         weight: weight,
         aiEstimated: aiEstimated,
         aiEstimate: aiEstimate,

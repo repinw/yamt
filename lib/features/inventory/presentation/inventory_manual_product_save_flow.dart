@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_manual_add_product_factory.dart';
+import 'package:yamt/features/inventory/domain/food_sharing.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
@@ -150,6 +151,11 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
   required InventoryItemsController? inventoryItemsController,
   required InventoryItem Function(InventoryItem item)? adjustItem,
 }) async {
+  final sharing = FoodSharing.forNewItem(
+    staysPrivate: promptResult.item.staysPrivate,
+    requiresGlobalPersistence: result.requiresGlobalPersistence,
+    picksCatalogProduct: result.selectedGlobalFoodItemId != null,
+  );
   final globalProduct = buildInventoryManualAddGlobalFoodItem(
     item: promptResult.item,
     barcode: promptResult.barcode,
@@ -171,9 +177,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     imageUrl: normalizeProductImageUrl(promptResult.item.imageUrl),
     aiEstimated: promptResult.item.aiEstimated,
     aiEstimate: promptResult.item.productSnapshot.aiEstimate,
-    // Only a picked catalog product has its catalog id at once. A new one
-    // gets it once the catalog write succeeded (#698, #806).
-    inCatalog: result.selectedGlobalFoodItemId != null,
+    inCatalog: sharing.catalogIdAtOnce,
   );
   final savedItem = adjustItem?.call(builtItem) ?? builtItem;
   final inventorySaved =
@@ -186,13 +190,9 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     );
     return const InventoryManualProductSaveOutcome.failed();
   }
-  final pending = isPendingGlobalFoodItemId(savedItem.globalFoodItemId);
-  // An AI estimate is the user's own meal, whatever path built the result
-  // (#701), and so is a product outside the catalog that does not ask for it
-  // (#698): no catalog product and no barcode for other users' scans.
-  if (!savedItem.staysPrivate &&
-      (!pending || result.requiresGlobalPersistence)) {
-    final pendingItem = pending && inventoryItemsController != null
+  if (sharing.sharesAnything) {
+    final pendingItem =
+        !sharing.catalogIdAtOnce && inventoryItemsController != null
         ? savedItem
         : null;
     // The Vorrat controller, and with it its queue, stays for the link.
@@ -204,7 +204,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
           .read(manualProductShareControllerProvider.notifier)
           .share(
             product: globalProduct,
-            append: result.requiresGlobalPersistence,
+            append: sharing.catalogProduct,
             barcode: promptResult.barcode,
             selectedAt: now,
             pendingItem: pendingItem,

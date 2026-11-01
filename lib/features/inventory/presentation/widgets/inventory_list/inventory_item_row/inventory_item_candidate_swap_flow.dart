@@ -7,6 +7,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/domain/food_estimate.dart';
+import 'package:yamt/features/inventory/domain/food_sharing.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -25,7 +26,7 @@ class InventoryItemCandidateSwapRequest {
   /// The inventory item candidate swap request.
   const new({
     required this.resolvedProduct,
-    required this.requiresGlobalPersistence,
+    required this.sharing,
     required this.weight,
     this.aiEstimated = false,
     this.aiEstimate,
@@ -34,14 +35,14 @@ class InventoryItemCandidateSwapRequest {
   /// The resolved product.
   final GlobalFoodItem resolvedProduct;
 
-  /// The requires global persistence.
-  final bool requiresGlobalPersistence;
+  /// What the swap shares with other users.
+  final FoodSharing sharing;
 
   /// The weight.
   final String? weight;
 
-  /// Whether the product is an AI estimate, which stays the user's own and
-  /// never goes into the shared catalog (#701).
+  /// Whether the product is an AI estimate, which stays the user's own
+  /// (#701).
   final bool aiEstimated;
 
   /// The estimate of an [aiEstimated] product, which the item keeps (#763).
@@ -114,7 +115,11 @@ buildInventoryItemCandidateSwapRequestFromCandidate({
 
   return InventoryItemCandidateSwapRequest(
     resolvedProduct: candidate.item,
-    requiresGlobalPersistence: candidate.requiresPersistence,
+    sharing: FoodSharing.forSwap(
+      staysPrivate: false,
+      requiresGlobalPersistence: candidate.requiresPersistence,
+      picksCatalogProduct: true,
+    ),
     weight: sourceItem.weight ?? candidate.item.packageWeight,
   );
 }
@@ -161,7 +166,11 @@ buildInventoryItemCandidateSwapRequestFromManualResult({
         servingQuantity: selectedProduct.servingQuantity,
         servingQuantityUnit: selectedProduct.servingQuantityUnit,
       ),
-      requiresGlobalPersistence: true,
+      sharing: FoodSharing.forSwap(
+        staysPrivate: false,
+        requiresGlobalPersistence: true,
+        picksCatalogProduct: true,
+      ),
       weight: result.item.weight,
     );
   }
@@ -178,8 +187,11 @@ buildInventoryItemCandidateSwapRequestFromManualResult({
       servingQuantity: result.item.servingQuantity,
       servingQuantityUnit: result.item.servingQuantityUnit,
     ),
-    requiresGlobalPersistence:
-        result.requiresGlobalPersistence || selectedGlobalFoodItemId == null,
+    sharing: FoodSharing.forSwap(
+      staysPrivate: result.item.staysPrivate,
+      requiresGlobalPersistence: result.requiresGlobalPersistence,
+      picksCatalogProduct: selectedGlobalFoodItemId != null,
+    ),
     weight: result.item.weight,
     aiEstimated: result.item.aiEstimated,
     aiEstimate: result.item.productSnapshot.aiEstimate,

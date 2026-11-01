@@ -116,7 +116,7 @@ void main() {
       inventoryWeight: '300 ml',
       aiEstimated: true,
       aiEstimate: _aiEstimate,
-      inCatalog: true,
+      inCatalog: false,
     );
 
     expect(savedItem.aiEstimated, isTrue);
