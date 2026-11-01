@@ -5,6 +5,7 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
@@ -36,6 +37,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_planned_entry_repository.dart';
 import '../../support/diary_dashboard_test_support.dart';
 
@@ -910,6 +912,101 @@ void main() {
       expect(find.text('0 kcal'), findsNothing);
     });
   }
+
+  group('meal targets', () {
+    // Breakfast with two foods and dinner with one, on a day of 2,000 kcal.
+    final sections = [
+      _mealSection(MealType.breakfast, [
+        _entry(
+          id: 'oats',
+          day: selectedDay,
+          mealType: MealType.breakfast,
+          name: 'Oats',
+          kcal: 100,
+          protein: 8,
+          carbs: 40,
+          fat: 6,
+        ),
+        _entry(
+          id: 'yogurt',
+          day: selectedDay,
+          mealType: MealType.breakfast,
+          name: 'Yogurt',
+          kcal: 150,
+          protein: 12,
+          carbs: 15,
+          fat: 4,
+        ),
+      ]),
+      _mealSection(MealType.dinner, [
+        _entry(
+          id: 'pasta',
+          day: selectedDay,
+          mealType: MealType.dinner,
+          name: 'Pasta',
+          kcal: 400,
+          protein: 18,
+          carbs: 70,
+          fat: 16,
+        ),
+      ]),
+    ];
+
+    Future<void> pump(
+      WidgetTester tester, {
+      bool markerOn = true,
+      String? shares,
+    }) => _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: sections,
+      overrides: [
+        appPreferencesProvider.overrideWithValue(
+          MemoryAppPreferences(
+            initialInts: {if (markerOn) 'diary_pace_marker_v1': 1},
+            initialStrings: {'diary_meal_shares_v1': ?shares},
+          ),
+        ),
+      ],
+    );
+
+    String? target(WidgetTester tester, MealType meal) {
+      final finder = find.byKey(DiaryMealsSectionKeys.mealKcalOfTarget(meal));
+      return finder.evaluate().isEmpty
+          ? null
+          : tester.widget<Text>(finder).data;
+    }
+
+    testWidgets("with the pace marker on, each logged meal's heading shows "
+        "its kcal against its part of the day's target", (tester) async {
+      await pump(tester);
+
+      // 25 % and 30 % of 2,000 kcal.
+      expect(target(tester, MealType.breakfast), '250 / 500 kcal');
+      expect(target(tester, MealType.dinner), '400 / 600 kcal');
+      // The target replaces the plain total of a meal of several foods.
+      expect(find.text('250 kcal'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a meal set to 0 % keeps its plain heading', (tester) async {
+      await pump(tester, shares: '0,60,30,10');
+
+      expect(target(tester, MealType.breakfast), isNull);
+      expect(find.text('250 kcal'), findsOneWidget);
+      expect(target(tester, MealType.dinner), '400 / 600 kcal');
+    });
+
+    testWidgets('with the pace marker off the headings show no target', (
+      tester,
+    ) async {
+      await pump(tester, markerOn: false);
+
+      expect(target(tester, MealType.breakfast), isNull);
+      expect(target(tester, MealType.dinner), isNull);
+      expect(find.text('250 kcal'), findsOneWidget);
+    });
+  });
 
   testWidgets('logged meals render groups with readable entry rows', (
     tester,
