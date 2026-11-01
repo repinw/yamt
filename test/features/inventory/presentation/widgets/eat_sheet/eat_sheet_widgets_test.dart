@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -257,6 +258,79 @@ void main() {
     expect(deleted, 1);
   });
 
+  testWidgets('page scaffold shows Plan next to the day and meal', (
+    tester,
+  ) async {
+    var planned = 0;
+    Widget page({VoidCallback? onPlan}) => _TestApp(
+      child: EatPageScaffold(
+        whenControl: const Text('TODAY · SNACK'),
+        kcal: null,
+        confirmButtonKey: const Key('confirm'),
+        onConfirm: () {},
+        cancelButtonKey: const Key('close'),
+        onPlan: onPlan,
+        children: const [Text('Body')],
+      ),
+    );
+
+    await tester.pumpWidget(page());
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
+
+    await tester.pumpWidget(page(onPlan: () => planned += 1));
+    final plan = find.byKey(EatPageScaffold.planButtonKey);
+    expect(
+      find.descendant(of: plan, matching: find.text('Plan')),
+      findsOneWidget,
+    );
+    expect(
+      tester.getCenter(plan).dy,
+      moreOrLessEquals(tester.getCenter(find.text('TODAY · SNACK')).dy),
+    );
+    expect(
+      tester.getCenter(plan).dx,
+      greaterThan(tester.getCenter(find.text('TODAY · SNACK')).dx),
+    );
+    expect(
+      tester.getCenter(plan).dy,
+      lessThan(tester.getTopLeft(find.text('Body')).dy),
+    );
+
+    await tester.tap(plan);
+    expect(planned, 1);
+  });
+
+  testWidgets('page scaffold buttons fit at the largest text', (tester) async {
+    await tester.pumpWidget(
+      _TestApp(
+        child: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: EatPageScaffold(
+              whenControl: const Text('MON, NOV 3 · DINNER'),
+              kcal: 1412,
+              confirmButtonKey: const Key('confirm'),
+              confirmLabel: 'To stock',
+              onConfirm: () {},
+              cancelButtonKey: const Key('close'),
+              onPlan: () {},
+              onDiary: () {},
+              secondaryLabel: 'Analyze again',
+              secondaryButtonKey: const Key('more'),
+              onSecondary: () {},
+              children: const [Text('Body')],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('1412 kcal'), findsOneWidget);
+    expect(find.text('Analyze again'), findsOneWidget);
+  });
+
   testWidgets('page scaffold shows the calories and closes', (tester) async {
     var confirmTapCount = 0;
     var secondaryTapCount = 0;
@@ -290,6 +364,15 @@ void main() {
     expect(find.text('TODAY · SNACK'), findsOneWidget);
     expect(find.text('Body'), findsOneWidget);
     expect(find.text('217 kcal'), findsOneWidget);
+
+    // A short second label leaves no gap: the confirm button reaches the
+    // end of the bar.
+    expect(
+      tester.getRect(find.byKey(const Key('confirm'))).right,
+      moreOrLessEquals(
+        tester.getRect(find.byType(EatPageScaffold)).right - AppSpacing.xl,
+      ),
+    );
 
     await tester.tap(find.byKey(const Key('confirm')));
     await tester.tap(find.byKey(const Key('more')));

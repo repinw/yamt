@@ -1085,7 +1085,9 @@ void main() {
     );
   });
 
-  testWidgets('says "Plan" on a later day', (tester) async {
+  testWidgets('says "Plan" on a later day and hides the plan button', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _buildTestApp(
         item: _amountItem(),
@@ -1101,6 +1103,7 @@ void main() {
       find.descendant(of: find.byKey(_confirmKey), matching: find.text('Plan')),
       findsOneWidget,
     );
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
   });
 
   testWidgets('plans only: plans on today, logs on a day before', (

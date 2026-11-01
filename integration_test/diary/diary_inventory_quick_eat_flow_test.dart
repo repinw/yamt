@@ -778,6 +778,8 @@ void main() {
     await tester.tap(item);
     final planButton = find.byKey(EatPageScaffold.planButtonKey);
     await _pumpUntilFound(tester, planButton, description: 'plan button');
+    // The button sits at the right edge, so wait until the page has slid in.
+    await _pumpUntilOnScreen(tester, planButton, description: 'plan button');
     await tester.tap(planButton);
     // The day picker starts on the selected day; OK plans on it.
     final ok = find.text('OK');
