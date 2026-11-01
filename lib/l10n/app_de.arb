@@ -3154,5 +3154,20 @@
   "diaryBudgetRunEndedNotice": "Run beendet · neuer Run zählt ab {date}",
   "diaryBudgetWeekDaySemantics": "{day}: {type}, tippen zum Wechseln",
   "diaryBudgetWeekPauseDaySemantics": "{day}: {type}, mit dem Pause-Knopf setzen",
-  "diaryBudgetTrainingDayCount": "{count, plural, =1{1 Trainingstag} other{{count} Trainingstage}}"
+  "diaryBudgetTrainingDayCount": "{count, plural, =1{1 Trainingstag} other{{count} Trainingstage}}",
+  "diaryMealKcalOfTarget": "{eaten} / {target} kcal",
+  "diaryMealSharesTitle": "Tagesabschnitte",
+  "diaryMealSharesPart": "{percent} % · {kcal} kcal",
+  "diaryMealSharesReset": "Zurücksetzen",
+  "diaryMealSharesPercent": "{percent} %",
+  "diaryMealSharesBorder": "Grenze zwischen {before} und {after}",
+  "diaryMealSharesBorderValue": "{before} % / {after} %",
+  "diaryMealSharesOff": "Aus",
+  "diaryMealTimesDayStart": "Tagesbeginn",
+  "diaryMealTimesFrom": "ab {time}",
+  "diaryMealTimesBy": "bis {time}",
+  "diaryBudgetMenuOpen": "Tagesbudget-Menü öffnen",
+  "diaryBudgetMenuTitle": "Tagesbudget",
+  "diaryBudgetMenuPace": "Soll-Strich",
+  "diaryBudgetMenuPaceHint": "Zeigt auf der kcal-Linie von heute, wo du jetzt stehen solltest, und bei jeder Mahlzeit ihr Ziel"
 }

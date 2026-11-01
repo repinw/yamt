@@ -11,8 +11,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Left column of the budget card: the kcal left (or eaten) as a big
-/// number, what it means, and the kcal line. Over the target it shows the
-/// overage in the error color; a pause day shows its word instead.
+/// number, what it means, and the kcal line, which can mark where the day
+/// should be by now. Over the target it shows the overage in the error
+/// color; a pause day shows its word instead.
 class DiaryBudgetKcalColumn extends StatelessWidget {
   /// Creates the column.
   const new({
@@ -100,6 +101,7 @@ class DiaryBudgetKcalColumn extends StatelessWidget {
           // On a planned day all of the day is a plan; else the eaten kcal
           // take the user's accent.
           eatenColor: data.isPlannedDay ? colors.plan : colors.accent,
+          pace: data.paceKcal,
         ),
         // The eaten view already shows eaten of target.
         if (showDetails && !showEaten)

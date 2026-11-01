@@ -8,8 +8,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Logged meal: quiet heading (kcal total when it has several foods), then
-/// its entries, then its plans.
+/// Logged meal: quiet heading (its kcal against its part of the day's
+/// target, else the kcal total when it has several foods), then its
+/// entries, then its plans.
 class DiaryMealGroup extends StatelessWidget {
   /// Creates a diary meal group.
   const new({
@@ -22,6 +23,7 @@ class DiaryMealGroup extends StatelessWidget {
     this.planPortionTexts = const {},
     this.countsOpenPlans = false,
     this.onCopy,
+    this.targetKcal,
     super.key,
   });
 
@@ -53,6 +55,10 @@ class DiaryMealGroup extends StatelessWidget {
   /// Copies the meal as plans to other days. Without it, no copy icon.
   final VoidCallback? onCopy;
 
+  /// The meal's part of the day's kcal target. With it, the heading shows
+  /// the counted kcal against it.
+  final double? targetKcal;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -80,8 +86,20 @@ class DiaryMealGroup extends StatelessWidget {
                 style: labelStyle,
               ),
             ),
+            if (targetKcal case final target?) ...[
+              const SizedBox(width: AppSpacing.md),
+              Text(
+                l10n.diaryMealKcalOfTarget(
+                  numberFormat.format(heading.kcal.round()),
+                  numberFormat.format(target.round()),
+                ),
+                key: DiaryMealsSectionKeys.mealKcalOfTarget(section.mealType),
+                maxLines: 1,
+                style: labelStyle,
+              ),
+            ]
             // A single counted row already shows the same kcal.
-            if (heading.rows > 1) ...[
+            else if (heading.rows > 1) ...[
               const SizedBox(width: AppSpacing.md),
               Text(
                 '${numberFormat.format(heading.kcal.round())} '

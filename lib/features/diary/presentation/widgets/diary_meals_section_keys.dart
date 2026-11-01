@@ -47,4 +47,8 @@ abstract final class DiaryMealsSectionKeys {
 
   /// Retry button key.
   static const retryButton = ValueKey<String>('diary-meals-retry-button');
+
+  /// A meal's counted kcal against its part of the day's target.
+  static ValueKey<String> mealKcalOfTarget(MealType mealType) =>
+      ValueKey<String>('diary-meal-kcal-of-target-${mealType.name}');
 }

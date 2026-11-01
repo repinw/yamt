@@ -68,4 +68,10 @@ abstract final class DiaryBudgetCardKeys {
   static const notCountingNote = ValueKey<String>(
     'diary-budget-not-counting-note',
   );
+
+  /// The card's menu, which a long press on the card opens.
+  static const menu = ValueKey<String>('diary-budget-menu');
+
+  /// The menu's switch for the pace marker on the kcal line.
+  static const paceSwitch = ValueKey<String>('diary-budget-menu-pace');
 }

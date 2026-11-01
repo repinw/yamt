@@ -1,11 +1,16 @@
+import 'dart:async';
+
+import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_budget_card_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_menu.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_fade_in.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_kcal_column.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_ledger.dart';
@@ -18,7 +23,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// The diary's daily budget: the kcal left next to the macros, the toggles
 /// for details, plans and the day type, and with details the ledger and the
-/// day types of the run week.
+/// day types of the run week. A long press opens the card's menu.
 class DiaryBudgetCard extends StatelessWidget {
   /// Creates the card.
   const new({
@@ -44,48 +49,65 @@ class DiaryBudgetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
+    void openMenu() => unawaited(
+      showDiaryBudgetCardMenu(context, targetKcal: data.metrics.targetKcal),
+    );
 
-    return DecoratedBox(
-      key: DiaryBudgetCardKeys.card,
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      // The toggle row's last tap area reaches into the end padding.
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(
-          AppBudgetCard.padding,
-          AppBudgetCard.topPadding,
-          AppBudgetCard.padding - AppBudgetCard.dayTypeHitOverhang,
-          AppBudgetCard.padding,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: AppBudgetCard.sectionGap,
-          children: [
-            DiaryBudgetToggleRow(
-              day: data.day,
-              showViewSwitch: !data.isPauseDay,
+    // A screen reader reaches the menu through an action of the card.
+    return Semantics(
+      customSemanticsActions: {
+        CustomSemanticsAction(
+          label: AppLocalizations.of(context)!.diaryBudgetMenuOpen,
+        ): openMenu,
+      },
+      child: GestureDetector(
+        onLongPress: () {
+          AppHapticFeedback.mediumImpact();
+          openMenu();
+        },
+        child: DecoratedBox(
+          key: DiaryBudgetCardKeys.card,
+          decoration: BoxDecoration(
+            color: colors.card,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+          ),
+          // The toggle row's last tap area reaches into the end padding.
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppBudgetCard.padding,
+              AppBudgetCard.topPadding,
+              AppBudgetCard.padding - AppBudgetCard.dayTypeHitOverhang,
+              AppBudgetCard.padding,
             ),
-            Padding(
-              padding: const EdgeInsetsDirectional.only(
-                end: AppBudgetCard.dayTypeHitOverhang,
-              ),
-              // Opening the details grows the card smoothly downward.
-              child: AnimatedSize(
-                duration: AppDurations.compactMetricExpansion,
-                curve: Curves.easeOutCubic,
-                alignment: Alignment.topCenter,
-                child: _Body(
-                  data: data,
-                  showDetails: showDetails,
-                  showEaten: showEaten,
-                  today: today,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: AppBudgetCard.sectionGap,
+              children: [
+                DiaryBudgetToggleRow(
+                  day: data.day,
+                  showViewSwitch: !data.isPauseDay,
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    end: AppBudgetCard.dayTypeHitOverhang,
+                  ),
+                  // Opening the details grows the card smoothly downward.
+                  child: AnimatedSize(
+                    duration: AppDurations.compactMetricExpansion,
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topCenter,
+                    child: _Body(
+                      data: data,
+                      showDetails: showDetails,
+                      showEaten: showEaten,
+                      today: today,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

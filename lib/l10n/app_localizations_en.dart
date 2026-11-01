@@ -6548,4 +6548,64 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String diaryMealKcalOfTarget(String eaten, String target) {
+    return '$eaten / $target kcal';
+  }
+
+  @override
+  String get diaryMealSharesTitle => 'Parts of the day';
+
+  @override
+  String diaryMealSharesPart(String percent, String kcal) {
+    return '$percent % · $kcal kcal';
+  }
+
+  @override
+  String get diaryMealSharesReset => 'Reset';
+
+  @override
+  String diaryMealSharesPercent(String percent) {
+    return '$percent %';
+  }
+
+  @override
+  String diaryMealSharesBorder(String before, String after) {
+    return 'Border between $before and $after';
+  }
+
+  @override
+  String diaryMealSharesBorderValue(String before, String after) {
+    return '$before % / $after %';
+  }
+
+  @override
+  String get diaryMealSharesOff => 'Off';
+
+  @override
+  String get diaryMealTimesDayStart => 'Day starts';
+
+  @override
+  String diaryMealTimesFrom(String time) {
+    return 'from $time';
+  }
+
+  @override
+  String diaryMealTimesBy(String time) {
+    return 'by $time';
+  }
+
+  @override
+  String get diaryBudgetMenuOpen => 'Open the daily budget menu';
+
+  @override
+  String get diaryBudgetMenuTitle => 'Daily budget';
+
+  @override
+  String get diaryBudgetMenuPace => 'Pace marker';
+
+  @override
+  String get diaryBudgetMenuPaceHint =>
+      'Marks on today\'s kcal line where you should be by now and shows each meal\'s target';
 }

@@ -4235,5 +4235,90 @@
         "type": "int"
       }
     }
+  },
+  "diaryMealKcalOfTarget": "{eaten} / {target} kcal",
+  "@diaryMealKcalOfTarget": {
+    "description": "Meal heading in the diary while the pace marker is on: the meal's counted kcal against its part of the day's kcal target.",
+    "placeholders": {
+      "eaten": {"type": "String"},
+      "target": {"type": "String"}
+    }
+  },
+  "diaryMealSharesTitle": "Parts of the day",
+  "@diaryMealSharesTitle": {
+    "description": "Label in the budget card menu above the split of the day's kcal over the meals and the times the meals are eaten by."
+  },
+  "diaryMealSharesPart": "{percent} % · {kcal} kcal",
+  "@diaryMealSharesPart": {
+    "description": "A meal's share of the day and its kcal in the split of the budget card menu.",
+    "placeholders": {
+      "percent": {"type": "String"},
+      "kcal": {"type": "String"}
+    }
+  },
+  "diaryMealSharesReset": "Reset",
+  "@diaryMealSharesReset": {
+    "description": "Button in the budget card menu that goes back to the standard split of the day over the meals and the standard meal times."
+  },
+  "diaryMealSharesPercent": "{percent} %",
+  "@diaryMealSharesPercent": {
+    "description": "A meal's share of the day in the split of the budget card menu, on a day without a kcal target.",
+    "placeholders": {
+      "percent": {"type": "String"}
+    }
+  },
+  "diaryMealSharesBorder": "Border between {before} and {after}",
+  "@diaryMealSharesBorder": {
+    "description": "Screen reader label of a draggable border between two meals in the split of the budget card menu.",
+    "placeholders": {
+      "before": {"type": "String", "example": "Breakfast"},
+      "after": {"type": "String", "example": "Lunch"}
+    }
+  },
+  "diaryMealSharesBorderValue": "{before} % / {after} %",
+  "@diaryMealSharesBorderValue": {
+    "description": "Screen reader value of a border in the split of the budget card menu: the shares of the meal before and after it.",
+    "placeholders": {
+      "before": {"type": "String"},
+      "after": {"type": "String"}
+    }
+  },
+  "diaryMealSharesOff": "Off",
+  "@diaryMealSharesOff": {
+    "description": "In the budget card menu: the meal has no part of the day."
+  },
+  "diaryMealTimesDayStart": "Day starts",
+  "@diaryMealTimesDayStart": {
+    "description": "Row in the budget card menu with the time the day starts, from which the pace marker on the kcal line moves."
+  },
+  "diaryMealTimesFrom": "from {time}",
+  "@diaryMealTimesFrom": {
+    "description": "Button in the budget card menu with the time the day starts; a tap opens a time picker.",
+    "placeholders": {
+      "time": {"type": "String", "example": "6:00 AM"}
+    }
+  },
+  "diaryMealTimesBy": "by {time}",
+  "@diaryMealTimesBy": {
+    "description": "Button in a meal's row of the budget card menu with the time the meal is eaten by; a tap opens a time picker.",
+    "placeholders": {
+      "time": {"type": "String", "example": "9:00 AM"}
+    }
+  },
+  "diaryBudgetMenuOpen": "Open the daily budget menu",
+  "@diaryBudgetMenuOpen": {
+    "description": "Screen reader action of the daily budget card that opens its menu, which a long press opens too."
+  },
+  "diaryBudgetMenuTitle": "Daily budget",
+  "@diaryBudgetMenuTitle": {
+    "description": "Heading of the menu that a long press on the daily budget card opens."
+  },
+  "diaryBudgetMenuPace": "Pace marker",
+  "@diaryBudgetMenuPace": {
+    "description": "Switch in the budget card menu that marks on today's kcal line how many kcal the day should be at by now, from the parts of the day and the meal times, and shows each meal heading's kcal against its part of the day's target."
+  },
+  "diaryBudgetMenuPaceHint": "Marks on today's kcal line where you should be by now and shows each meal's target",
+  "@diaryBudgetMenuPaceHint": {
+    "description": "Hint below the pace marker switch in the budget card menu."
   }
 }

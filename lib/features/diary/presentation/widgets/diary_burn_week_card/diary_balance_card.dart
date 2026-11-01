@@ -10,6 +10,7 @@ import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_budget_eaten_view_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_pace_provider.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
@@ -43,6 +44,7 @@ class DiaryBalanceCard extends ConsumerWidget {
                 .select((s) => s.data?.nutritionBars),
           ),
           openPlans: ref.watch(diaryOpenPlansProvider(day)),
+          paceShare: ref.watch(diaryPaceShareProvider(day)),
         ),
         showDetails: ref.watch(diaryBalanceDetailsControllerProvider),
         showEaten: ref.watch(diaryBudgetEatenViewControllerProvider),

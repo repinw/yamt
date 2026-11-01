@@ -10848,6 +10848,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 training day} other{{count} training days}}'**
   String diaryBudgetTrainingDayCount(int count);
+
+  /// Meal heading in the diary while the pace marker is on: the meal's counted kcal against its part of the day's kcal target.
+  ///
+  /// In en, this message translates to:
+  /// **'{eaten} / {target} kcal'**
+  String diaryMealKcalOfTarget(String eaten, String target);
+
+  /// Label in the budget card menu above the split of the day's kcal over the meals and the times the meals are eaten by.
+  ///
+  /// In en, this message translates to:
+  /// **'Parts of the day'**
+  String get diaryMealSharesTitle;
+
+  /// A meal's share of the day and its kcal in the split of the budget card menu.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent} % · {kcal} kcal'**
+  String diaryMealSharesPart(String percent, String kcal);
+
+  /// Button in the budget card menu that goes back to the standard split of the day over the meals and the standard meal times.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get diaryMealSharesReset;
+
+  /// A meal's share of the day in the split of the budget card menu, on a day without a kcal target.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent} %'**
+  String diaryMealSharesPercent(String percent);
+
+  /// Screen reader label of a draggable border between two meals in the split of the budget card menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Border between {before} and {after}'**
+  String diaryMealSharesBorder(String before, String after);
+
+  /// Screen reader value of a border in the split of the budget card menu: the shares of the meal before and after it.
+  ///
+  /// In en, this message translates to:
+  /// **'{before} % / {after} %'**
+  String diaryMealSharesBorderValue(String before, String after);
+
+  /// In the budget card menu: the meal has no part of the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get diaryMealSharesOff;
+
+  /// Row in the budget card menu with the time the day starts, from which the pace marker on the kcal line moves.
+  ///
+  /// In en, this message translates to:
+  /// **'Day starts'**
+  String get diaryMealTimesDayStart;
+
+  /// Button in the budget card menu with the time the day starts; a tap opens a time picker.
+  ///
+  /// In en, this message translates to:
+  /// **'from {time}'**
+  String diaryMealTimesFrom(String time);
+
+  /// Button in a meal's row of the budget card menu with the time the meal is eaten by; a tap opens a time picker.
+  ///
+  /// In en, this message translates to:
+  /// **'by {time}'**
+  String diaryMealTimesBy(String time);
+
+  /// Screen reader action of the daily budget card that opens its menu, which a long press opens too.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the daily budget menu'**
+  String get diaryBudgetMenuOpen;
+
+  /// Heading of the menu that a long press on the daily budget card opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily budget'**
+  String get diaryBudgetMenuTitle;
+
+  /// Switch in the budget card menu that marks on today's kcal line how many kcal the day should be at by now, from the parts of the day and the meal times, and shows each meal heading's kcal against its part of the day's target.
+  ///
+  /// In en, this message translates to:
+  /// **'Pace marker'**
+  String get diaryBudgetMenuPace;
+
+  /// Hint below the pace marker switch in the budget card menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks on today\'s kcal line where you should be by now and shows each meal\'s target'**
+  String get diaryBudgetMenuPaceHint;
 }
 
 class _AppLocalizationsDelegate
