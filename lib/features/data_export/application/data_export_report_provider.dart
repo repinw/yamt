@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_archive_provider.dart';
@@ -19,8 +18,8 @@ import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.da
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/data_export/domain/data_export_range.dart';
 import 'package:yamt/features/data_export/domain/data_export_report.dart';
+import 'package:yamt/features/diary/data/diary_meal_shares_repository.dart';
 import 'package:yamt/features/diary/domain/diary_day_type.dart';
-import 'package:yamt/features/diary/domain/diary_meal_shares.dart';
 import 'package:yamt/features/health/application/weight_series_provider.dart';
 
 part 'data_export_report_provider.g.dart';
@@ -36,9 +35,7 @@ Future<DataExportReport> dataExportReport(
   final today = normalizeLocalDay(ref.watch(clockProvider)());
   final repository = ref.watch(calorieLogRepositoryProvider);
   final targetResolver = ref.watch(dailyNutritionTargetResolverProvider);
-  final storedShares = ref
-      .watch(appPreferencesProvider)
-      .getStringSync(DiaryMealShares.preferenceKey);
+  final shares = ref.watch(diaryMealSharesRepositoryProvider).loadShares();
   final settingsFuture = ref.watch(calorieBudgetSettingsProvider.future);
   final cyclesFuture = ref.watch(calorieGoalArchiveProvider.future);
   final weightsFuture = ref.watch(weightSeriesProvider.future);
@@ -71,9 +68,6 @@ Future<DataExportReport> dataExportReport(
     for (final point in tdee.points)
       localDayKey(point.day): ?point.totalTdeeKcal,
   };
-  final shares =
-      (storedShares == null ? null : DiaryMealShares.decode(storedShares)) ??
-      DiaryMealShares.standard;
   return DataExportReport(
     from: days.from,
     to: days.to,

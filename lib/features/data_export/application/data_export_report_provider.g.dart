@@ -71,7 +71,7 @@ final class DataExportReportProvider
   }
 }
 
-String _$dataExportReportHash() => r'fac6b80154cc005e88d47508919f9dadbcdcc92c';
+String _$dataExportReportHash() => r'f982e4bf46959932850a6bbe9c109f389dfaa4e6';
 
 /// The report of the days of [range], read on the device because the diary
 /// and the weights are end-to-end encrypted.
