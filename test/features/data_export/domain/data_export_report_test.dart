@@ -88,6 +88,15 @@ void main() {
       );
     });
 
+    test('averageTdeeDayValueKcal averages the days that have one', () {
+      expect(report.averageTdeeDayValueKcal, 2650);
+      expect(
+        exportReport([exportDay(DateTime(2026, 9, 20), tdeeKcal: 2400)])
+            .averageTdeeDayValueKcal,
+        isNull,
+      );
+    });
+
     test('countOf counts the days of a type', () {
       expect(report.countOf(DiaryDayType.normal), 1);
       expect(report.countOf(DiaryDayType.training), 1);

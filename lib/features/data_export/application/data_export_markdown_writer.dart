@@ -45,6 +45,7 @@ List<String> _overview(DataExportReport report, DataExportLabels t) {
       t.whole(report.averageLogged((day) => day.carbsGrams)),
       t.whole(report.averageLogged((day) => day.fatGrams)),
       t.whole(report.averageTdeeKcal),
+      t.whole(report.averageTdeeDayValueKcal),
     ),
     if (weights.isNotEmpty)
       l10n.dataExportWeightLine(
@@ -83,6 +84,8 @@ List<String> _day(DataExportDay day, DataExportLabels t) {
         t.oneDecimal(day.trendWeightKg),
       ),
     if (day.tdeeKcal != null) l10n.dataExportDayTdee(t.whole(day.tdeeKcal)),
+    if (day.tdeeDayValueKcal != null)
+      l10n.dataExportDayTdeeDayValue(t.whole(day.tdeeDayValueKcal)),
     if (day.meals.isEmpty) l10n.dataExportNoEntries,
     for (final meal in day.meals) ...[
       _bold(l10n.dataExportMealLine(t.meal(meal.mealType), t.whole(meal.kcal))),

@@ -16,6 +16,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
+import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/data_export/domain/data_export_range.dart';
 import 'package:yamt/features/data_export/domain/data_export_report.dart';
 import 'package:yamt/features/diary/data/diary_meal_shares_repository.dart';
@@ -65,8 +66,7 @@ Future<DataExportReport> dataExportReport(
 
   final entriesByDay = entries.groupByDiaryDayKey();
   final tdeeByDay = {
-    for (final point in tdee.points)
-      localDayKey(point.day): ?point.totalTdeeKcal,
+    for (final point in tdee.points) localDayKey(point.day): point,
   };
   return DataExportReport(
     from: days.from,
@@ -85,7 +85,7 @@ Future<DataExportReport> dataExportReport(
           targetResolver: targetResolver,
           weightKg: weights.rawByDay[localDayKey(day)],
           trendWeightKg: weights.trendFor(day),
-          tdeeKcal: tdeeByDay[localDayKey(day)],
+          tdee: tdeeByDay[localDayKey(day)],
         ),
     ],
   );
@@ -98,7 +98,7 @@ DataExportDay _exportDay({
   required DailyNutritionTargetResolver targetResolver,
   required double? weightKg,
   required double? trendWeightKg,
-  required double? tdeeKcal,
+  required TdeeAnalyticsPoint? tdee,
 }) {
   final goalKcal = settings.goalKcalForDay(day);
   final target = targetResolver.resolveBaseTarget(day: day, goalKcal: goalKcal);
@@ -117,7 +117,8 @@ DataExportDay _exportDay({
     ],
     weightKg: weightKg,
     trendWeightKg: trendWeightKg,
-    tdeeKcal: tdeeKcal,
+    tdeeKcal: tdee?.learnedBaseTdeeKcal,
+    tdeeDayValueKcal: tdee?.totalTdeeKcal,
   );
 }
 

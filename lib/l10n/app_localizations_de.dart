@@ -6892,7 +6892,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dataExportFieldsText =>
-      '- kcal: Kilokalorien. P, KH, F: Protein, Kohlenhydrate, Fett in Gramm.\n- Ziel: kcal- und Makroziel des Tages. Trainingstage haben ein höheres kcal-Ziel, Ruhetage ein niedrigeres, damit die Woche aufgeht.\n- Pausentag: ein Tag ohne Ziel, zum Beispiel bei Krankheit oder im Urlaub.\n- TDEE: geschätzter Tagesverbrauch, gelernt aus Gewicht und Essen.\n- Gewicht: Wiegung des Tages; Trend: geglättetes Gewicht.\n- Tagesabschnitte: wie sich das kcal-Ziel des Tages auf die Mahlzeiten aufteilt.';
+      '- kcal: Kilokalorien. P, KH, F: Protein, Kohlenhydrate, Fett in Gramm.\n- Ziel: kcal- und Makroziel des Tages. Trainingstage haben ein höheres kcal-Ziel, Ruhetage ein niedrigeres, damit die Woche aufgeht.\n- Pausentag: ein Tag ohne Ziel, zum Beispiel bei Krankheit oder im Urlaub.\n- TDEE: geschätzter Tagesverbrauch, gelernt aus Gewicht und Essen, wie im Fortschritt. Das Training steckt schon drin; Trainingstage verschieben nur das Tagesziel.\n- Tageswert: der TDEE, den das geglättete Essen und der Gewichtstrend des Tages ergeben, vor Einlaufphase und Tagesdeckel des TDEE; er schwankt stark, der TDEE folgt ihm langsam.\n- Gewicht: Wiegung des Tages; Trend: geglättetes Gewicht.\n- Tagesabschnitte: wie sich das kcal-Ziel des Tages auf die Mahlzeiten aufteilt.';
 
   @override
   String get dataExportGoalsHeader => 'Ziele';
@@ -6937,8 +6937,9 @@ class AppLocalizationsDe extends AppLocalizations {
     String carbs,
     String fat,
     String tdee,
+    String dayValue,
   ) {
-    return 'Schnitt pro Tag mit Einträgen: $kcal kcal, Protein $protein g, Kohlenhydrate $carbs g, Fett $fat g. Schnitt TDEE: $tdee kcal.';
+    return 'Schnitt pro Tag mit Einträgen: $kcal kcal, Protein $protein g, Kohlenhydrate $carbs g, Fett $fat g. TDEE $tdee kcal (wie im Fortschritt), Tageswert im Schnitt $dayValue kcal (aus geglättetem Essen und Gewichtstrend, nicht weiter geglättet).';
   }
 
   @override
@@ -6981,6 +6982,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String dataExportDayTdeeDayValue(String dayValue) {
+    return 'Tageswert $dayValue kcal';
+  }
+
+  @override
   String get dataExportNoEntries => 'Keine Einträge';
 
   @override
@@ -7005,6 +7011,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dataExportKpiTdee => 'Ø TDEE';
+
+  @override
+  String dataExportKpiTdeeDayValue(String dayValue) {
+    return 'kcal · Tageswert Ø $dayValue';
+  }
 
   @override
   String get dataExportKpiWeight => 'Gewicht';
@@ -7082,6 +7093,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dataExportColumnTdee => 'TDEE kcal';
+
+  @override
+  String get dataExportColumnTdeeDayValue => 'Tageswert kcal';
 
   @override
   String get dataExportColumnMeal => 'Mahlzeit';

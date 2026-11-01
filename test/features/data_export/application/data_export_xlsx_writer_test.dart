@@ -43,6 +43,8 @@ void main() {
     expect(days, contains('<c r="D2"><v>400.0</v></c>'));
     expect(days, contains('<c r="K2"><v>83.4</v></c>'));
     expect(days, contains('<c r="M2"><v>2500.0</v></c>'));
+    expect(days, contains('<c r="N2"><v>2650.0</v></c>'));
+    expect(days, contains('TDEE daily value kcal'));
   });
 
   test('a pause day has no goal cells', () {

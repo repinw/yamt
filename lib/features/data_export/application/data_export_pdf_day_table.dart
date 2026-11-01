@@ -71,6 +71,8 @@ pw.Widget dataExportDayTable(
                 l10n.dataExportWeightValue(t.oneDecimal(day.weightKg)),
               if (day.tdeeKcal != null)
                 l10n.dataExportDayTdee(t.whole(day.tdeeKcal)),
+              if (day.tdeeDayValueKcal != null)
+                l10n.dataExportDayTdeeDayValue(t.whole(day.tdeeDayValueKcal)),
             ].join(l10n.dataExportPartsSeparator),
             '',
             for (final (eaten, goal) in [
