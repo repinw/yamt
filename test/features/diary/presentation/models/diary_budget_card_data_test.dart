@@ -16,6 +16,8 @@ DiaryBudgetCardData _data({
     fat: 30,
   ),
   DiaryOpenPlans? openPlans,
+  DiaryBudgetNotCounting? notCounting,
+  double targetKcal = 2000,
 }) {
   DiaryBudgetMacro macro(DiaryBudgetMacroKind kind, double grams) =>
       (kind: kind, eaten: grams, planned: 0, target: 100);
@@ -24,13 +26,14 @@ DiaryBudgetCardData _data({
     status: status,
     metrics: DiaryDailyBalanceMetrics(
       bufferAdjustmentKcal: 0,
-      realEatenKcal: 2000 - dayLeftKcal,
-      eatenKcal: 2000 - dayLeftKcal,
+      realEatenKcal: targetKcal - dayLeftKcal,
+      eatenKcal: targetKcal - dayLeftKcal,
       realDayLeftKcal: dayLeftKcal,
       dayLeftKcal: dayLeftKcal,
-      targetKcal: 2000,
+      targetKcal: targetKcal,
     ),
     isPauseDay: isPauseDay,
+    notCounting: notCounting,
     openPlans: openPlans,
     macros: [
       macro(DiaryBudgetMacroKind.protein, eaten.protein),
@@ -187,6 +190,66 @@ void main() {
         ),
         400,
       );
+    });
+  });
+
+  group('hitsTarget', () {
+    test('holds exactly 5 % below and above the target', () {
+      expect(_data(dayLeftKcal: 100).hitsTarget, isTrue);
+      expect(_data(dayLeftKcal: -100).hitsTarget, isTrue);
+      expect(_data(dayLeftKcal: 0).hitsTarget, isTrue);
+    });
+
+    test('does not hold just outside 5 %', () {
+      expect(_data(dayLeftKcal: 100.5).hitsTarget, isFalse);
+      expect(_data(dayLeftKcal: -100.5).hitsTarget, isFalse);
+      expect(_data().hitsTarget, isFalse);
+    });
+
+    test('never holds on a pause day or a day that does not count', () {
+      expect(_data(dayLeftKcal: 0, isPauseDay: true).hitsTarget, isFalse);
+      expect(
+        _data(
+          dayLeftKcal: 0,
+          notCounting: DiaryBudgetPracticeDay(DateTime(2026, 5)),
+        ).hitsTarget,
+        isFalse,
+      );
+      expect(
+        _data(
+          dayLeftKcal: 0,
+          notCounting: DiaryBudgetRunEnded(DateTime(2026, 5)),
+        ).hitsTarget,
+        isFalse,
+      );
+    });
+
+    test('never holds without a target', () {
+      expect(_data(targetKcal: 0, dayLeftKcal: 0).hitsTarget, isFalse);
+    });
+
+    DiaryOpenPlans plans(double kcal, {bool counted = true}) => DiaryOpenPlans(
+      kcal: kcal,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      counted: counted,
+    );
+
+    test('holds when eaten and planned land on the target', () {
+      expect(_data(openPlans: plans(1000)).hitsTarget, isTrue);
+      expect(
+        _data(dayLeftKcal: 2000, openPlans: plans(2000)).hitsTarget,
+        isTrue,
+      );
+    });
+
+    test('counts plans the user does not count toward what is left', () {
+      expect(_data(openPlans: plans(1000, counted: false)).hitsTarget, isTrue);
+    });
+
+    test('does not hold when eaten and planned go over the band', () {
+      expect(_data(dayLeftKcal: 0, openPlans: plans(300)).hitsTarget, isFalse);
     });
   });
 }
