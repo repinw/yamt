@@ -5,7 +5,7 @@ import 'package:yamt/core/theme/app_custom_colors.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
-import 'package:yamt/core/widgets/app_snack_bar_view.dart';
+import 'package:yamt/core/widgets/app_snack_bar_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_custom_colors/settings_custom_preview_budget.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_custom_colors/settings_custom_preview_tap.dart';
 import 'package:yamt/l10n/app_localizations.dart';
