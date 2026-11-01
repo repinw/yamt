@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/utils/exclusive_runner.dart';
 import 'package:yamt/core/widgets/home_action_entry.dart';
 import 'package:yamt/features/diary/presentation/progress_photo_capture_flow.dart';
@@ -14,9 +16,13 @@ abstract final class ProgressActionKeys {
 
   /// Entry that adds a progress photo.
   static const photo = ValueKey<String>('progress-action-photo');
+
+  /// Entry that opens the data export.
+  static const export = ValueKey<String>('progress-action-export');
 }
 
-/// The Fortschritt actions: enter today's weight and add a progress photo.
+/// The Fortschritt actions: enter today's weight, add a progress photo, and
+/// export the data.
 ///
 /// [weightEntry] opens one weight entry at a time: the entry waits for the
 /// chart weights before its dialog opens (#703).
@@ -44,6 +50,14 @@ List<HomeActionSection> progressActions(
           title: l10n.progressActionPhoto,
           description: l10n.progressActionPhotoDescription,
           onSelected: () => unawaited(showProgressPhotoCapture(context)),
+        ),
+        HomeActionEntry(
+          key: ProgressActionKeys.export,
+          icon: Icons.ios_share_rounded,
+          title: l10n.dataExportTitle,
+          description: l10n.dataExportActionDescription,
+          onSelected: () =>
+              unawaited(context.push(AppRoutes.homeProgressExport)),
         ),
       ],
     ),

@@ -11076,6 +11076,675 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Off: only the lowest macro shows its color'**
   String get diaryBudgetMenuAllMacrosHint;
+
+  /// Title of the data export page and its menu entry in Fortschritt.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get dataExportTitle;
+
+  /// One-line description of the export entry in menus.
+  ///
+  /// In en, this message translates to:
+  /// **'Share food, weight, and goals with an AI, an advisor, or yourself'**
+  String get dataExportActionDescription;
+
+  /// Settings tile that opens the data export page.
+  ///
+  /// In en, this message translates to:
+  /// **'Export data'**
+  String get settingsDataExportTitle;
+
+  /// Header above the export purposes.
+  ///
+  /// In en, this message translates to:
+  /// **'For whom'**
+  String get dataExportPurposeHeader;
+
+  /// Export purpose: the user's own AI.
+  ///
+  /// In en, this message translates to:
+  /// **'My AI'**
+  String get dataExportPurposeAi;
+
+  /// Line under the AI export purpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Text with a question and explained fields · .txt'**
+  String get dataExportPurposeAiDescription;
+
+  /// Export purpose: a nutrition advisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition advisor'**
+  String get dataExportPurposeAdvisor;
+
+  /// Line under the advisor export purpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Report and table · .pdf + .xlsx'**
+  String get dataExportPurposeAdvisorDescription;
+
+  /// Export purpose: the user.
+  ///
+  /// In en, this message translates to:
+  /// **'For me'**
+  String get dataExportPurposeSelf;
+
+  /// Line under the self export purpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Report with charts · .pdf'**
+  String get dataExportPurposeSelfDescription;
+
+  /// Header above the export period chips.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get dataExportRangeHeader;
+
+  /// Export period chip: the last 7 days.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get dataExportRangeSevenDays;
+
+  /// Export period chip: the last 4 weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'4 weeks'**
+  String get dataExportRangeFourWeeks;
+
+  /// Export period chip: the last 3 months.
+  ///
+  /// In en, this message translates to:
+  /// **'3 months'**
+  String get dataExportRangeThreeMonths;
+
+  /// Export period chip that opens a date range picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom …'**
+  String get dataExportRangeCustom;
+
+  /// What the export holds.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} – {to} · days: {days} · entries: {entries} · weighings: {weighings}'**
+  String dataExportSummary(
+    String from,
+    String to,
+    int days,
+    int entries,
+    int weighings,
+  );
+
+  /// Privacy note above the share button.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is not encrypted. Whoever gets it sees your health data.'**
+  String get dataExportPrivacyNote;
+
+  /// Button that creates the export and opens the share sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get dataExportShare;
+
+  /// Error when the export files could not be written or shared.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the export.'**
+  String get dataExportShareFailed;
+
+  /// Error when the export data could not be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the data.'**
+  String get dataExportLoadFailed;
+
+  /// Title of the exported report.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition report'**
+  String get dataExportReportTitle;
+
+  /// Period line of the exported report.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} – {to} · {days, plural, =1{1 day} other{{days} days}}'**
+  String dataExportReportPeriod(String from, String to, int days);
+
+  /// Question for the AI at the top of the text export.
+  ///
+  /// In en, this message translates to:
+  /// **'I track my food with the app yamt. Below is my data for this period. Please rate my eating: what do I do well, what do I do wrong, and what should I change to reach my goal? Take training and pause days into account.'**
+  String get dataExportAiPrompt;
+
+  /// Header of the field explanations in the text export.
+  ///
+  /// In en, this message translates to:
+  /// **'Fields'**
+  String get dataExportFieldsHeader;
+
+  /// Field explanations in the text export, one Markdown list item per line.
+  ///
+  /// In en, this message translates to:
+  /// **'- kcal: kilocalories. P, C, F: protein, carbohydrates, fat in grams.\n- Goal: kcal and macro goal of the day. Training days have a higher kcal goal, rest days a lower one, so the week stays on target.\n- Pause day: a day without a goal, for example when ill or on holiday.\n- TDEE: estimated daily energy use, learned from weight and food.\n- Weight: weighing of the day; trend: smoothed weight.\n- Parts of the day: how the day\'s kcal goal splits over the meals.'**
+  String get dataExportFieldsText;
+
+  /// Header of the goals in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get dataExportGoalsHeader;
+
+  /// One goal in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {number}: {mode}, {start} – {end}, start weight {startWeight} kg, target weight {targetWeight} kg, {speed} kg per week, {kcal} kcal per day before training and rest day cycling'**
+  String dataExportGoalLine(
+    int number,
+    String mode,
+    String start,
+    String end,
+    String startWeight,
+    String targetWeight,
+    String speed,
+    String kcal,
+  );
+
+  /// End of a goal that still runs.
+  ///
+  /// In en, this message translates to:
+  /// **'running'**
+  String get dataExportGoalRunning;
+
+  /// Shown when no goal overlaps the export period.
+  ///
+  /// In en, this message translates to:
+  /// **'No goal in this period.'**
+  String get dataExportNoGoal;
+
+  /// How the kcal goal splits over the meals; shares is a list like 'Breakfast 25 %, Lunch 35 %'.
+  ///
+  /// In en, this message translates to:
+  /// **'Parts of the day: {shares}'**
+  String dataExportMealShares(String shares);
+
+  /// One meal share in the parts of the day list.
+  ///
+  /// In en, this message translates to:
+  /// **'{meal} {percent} %'**
+  String dataExportMealShare(String meal, int percent);
+
+  /// Header of the overview in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get dataExportOverviewHeader;
+
+  /// Averages in the export overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Average per logged day: {kcal} kcal, protein {protein} g, carbohydrates {carbs} g, fat {fat} g. Average TDEE: {tdee} kcal.'**
+  String dataExportOverviewLine(
+    String kcal,
+    String protein,
+    String carbs,
+    String fat,
+    String tdee,
+  );
+
+  /// Weight change in the export overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight: {first} kg → {last} kg ({change} kg)'**
+  String dataExportWeightLine(String first, String last, String change);
+
+  /// Day type counts in the export overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Days: {training} training, {normal} normal, {pause} pause'**
+  String dataExportDayTypesLine(int training, int normal, int pause);
+
+  /// Header of the day list in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get dataExportDaysHeader;
+
+  /// Head line of one day in the text export: eaten against goal.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · {type} · {kcal} / {goal} kcal · P {protein}/{proteinGoal} g · C {carbs}/{carbsGoal} g · F {fat}/{fatGoal} g'**
+  String dataExportDayLine(
+    String date,
+    String type,
+    String kcal,
+    String goal,
+    String protein,
+    String proteinGoal,
+    String carbs,
+    String carbsGoal,
+    String fat,
+    String fatGoal,
+  );
+
+  /// Weight of a day in the text export.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight {weight} kg, trend {trend} kg'**
+  String dataExportDayWeight(String weight, String trend);
+
+  /// TDEE of a day in the text export.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE {tdee} kcal'**
+  String dataExportDayTdee(String tdee);
+
+  /// A day without entries in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries'**
+  String get dataExportNoEntries;
+
+  /// Head of one meal in the text export.
+  ///
+  /// In en, this message translates to:
+  /// **'{meal} · {kcal} kcal'**
+  String dataExportMealLine(String meal, String kcal);
+
+  /// One eaten food in the text export.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {amount} · {kcal} kcal · P {protein} g · C {carbs} g · F {fat} g'**
+  String dataExportFoodLine(
+    String name,
+    String amount,
+    String kcal,
+    String protein,
+    String carbs,
+    String fat,
+  );
+
+  /// Report tile: average kcal eaten.
+  ///
+  /// In en, this message translates to:
+  /// **'Average eaten'**
+  String get dataExportKpiEaten;
+
+  /// Report tile: average TDEE.
+  ///
+  /// In en, this message translates to:
+  /// **'Average TDEE'**
+  String get dataExportKpiTdee;
+
+  /// Report tile: weight change.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get dataExportKpiWeight;
+
+  /// Report tile: number of training and pause days.
+  ///
+  /// In en, this message translates to:
+  /// **'Training / pause'**
+  String get dataExportKpiDays;
+
+  /// Report tile line under the average eaten kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal · goal {kcal}'**
+  String dataExportKpiGoal(String kcal);
+
+  /// Report chart title.
+  ///
+  /// In en, this message translates to:
+  /// **'Food, weight, and TDEE together'**
+  String get dataExportChartCombined;
+
+  /// Report chart title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get dataExportChartWeight;
+
+  /// Report chart title.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE'**
+  String get dataExportChartTdee;
+
+  /// Report chart title.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal eaten vs. goal'**
+  String get dataExportChartKcal;
+
+  /// Report chart title.
+  ///
+  /// In en, this message translates to:
+  /// **'Macros on average vs. goal'**
+  String get dataExportChartMacros;
+
+  /// Report chart legend: kcal eaten.
+  ///
+  /// In en, this message translates to:
+  /// **'eaten'**
+  String get dataExportLegendEaten;
+
+  /// Report chart legend: kcal goal.
+  ///
+  /// In en, this message translates to:
+  /// **'goal'**
+  String get dataExportLegendGoal;
+
+  /// Report chart legend: weight.
+  ///
+  /// In en, this message translates to:
+  /// **'weight'**
+  String get dataExportLegendWeight;
+
+  /// Report chart legend: TDEE.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE'**
+  String get dataExportLegendTdee;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get dataExportColumnDate;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Day type'**
+  String get dataExportColumnDayType;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal kcal'**
+  String get dataExportColumnGoal;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get dataExportColumnKcal;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein g'**
+  String get dataExportColumnProtein;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein goal g'**
+  String get dataExportColumnProteinGoal;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs g'**
+  String get dataExportColumnCarbs;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs goal g'**
+  String get dataExportColumnCarbsGoal;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat g'**
+  String get dataExportColumnFat;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat goal g'**
+  String get dataExportColumnFatGoal;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight kg'**
+  String get dataExportColumnWeight;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend kg'**
+  String get dataExportColumnTrend;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE kcal'**
+  String get dataExportColumnTdee;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal'**
+  String get dataExportColumnMeal;
+
+  /// Table column: the meal's share of the day's kcal goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of the day kcal'**
+  String get dataExportColumnMealGoal;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get dataExportColumnFood;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get dataExportColumnBrand;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get dataExportColumnAmount;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get dataExportColumnUnit;
+
+  /// Table column: goal number.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get dataExportColumnNumber;
+
+  /// Table column: goal mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get dataExportColumnMode;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get dataExportColumnStart;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get dataExportColumnEnd;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Start weight kg'**
+  String get dataExportColumnStartWeight;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'Target weight kg'**
+  String get dataExportColumnTargetWeight;
+
+  /// Table column.
+  ///
+  /// In en, this message translates to:
+  /// **'kg per week'**
+  String get dataExportColumnSpeed;
+
+  /// Table column: daily kcal goal before cycling.
+  ///
+  /// In en, this message translates to:
+  /// **'Base kcal'**
+  String get dataExportColumnBaseKcal;
+
+  /// Table column: meal share in percent.
+  ///
+  /// In en, this message translates to:
+  /// **'Share %'**
+  String get dataExportColumnShare;
+
+  /// Spreadsheet sheet name.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get dataExportSheetDays;
+
+  /// Spreadsheet sheet name.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals'**
+  String get dataExportSheetMeals;
+
+  /// Spreadsheet sheet name.
+  ///
+  /// In en, this message translates to:
+  /// **'Foods'**
+  String get dataExportSheetFoods;
+
+  /// Spreadsheet sheet name.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get dataExportSheetGoals;
+
+  /// Footer of the exported report.
+  ///
+  /// In en, this message translates to:
+  /// **'Made with yamt'**
+  String get dataExportFooter;
+
+  /// A macro in the report: eaten average against goal in grams.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} {value} / {goal} g'**
+  String dataExportMacroBar(String name, String value, String goal);
+
+  /// Report tile line under the weight change.
+  ///
+  /// In en, this message translates to:
+  /// **'{first} → {last} kg'**
+  String dataExportKpiWeightRange(String first, String last);
+
+  /// Button that copies the AI export text to the clipboard, for AI apps that take no files.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get dataExportCopy;
+
+  /// Snack bar after the AI export text was copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied. Paste it into your AI chat.'**
+  String get dataExportCopied;
+
+  /// Button that creates the report and saves it on the device, for the purpose For me.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get dataExportSave;
+
+  /// Snack bar after the report was saved on the device.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get dataExportSaved;
+
+  /// Export period chip: every day from the start of the first goal to today.
+  ///
+  /// In en, this message translates to:
+  /// **'All data'**
+  String get dataExportRangeAll;
+
+  /// Export period chip that opens a menu to pick one or more goals.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get dataExportRangeGoals;
+
+  /// Export period chip label when goals first to last are picked.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals {first}–{last}'**
+  String dataExportRangeGoalSpan(int first, int last);
+
+  /// Food name in the export whose nutrition is not known yet, so its 0 kcal are not eaten food.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · nutrition still open'**
+  String dataExportFoodPending(String name);
+
+  /// Separator between items of a list in the export, for example the parts of the day.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get dataExportListSeparator;
+
+  /// Separator between the facts of a day in the PDF day table: day type, weight, TDEE.
+  ///
+  /// In en, this message translates to:
+  /// **' · '**
+  String get dataExportPartsSeparator;
+
+  /// A weight in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} kg'**
+  String dataExportWeightValue(String weight);
+
+  /// An eaten value and its goal in the PDF day table.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} / {goal}'**
+  String dataExportValueOfGoal(String value, String goal);
+
+  /// Number of training days and pause days in the PDF key numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'{training} / {pause}'**
+  String dataExportTrainingPauseCount(int training, int pause);
+
+  /// Unit under the average TDEE in the PDF key numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get dataExportKcalUnit;
 }
 
 class _AppLocalizationsDelegate

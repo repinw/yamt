@@ -4,8 +4,6 @@ import 'package:yamt/features/diary/domain/diary_meal_shares.dart';
 
 part 'diary_meal_shares_controller.g.dart';
 
-const _mealSharesKey = 'diary_meal_shares_v1';
-
 /// How the user splits the day's kcal over the meals, saved on the device.
 @riverpod
 class DiaryMealSharesController extends _$DiaryMealSharesController {
@@ -13,7 +11,7 @@ class DiaryMealSharesController extends _$DiaryMealSharesController {
   DiaryMealShares build() {
     final stored = ref
         .watch(appPreferencesProvider)
-        .getStringSync(_mealSharesKey);
+        .getStringSync(DiaryMealShares.preferenceKey);
     return (stored == null ? null : DiaryMealShares.decode(stored)) ??
         DiaryMealShares.standard;
   }
@@ -23,12 +21,14 @@ class DiaryMealSharesController extends _$DiaryMealSharesController {
     state = shares;
     await ref
         .read(appPreferencesProvider)
-        .setString(_mealSharesKey, shares.encode());
+        .setString(DiaryMealShares.preferenceKey, shares.encode());
   }
 
   /// Goes back to [DiaryMealShares.standard].
   Future<void> reset() async {
     state = DiaryMealShares.standard;
-    await ref.read(appPreferencesProvider).remove(_mealSharesKey);
+    await ref
+        .read(appPreferencesProvider)
+        .remove(DiaryMealShares.preferenceKey);
   }
 }

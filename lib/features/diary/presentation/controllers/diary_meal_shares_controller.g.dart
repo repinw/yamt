@@ -45,7 +45,7 @@ final class DiaryMealSharesControllerProvider
 }
 
 String _$diaryMealSharesControllerHash() =>
-    r'558da02bd9b6d75bbaed798f2ff747fb687e0741';
+    r'da5dc6a0cd417596661f56cc41de5c325107d475';
 
 /// How the user splits the day's kcal over the meals, saved on the device.
 

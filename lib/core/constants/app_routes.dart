@@ -120,6 +120,9 @@ abstract final class AppRoutes {
   /// Every weighing with the weight trend, grouped by 7-day runs.
   static const homeProgressWeights = '/home/progress/weights';
 
+  /// The data export: food, goals, weight, and TDEE of a period as files.
+  static const homeProgressExport = '/home/progress/export';
+
   /// The before and after comparison of the progress photos.
   static const homeProgressPhotoCompare = '/home/progress/photos/compare';
 

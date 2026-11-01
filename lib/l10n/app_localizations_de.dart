@@ -6793,4 +6793,412 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diaryBudgetMenuAllMacrosHint =>
       'Aus: nur das niedrigste Makro ist farbig';
+
+  @override
+  String get dataExportTitle => 'Exportieren';
+
+  @override
+  String get dataExportActionDescription =>
+      'Essen, Gewicht und Ziele teilen – mit KI, Berater oder dir selbst';
+
+  @override
+  String get settingsDataExportTitle => 'Daten exportieren';
+
+  @override
+  String get dataExportPurposeHeader => 'Für wen';
+
+  @override
+  String get dataExportPurposeAi => 'Meine KI';
+
+  @override
+  String get dataExportPurposeAiDescription =>
+      'Text mit Frage und erklärten Feldern · .txt';
+
+  @override
+  String get dataExportPurposeAdvisor => 'Ernährungsberater';
+
+  @override
+  String get dataExportPurposeAdvisorDescription =>
+      'Bericht und Tabelle · .pdf + .xlsx';
+
+  @override
+  String get dataExportPurposeSelf => 'Für mich';
+
+  @override
+  String get dataExportPurposeSelfDescription => 'Bericht mit Grafiken · .pdf';
+
+  @override
+  String get dataExportRangeHeader => 'Zeitraum';
+
+  @override
+  String get dataExportRangeSevenDays => '7 Tage';
+
+  @override
+  String get dataExportRangeFourWeeks => '4 Wochen';
+
+  @override
+  String get dataExportRangeThreeMonths => '3 Monate';
+
+  @override
+  String get dataExportRangeCustom => 'Eigener …';
+
+  @override
+  String dataExportSummary(
+    String from,
+    String to,
+    int days,
+    int entries,
+    int weighings,
+  ) {
+    return '$from – $to · Tage: $days · Einträge: $entries · Wiegungen: $weighings';
+  }
+
+  @override
+  String get dataExportPrivacyNote =>
+      'Die Datei ist nicht verschlüsselt. Wer sie bekommt, sieht deine Gesundheitsdaten.';
+
+  @override
+  String get dataExportShare => 'Teilen';
+
+  @override
+  String get dataExportShareFailed => 'Export konnte nicht erstellt werden.';
+
+  @override
+  String get dataExportLoadFailed => 'Daten konnten nicht geladen werden.';
+
+  @override
+  String get dataExportReportTitle => 'Ernährungsbericht';
+
+  @override
+  String dataExportReportPeriod(String from, String to, int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days Tage',
+      one: '1 Tag',
+    );
+    return '$from – $to · $_temp0';
+  }
+
+  @override
+  String get dataExportAiPrompt =>
+      'Ich tracke mein Essen mit der App yamt. Unten stehen meine Daten aus diesem Zeitraum. Bewerte bitte meine Ernährung: Was mache ich gut, was falsch, und was soll ich konkret ändern, um mein Ziel zu erreichen? Beachte Trainings- und Pausentage.';
+
+  @override
+  String get dataExportFieldsHeader => 'Felder';
+
+  @override
+  String get dataExportFieldsText =>
+      '- kcal: Kilokalorien. P, KH, F: Protein, Kohlenhydrate, Fett in Gramm.\n- Ziel: kcal- und Makroziel des Tages. Trainingstage haben ein höheres kcal-Ziel, Ruhetage ein niedrigeres, damit die Woche aufgeht.\n- Pausentag: ein Tag ohne Ziel, zum Beispiel bei Krankheit oder im Urlaub.\n- TDEE: geschätzter Tagesverbrauch, gelernt aus Gewicht und Essen.\n- Gewicht: Wiegung des Tages; Trend: geglättetes Gewicht.\n- Tagesabschnitte: wie sich das kcal-Ziel des Tages auf die Mahlzeiten aufteilt.';
+
+  @override
+  String get dataExportGoalsHeader => 'Ziele';
+
+  @override
+  String dataExportGoalLine(
+    int number,
+    String mode,
+    String start,
+    String end,
+    String startWeight,
+    String targetWeight,
+    String speed,
+    String kcal,
+  ) {
+    return 'Ziel $number: $mode, $start – $end, Startgewicht $startWeight kg, Zielgewicht $targetWeight kg, $speed kg pro Woche, $kcal kcal pro Tag vor Trainings- und Ruhetag-Ausgleich';
+  }
+
+  @override
+  String get dataExportGoalRunning => 'läuft';
+
+  @override
+  String get dataExportNoGoal => 'Kein Ziel in diesem Zeitraum.';
+
+  @override
+  String dataExportMealShares(String shares) {
+    return 'Tagesabschnitte: $shares';
+  }
+
+  @override
+  String dataExportMealShare(String meal, int percent) {
+    return '$meal $percent %';
+  }
+
+  @override
+  String get dataExportOverviewHeader => 'Übersicht';
+
+  @override
+  String dataExportOverviewLine(
+    String kcal,
+    String protein,
+    String carbs,
+    String fat,
+    String tdee,
+  ) {
+    return 'Schnitt pro Tag mit Einträgen: $kcal kcal, Protein $protein g, Kohlenhydrate $carbs g, Fett $fat g. Schnitt TDEE: $tdee kcal.';
+  }
+
+  @override
+  String dataExportWeightLine(String first, String last, String change) {
+    return 'Gewicht: $first kg → $last kg ($change kg)';
+  }
+
+  @override
+  String dataExportDayTypesLine(int training, int normal, int pause) {
+    return 'Tage: $training Training, $normal normal, $pause Pause';
+  }
+
+  @override
+  String get dataExportDaysHeader => 'Tage';
+
+  @override
+  String dataExportDayLine(
+    String date,
+    String type,
+    String kcal,
+    String goal,
+    String protein,
+    String proteinGoal,
+    String carbs,
+    String carbsGoal,
+    String fat,
+    String fatGoal,
+  ) {
+    return '$date · $type · $kcal / $goal kcal · P $protein/$proteinGoal g · KH $carbs/$carbsGoal g · F $fat/$fatGoal g';
+  }
+
+  @override
+  String dataExportDayWeight(String weight, String trend) {
+    return 'Gewicht $weight kg, Trend $trend kg';
+  }
+
+  @override
+  String dataExportDayTdee(String tdee) {
+    return 'TDEE $tdee kcal';
+  }
+
+  @override
+  String get dataExportNoEntries => 'Keine Einträge';
+
+  @override
+  String dataExportMealLine(String meal, String kcal) {
+    return '$meal · $kcal kcal';
+  }
+
+  @override
+  String dataExportFoodLine(
+    String name,
+    String amount,
+    String kcal,
+    String protein,
+    String carbs,
+    String fat,
+  ) {
+    return '$name · $amount · $kcal kcal · P $protein g · KH $carbs g · F $fat g';
+  }
+
+  @override
+  String get dataExportKpiEaten => 'Ø gegessen';
+
+  @override
+  String get dataExportKpiTdee => 'Ø TDEE';
+
+  @override
+  String get dataExportKpiWeight => 'Gewicht';
+
+  @override
+  String get dataExportKpiDays => 'Training / Pause';
+
+  @override
+  String dataExportKpiGoal(String kcal) {
+    return 'kcal · Ziel $kcal';
+  }
+
+  @override
+  String get dataExportChartCombined => 'Essen, Gewicht und TDEE zusammen';
+
+  @override
+  String get dataExportChartWeight => 'Gewicht';
+
+  @override
+  String get dataExportChartTdee => 'TDEE-Verlauf';
+
+  @override
+  String get dataExportChartKcal => 'kcal gegessen vs. Ziel';
+
+  @override
+  String get dataExportChartMacros => 'Makros im Schnitt vs. Ziel';
+
+  @override
+  String get dataExportLegendEaten => 'gegessen';
+
+  @override
+  String get dataExportLegendGoal => 'Ziel';
+
+  @override
+  String get dataExportLegendWeight => 'Gewicht';
+
+  @override
+  String get dataExportLegendTdee => 'TDEE';
+
+  @override
+  String get dataExportColumnDate => 'Datum';
+
+  @override
+  String get dataExportColumnDayType => 'Tagestyp';
+
+  @override
+  String get dataExportColumnGoal => 'Ziel kcal';
+
+  @override
+  String get dataExportColumnKcal => 'kcal';
+
+  @override
+  String get dataExportColumnProtein => 'Protein g';
+
+  @override
+  String get dataExportColumnProteinGoal => 'Protein Ziel g';
+
+  @override
+  String get dataExportColumnCarbs => 'KH g';
+
+  @override
+  String get dataExportColumnCarbsGoal => 'KH Ziel g';
+
+  @override
+  String get dataExportColumnFat => 'Fett g';
+
+  @override
+  String get dataExportColumnFatGoal => 'Fett Ziel g';
+
+  @override
+  String get dataExportColumnWeight => 'Gewicht kg';
+
+  @override
+  String get dataExportColumnTrend => 'Trend kg';
+
+  @override
+  String get dataExportColumnTdee => 'TDEE kcal';
+
+  @override
+  String get dataExportColumnMeal => 'Mahlzeit';
+
+  @override
+  String get dataExportColumnMealGoal => 'Tagesabschnitt kcal';
+
+  @override
+  String get dataExportColumnFood => 'Lebensmittel';
+
+  @override
+  String get dataExportColumnBrand => 'Marke';
+
+  @override
+  String get dataExportColumnAmount => 'Menge';
+
+  @override
+  String get dataExportColumnUnit => 'Einheit';
+
+  @override
+  String get dataExportColumnNumber => 'Ziel';
+
+  @override
+  String get dataExportColumnMode => 'Modus';
+
+  @override
+  String get dataExportColumnStart => 'Start';
+
+  @override
+  String get dataExportColumnEnd => 'Ende';
+
+  @override
+  String get dataExportColumnStartWeight => 'Startgewicht kg';
+
+  @override
+  String get dataExportColumnTargetWeight => 'Zielgewicht kg';
+
+  @override
+  String get dataExportColumnSpeed => 'kg pro Woche';
+
+  @override
+  String get dataExportColumnBaseKcal => 'Basis kcal';
+
+  @override
+  String get dataExportColumnShare => 'Anteil %';
+
+  @override
+  String get dataExportSheetDays => 'Tage';
+
+  @override
+  String get dataExportSheetMeals => 'Mahlzeiten';
+
+  @override
+  String get dataExportSheetFoods => 'Lebensmittel';
+
+  @override
+  String get dataExportSheetGoals => 'Ziele';
+
+  @override
+  String get dataExportFooter => 'Erstellt mit yamt';
+
+  @override
+  String dataExportMacroBar(String name, String value, String goal) {
+    return '$name $value / $goal g';
+  }
+
+  @override
+  String dataExportKpiWeightRange(String first, String last) {
+    return '$first → $last kg';
+  }
+
+  @override
+  String get dataExportCopy => 'Kopieren';
+
+  @override
+  String get dataExportCopied => 'Kopiert. Füge es in deinen KI-Chat ein.';
+
+  @override
+  String get dataExportSave => 'Speichern';
+
+  @override
+  String get dataExportSaved => 'Gespeichert.';
+
+  @override
+  String get dataExportRangeAll => 'Alle Daten';
+
+  @override
+  String get dataExportRangeGoals => 'Ziele';
+
+  @override
+  String dataExportRangeGoalSpan(int first, int last) {
+    return 'Ziele $first–$last';
+  }
+
+  @override
+  String dataExportFoodPending(String name) {
+    return '$name · Nährwerte noch offen';
+  }
+
+  @override
+  String get dataExportListSeparator => ', ';
+
+  @override
+  String get dataExportPartsSeparator => ' · ';
+
+  @override
+  String dataExportWeightValue(String weight) {
+    return '$weight kg';
+  }
+
+  @override
+  String dataExportValueOfGoal(String value, String goal) {
+    return '$value / $goal';
+  }
+
+  @override
+  String dataExportTrainingPauseCount(int training, int pause) {
+    return '$training / $pause';
+  }
+
+  @override
+  String get dataExportKcalUnit => 'kcal';
 }

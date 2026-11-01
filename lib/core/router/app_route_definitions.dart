@@ -14,6 +14,7 @@ import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart'
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/ingredient_check_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
+import 'package:yamt/features/data_export/presentation/data_export_page.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
@@ -162,6 +163,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.homeProgressWeights,
       builder: (context, state) => const ProgressWeightsPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.homeProgressExport,
+      builder: (context, state) => const DataExportPage(),
     ),
     GoRoute(
       path: AppRoutes.homeProgressPhotoViewer,

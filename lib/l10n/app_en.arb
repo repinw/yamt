@@ -4350,5 +4350,646 @@
   "diaryBudgetMenuAllMacrosHint": "Off: only the lowest macro shows its color",
   "@diaryBudgetMenuPaceHint": {
     "description": "Hint below the pace marker switch in the budget card menu."
+  },
+  "dataExportTitle": "Export",
+  "@dataExportTitle": {
+    "description": "Title of the data export page and its menu entry in Fortschritt."
+  },
+  "dataExportActionDescription": "Share food, weight, and goals with an AI, an advisor, or yourself",
+  "@dataExportActionDescription": {
+    "description": "One-line description of the export entry in menus."
+  },
+  "settingsDataExportTitle": "Export data",
+  "@settingsDataExportTitle": {
+    "description": "Settings tile that opens the data export page."
+  },
+  "dataExportPurposeHeader": "For whom",
+  "@dataExportPurposeHeader": {
+    "description": "Header above the export purposes."
+  },
+  "dataExportPurposeAi": "My AI",
+  "@dataExportPurposeAi": {
+    "description": "Export purpose: the user's own AI."
+  },
+  "dataExportPurposeAiDescription": "Text with a question and explained fields · .txt",
+  "@dataExportPurposeAiDescription": {
+    "description": "Line under the AI export purpose."
+  },
+  "dataExportPurposeAdvisor": "Nutrition advisor",
+  "@dataExportPurposeAdvisor": {
+    "description": "Export purpose: a nutrition advisor."
+  },
+  "dataExportPurposeAdvisorDescription": "Report and table · .pdf + .xlsx",
+  "@dataExportPurposeAdvisorDescription": {
+    "description": "Line under the advisor export purpose."
+  },
+  "dataExportPurposeSelf": "For me",
+  "@dataExportPurposeSelf": {
+    "description": "Export purpose: the user."
+  },
+  "dataExportPurposeSelfDescription": "Report with charts · .pdf",
+  "@dataExportPurposeSelfDescription": {
+    "description": "Line under the self export purpose."
+  },
+  "dataExportRangeHeader": "Period",
+  "@dataExportRangeHeader": {
+    "description": "Header above the export period chips."
+  },
+  "dataExportRangeSevenDays": "7 days",
+  "@dataExportRangeSevenDays": {
+    "description": "Export period chip: the last 7 days."
+  },
+  "dataExportRangeFourWeeks": "4 weeks",
+  "@dataExportRangeFourWeeks": {
+    "description": "Export period chip: the last 4 weeks."
+  },
+  "dataExportRangeThreeMonths": "3 months",
+  "@dataExportRangeThreeMonths": {
+    "description": "Export period chip: the last 3 months."
+  },
+  "dataExportRangeCustom": "Custom …",
+  "@dataExportRangeCustom": {
+    "description": "Export period chip that opens a date range picker."
+  },
+  "dataExportSummary": "{from} – {to} · days: {days} · entries: {entries} · weighings: {weighings}",
+  "@dataExportSummary": {
+    "description": "What the export holds.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      },
+      "entries": {
+        "type": "int"
+      },
+      "weighings": {
+        "type": "int"
+      }
+    }
+  },
+  "dataExportPrivacyNote": "The file is not encrypted. Whoever gets it sees your health data.",
+  "@dataExportPrivacyNote": {
+    "description": "Privacy note above the share button."
+  },
+  "dataExportShare": "Share",
+  "@dataExportShare": {
+    "description": "Button that creates the export and opens the share sheet."
+  },
+  "dataExportShareFailed": "Could not create the export.",
+  "@dataExportShareFailed": {
+    "description": "Error when the export files could not be written or shared."
+  },
+  "dataExportLoadFailed": "Could not load the data.",
+  "@dataExportLoadFailed": {
+    "description": "Error when the export data could not be read."
+  },
+  "dataExportReportTitle": "Nutrition report",
+  "@dataExportReportTitle": {
+    "description": "Title of the exported report."
+  },
+  "dataExportReportPeriod": "{from} – {to} · {days, plural, =1{1 day} other{{days} days}}",
+  "@dataExportReportPeriod": {
+    "description": "Period line of the exported report.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "dataExportAiPrompt": "I track my food with the app yamt. Below is my data for this period. Please rate my eating: what do I do well, what do I do wrong, and what should I change to reach my goal? Take training and pause days into account.",
+  "@dataExportAiPrompt": {
+    "description": "Question for the AI at the top of the text export."
+  },
+  "dataExportFieldsHeader": "Fields",
+  "@dataExportFieldsHeader": {
+    "description": "Header of the field explanations in the text export."
+  },
+  "dataExportFieldsText": "- kcal: kilocalories. P, C, F: protein, carbohydrates, fat in grams.\n- Goal: kcal and macro goal of the day. Training days have a higher kcal goal, rest days a lower one, so the week stays on target.\n- Pause day: a day without a goal, for example when ill or on holiday.\n- TDEE: estimated daily energy use, learned from weight and food.\n- Weight: weighing of the day; trend: smoothed weight.\n- Parts of the day: how the day's kcal goal splits over the meals.",
+  "@dataExportFieldsText": {
+    "description": "Field explanations in the text export, one Markdown list item per line."
+  },
+  "dataExportGoalsHeader": "Goals",
+  "@dataExportGoalsHeader": {
+    "description": "Header of the goals in the export."
+  },
+  "dataExportGoalLine": "Goal {number}: {mode}, {start} – {end}, start weight {startWeight} kg, target weight {targetWeight} kg, {speed} kg per week, {kcal} kcal per day before training and rest day cycling",
+  "@dataExportGoalLine": {
+    "description": "One goal in the export.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "mode": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      },
+      "startWeight": {
+        "type": "String"
+      },
+      "targetWeight": {
+        "type": "String"
+      },
+      "speed": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportGoalRunning": "running",
+  "@dataExportGoalRunning": {
+    "description": "End of a goal that still runs."
+  },
+  "dataExportNoGoal": "No goal in this period.",
+  "@dataExportNoGoal": {
+    "description": "Shown when no goal overlaps the export period."
+  },
+  "dataExportMealShares": "Parts of the day: {shares}",
+  "@dataExportMealShares": {
+    "description": "How the kcal goal splits over the meals; shares is a list like 'Breakfast 25 %, Lunch 35 %'.",
+    "placeholders": {
+      "shares": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportMealShare": "{meal} {percent} %",
+  "@dataExportMealShare": {
+    "description": "One meal share in the parts of the day list.",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "dataExportOverviewHeader": "Overview",
+  "@dataExportOverviewHeader": {
+    "description": "Header of the overview in the export."
+  },
+  "dataExportOverviewLine": "Average per logged day: {kcal} kcal, protein {protein} g, carbohydrates {carbs} g, fat {fat} g. Average TDEE: {tdee} kcal.",
+  "@dataExportOverviewLine": {
+    "description": "Averages in the export overview.",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      },
+      "protein": {
+        "type": "String"
+      },
+      "carbs": {
+        "type": "String"
+      },
+      "fat": {
+        "type": "String"
+      },
+      "tdee": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportWeightLine": "Weight: {first} kg → {last} kg ({change} kg)",
+  "@dataExportWeightLine": {
+    "description": "Weight change in the export overview.",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportDayTypesLine": "Days: {training} training, {normal} normal, {pause} pause",
+  "@dataExportDayTypesLine": {
+    "description": "Day type counts in the export overview.",
+    "placeholders": {
+      "training": {
+        "type": "int"
+      },
+      "normal": {
+        "type": "int"
+      },
+      "pause": {
+        "type": "int"
+      }
+    }
+  },
+  "dataExportDaysHeader": "Days",
+  "@dataExportDaysHeader": {
+    "description": "Header of the day list in the export."
+  },
+  "dataExportDayLine": "{date} · {type} · {kcal} / {goal} kcal · P {protein}/{proteinGoal} g · C {carbs}/{carbsGoal} g · F {fat}/{fatGoal} g",
+  "@dataExportDayLine": {
+    "description": "Head line of one day in the text export: eaten against goal.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      },
+      "protein": {
+        "type": "String"
+      },
+      "proteinGoal": {
+        "type": "String"
+      },
+      "carbs": {
+        "type": "String"
+      },
+      "carbsGoal": {
+        "type": "String"
+      },
+      "fat": {
+        "type": "String"
+      },
+      "fatGoal": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportDayWeight": "Weight {weight} kg, trend {trend} kg",
+  "@dataExportDayWeight": {
+    "description": "Weight of a day in the text export.",
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "trend": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportDayTdee": "TDEE {tdee} kcal",
+  "@dataExportDayTdee": {
+    "description": "TDEE of a day in the text export.",
+    "placeholders": {
+      "tdee": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportNoEntries": "No entries",
+  "@dataExportNoEntries": {
+    "description": "A day without entries in the export."
+  },
+  "dataExportMealLine": "{meal} · {kcal} kcal",
+  "@dataExportMealLine": {
+    "description": "Head of one meal in the text export.",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportFoodLine": "{name} · {amount} · {kcal} kcal · P {protein} g · C {carbs} g · F {fat} g",
+  "@dataExportFoodLine": {
+    "description": "One eaten food in the text export.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      },
+      "protein": {
+        "type": "String"
+      },
+      "carbs": {
+        "type": "String"
+      },
+      "fat": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportKpiEaten": "Average eaten",
+  "@dataExportKpiEaten": {
+    "description": "Report tile: average kcal eaten."
+  },
+  "dataExportKpiTdee": "Average TDEE",
+  "@dataExportKpiTdee": {
+    "description": "Report tile: average TDEE."
+  },
+  "dataExportKpiWeight": "Weight",
+  "@dataExportKpiWeight": {
+    "description": "Report tile: weight change."
+  },
+  "dataExportKpiDays": "Training / pause",
+  "@dataExportKpiDays": {
+    "description": "Report tile: number of training and pause days."
+  },
+  "dataExportKpiGoal": "kcal · goal {kcal}",
+  "@dataExportKpiGoal": {
+    "description": "Report tile line under the average eaten kcal.",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportChartCombined": "Food, weight, and TDEE together",
+  "@dataExportChartCombined": {
+    "description": "Report chart title."
+  },
+  "dataExportChartWeight": "Weight",
+  "@dataExportChartWeight": {
+    "description": "Report chart title."
+  },
+  "dataExportChartTdee": "TDEE",
+  "@dataExportChartTdee": {
+    "description": "Report chart title."
+  },
+  "dataExportChartKcal": "kcal eaten vs. goal",
+  "@dataExportChartKcal": {
+    "description": "Report chart title."
+  },
+  "dataExportChartMacros": "Macros on average vs. goal",
+  "@dataExportChartMacros": {
+    "description": "Report chart title."
+  },
+  "dataExportLegendEaten": "eaten",
+  "@dataExportLegendEaten": {
+    "description": "Report chart legend: kcal eaten."
+  },
+  "dataExportLegendGoal": "goal",
+  "@dataExportLegendGoal": {
+    "description": "Report chart legend: kcal goal."
+  },
+  "dataExportLegendWeight": "weight",
+  "@dataExportLegendWeight": {
+    "description": "Report chart legend: weight."
+  },
+  "dataExportLegendTdee": "TDEE",
+  "@dataExportLegendTdee": {
+    "description": "Report chart legend: TDEE."
+  },
+  "dataExportColumnDate": "Date",
+  "@dataExportColumnDate": {
+    "description": "Table column."
+  },
+  "dataExportColumnDayType": "Day type",
+  "@dataExportColumnDayType": {
+    "description": "Table column."
+  },
+  "dataExportColumnGoal": "Goal kcal",
+  "@dataExportColumnGoal": {
+    "description": "Table column."
+  },
+  "dataExportColumnKcal": "kcal",
+  "@dataExportColumnKcal": {
+    "description": "Table column."
+  },
+  "dataExportColumnProtein": "Protein g",
+  "@dataExportColumnProtein": {
+    "description": "Table column."
+  },
+  "dataExportColumnProteinGoal": "Protein goal g",
+  "@dataExportColumnProteinGoal": {
+    "description": "Table column."
+  },
+  "dataExportColumnCarbs": "Carbs g",
+  "@dataExportColumnCarbs": {
+    "description": "Table column."
+  },
+  "dataExportColumnCarbsGoal": "Carbs goal g",
+  "@dataExportColumnCarbsGoal": {
+    "description": "Table column."
+  },
+  "dataExportColumnFat": "Fat g",
+  "@dataExportColumnFat": {
+    "description": "Table column."
+  },
+  "dataExportColumnFatGoal": "Fat goal g",
+  "@dataExportColumnFatGoal": {
+    "description": "Table column."
+  },
+  "dataExportColumnWeight": "Weight kg",
+  "@dataExportColumnWeight": {
+    "description": "Table column."
+  },
+  "dataExportColumnTrend": "Trend kg",
+  "@dataExportColumnTrend": {
+    "description": "Table column."
+  },
+  "dataExportColumnTdee": "TDEE kcal",
+  "@dataExportColumnTdee": {
+    "description": "Table column."
+  },
+  "dataExportColumnMeal": "Meal",
+  "@dataExportColumnMeal": {
+    "description": "Table column."
+  },
+  "dataExportColumnMealGoal": "Part of the day kcal",
+  "@dataExportColumnMealGoal": {
+    "description": "Table column: the meal's share of the day's kcal goal."
+  },
+  "dataExportColumnFood": "Food",
+  "@dataExportColumnFood": {
+    "description": "Table column."
+  },
+  "dataExportColumnBrand": "Brand",
+  "@dataExportColumnBrand": {
+    "description": "Table column."
+  },
+  "dataExportColumnAmount": "Amount",
+  "@dataExportColumnAmount": {
+    "description": "Table column."
+  },
+  "dataExportColumnUnit": "Unit",
+  "@dataExportColumnUnit": {
+    "description": "Table column."
+  },
+  "dataExportColumnNumber": "Goal",
+  "@dataExportColumnNumber": {
+    "description": "Table column: goal number."
+  },
+  "dataExportColumnMode": "Mode",
+  "@dataExportColumnMode": {
+    "description": "Table column: goal mode."
+  },
+  "dataExportColumnStart": "Start",
+  "@dataExportColumnStart": {
+    "description": "Table column."
+  },
+  "dataExportColumnEnd": "End",
+  "@dataExportColumnEnd": {
+    "description": "Table column."
+  },
+  "dataExportColumnStartWeight": "Start weight kg",
+  "@dataExportColumnStartWeight": {
+    "description": "Table column."
+  },
+  "dataExportColumnTargetWeight": "Target weight kg",
+  "@dataExportColumnTargetWeight": {
+    "description": "Table column."
+  },
+  "dataExportColumnSpeed": "kg per week",
+  "@dataExportColumnSpeed": {
+    "description": "Table column."
+  },
+  "dataExportColumnBaseKcal": "Base kcal",
+  "@dataExportColumnBaseKcal": {
+    "description": "Table column: daily kcal goal before cycling."
+  },
+  "dataExportColumnShare": "Share %",
+  "@dataExportColumnShare": {
+    "description": "Table column: meal share in percent."
+  },
+  "dataExportSheetDays": "Days",
+  "@dataExportSheetDays": {
+    "description": "Spreadsheet sheet name."
+  },
+  "dataExportSheetMeals": "Meals",
+  "@dataExportSheetMeals": {
+    "description": "Spreadsheet sheet name."
+  },
+  "dataExportSheetFoods": "Foods",
+  "@dataExportSheetFoods": {
+    "description": "Spreadsheet sheet name."
+  },
+  "dataExportSheetGoals": "Goals",
+  "@dataExportSheetGoals": {
+    "description": "Spreadsheet sheet name."
+  },
+  "dataExportFooter": "Made with yamt",
+  "@dataExportFooter": {
+    "description": "Footer of the exported report."
+  },
+  "dataExportMacroBar": "{name} {value} / {goal} g",
+  "@dataExportMacroBar": {
+    "description": "A macro in the report: eaten average against goal in grams.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportKpiWeightRange": "{first} → {last} kg",
+  "@dataExportKpiWeightRange": {
+    "description": "Report tile line under the weight change.",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "dataExportCopy": "Copy",
+  "@dataExportCopy": {
+    "description": "Button that copies the AI export text to the clipboard, for AI apps that take no files."
+  },
+  "dataExportCopied": "Copied. Paste it into your AI chat.",
+  "@dataExportCopied": {
+    "description": "Snack bar after the AI export text was copied."
+  },
+  "dataExportSave": "Save",
+  "@dataExportSave": {
+    "description": "Button that creates the report and saves it on the device, for the purpose For me."
+  },
+  "dataExportSaved": "Saved.",
+  "@dataExportSaved": {
+    "description": "Snack bar after the report was saved on the device."
+  },
+  "dataExportRangeAll": "All data",
+  "@dataExportRangeAll": {
+    "description": "Export period chip: every day from the start of the first goal to today."
+  },
+  "dataExportRangeGoals": "Goals",
+  "@dataExportRangeGoals": {
+    "description": "Export period chip that opens a menu to pick one or more goals."
+  },
+  "dataExportRangeGoalSpan": "Goals {first}–{last}",
+  "@dataExportRangeGoalSpan": {
+    "description": "Export period chip label when goals first to last are picked.",
+    "placeholders": {
+      "first": {"type": "int"},
+      "last": {"type": "int"}
+    }
+  },
+  "dataExportFoodPending": "{name} · nutrition still open",
+  "@dataExportFoodPending": {
+    "description": "Food name in the export whose nutrition is not known yet, so its 0 kcal are not eaten food.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "dataExportListSeparator": ", ",
+  "@dataExportListSeparator": {
+    "description": "Separator between items of a list in the export, for example the parts of the day."
+  },
+  "dataExportPartsSeparator": " · ",
+  "@dataExportPartsSeparator": {
+    "description": "Separator between the facts of a day in the PDF day table: day type, weight, TDEE."
+  },
+  "dataExportWeightValue": "{weight} kg",
+  "@dataExportWeightValue": {
+    "description": "A weight in the export.",
+    "placeholders": {
+      "weight": {"type": "String"}
+    }
+  },
+  "dataExportValueOfGoal": "{value} / {goal}",
+  "@dataExportValueOfGoal": {
+    "description": "An eaten value and its goal in the PDF day table.",
+    "placeholders": {
+      "value": {"type": "String"},
+      "goal": {"type": "String"}
+    }
+  },
+  "dataExportTrainingPauseCount": "{training} / {pause}",
+  "@dataExportTrainingPauseCount": {
+    "description": "Number of training days and pause days in the PDF key numbers.",
+    "placeholders": {
+      "training": {"type": "int"},
+      "pause": {"type": "int"}
+    }
+  },
+  "dataExportKcalUnit": "kcal",
+  "@dataExportKcalUnit": {
+    "description": "Unit under the average TDEE in the PDF key numbers."
   }
 }
