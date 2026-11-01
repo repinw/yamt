@@ -148,7 +148,8 @@ class _PreparedMealEatSheetBodyState
       onConfirm: !state.isPotTooLight && (canEat || (canPlan && state.isPlan))
           ? _submit
           : null,
-      onPlan: canPlan && !state.isPotTooLight ? _plan : null,
+      // On a later day the confirm button plans already.
+      onPlan: canPlan && !state.isPotTooLight && !state.isPlan ? _plan : null,
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
       children: [
         EatPageHeader(

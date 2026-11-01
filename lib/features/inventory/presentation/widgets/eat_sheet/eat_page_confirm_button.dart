@@ -37,42 +37,53 @@ class EatPageConfirmButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xs, 0),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        spacing: AppSpacing.sm,
-        children: [
-          // A long label next to a second button shrinks instead of
-          // overflowing.
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(label, maxLines: 1),
-            ),
-          ),
-          if (trailingText != null)
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.onAccent.withValues(
-                  alpha: AppOpacities.buttonTag,
-                ),
-                borderRadius: BorderRadius.circular(AppRadius.pill),
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          spacing: AppSpacing.sm,
+          children: [
+            // A long label next to a second button shrinks instead of
+            // overflowing.
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(label, maxLines: 1),
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xxs,
-                ),
-                child: Text(
-                  trailingText,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colors.onAccent,
+            ),
+            // At large text the tag takes at most half the button and
+            // shrinks too.
+            if (trailingText != null)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: constraints.maxWidth / 2),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: colors.onAccent.withValues(
+                        alpha: AppOpacities.buttonTag,
+                      ),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xxs,
+                      ),
+                      child: Text(
+                        trailingText,
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: colors.onAccent,
+                            ),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
