@@ -42,6 +42,8 @@ import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 class _MockUser extends Mock implements User;
 
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
+
 /// Deletes or saves the entry in the diary fake and records the stock that
 /// went back, like the Firestore batch does.
 class _ItemStore implements InventoryCalorieEntryCommitStore {
@@ -173,6 +175,8 @@ Future<void> _openDetails(
   addTearDown(settingsRepository.dispose);
   final user = _MockUser();
   when(() => user.uid).thenReturn('user-1');
+  final auth = _MockFirebaseAuth();
+  when(() => auth.currentUser).thenReturn(user);
   final router = GoRouter(
     routes: [
       GoRoute(
@@ -205,6 +209,7 @@ Future<void> _openDetails(
   addTearDown(router.dispose);
   final container = ProviderContainer(
     overrides: [
+      firebaseAuthProvider.overrideWithValue(auth),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       firebaseFirestoreProvider.overrideWith((ref) => null),
       userProfileProvider.overrideWith((ref) => Stream.value(null)),
