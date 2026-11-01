@@ -200,7 +200,8 @@ class _InventoryItemEatSheetBodyState
       confirmLabel: widget.confirmLabel,
       confirmButtonKey: _confirmKey,
       onConfirm: () => _submit(widget.confirmIntent, asPlan: plansOnly),
-      onPlan: _canPlan && !widget.plansOnly ? _plan : null,
+      // On a later day the confirm button plans already.
+      onPlan: _canPlan && !widget.plansOnly && !state.isPlan ? _plan : null,
       onStore: widget.onStore,
       onDelete: widget.onRemove,
       deleteTooltip: AppLocalizations.of(context)!.inventoryItemRemoveAction,

@@ -1,11 +1,12 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_confirm_button.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Full-screen frame of the eat page: a top bar with close and time, the
-/// scrolling content, and the confirm button at the bottom.
+/// Full-screen frame of the eat page: a top bar with close, time, and plan,
+/// the scrolling content, and the confirm button at the bottom.
 class EatPageScaffold extends StatelessWidget {
   /// Creates the eat page frame.
   const new({
@@ -68,21 +69,21 @@ class EatPageScaffold extends StatelessWidget {
   /// Small grey line above the buttons, such as what is still missing.
   final String? confirmHint;
 
-  /// Called by the plan button left of the confirm button. Without it, the
-  /// page has no plan button.
+  /// Called by the plan button next to the day and meal control. Without it,
+  /// the page has no plan button.
   final VoidCallback? onPlan;
 
   /// Key of the plan button.
   static const planButtonKey = Key('eat_page_plan_button');
 
-  /// Called by the "In den Vorrat" button next to the plan button, which
+  /// Called by the "In den Vorrat" button left of the confirm button, which
   /// puts the food into the Vorrat instead. Without it, the button is hidden.
   final VoidCallback? onStore;
 
   /// Key of the "In den Vorrat" button.
   static const storeButtonKey = Key('eat_page_store_button');
 
-  /// Called by the "Ins Tagebuch" button next to the plan button, which eats
+  /// Called by the "Ins Tagebuch" button left of the confirm button, which eats
   /// the food instead. Without it, the button is hidden.
   final VoidCallback? onDiary;
 
@@ -132,8 +133,35 @@ class EatPageScaffold extends StatelessWidget {
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: Icon(Icons.close_rounded, color: colors.ink),
                   ),
-                  // A long day and meal shrinks instead of overflowing.
-                  Flexible(child: whenControl),
+                  Flexible(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: AppSpacing.xs,
+                      children: [
+                        // A long day and meal shrinks instead of overflowing.
+                        Flexible(child: whenControl),
+                        // The main action of the bar: a pill in the accent
+                        // color, as high as the day and meal pill, in a 48
+                        // pixel tap target.
+                        if (onPlan case final plan?)
+                          FilledButton.icon(
+                            key: planButtonKey,
+                            onPressed: plan,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: colors.accent,
+                              foregroundColor: colors.onAccent,
+                              minimumSize: const Size(0, AppFoodLabel.chip),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                              ),
+                              tapTargetSize: MaterialTapTargetSize.padded,
+                            ),
+                            icon: const Icon(Icons.event_rounded),
+                            label: Text(l10n.eatPagePlanIconTooltip),
+                          ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -183,59 +211,65 @@ class EatPageScaffold extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodySmall
                         ?.copyWith(color: colors.muted),
                   ),
-                Row(
-                  spacing: AppSpacing.xs,
-                  children: [
-                    if (onDelete case final delete?)
-                      IconButton.filledTonal(
-                        key: deleteButtonKey,
-                        tooltip:
-                            deleteTooltip ?? l10n.caloriesRemoveEntryAction,
-                        onPressed: delete,
-                        icon: const Icon(Icons.delete_outline_rounded),
+                LayoutBuilder(
+                  builder: (context, constraints) => Row(
+                    spacing: AppSpacing.xs,
+                    children: [
+                      if (onDelete case final delete?)
+                        IconButton.filledTonal(
+                          key: deleteButtonKey,
+                          tooltip:
+                              deleteTooltip ?? l10n.caloriesRemoveEntryAction,
+                          onPressed: delete,
+                          icon: const Icon(Icons.delete_outline_rounded),
+                        ),
+                      if (onDiary case final diary?)
+                        IconButton.filledTonal(
+                          key: diaryButtonKey,
+                          tooltip: l10n.inventoryItemEatSheetConfirmAction,
+                          onPressed: diary,
+                          icon: const Icon(Icons.restaurant_rounded),
+                        ),
+                      if (onStore case final store?)
+                        IconButton.filledTonal(
+                          key: storeButtonKey,
+                          tooltip: l10n.eatPageStoreIconTooltip,
+                          onPressed: store,
+                          icon: const Icon(Icons.inventory_2_rounded),
+                        ),
+                      // At large text the second button takes at most half
+                      // the bar and shrinks its label, so the row never runs
+                      // past the screen edge.
+                      if (secondary != null)
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: constraints.maxWidth / 2,
+                          ),
+                          child: FilledButton.tonal(
+                            key: secondaryButtonKey,
+                            onPressed: onSecondary,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(secondary, maxLines: 1),
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child: EatPageConfirmButton(
+                          buttonKey: confirmButtonKey,
+                          label:
+                              confirmLabel ??
+                              (isPlan
+                                  ? l10n.eatPagePlanAction
+                                  : l10n.inventoryItemEatSheetConfirmAction),
+                          trailing: kcalValue == null
+                              ? null
+                              : l10n.eatPageKcal(kcalValue.round()),
+                          onPressed: onConfirm,
+                        ),
                       ),
-                    if (onPlan case final plan?)
-                      IconButton.filledTonal(
-                        key: planButtonKey,
-                        tooltip: l10n.eatPagePlanIconTooltip,
-                        onPressed: plan,
-                        icon: const Icon(Icons.event_rounded),
-                      ),
-                    if (onDiary case final diary?)
-                      IconButton.filledTonal(
-                        key: diaryButtonKey,
-                        tooltip: l10n.inventoryItemEatSheetConfirmAction,
-                        onPressed: diary,
-                        icon: const Icon(Icons.restaurant_rounded),
-                      ),
-                    if (onStore case final store?)
-                      IconButton.filledTonal(
-                        key: storeButtonKey,
-                        tooltip: l10n.eatPageStoreIconTooltip,
-                        onPressed: store,
-                        icon: const Icon(Icons.inventory_2_rounded),
-                      ),
-                    if (secondary != null)
-                      FilledButton.tonal(
-                        key: secondaryButtonKey,
-                        onPressed: onSecondary,
-                        child: Text(secondary),
-                      ),
-                    Expanded(
-                      child: EatPageConfirmButton(
-                        buttonKey: confirmButtonKey,
-                        label:
-                            confirmLabel ??
-                            (isPlan
-                                ? l10n.eatPagePlanAction
-                                : l10n.inventoryItemEatSheetConfirmAction),
-                        trailing: kcalValue == null
-                            ? null
-                            : l10n.eatPageKcal(kcalValue.round()),
-                        onPressed: onConfirm,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

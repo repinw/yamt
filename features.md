@@ -169,9 +169,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   estimate and opens it for the same day and meal. The entry shows no amount
   in the diary, moves between days and meals like any entry, and its amount
   cannot be edited. On a future day it saves a plan instead, with undo, and
-  the AI hint is hidden. On today or a past day, the calendar icon next to
-  the main button plans it for a picked day, today included; without the
-  calories, the icon only asks for them. Accepting the plan makes it a normal
+  the AI hint is hidden. On today or a past day, the "Planen" button next to
+  the day and meal plans it for a picked day, today included; without the
+  calories, the button only asks for them. Accepting the plan makes it a normal
   quick entry; no Vorrat is taken.
 - Daily budget card (#907), set in Geist: the kcal left as a big number
   with "kcal übrig" and a line with a goal marker, and next to it protein,
@@ -236,10 +236,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   undo: it takes no stock and no portions until it is eaten. An item whose
   amount needs the calorie editor cannot be planned yet.
 - The eat page of a Vorrat item, a cooked meal, or a found food has a plan
-  button ("Planen") next to "Ins Tagebuch": it asks for today or one of the
-  next 14 days and saves the food as a plan, also for today. The day menu at
-  the top also offers the next 14 days; a later day turns the main button
-  into "Einplanen".
+  button ("Planen") at the top, next to the day and meal: it asks for today
+  or one of the next 14 days and saves the food as a plan, also for today.
+  The day menu at the top also offers the next 14 days; a later day turns
+  the main button into "Einplanen" and hides the plan button.
   Adding a food to a meal has no plan button.
 - A cooked meal with open rows cannot be eaten, but it can be planned as a
   reminder: the eat page says the plan counts only once every row is filled.
