@@ -215,7 +215,7 @@ void main() {
       ),
       DateTime(2026, 11, 10),
     );
-  });
+  }, skip: _hasClockChange ? false : _needsClockChange);
 
   test(
     'the live sync moves an early week start without closing a week',
