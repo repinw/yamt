@@ -929,13 +929,20 @@ void main() {
       ],
     );
     await tester.pumpWidget(harness.app);
-    await _pumpUntilFound(
+    // Tomorrow starts a new run week here, so it has no day before to
+    // close; the head counting the plan tells it has loaded.
+    final unit = find.byKey(DiaryBudgetCardKeys.kcalUnit);
+    await _pumpUntil(
       tester,
-      find.byKey(DiaryBudgetCardKeys.closePreviousDay),
+      () =>
+          unit.evaluate().isNotEmpty &&
+          _incomingText(tester, DiaryBudgetCardKeys.kcalUnit) ==
+              'kcal übrig nach Plan',
       description: 'planned head of tomorrow',
     );
 
     await _pumpUntilOneHead(tester);
+    expect(find.byKey(DiaryBudgetCardKeys.closePreviousDay), findsNothing);
     String textOf(Key key) => _incomingText(tester, key);
     // The goal without a carryover from today, which is not finished yet,
     // less the plan.
