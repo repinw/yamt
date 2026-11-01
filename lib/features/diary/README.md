@@ -41,7 +41,9 @@ composition.
   `DiaryEntryChangeController`. Bundles (prepared meals and combined foods) show their foods
   instead of the ruler.
 - `presentation/widgets/diary_budget_card/` owns the daily budget card
-  (#907): kcal and macro columns, the "Details" and "Nach Plan" chips, the
+  (#907): the gold foil (#945, `HoloFoilCard` from `core/widgets`) when eaten
+  plus open planned kcal land within 5 % of the target
+  (`DiaryBudgetCardData.hitsTarget`), kcal and macro columns, the "Details" and "Nach Plan" chips, the
   training and pause toggles that set the day type through
   `DiaryDayTypeUpdater`, the ledger with the link to the budget sheet, the
   run week's day types, closing the day before, and the menu a long press
@@ -131,6 +133,10 @@ is the one accepted exception, for `features/home_widget`.
   sheet; when that closes without a new goal, the section opens the check-in
   again and keeps the sheet controller alive in between, so the step and the
   choices stay.
+- `presentation/widgets/diary_holo_preview_tile.dart`
+  (`DiaryHoloPreviewTile`) is a debug entry for the Home side menu. It shows
+  the budget card's gold foil without hitting the target
+  (`DiaryHoloPreviewController`, off on every start).
 - `presentation/widgets/diary_weekly_checkin_preview_tiles.dart`
   (`DiaryWeeklyCheckInPreviewTiles`) are debug entries for the Home side menu.
   They open the weekly check-in sheet for the latest completed window, or for

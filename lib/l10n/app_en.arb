@@ -3162,6 +3162,7 @@
   "diaryCheckInStartNewGoal": "Start a new goal",
   "diaryCheckInClose": "Close",
   "diaryCheckInLoadFailed": "Could not load the check-in.",
+  "diaryHoloPreviewAction": "Preview holo budget card",
   "diaryCheckInPreviewAction": "Preview weekly check-in",
   "diaryCheckInGoalReachedPreviewAction": "Preview goal reached",
   "diaryCheckInPreviewResult": "Preview: {action}, {days} training days, nothing saved",

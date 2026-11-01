@@ -11,6 +11,7 @@ import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/widgets/initial_tile.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_debug_menu_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_holo_preview_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_preview_tiles.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_entry.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_section.dart';
@@ -172,6 +173,7 @@ class HomeMenuPanel extends ConsumerWidget {
                         children: const [
                           CalorieDebugMenuSection(),
                           DiaryWeeklyCheckInPreviewTiles(),
+                          DiaryHoloPreviewTile(),
                         ],
                       ),
                   ],

@@ -2567,6 +2567,7 @@
   "diaryCheckInStartNewGoal": "Neues Ziel starten",
   "diaryCheckInClose": "Schließen",
   "diaryCheckInLoadFailed": "Der Check-in konnte nicht geladen werden.",
+  "diaryHoloPreviewAction": "Vorschau Holo-Budgetkarte",
   "diaryCheckInPreviewAction": "Wochen-Check-in Vorschau",
   "diaryCheckInGoalReachedPreviewAction": "Vorschau Ziel erreicht",
   "diaryCheckInPreviewResult": "Vorschau: {action}, {days} Trainingstage, nichts gespeichert",

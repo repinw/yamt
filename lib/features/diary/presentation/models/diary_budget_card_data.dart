@@ -45,6 +45,10 @@ final class DiaryBudgetRunEnded extends DiaryBudgetNotCounting {
   const new(super.startDate);
 }
 
+/// Share of the kcal target that eaten plus planned kcal may miss it by,
+/// either way, for the card to wear its gold foil (5 %).
+const double _trophyBand = 0.05;
+
 /// Render-ready state of the diary budget card.
 class DiaryBudgetCardData {
   /// Creates the card data.
@@ -190,6 +194,17 @@ class DiaryBudgetCardData {
 
   /// Kcal left, after the counted plans; negative when over the target.
   double get leftKcal => metrics.dayLeftKcal - countedPlannedKcal;
+
+  /// Whether what was eaten and planned for the day lands within 5 % of the
+  /// target, which the card celebrates with holo foil; never on a pause day
+  /// or a day that does not count. Open plans always count here, so a
+  /// planned day keeps its reward.
+  bool get hitsTarget =>
+      !isPauseDay &&
+      notCounting == null &&
+      metrics.targetKcal > 0 &&
+      (metrics.eatenKcal + (openPlans?.kcal ?? 0) - metrics.targetKcal).abs() <=
+          metrics.targetKcal * _trophyBand;
 
   /// Whether more is eaten (and counted as planned) than the target.
   bool get isOver => !isPauseDay && leftKcal.round() < 0;

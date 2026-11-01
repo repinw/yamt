@@ -9037,6 +9037,12 @@ abstract class AppLocalizations {
   /// **'Could not load the check-in.'**
   String get diaryCheckInLoadFailed;
 
+  /// No description provided for @diaryHoloPreviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview holo budget card'**
+  String get diaryHoloPreviewAction;
+
   /// No description provided for @diaryCheckInPreviewAction.
   ///
   /// In en, this message translates to:
