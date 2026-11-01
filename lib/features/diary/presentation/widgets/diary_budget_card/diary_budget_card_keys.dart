@@ -75,6 +75,17 @@ abstract final class DiaryBudgetCardKeys {
   /// The menu's switch for the pace marker on the kcal line.
   static const paceSwitch = ValueKey<String>('diary-budget-menu-pace');
 
+  /// The menu's switch for the notification when the pace marker frees a
+  /// meal's kcal again.
+  static const paceNoticeSwitch = ValueKey<String>(
+    'diary-budget-menu-pace-notice',
+  );
+
+  /// The debug build's button that shows the free kcal notification soon.
+  static const paceNoticeDebugButton = ValueKey<String>(
+    'diary-budget-menu-pace-notice-debug',
+  );
+
   /// The menu's switch that shows every macro in its color.
   static const allMacrosSwitch = ValueKey<String>(
     'diary-budget-menu-all-macros',

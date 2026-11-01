@@ -17,6 +17,7 @@ import 'package:yamt/features/app_update/application/'
     'app_client_version_record.dart';
 import 'package:yamt/features/app_update/presentation/widgets/'
     'app_update_hint_listener.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_pace_notification_listener.dart';
 import 'package:yamt/features/home_widget/application/'
     'home_widget_click_action_provider.dart';
 import 'package:yamt/features/home_widget/presentation/controllers/'
@@ -112,11 +113,13 @@ class _YAMTState extends ConsumerState<YAMT> {
             child: AppUpdateHintListener(
               child: WhatsNewListener(
                 child: PlanShortageReminderListener(
-                  child: SharedReceiptListener(
-                    onReceiptSaved: () =>
-                        ref.invalidate(inventoryItemsControllerProvider),
-                    child: RecipeReminderPlanListener(
-                      child: child ?? const SizedBox.shrink(),
+                  child: DiaryPaceNotificationListener(
+                    child: SharedReceiptListener(
+                      onReceiptSaved: () =>
+                          ref.invalidate(inventoryItemsControllerProvider),
+                      child: RecipeReminderPlanListener(
+                        child: child ?? const SizedBox.shrink(),
+                      ),
                     ),
                   ),
                 ),

@@ -6687,6 +6687,45 @@ class AppLocalizationsEn extends AppLocalizations {
       'Off: only the lowest macro shows its color';
 
   @override
+  String get diaryBudgetMenuPaceNotice => 'Notify on free kcal';
+
+  @override
+  String get diaryBudgetMenuPaceNoticeHint =>
+      'Once per part of the day, when the pace marker frees its kcal again';
+
+  @override
+  String get diaryBudgetMenuPaceNoticeBlocked =>
+      'Notifications are off in the system settings';
+
+  @override
+  String get diaryBudgetMenuPaceNoticeDebug =>
+      'Test notification in 5 s (debug)';
+
+  @override
+  String get diaryPaceNoticeChannelName => 'Free kcal';
+
+  @override
+  String diaryPaceNoticeTitle(String meal, int kcal) {
+    String _temp0 = intl.Intl.selectLogic(meal, {
+      'breakfast': 'For breakfast',
+      'lunch': 'For lunch',
+      'dinner': 'For dinner',
+      'other': 'For your snack',
+    });
+    return '$_temp0 you have $kcal kcal free again';
+  }
+
+  @override
+  String diaryPaceNoticeMacro(String macro) {
+    String _temp0 = intl.Intl.selectLogic(macro, {
+      'protein': 'protein',
+      'carbs': 'carbs',
+      'other': 'fat',
+    });
+    return 'Try to eat more $_temp0.';
+  }
+
+  @override
   String get dataExportTitle => 'Export';
 
   @override

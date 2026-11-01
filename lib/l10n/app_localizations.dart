@@ -11083,6 +11083,48 @@ abstract class AppLocalizations {
   /// **'Off: only the lowest macro shows its color'**
   String get diaryBudgetMenuAllMacrosHint;
 
+  /// Switch in the budget card menu, shown while the pace marker is on: a notification comes once per part of the day when the pace marker lies that meal's whole part ahead of the kcal eaten.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify on free kcal'**
+  String get diaryBudgetMenuPaceNotice;
+
+  /// Hint below the free kcal notification switch in the budget card menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Once per part of the day, when the pace marker frees its kcal again'**
+  String get diaryBudgetMenuPaceNoticeHint;
+
+  /// Hint below the free kcal notification switch while the system blocks the app's notifications or their channel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off in the system settings'**
+  String get diaryBudgetMenuPaceNoticeBlocked;
+
+  /// Debug-build-only button in the budget card menu that shows the free kcal notification a few seconds later.
+  ///
+  /// In en, this message translates to:
+  /// **'Test notification in 5 s (debug)'**
+  String get diaryBudgetMenuPaceNoticeDebug;
+
+  /// Android notification channel of the free kcal notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Free kcal'**
+  String get diaryPaceNoticeChannelName;
+
+  /// Title of the notification when the pace marker frees a meal's part of the day's kcal again.
+  ///
+  /// In en, this message translates to:
+  /// **'{meal, select, breakfast{For breakfast} lunch{For lunch} dinner{For dinner} other{For your snack}} you have {kcal} kcal free again'**
+  String diaryPaceNoticeTitle(String meal, int kcal);
+
+  /// Body of the free kcal notification: the macro with the largest share of its target left.
+  ///
+  /// In en, this message translates to:
+  /// **'Try to eat more {macro, select, protein{protein} carbs{carbs} other{fat}}.'**
+  String diaryPaceNoticeMacro(String macro);
+
   /// Title of the data export page and its menu entry in Fortschritt.
   ///
   /// In en, this message translates to:

@@ -198,7 +198,17 @@ and feature description docs. This is product-facing; architecture rules stay in
   is due before the day starts, each meal's share is due by its time, and
   the marker rises evenly in between (13:00 = 60 % by default).
   "Zurücksetzen" restores the default shares and times. Shares and times
-  are saved on the device. Last in the menu is the switch "Makros
+  are saved on the device. Below them, also only while the marker is on,
+  the switch "Meldung bei freien kcal" (#937, off by default, saved on the
+  device; turning it on asks for the notification permission, and a
+  blocked permission shows as the switch's hint) sends a notification
+  once the marker lies the next meal's whole share ahead of the kcal
+  eaten: "Fürs Mittagessen hast du wieder 771 kcal frei", plus "Versuch,
+  mehr Eiweiß zu essen." for the macro with the largest share of its
+  target left. At most one per part of the day, none on a pause day and
+  none after the last meal's time. Only today is planned, after every
+  diary change and when the app starts; a new entry moves or drops it.
+  Last in the menu is the switch "Makros
   immer bunt" (off by default, saved on the device), the same choice as in
   the Individuell color editor. Over the goal
   the number turns red as "+N" with "kcal drüber"; a macro over its target
