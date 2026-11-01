@@ -150,9 +150,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   it runs empty the message says so, and the undo gives the stock back
   (#326). Once the amount changed the button reads
   "Speichern" and stores the amount, with totals from the entry's per-100
-  values, and closes the page. Icons beside it remove the entry (an entry
-  from the Vorrat asks whether its stock goes back) and plan the food again
-  for a picked day; a prepared meal's portions offer only removing. The day
+  values, and closes the page. An icon beside it removes the entry (an entry
+  from the Vorrat asks whether its stock goes back); "Planen" next to the
+  day and meal at the top plans the food again for a picked day. A prepared
+  meal's portions offer only removing. The day
   and meal menu top right moves the entry at once. A changed amount moves the stock
   of a Vorrat entry too, and every change offers an undo. Prepared meals and
   combined entries list their foods instead of the ruler.
@@ -727,8 +728,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   ruler with the estimated portion, the ingredients with grams and kcal, and
   lean / normal / rich chips that shift the energy. Confirm logs the food
   when opened from the diary and adds it to the Vorrat otherwise, with no
-  Vorrat page after it. In the Vorrat its "Planen" and "Ins Tagebuch" icons
-  plan or eat the food instead; in the diary "Planen" plans it, also for
+  Vorrat page after it. In the Vorrat "Planen" at the top and the "Ins
+  Tagebuch" icon beside the button plan or eat the food instead; in the diary "Planen" plans it, also for
   today. "Analyze again" returns to the input.
 - Confirm closes the page right away. The first photo becomes the food's
   private picture (`users/{uid}/food_photos/`): the food keeps its Storage
@@ -769,8 +770,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   names it. Reopening the form of a product that is not created yet keeps
   "Erstellen".
 - From the Vorrat's own add sheet (not when a flow such as cooking picks an
-  ingredient), the Vorrat page after a pick also has "Planen" and
-  "Ins Tagebuch" icons next to "In Vorrat": "Ins Tagebuch" opens the eat page
+  ingredient), the Vorrat page after a pick also has "Planen" at the
+  top and an "Ins Tagebuch" icon next to "In Vorrat": "Ins Tagebuch" opens the eat page
   and eats the product instead of storing it; "Planen" asks for the day first
   (from today on, like every plan button) and opens the eat page on it, where
   the button says "Einplanen" and plans the food, also for today.
