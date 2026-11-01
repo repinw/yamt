@@ -7201,4 +7201,239 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dataExportKcalUnit => 'kcal';
+
+  @override
+  String get cookStepRecipe => 'Rezept';
+
+  @override
+  String get cookStepShopping => 'Einkauf';
+
+  @override
+  String get cookStepCooking => 'Kochen';
+
+  @override
+  String get cookStepPortion => 'Portionieren';
+
+  @override
+  String cookPortionsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Portionen',
+      one: '1 Portion',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookFewer => 'Weniger';
+
+  @override
+  String get cookMore => 'Mehr';
+
+  @override
+  String get cookIngredients => 'Zutaten';
+
+  @override
+  String get cookAssignAction => 'Zutaten zuordnen';
+
+  @override
+  String cookFoundKicker(int done, int count) {
+    return '$done von $count Zutaten';
+  }
+
+  @override
+  String get cookFoundTitle => 'Im Vorrat gefunden';
+
+  @override
+  String get cookFoundHint =>
+      'Passt der Vorschlag? Tippe den Artikel für einen anderen.';
+
+  @override
+  String get cookFits => 'Passt';
+
+  @override
+  String get cookFitsNot => 'Passt nicht';
+
+  @override
+  String cookMissingAmount(String amount) {
+    return 'Es fehlen $amount';
+  }
+
+  @override
+  String cookCheckRest(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Noch $count prüfen',
+      one: 'Noch 1 prüfen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookNext => 'Weiter';
+
+  @override
+  String cookOpenKicker(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zutaten',
+      one: '1 Zutat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookOpenTitle => 'Noch zu klären';
+
+  @override
+  String get cookOpenHint => 'Aus dem Vorrat zuordnen oder weglassen.';
+
+  @override
+  String get cookOpenNoItem => 'Kein Artikel im Vorrat';
+
+  @override
+  String get cookOpenRejected => 'Vorschlag abgelehnt';
+
+  @override
+  String get cookOpenOmitted => 'Weggelassen';
+
+  @override
+  String get cookAssign => 'Zuordnen';
+
+  @override
+  String get cookOmit => 'Weglassen';
+
+  @override
+  String cookStockLeft(String amount) {
+    return '$amount da';
+  }
+
+  @override
+  String get cookPotTitle => 'Worin kochst du?';
+
+  @override
+  String get cookPotHint =>
+      'Am Ende wiegst du den vollen Topf; sein Leergewicht ist bekannt.';
+
+  @override
+  String cookPotEmptyWeight(int grams) {
+    return 'leer $grams g';
+  }
+
+  @override
+  String get cookPotUnnamed => 'Topf';
+
+  @override
+  String get cookPotNone => 'Ohne Topf · nach Anzahl';
+
+  @override
+  String get cookDoneCooking => 'Fertig gekocht';
+
+  @override
+  String get cookPortionTitle => 'In den Vorrat';
+
+  @override
+  String get cookMealName => 'Name';
+
+  @override
+  String get cookGrossWeight => 'Topf mit Essen (g)';
+
+  @override
+  String cookNetWeight(int grams) {
+    return 'Essen: $grams g';
+  }
+
+  @override
+  String cookWeightTooLow(int grams) {
+    return 'Schwerer als der leere Topf ($grams g)';
+  }
+
+  @override
+  String get cookCountPortions => 'Portionen';
+
+  @override
+  String get cookCountPieces => 'Stück';
+
+  @override
+  String get cookToStock => 'In Vorrat';
+
+  @override
+  String cookSaved(String name) {
+    return '$name ist im Vorrat';
+  }
+
+  @override
+  String get cookFinishFailed =>
+      'Konnte die Mahlzeit nicht in den Vorrat legen.';
+
+  @override
+  String get cookFinishMissingNutrition => 'Einer Zutat fehlen Nährwerte.';
+
+  @override
+  String get cookFinishTooLittle =>
+      'Der Vorrat hat sich geändert: ein Artikel reicht nicht mehr.';
+
+  @override
+  String get cookFinishItemGone => 'Ein Artikel ist nicht mehr im Vorrat.';
+
+  @override
+  String get cookPickerKicker => 'Zeile füllen';
+
+  @override
+  String get cookPickerHint => 'Passend im Vorrat · antippen in Reihenfolge';
+
+  @override
+  String cookPickerSum(String have, String need) {
+    return 'Zusammen: $have von $need';
+  }
+
+  @override
+  String get cookPickerEmpty => 'Nichts Passendes im Vorrat.';
+
+  @override
+  String get cookPickerApply => 'Übernehmen';
+
+  @override
+  String get cookRecipeGone => 'Das Rezept ist nicht mehr im Kochbuch.';
+
+  @override
+  String get cookLoadFailed => 'Konnte das Rezept nicht laden.';
+
+  @override
+  String get cookPickerShowAll => 'Alle Vorrat-Artikel zeigen';
+
+  @override
+  String cookAmountGrams(String amount) {
+    return '$amount g';
+  }
+
+  @override
+  String cookAmountMilliliters(String amount) {
+    return '$amount ml';
+  }
+
+  @override
+  String cookAmountPieces(String amount) {
+    return '$amount Stk';
+  }
+
+  @override
+  String cookAmountOf(String amount, String food) {
+    return '$amount $food';
+  }
+
+  @override
+  String cookStockAfterTake(String amount) {
+    return '· $amount da';
+  }
+
+  @override
+  String get cookFinishNothingTaken =>
+      'Noch nichts aus dem Vorrat in diesem Gericht.';
+
+  @override
+  String get cookPotLoadFailed => 'Konnte deine Töpfe nicht laden.';
 }

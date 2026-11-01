@@ -99,8 +99,13 @@ class EatMealNutrition {
   /// them. The per-100 values are the food left
   /// per 100 g of its weight, so they are known only once the cooked meal
   /// was weighed: cooking changes the weight, and the raw ingredients'
-  /// weights would give wrong values. There are no amounts.
-  factory ofPreparedMeal(PreparedMeal meal, double share) {
+  /// weights would give wrong values. There are no amounts, unless
+  /// [withWeight] asks for the weighed meal's weight as its amount.
+  factory ofPreparedMeal(
+    PreparedMeal meal,
+    double share, {
+    bool withWeight = false,
+  }) {
     // The ingredients' weights do not matter here, so none is given.
     final ingredients = meal.components.isEmpty
         ? null
@@ -139,7 +144,9 @@ class EatMealNutrition {
       per100: grams == null || grams <= 0 || meal.totalPortions < 1
           ? null
           : whole.scaled(meal.remainingRatio * 100 / grams),
-      amounts: const {},
+      amounts: withWeight && grams != null && grams > 0
+          ? {ConsumedUnit.grams: grams * share}
+          : const {},
     );
   }
 

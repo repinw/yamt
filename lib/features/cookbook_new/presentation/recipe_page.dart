@@ -32,6 +32,10 @@ class RecipePage extends ConsumerWidget {
   /// Creates the page of the recipe [recipeId].
   const new({required this.recipeId, super.key});
 
+  /// Key of the ingredients title, whose long press opens the new cooking
+  /// flow.
+  static const newCookingKey = ValueKey<String>('recipe-new-cooking');
+
   /// Key of the "Kochen" button.
   static const cookKey = ValueKey<String>('recipe-cook');
 
@@ -188,13 +192,23 @@ class _RecipeBody extends ConsumerWidget {
                 padding: inset,
                 child: RecipeGuideAddedHint(recipeId: recipe.id),
               ),
-              Padding(
-                padding: inset,
-                child: CookbookSectionTitle(
-                  title: l10n.freeCookingIngredientsTitle,
-                  caption: l10n.freeCookingStockCount(
-                    view.inStockCount,
-                    activeCount,
+              // Hidden entry to the new cooking flow (#935) until it
+              // replaces this page.
+              GestureDetector(
+                key: RecipePage.newCookingKey,
+                onLongPress: view.isVorlage || isCooking
+                    ? null
+                    : () => unawaited(
+                        context.push(AppRoutes.homeCookPath(recipe.id)),
+                      ),
+                child: Padding(
+                  padding: inset,
+                  child: CookbookSectionTitle(
+                    title: l10n.freeCookingIngredientsTitle,
+                    caption: l10n.freeCookingStockCount(
+                      view.inStockCount,
+                      activeCount,
+                    ),
                   ),
                 ),
               ),
