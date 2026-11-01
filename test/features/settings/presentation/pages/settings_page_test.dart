@@ -1017,6 +1017,59 @@ void main() {
     );
   });
 
+  testWidgets('Data export tile opens the export page', (tester) async {
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(settingsRepository.dispose);
+    const exportPageKey = ValueKey<String>('settings-test-export');
+    final router = GoRouter(
+      initialLocation: AppRoutes.homeSettings,
+      routes: [
+        GoRoute(
+          path: AppRoutes.homeSettings,
+          builder: (context, state) => const Scaffold(body: SettingsPage()),
+        ),
+        GoRoute(
+          path: AppRoutes.homeProgressExport,
+          builder: (context, state) =>
+              const Scaffold(body: SizedBox.expand(key: exportPageKey)),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
+          authStateChangesProvider.overrideWith(
+            (ref) => Stream<User?>.value(null),
+          ),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          healthConnectionServiceProvider.overrideWith(
+            (ref) => _FakeHealthConnectionService(
+              disconnectResult: HealthDisconnectResult.disconnected,
+            ),
+          ),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(_settingsTile(SettingsPageKeys.dataExportTile));
+    await tester.pumpAndSettle();
+    await tester.tap(_settingsTile(SettingsPageKeys.dataExportTile));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(exportPageKey), findsOneWidget);
+  });
+
   testWidgets('Household tile opens HouseholdPage', (tester) async {
     final user = _MockUser();
     final settingsRepository = FakeCalorieSettingsRepository();

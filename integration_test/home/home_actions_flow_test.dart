@@ -39,6 +39,7 @@ import '../../test/helpers/progress_source_overrides.dart';
 
 const _hubPageKey = ValueKey<String>('home-actions-test-hub');
 const _settingsPageKey = ValueKey<String>('home-actions-test-settings');
+const _exportPageKey = ValueKey<String>('home-actions-test-export');
 
 GoRoute _placeholder(String path, {Key? key}) {
   return GoRoute(
@@ -88,6 +89,7 @@ Widget _buildHarness({
       ),
       _placeholder(AppRoutes.homeProductSearchHub, key: _hubPageKey),
       _placeholder(AppRoutes.homeSettings, key: _settingsPageKey),
+      _placeholder(AppRoutes.homeProgressExport, key: _exportPageKey),
     ],
   );
   addTearDown(router.dispose);
@@ -201,6 +203,23 @@ void main() {
     expect(find.byKey(DiaryWeightDialogKeys.weightDialogField), findsNothing);
     // A weighing of its own: the day shows the median of 82.0 and 80.4.
     expect(_todaysWeighIn(tester), closeTo(81.2, 0.001));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the action panel on Fortschritt opens the export', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(initialLocation: AppRoutes.homeProgress),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ProgressActionKeys.export));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(_exportPageKey), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
