@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 
 void main() {
@@ -23,6 +24,19 @@ void main() {
   test('normalizes days and resolves week starts', () {
     expect(dateOnly(DateTime(2026, 4, 29, 23, 59)), DateTime(2026, 4, 29));
     expect(startOfCalendarWeek(DateTime(2026, 5, 3)), DateTime(2026, 4, 27));
+  });
+
+  test('the week starts at midnight on Monday across a clock change', () {
+    for (
+      var day = DateTime(2026);
+      day.year == 2026;
+      day = addLocalDays(day, 1)
+    ) {
+      final monday = startOfCalendarWeek(day);
+      expect(monday.weekday, DateTime.monday, reason: '$day');
+      expect(monday, dateOnly(monday), reason: '$day');
+      expect(localDaysBetween(monday, day), day.weekday - 1, reason: '$day');
+    }
   });
 
   test('compares dates at diary-day precision', () {

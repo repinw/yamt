@@ -13,7 +13,13 @@ DateTime dateOnly(DateTime day) {
 /// Returns the Monday that starts the calendar week for [day].
 DateTime startOfCalendarWeek(DateTime day) {
   final normalized = dateOnly(day);
-  return normalized.subtract(Duration(days: normalized.weekday - 1));
+  // Counts calendar days, so a 23-hour day in the week does not land on
+  // the evening before.
+  return DateTime(
+    normalized.year,
+    normalized.month,
+    normalized.day - (normalized.weekday - 1),
+  );
 }
 
 /// Compares two days at date-only precision.
