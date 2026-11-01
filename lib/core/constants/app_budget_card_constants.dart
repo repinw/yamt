@@ -64,6 +64,21 @@ abstract final class AppBudgetCard {
   /// The lines reach this share of the goal, so the overage stays visible.
   static const double lineScale = 1.2;
 
+  /// Width of the pace marker's triangle above the kcal line.
+  static const double paceMarker = 9;
+
+  /// Width of the pace marker's stroke through the kcal line.
+  static const double paceStroke = 1.5;
+
+  /// Gap between the blocks of the parts of the day.
+  static const double mealBlockGap = 4;
+
+  /// Height of the blocks of the parts of the day.
+  static const double mealSharesBar = 16;
+
+  /// Size of a border handle of the parts of the day.
+  static const double mealSharesHandle = 28;
+
   /// Height of a toggle chip.
   static const double chip = 34;
 

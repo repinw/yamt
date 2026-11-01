@@ -6659,4 +6659,64 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String diaryMealKcalOfTarget(String eaten, String target) {
+    return '$eaten / $target kcal';
+  }
+
+  @override
+  String get diaryMealSharesTitle => 'Tagesabschnitte';
+
+  @override
+  String diaryMealSharesPart(String percent, String kcal) {
+    return '$percent % · $kcal kcal';
+  }
+
+  @override
+  String get diaryMealSharesReset => 'Zurücksetzen';
+
+  @override
+  String diaryMealSharesPercent(String percent) {
+    return '$percent %';
+  }
+
+  @override
+  String diaryMealSharesBorder(String before, String after) {
+    return 'Grenze zwischen $before und $after';
+  }
+
+  @override
+  String diaryMealSharesBorderValue(String before, String after) {
+    return '$before % / $after %';
+  }
+
+  @override
+  String get diaryMealSharesOff => 'Aus';
+
+  @override
+  String get diaryMealTimesDayStart => 'Tagesbeginn';
+
+  @override
+  String diaryMealTimesFrom(String time) {
+    return 'ab $time';
+  }
+
+  @override
+  String diaryMealTimesBy(String time) {
+    return 'bis $time';
+  }
+
+  @override
+  String get diaryBudgetMenuOpen => 'Tagesbudget-Menü öffnen';
+
+  @override
+  String get diaryBudgetMenuTitle => 'Tagesbudget';
+
+  @override
+  String get diaryBudgetMenuPace => 'Soll-Strich';
+
+  @override
+  String get diaryBudgetMenuPaceHint =>
+      'Zeigt auf der kcal-Linie von heute, wo du jetzt stehen solltest, und bei jeder Mahlzeit ihr Ziel';
 }

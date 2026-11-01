@@ -175,7 +175,23 @@ and feature description docs. This is product-facing; architecture rules stay in
   quick entry; no Vorrat is taken.
 - Daily budget card (#907), set in Geist: the kcal left as a big number
   with "kcal übrig" and a line with a goal marker, and next to it protein,
-  carbs, and fat with the grams left and a thin line each. Over the goal
+  carbs, and fat with the grams left and a thin line each. A long press on
+  the card opens its menu "Tagesbudget" (#928) with the switch
+  "Soll-Strich" (off by default, saved on the device). While it is on,
+  today's kcal line gets a small triangle with a thin stroke where the day
+  should be by now, moving on every minute, and each meal heading shows its
+  counted kcal against its part of the day's goal ("420 / 500 kcal"); a
+  meal set to 0 % and a pause day keep the plain heading. Below the switch,
+  while it is on, the menu shows the parts of the day that set the marker:
+  handles on the borders of framed blocks move the meals' shares in whole
+  percent (by default Frühstück 25 %, Mittagessen 35 %, Abendessen 30 %,
+  Snack 10 %; a meal pushed to 0 % shows "Aus"), and "Tagesbeginn ab 06:00"
+  and a "bis" time per meal (by default 09:00, 13:00, 19:00, 21:00) open a
+  time picker; a time moved past its neighbours pushes them along. Nothing
+  is due before the day starts, each meal's share is due by its time, and
+  the marker rises evenly in between (13:00 = 60 % by default).
+  "Zurücksetzen" restores the default shares and times. Shares and times
+  are saved on the device. Over the goal
   the number turns red as "+N" with "kcal drüber"; a macro over its target
   shows "+N g" in normal text and only the overage part of its line is
   red. On today and later days the macro with the lowest share of its

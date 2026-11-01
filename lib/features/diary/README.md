@@ -44,9 +44,13 @@ composition.
   (#907): kcal and macro columns, the "Details" and "Nach Plan" chips, the
   training and pause toggles that set the day type through
   `DiaryDayTypeUpdater`, the ledger with the link to the budget sheet, the
-  run week's day types, and closing the day before. `DiaryBudgetCardData`
-  (`presentation/models/`) maps `DiaryBalanceCardData` and the day's macros
-  for it; `diary_burn_week_card/diary_balance_card.dart` loads it.
+  run week's day types, closing the day before, and the menu a long press
+  opens (#928, in the sheet frame of `diary_dashboard/`): the pace marker
+  switch and the parts of the day (`DiaryMealShares`, `DiaryMealTimes`,
+  saved on the device), which also set the meal headings' kcal against
+  each meal's part. `DiaryBudgetCardData` (`presentation/models/`) maps
+  `DiaryBalanceCardData` and the day's macros for it;
+  `diary_burn_week_card/diary_balance_card.dart` loads it.
 - The diary page shows the Activity missing-weight prompt below the weekly
   check-in, and only on today.
 - `presentation/widgets/diary_day_type_labels.dart` gives the emoji and the

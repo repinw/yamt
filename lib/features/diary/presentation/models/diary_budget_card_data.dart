@@ -60,6 +60,7 @@ class DiaryBudgetCardData {
     this.canClosePreviousDay = false,
     this.isPreviousDayClosed = false,
     this.runWeekStart,
+    this.paceKcal,
   });
 
   /// Builds the card data of [card] for [today].
@@ -68,6 +69,7 @@ class DiaryBudgetCardData {
     required DateTime today,
     DiaryNutritionBarsData? nutrition,
     DiaryOpenPlans? openPlans,
+    double? paceShare,
   }) {
     final practice = card.practiceDay;
     final restart = card.scheduledRestart;
@@ -112,6 +114,9 @@ class DiaryBudgetCardData {
           status.isFuture && loaded?.previousDayCarryoverKcal != null,
       isPreviousDayClosed: status == DiaryDayStatus.afterClosedDay,
       runWeekStart: loaded?.runWeekStart,
+      paceKcal: paceShare == null || (loaded?.state.isPauseDay ?? false)
+          ? null
+          : metrics.targetKcal * paceShare,
       macros: nutrition == null
           ? const []
           : [
@@ -169,6 +174,10 @@ class DiaryBudgetCardData {
 
   /// Protein, carbs, and fat, or empty while the macros load.
   final List<DiaryBudgetMacro> macros;
+
+  /// Kcal the day should be at by now, which the kcal line marks; null on
+  /// a pause day and while the marker is off or the day is not today.
+  final double? paceKcal;
 
   /// Whether the open plans count toward what is left ("Nach Plan").
   bool get countsPlans => openPlans?.counted ?? false;
