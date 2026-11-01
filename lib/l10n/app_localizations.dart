@@ -11751,6 +11751,366 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'kcal'**
   String get dataExportKcalUnit;
+
+  /// First step of cooking a recipe in the new cooking flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe'**
+  String get cookStepRecipe;
+
+  /// Second step of cooking: assign each ingredient line from the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get cookStepShopping;
+
+  /// Third step of cooking: the pot question.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking'**
+  String get cookStepCooking;
+
+  /// Last step of cooking: weight, portions and putting the meal into the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Portioning'**
+  String get cookStepPortion;
+
+  /// Portion count of the recipe being cooked.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 portion} other{{count} portions}}'**
+  String cookPortionsLabel(int count);
+
+  /// Tooltip of the minus button of a counter.
+  ///
+  /// In en, this message translates to:
+  /// **'Fewer'**
+  String get cookFewer;
+
+  /// Tooltip of the plus button of a counter.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get cookMore;
+
+  /// Section title of the ingredient lines of a recipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients'**
+  String get cookIngredients;
+
+  /// Button on the recipe step that starts assigning stock to each line.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign ingredients'**
+  String get cookAssignAction;
+
+  /// Kicker of the found page: how many lines the stock suggestions cover.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {count} ingredients'**
+  String cookFoundKicker(int done, int count);
+
+  /// Title of the page with the stock suggestions to confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Found in the stock'**
+  String get cookFoundTitle;
+
+  /// Hint on the found page.
+  ///
+  /// In en, this message translates to:
+  /// **'Does the suggestion fit? Tap the item for another one.'**
+  String get cookFoundHint;
+
+  /// Tooltip of the check button that accepts a stock suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Fits'**
+  String get cookFits;
+
+  /// Tooltip of the cross button that turns a stock suggestion down.
+  ///
+  /// In en, this message translates to:
+  /// **'Doesn\'t fit'**
+  String get cookFitsNot;
+
+  /// Warning under a line whose stock items hold less than it needs.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} missing'**
+  String cookMissingAmount(String amount);
+
+  /// Disabled main button while suggestions are neither accepted nor turned down.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Check 1 more} other{Check {count} more}}'**
+  String cookCheckRest(int count);
+
+  /// Main button that goes to the next step of cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get cookNext;
+
+  /// Kicker of the page with the lines still to settle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ingredient} other{{count} ingredients}}'**
+  String cookOpenKicker(int count);
+
+  /// Title of the page with lines that have no accepted stock suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Still to settle'**
+  String get cookOpenTitle;
+
+  /// Hint on the page with the lines still to settle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign from the stock or leave out.'**
+  String get cookOpenHint;
+
+  /// State of a line that the stock has no fitting item for.
+  ///
+  /// In en, this message translates to:
+  /// **'No item in the stock'**
+  String get cookOpenNoItem;
+
+  /// State of a line whose stock suggestion the cook turned down.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestion turned down'**
+  String get cookOpenRejected;
+
+  /// State of a line the cook leaves out of this cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Left out'**
+  String get cookOpenOmitted;
+
+  /// Button that picks stock items for a line.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get cookAssign;
+
+  /// Button that leaves a line out of this cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave out'**
+  String get cookOmit;
+
+  /// How much of an item the stock holds.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} left'**
+  String cookStockLeft(String amount);
+
+  /// Title of the pot question before cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you cook in?'**
+  String get cookPotTitle;
+
+  /// Hint of the pot question.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh the full pot at the end; its empty weight is known.'**
+  String get cookPotHint;
+
+  /// Empty weight of a saved pot.
+  ///
+  /// In en, this message translates to:
+  /// **'empty {grams} g'**
+  String cookPotEmptyWeight(int grams);
+
+  /// Name of a saved utensil without a name.
+  ///
+  /// In en, this message translates to:
+  /// **'Pot'**
+  String get cookPotUnnamed;
+
+  /// Choice of cooking without weighing a pot: the meal is counted in portions or pieces.
+  ///
+  /// In en, this message translates to:
+  /// **'Without pot · by count'**
+  String get cookPotNone;
+
+  /// Button after the pot question that goes to portioning.
+  ///
+  /// In en, this message translates to:
+  /// **'Done cooking'**
+  String get cookDoneCooking;
+
+  /// Title of the portioning step.
+  ///
+  /// In en, this message translates to:
+  /// **'Into the stock'**
+  String get cookPortionTitle;
+
+  /// Label of the field with the name of the cooked meal.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get cookMealName;
+
+  /// Label of the field for the weight of the full pot on the scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Pot with food (g)'**
+  String get cookGrossWeight;
+
+  /// The food weight: full pot minus the empty pot.
+  ///
+  /// In en, this message translates to:
+  /// **'Food: {grams} g'**
+  String cookNetWeight(int grams);
+
+  /// Error when the full pot weighs no more than the empty one.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavier than the empty pot ({grams} g)'**
+  String cookWeightTooLow(int grams);
+
+  /// Toggle: the meal is counted in portions.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get cookCountPortions;
+
+  /// Toggle: the meal is counted in pieces, such as wraps.
+  ///
+  /// In en, this message translates to:
+  /// **'Pieces'**
+  String get cookCountPieces;
+
+  /// Main button that puts the cooked meal into the stock and takes its ingredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Into the stock'**
+  String get cookToStock;
+
+  /// Snack bar after the cooked meal went into the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is in the stock'**
+  String cookSaved(String name);
+
+  /// Error when putting the cooked meal into the stock failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not put the meal into the stock.'**
+  String get cookFinishFailed;
+
+  /// Error: an assigned stock item has no nutrition values.
+  ///
+  /// In en, this message translates to:
+  /// **'An ingredient lacks nutrition values.'**
+  String get cookFinishMissingNutrition;
+
+  /// Error: an assigned item holds less than assigned.
+  ///
+  /// In en, this message translates to:
+  /// **'The stock changed: an item holds too little now.'**
+  String get cookFinishTooLittle;
+
+  /// Error: an assigned item was removed from the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'An item is no longer in the stock.'**
+  String get cookFinishItemGone;
+
+  /// Kicker of the sheet that picks stock items for one line.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill line'**
+  String get cookPickerKicker;
+
+  /// Hint of the item picker: each tapped item gives what it has, the last fills the rest.
+  ///
+  /// In en, this message translates to:
+  /// **'Fitting in the stock · tap in order'**
+  String get cookPickerHint;
+
+  /// Sum of the picked items against what the line needs.
+  ///
+  /// In en, this message translates to:
+  /// **'Together: {have} of {need}'**
+  String cookPickerSum(String have, String need);
+
+  /// Item picker without fitting items.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing fitting in the stock.'**
+  String get cookPickerEmpty;
+
+  /// Button that assigns the picked items to the line.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get cookPickerApply;
+
+  /// Shown when the recipe being cooked was removed.
+  ///
+  /// In en, this message translates to:
+  /// **'This recipe is no longer in the cookbook.'**
+  String get cookRecipeGone;
+
+  /// Error when the recipe or the stock could not be loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the recipe.'**
+  String get cookLoadFailed;
+
+  /// Button in the item picker that also lists the stock items whose name does not fit the line.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all stock items'**
+  String get cookPickerShowAll;
+
+  /// An amount in grams in the cooking flow, such as "150 g".
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} g'**
+  String cookAmountGrams(String amount);
+
+  /// An amount in milliliters in the cooking flow.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} ml'**
+  String cookAmountMilliliters(String amount);
+
+  /// A count of pieces in the cooking flow, such as "2 pc".
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} pc'**
+  String cookAmountPieces(String amount);
+
+  /// An amount followed by its food in the cooking flow, such as "150 g Barilla" or "1 mittlere Zwiebel".
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} {food}'**
+  String cookAmountOf(String amount, String food);
+
+  /// What a Vorrat item still holds, shown after the amount a recipe line takes of it.
+  ///
+  /// In en, this message translates to:
+  /// **'· {amount} left'**
+  String cookStockAfterTake(String amount);
+
+  /// Shown on the portion step of cooking when no recipe line takes anything from the Vorrat, so there is no meal to put in.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing from the Vorrat goes into this meal yet.'**
+  String get cookFinishNothingTaken;
+
+  /// Shown on the pot step of cooking when the saved pots fail to load, above a retry button.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your pots.'**
+  String get cookPotLoadFailed;
 }
 
 class _AppLocalizationsDelegate

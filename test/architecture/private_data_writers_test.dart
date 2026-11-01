@@ -35,6 +35,7 @@ const _allowedFiles = <String>{
   'lib/features/health/data/firestore_manual_health_weight_repository.dart',
   'lib/features/health/data/progress_photo_repository.dart',
   'lib/features/household/data/household_key_repository.dart',
+  'lib/features/inventory/data/cooked_meal_repository.dart',
   'lib/features/inventory/data/inventory_activity_event_repository.dart',
   'lib/features/inventory/data/inventory_discard_event_repository.dart',
   'lib/features/inventory/data/inventory_item_store.dart',

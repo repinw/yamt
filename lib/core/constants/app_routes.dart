@@ -83,6 +83,9 @@ abstract final class AppRoutes {
   /// Editor of one Vorrat item, with item id parameter.
   static const homeInventoryItemEdit = '/home/inventory/items/:itemId/edit';
 
+  /// The new cooking flow of one recipe, with recipe id parameter.
+  static const homeCook = '/home/cook/:recipeId';
+
   /// Free cooking: a meal without a recipe, filled by voice or typing.
   static const homeFreeCooking = '/home/free-cooking';
 
@@ -194,6 +197,9 @@ abstract final class AppRoutes {
 
   /// Builds the path of the recipe page for [recipeId].
   static String homeRecipePath(String recipeId) => '/home/recipe/$recipeId';
+
+  /// Builds the path of the new cooking flow for the recipe [recipeId].
+  static String homeCookPath(String recipeId) => '/home/cook/$recipeId';
 
   /// Builds the ingredient check path for the recipe [recipeId].
   static String homeRecipeCheckPath(String recipeId) =>

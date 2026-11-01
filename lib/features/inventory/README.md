@@ -151,6 +151,9 @@ already documented as a reusable presentation surface.
 
 ## Public UI
 
+- `presentation/widgets/eat_sheet/eat_meal_table.dart` (`EatMealTable`)
+  shows the nutrition label of a Vorrat meal per portion; cooking uses it
+  on its portion step.
 - `presentation/widgets/prepared_meals/prepared_meal_pending_fill_sheet.dart`
   (`PreparedMealPendingFillSheet.show`) offers the ways to fill an open row
   and returns a `PreparedMealPendingFillChoice`. With `inDraft`, for a draft

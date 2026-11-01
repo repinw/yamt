@@ -4992,5 +4992,334 @@
   "dataExportKcalUnit": "kcal",
   "@dataExportKcalUnit": {
     "description": "Unit under the average TDEE in the PDF key numbers."
+  },
+  "cookStepRecipe": "Recipe",
+  "@cookStepRecipe": {
+    "description": "First step of cooking a recipe in the new cooking flow."
+  },
+  "cookStepShopping": "Shopping",
+  "@cookStepShopping": {
+    "description": "Second step of cooking: assign each ingredient line from the stock."
+  },
+  "cookStepCooking": "Cooking",
+  "@cookStepCooking": {
+    "description": "Third step of cooking: the pot question."
+  },
+  "cookStepPortion": "Portioning",
+  "@cookStepPortion": {
+    "description": "Last step of cooking: weight, portions and putting the meal into the stock."
+  },
+  "cookPortionsLabel": "{count, plural, =1{1 portion} other{{count} portions}}",
+  "@cookPortionsLabel": {
+    "description": "Portion count of the recipe being cooked.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookFewer": "Fewer",
+  "@cookFewer": {
+    "description": "Tooltip of the minus button of a counter."
+  },
+  "cookMore": "More",
+  "@cookMore": {
+    "description": "Tooltip of the plus button of a counter."
+  },
+  "cookIngredients": "Ingredients",
+  "@cookIngredients": {
+    "description": "Section title of the ingredient lines of a recipe."
+  },
+  "cookAssignAction": "Assign ingredients",
+  "@cookAssignAction": {
+    "description": "Button on the recipe step that starts assigning stock to each line."
+  },
+  "cookFoundKicker": "{done} of {count} ingredients",
+  "@cookFoundKicker": {
+    "description": "Kicker of the found page: how many lines the stock suggestions cover.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookFoundTitle": "Found in the stock",
+  "@cookFoundTitle": {
+    "description": "Title of the page with the stock suggestions to confirm."
+  },
+  "cookFoundHint": "Does the suggestion fit? Tap the item for another one.",
+  "@cookFoundHint": {
+    "description": "Hint on the found page."
+  },
+  "cookFits": "Fits",
+  "@cookFits": {
+    "description": "Tooltip of the check button that accepts a stock suggestion."
+  },
+  "cookFitsNot": "Doesn't fit",
+  "@cookFitsNot": {
+    "description": "Tooltip of the cross button that turns a stock suggestion down."
+  },
+  "cookMissingAmount": "{amount} missing",
+  "@cookMissingAmount": {
+    "description": "Warning under a line whose stock items hold less than it needs.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookCheckRest": "{count, plural, =1{Check 1 more} other{Check {count} more}}",
+  "@cookCheckRest": {
+    "description": "Disabled main button while suggestions are neither accepted nor turned down.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookNext": "Next",
+  "@cookNext": {
+    "description": "Main button that goes to the next step of cooking."
+  },
+  "cookOpenKicker": "{count, plural, =1{1 ingredient} other{{count} ingredients}}",
+  "@cookOpenKicker": {
+    "description": "Kicker of the page with the lines still to settle.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookOpenTitle": "Still to settle",
+  "@cookOpenTitle": {
+    "description": "Title of the page with lines that have no accepted stock suggestion."
+  },
+  "cookOpenHint": "Assign from the stock or leave out.",
+  "@cookOpenHint": {
+    "description": "Hint on the page with the lines still to settle."
+  },
+  "cookOpenNoItem": "No item in the stock",
+  "@cookOpenNoItem": {
+    "description": "State of a line that the stock has no fitting item for."
+  },
+  "cookOpenRejected": "Suggestion turned down",
+  "@cookOpenRejected": {
+    "description": "State of a line whose stock suggestion the cook turned down."
+  },
+  "cookOpenOmitted": "Left out",
+  "@cookOpenOmitted": {
+    "description": "State of a line the cook leaves out of this cooking."
+  },
+  "cookAssign": "Assign",
+  "@cookAssign": {
+    "description": "Button that picks stock items for a line."
+  },
+  "cookOmit": "Leave out",
+  "@cookOmit": {
+    "description": "Button that leaves a line out of this cooking."
+  },
+  "cookStockLeft": "{amount} left",
+  "@cookStockLeft": {
+    "description": "How much of an item the stock holds.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookPotTitle": "What do you cook in?",
+  "@cookPotTitle": {
+    "description": "Title of the pot question before cooking."
+  },
+  "cookPotHint": "Weigh the full pot at the end; its empty weight is known.",
+  "@cookPotHint": {
+    "description": "Hint of the pot question."
+  },
+  "cookPotEmptyWeight": "empty {grams} g",
+  "@cookPotEmptyWeight": {
+    "description": "Empty weight of a saved pot.",
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "cookPotUnnamed": "Pot",
+  "@cookPotUnnamed": {
+    "description": "Name of a saved utensil without a name."
+  },
+  "cookPotNone": "Without pot · by count",
+  "@cookPotNone": {
+    "description": "Choice of cooking without weighing a pot: the meal is counted in portions or pieces."
+  },
+  "cookDoneCooking": "Done cooking",
+  "@cookDoneCooking": {
+    "description": "Button after the pot question that goes to portioning."
+  },
+  "cookPortionTitle": "Into the stock",
+  "@cookPortionTitle": {
+    "description": "Title of the portioning step."
+  },
+  "cookMealName": "Name",
+  "@cookMealName": {
+    "description": "Label of the field with the name of the cooked meal."
+  },
+  "cookGrossWeight": "Pot with food (g)",
+  "@cookGrossWeight": {
+    "description": "Label of the field for the weight of the full pot on the scale."
+  },
+  "cookNetWeight": "Food: {grams} g",
+  "@cookNetWeight": {
+    "description": "The food weight: full pot minus the empty pot.",
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "cookWeightTooLow": "Heavier than the empty pot ({grams} g)",
+  "@cookWeightTooLow": {
+    "description": "Error when the full pot weighs no more than the empty one.",
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "cookCountPortions": "Portions",
+  "@cookCountPortions": {
+    "description": "Toggle: the meal is counted in portions."
+  },
+  "cookCountPieces": "Pieces",
+  "@cookCountPieces": {
+    "description": "Toggle: the meal is counted in pieces, such as wraps."
+  },
+  "cookToStock": "Into the stock",
+  "@cookToStock": {
+    "description": "Main button that puts the cooked meal into the stock and takes its ingredients."
+  },
+  "cookSaved": "{name} is in the stock",
+  "@cookSaved": {
+    "description": "Snack bar after the cooked meal went into the stock.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookFinishFailed": "Could not put the meal into the stock.",
+  "@cookFinishFailed": {
+    "description": "Error when putting the cooked meal into the stock failed."
+  },
+  "cookFinishMissingNutrition": "An ingredient lacks nutrition values.",
+  "@cookFinishMissingNutrition": {
+    "description": "Error: an assigned stock item has no nutrition values."
+  },
+  "cookFinishTooLittle": "The stock changed: an item holds too little now.",
+  "@cookFinishTooLittle": {
+    "description": "Error: an assigned item holds less than assigned."
+  },
+  "cookFinishItemGone": "An item is no longer in the stock.",
+  "@cookFinishItemGone": {
+    "description": "Error: an assigned item was removed from the stock."
+  },
+  "cookPickerKicker": "Fill line",
+  "@cookPickerKicker": {
+    "description": "Kicker of the sheet that picks stock items for one line."
+  },
+  "cookPickerHint": "Fitting in the stock · tap in order",
+  "@cookPickerHint": {
+    "description": "Hint of the item picker: each tapped item gives what it has, the last fills the rest."
+  },
+  "cookPickerSum": "Together: {have} of {need}",
+  "@cookPickerSum": {
+    "description": "Sum of the picked items against what the line needs.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      },
+      "need": {
+        "type": "String"
+      }
+    }
+  },
+  "cookPickerEmpty": "Nothing fitting in the stock.",
+  "@cookPickerEmpty": {
+    "description": "Item picker without fitting items."
+  },
+  "cookPickerApply": "Apply",
+  "@cookPickerApply": {
+    "description": "Button that assigns the picked items to the line."
+  },
+  "cookRecipeGone": "This recipe is no longer in the cookbook.",
+  "@cookRecipeGone": {
+    "description": "Shown when the recipe being cooked was removed."
+  },
+  "cookLoadFailed": "Could not load the recipe.",
+  "@cookLoadFailed": {
+    "description": "Error when the recipe or the stock could not be loaded."
+  },
+  "cookPickerShowAll": "Show all stock items",
+  "@cookPickerShowAll": {
+    "description": "Button in the item picker that also lists the stock items whose name does not fit the line."
+  },
+  "cookAmountGrams": "{amount} g",
+  "@cookAmountGrams": {
+    "description": "An amount in grams in the cooking flow, such as \"150 g\".",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookAmountMilliliters": "{amount} ml",
+  "@cookAmountMilliliters": {
+    "description": "An amount in milliliters in the cooking flow.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookAmountPieces": "{amount} pc",
+  "@cookAmountPieces": {
+    "description": "A count of pieces in the cooking flow, such as \"2 pc\".",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookAmountOf": "{amount} {food}",
+  "@cookAmountOf": {
+    "description": "An amount followed by its food in the cooking flow, such as \"150 g Barilla\" or \"1 mittlere Zwiebel\".",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "cookStockAfterTake": "· {amount} left",
+  "@cookStockAfterTake": {
+    "description": "What a Vorrat item still holds, shown after the amount a recipe line takes of it.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookFinishNothingTaken": "Nothing from the Vorrat goes into this meal yet.",
+  "@cookFinishNothingTaken": {
+    "description": "Shown on the portion step of cooking when no recipe line takes anything from the Vorrat, so there is no meal to put in."
+  },
+  "cookPotLoadFailed": "Couldn't load your pots.",
+  "@cookPotLoadFailed": {
+    "description": "Shown on the pot step of cooking when the saved pots fail to load, above a retry button."
   }
 }
