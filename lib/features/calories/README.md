@@ -190,6 +190,9 @@ reference = check-in goal: the TDEE of its check-in
 - The check-in plans the run that contains the day it is done. Its training
   days start empty; "Wie letzter Run" plans the weekdays of the reviewed run. After a late check-in, the past
   days of that run keep their type, because their goals were already in use.
+  The check-in run alone decides which run the check-in plans, on the day
+  the plan is made, and which of its days may change; saving re-reads the
+  clock only to refuse a run that has ended.
 - The targets of the next run come from the measured or the previous goal:
   the training and rest day split of the planned sessions, and the macros
   before and after. The macros count training when the goal has weekly

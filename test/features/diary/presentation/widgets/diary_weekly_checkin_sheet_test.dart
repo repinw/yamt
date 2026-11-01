@@ -7,6 +7,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/training_week_depot_chart.dart';
@@ -111,8 +112,11 @@ void main() {
     await tester.pumpAndSettle();
 
     final plan = _latePlan();
-    expect(results.single!.training!.trainingDays, plan.fixedTrainingDays);
-    expect(results.single!.training!.runDay, plan.nextRunDays.first);
+    expect(
+      results.single!.training!.trainingDays,
+      plan.nextRun.fixedTrainingDays,
+    );
+    expect(results.single!.training!.runDay, plan.nextRun.days.first);
     semantics.dispose();
   });
 
@@ -314,16 +318,18 @@ CalorieWeeklyCheckInPlan _demoPlan() => calorieWeeklyCheckInDemoPlan(
 /// pause day.
 CalorieWeeklyCheckInPlan _latePlan() {
   final plan = _demoPlan();
-  final days = plan.nextRunDays;
+  final days = plan.nextRun.days;
   return CalorieWeeklyCheckInPlan(
     reviewedRunNumber: plan.reviewedRunNumber,
     nextRunNumber: plan.nextRunNumber,
     reviewedDays: plan.reviewedDays,
     previousTrainingDayCount: plan.previousTrainingDayCount,
-    nextRunDays: days,
-    suggestedTrainingDays: plan.suggestedTrainingDays,
-    pauseDays: {days[1]},
-    pastDays: {days[0]},
+    nextRun: CalorieCheckInRun(
+      days: days,
+      suggestedTrainingDays: plan.nextRun.suggestedTrainingDays,
+      pauseDays: {days[1]},
+      pastDays: {days[0]},
+    ),
     hasWeeklyTrainingSchedule: plan.hasWeeklyTrainingSchedule,
     sessionKcal: plan.sessionKcal,
     previousTdeeKcal: plan.previousTdeeKcal,

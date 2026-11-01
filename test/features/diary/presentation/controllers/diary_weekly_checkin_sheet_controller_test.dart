@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_weekly_checkin_sheet_controller.dart';
@@ -23,10 +24,12 @@ CalorieWeeklyCheckInPlan _plan({bool measured = true}) {
     nextRunNumber: plan.nextRunNumber,
     reviewedDays: plan.reviewedDays,
     previousTrainingDayCount: plan.previousTrainingDayCount,
-    nextRunDays: plan.nextRunDays,
-    suggestedTrainingDays: plan.suggestedTrainingDays,
-    pauseDays: {plan.nextRunDays[1]},
-    pastDays: {plan.nextRunDays[0]},
+    nextRun: CalorieCheckInRun(
+      days: plan.nextRun.days,
+      suggestedTrainingDays: plan.nextRun.suggestedTrainingDays,
+      pauseDays: {plan.nextRun.days[1]},
+      pastDays: {plan.nextRun.days[0]},
+    ),
     hasWeeklyTrainingSchedule: true,
     sessionKcal: plan.sessionKcal,
     previousTdeeKcal: plan.previousTdeeKcal,
@@ -74,14 +77,14 @@ void main() {
       expect(state.step, DiaryWeeklyCheckInStep.review);
       expect(state.useMeasured, isTrue);
       expect(state.trainingDays, isEmpty);
-      expect(state.plan.suggestedTrainingDays, isNotEmpty);
+      expect(state.plan.nextRun.suggestedTrainingDays, isNotEmpty);
     },
   );
 
   test('toggles, resets, and clears the training days', () async {
     final (:container, :provider) = await _start();
     final controller = container.read(provider.notifier);
-    final days = container.read(provider).value!.plan.nextRunDays;
+    final days = container.read(provider).value!.plan.nextRun.days;
 
     controller.toggleTrainingDay(days[1]);
     expect(container.read(provider).value!.trainingDays, {days[1]});
@@ -99,7 +102,7 @@ void main() {
     () async {
       final (:container, :provider) = await _start(measured: false);
       final controller = container.read(provider.notifier);
-      final pauseDay = container.read(provider).value!.plan.nextRunDays[1];
+      final pauseDay = container.read(provider).value!.plan.nextRun.days[1];
 
       controller
         ..setUseMeasured(useMeasured: true)

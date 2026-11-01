@@ -35,8 +35,8 @@ void main() {
     );
 
     expect(plan.reviewedDays.start, data.pendingWeeklyCheckIn!.windowStartDate);
-    expect(plan.nextRunDays.first, DateTime(2026, 9, 30));
-    expect(plan.suggestedTrainingDays, hasLength(3));
+    expect(plan.nextRun.days.first, DateTime(2026, 9, 30));
+    expect(plan.nextRun.suggestedTrainingDays, hasLength(3));
     expect(plan.progress!.weights.last.day, DateTime(2026, 9, 29));
     expect(plan.progress!.tdeePoints, hasLength(3));
   });

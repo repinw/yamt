@@ -180,4 +180,57 @@ void main() {
       isNull,
     );
   });
+
+  group('the check-in run', () {
+    // Run 1 trained on Saturday and Sunday; the check-in on Thursday plans
+    // run 2, whose Sunday is a pause day.
+    CalorieCheckInRun checkInRun() => _settings()
+        .withRunTrainingDays(
+          DateTime(2026, 9, 7),
+          trainingDays: {DateTime(2026, 9, 5), DateTime(2026, 9, 6)},
+        )
+        .setPauseDay(day: DateTime(2026, 9, 13), isPause: true)
+        .checkInRun(reviewedDay: DateTime(2026, 9, 7), today: _now);
+
+    test('suggests the reviewed weekdays and keeps past and pause days', () {
+      final run = checkInRun();
+
+      expect(run.days.first, DateTime(2026, 9, 8));
+      expect(run.pastDays, {DateTime(2026, 9, 8), DateTime(2026, 9, 9)});
+      expect(run.pauseDays, {DateTime(2026, 9, 13)});
+      expect(run.suggestedTrainingDays, {
+        DateTime(2026, 9, 9),
+        DateTime(2026, 9, 12),
+      });
+      expect(run.fixedTrainingDays, {DateTime(2026, 9, 9)});
+    });
+
+    test('only days that are neither past nor pause days can change', () {
+      final run = checkInRun();
+
+      expect(run.canChangeDay(DateTime(2026, 9, 9)), isFalse);
+      expect(run.canChangeDay(DateTime(2026, 9, 13)), isFalse);
+      expect(run.canChangeDay(DateTime(2026, 9, 10)), isTrue);
+    });
+
+    test('an earlier choice keeps only the days that may change', () {
+      final kept = checkInRun().keepTrainingDays({
+        DateTime(2026, 9, 8),
+        DateTime(2026, 9, 10),
+        DateTime(2026, 9, 13),
+        DateTime(2026, 9, 20),
+      });
+
+      expect(kept, {DateTime(2026, 9, 9), DateTime(2026, 9, 10)});
+    });
+
+    test('pause days are neither training nor rest days', () {
+      final run = checkInRun();
+
+      expect(run.restDayCount(run.suggestedTrainingDays), 4);
+      final choice = run.choice({DateTime(2026, 9, 12)});
+      expect(choice.runDay, DateTime(2026, 9, 8));
+      expect(choice.trainingDays, {DateTime(2026, 9, 12)});
+    });
+  });
 }

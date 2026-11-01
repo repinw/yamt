@@ -134,10 +134,7 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
               state.useMeasured
                   ? DiaryWeeklyCheckInSheetAction.apply
                   : DiaryWeeklyCheckInSheetAction.reject,
-              (
-                runDay: plan.nextRunDays.first,
-                trainingDays: state.trainingDays,
-              ),
+              plan.nextRun.choice(state.trainingDays),
             ),
             child: Text(l10n.diaryCheckInStartWeek),
           ),
@@ -146,10 +143,7 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
           DiaryWeeklyCheckInTargetsStep(
             targets: targets,
             trainingDayCount: state.trainingDays.length,
-            restDayCount:
-                plan.nextRunDays.length -
-                state.trainingDays.length -
-                plan.pauseDays.difference(state.trainingDays).length,
+            restDayCount: plan.nextRun.restDayCount(state.trainingDays),
             format: format,
           ),
         ],
@@ -167,7 +161,7 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
   }
 
   String _nextRunKicker(AppLocalizations l10n) {
-    final days = state.plan.nextRunDays;
+    final days = state.plan.nextRun.days;
     final range = format.range(days.first, days.last);
     final run = state.plan.nextRunNumber;
     return run == null
