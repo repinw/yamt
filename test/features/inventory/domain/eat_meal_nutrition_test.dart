@@ -398,6 +398,45 @@ void main() {
       expect(nutrition.per100?.kcal, 50);
     });
 
+    test('have no amount unless the weight is asked for', () {
+      final weighed = meal.copyWith(finalNetWeight: 800);
+
+      expect(EatMealNutrition.ofPreparedMeal(weighed, 0.25).amounts, isEmpty);
+      expect(
+        EatMealNutrition.ofPreparedMeal(
+          weighed,
+          0.25,
+          withWeight: true,
+        ).amounts,
+        {ConsumedUnit.grams: 200},
+      );
+    });
+
+    test('have no amount for a meal that was not weighed', () {
+      expect(
+        EatMealNutrition.ofPreparedMeal(meal, 0.25, withWeight: true).amounts,
+        isEmpty,
+      );
+      expect(
+        EatMealNutrition.ofPreparedMeal(
+          meal.copyWith(finalNetWeight: 0),
+          0.25,
+          withWeight: true,
+        ).amounts,
+        isEmpty,
+      );
+    });
+
+    test('the amount is the share of the weight that is left', () {
+      final nutrition = EatMealNutrition.ofPreparedMeal(
+        meal.copyWith(finalNetWeight: 800, remainingPortions: 2),
+        0.5,
+        withWeight: true,
+      );
+
+      expect(nutrition.amounts, {ConsumedUnit.grams: 200});
+    });
+
     test('follow a weighing of the pot', () {
       // Water evaporated: the 2 portions left (200 kcal) weigh 250 g, not
       // the 400 g that "Gekocht" would give.
