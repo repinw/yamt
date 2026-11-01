@@ -34,6 +34,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
+import '../../test/helpers/soft_keyboard_test_utils.dart';
 
 const _openKey = Key('open_combine_pick');
 const _amountFieldKey = Key('eat_page_amount_field');
@@ -138,31 +139,9 @@ Future<void> _pumpVisibleStep(
   await tester.pump();
 }
 
-/// Waits until the soft keyboard that `enterText` opened is gone
-/// again. The emulator keyboard can show up seconds after the key that
-/// closes it, so this waits for it to open and then to close, at most
-/// [timeout]. Without a keyboard it returns after the timeout.
-Future<void> _waitForKeyboardClosed(
-  WidgetTester tester, {
-  Duration timeout = const Duration(seconds: 20),
-}) async {
-  const step = Duration(milliseconds: 100);
-  var seenOpen = false;
-  for (var waited = Duration.zero; waited < timeout; waited += step) {
-    await tester.pump();
-    final isOpen = tester.view.viewInsets.bottom > 0;
-    if (isOpen) {
-      seenOpen = true;
-    } else if (seenOpen) {
-      break;
-    }
-    await Future<void>.delayed(step);
-  }
-  expect(
-    tester.view.viewInsets.bottom,
-    0,
-    reason: 'The keyboard is still open after $timeout.',
-  );
+/// Waits until the soft keyboard is gone again, then shows the screen.
+Future<void> _waitForKeyboardClosed(WidgetTester tester) async {
+  await waitForKeyboardClosed(tester);
   await _pumpVisibleStep(tester);
 }
 
