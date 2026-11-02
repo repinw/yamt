@@ -164,6 +164,16 @@ Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
   }
 }
 
+/// Pumps until the details sheet has closed.
+///
+/// The sheet is not opaque, so the start page's button is found the whole
+/// time the sheet is open. It takes taps again once the sheet starts to
+/// close, and the settle after that lets the sheet finish.
+Future<void> _pumpUntilClosed(WidgetTester tester) async {
+  await _pumpUntilFound(tester, find.byKey(_openButtonKey).hitTestable());
+  await tester.pumpAndSettle();
+}
+
 /// Opens the details page of [_entry] from a start page.
 Future<void> _openDetails(
   WidgetTester tester,
@@ -251,8 +261,7 @@ void main() {
     await tester.enterText(find.byKey(EatAmountRuler.fieldKey), '150');
     await tester.pump();
     await tester.tap(find.byKey(DiaryEntryDetailsPage.saveButtonKey));
-    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
-    await tester.pumpAndSettle();
+    await _pumpUntilClosed(tester);
 
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries.single.consumedAmount, 150);
@@ -267,8 +276,7 @@ void main() {
     // An unchanged amount leaves "Nochmal" as the main button.
     expect(find.text('Nochmal'), findsOneWidget);
     await tester.tap(find.byKey(DiaryEntryDetailsPage.saveButtonKey));
-    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
-    await tester.pumpAndSettle();
+    await _pumpUntilClosed(tester);
 
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries, hasLength(2));
@@ -298,10 +306,12 @@ void main() {
       tester,
       find.byKey(inventoryPackChoiceRowKey('skyr')),
     );
+    // The pack sheet slides up from below the screen; a tap before it
+    // settles misses the row.
+    await tester.pumpAndSettle();
     expect(find.byKey(inventoryPackChoiceSkipKey), findsOneWidget);
     await tester.tap(find.byKey(inventoryPackChoiceRowKey('skyr')));
-    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
-    await tester.pumpAndSettle();
+    await _pumpUntilClosed(tester);
 
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries, hasLength(2));
@@ -323,8 +333,7 @@ void main() {
     await tester.tap(plan);
     await _pumpUntilFound(tester, find.text('OK'));
     await tester.tap(find.text('OK'));
-    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
-    await tester.pumpAndSettle();
+    await _pumpUntilClosed(tester);
 
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries, hasLength(1));
@@ -352,8 +361,7 @@ void main() {
     expect(find.byType(DiaryEntryDetailsPage), findsOneWidget);
 
     saveGate.complete();
-    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
-    await tester.pumpAndSettle();
+    await _pumpUntilClosed(tester);
 
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries.single.consumedAmount, 150);
@@ -385,8 +393,7 @@ void main() {
       find.byKey(diaryEntryReturnToInventoryButtonKey),
     );
     await tester.tap(find.byKey(diaryEntryReturnToInventoryButtonKey));
-    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
-    await tester.pumpAndSettle();
+    await _pumpUntilClosed(tester);
 
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries, isEmpty);
@@ -413,8 +420,7 @@ void main() {
     await tester.enterText(find.byKey(EatAmountRuler.fieldKey), '150');
     await tester.pump();
     await tester.tap(find.byKey(DiaryEntryDetailsPage.saveButtonKey));
-    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
-    await tester.pumpAndSettle();
+    await _pumpUntilClosed(tester);
 
     expect(logRepository.entries.single.consumedAmount, 150);
     expect(logRepository.entries.single.sourceInventoryAmountToRestore, 150);
