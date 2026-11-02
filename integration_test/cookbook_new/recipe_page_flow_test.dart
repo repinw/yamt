@@ -238,26 +238,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // Feta goes in by typing; "Rückgängig" takes it out again.
-    // The step bar pushes the tools below the test screen's fold.
-    await tester.ensureVisible(find.byKey(CookingGuideBody.typeKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuideBody.typeKey));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(FreeCookingTextSheet.fieldKey),
-      '50 g Feta',
-    );
-    await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
-    await tester.pumpAndSettle();
+    await _typeInKochhelfer(tester, '50 g Feta');
     await tester.tap(find.byKey(CookingGuideJustAdded.undoKey));
     await tester.pumpAndSettle();
     expect(find.byKey(CookingGuideJustAdded.undoKey), findsNothing);
-
-    // The emulator keyboard of the sheet can show up late. It shrinks the
-    // screen, and the voice zone below the sentence is not built until it
-    // is gone.
-    await waitForKeyboardClosed(tester);
-    await tester.pumpAndSettle();
 
     // Said: cream stays, the chives go again with "nein", and the broth
     // still being said goes in with "Fertig gekocht". Each tap starts or
@@ -310,17 +294,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(CookingGuideBody.startKey));
     await tester.pumpAndSettle();
-    // The step bar pushes the tools below the test screen's fold.
-    await tester.ensureVisible(find.byKey(CookingGuideBody.typeKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuideBody.typeKey));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(FreeCookingTextSheet.fieldKey),
-      '50 g Feta',
-    );
-    await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
-    await tester.pumpAndSettle();
+    await _typeInKochhelfer(tester, '50 g Feta');
     // Back to the overview, then out to the recipe without cooking.
     await tester.tap(find.byKey(CookingGuideBody.backKey));
     await tester.pumpAndSettle();
@@ -548,6 +522,24 @@ void main() {
     expect(find.byKey(RecipePage.cookKey), findsNothing);
     expect(find.byKey(RecipePage.notFoundKey), findsOneWidget);
   });
+}
+
+/// Adds [text] through the Kochhelfer's typing sheet.
+///
+/// The emulator keyboard of the sheet can show up after the sheet closed. It
+/// shrinks the screen and moves what the next tap aims at, so this waits until
+/// it is gone.
+Future<void> _typeInKochhelfer(WidgetTester tester, String text) async {
+  // The step bar pushes the tools below the test screen's fold.
+  await tester.ensureVisible(find.byKey(CookingGuideBody.typeKey));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(CookingGuideBody.typeKey));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(FreeCookingTextSheet.fieldKey), text);
+  await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
+  await tester.pumpAndSettle();
+  await waitForKeyboardClosed(tester);
+  await tester.pumpAndSettle();
 }
 
 InventoryItem _item(String id, String name, {int currentAmount = 2000}) =>
