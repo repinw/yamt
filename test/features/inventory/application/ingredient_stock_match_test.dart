@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 InventoryItem _item(
   String id,
@@ -22,6 +23,23 @@ InventoryItem _item(
   currentAmount: 500,
   amountUnit: unit,
 );
+
+// The item that supplies the line when nobody picks one: the first of the
+// `matches` of [ingredientStockCandidates].
+InventoryItem? _bestMatch({
+  required String text,
+  required TemplateIngredientRequirement? requirement,
+  required List<InventoryItem> items,
+  required String? localeCode,
+}) {
+  final (:matches, others: _) = ingredientStockCandidates(
+    text: text,
+    requirement: requirement,
+    items: items,
+    localeCode: localeCode,
+  );
+  return matches.isEmpty ? null : matches.first;
+}
 
 void main() {
   final items = [
@@ -46,15 +64,6 @@ void main() {
       localeCode: 'de',
     );
 
-    expect(
-      matches.first,
-      bestIngredientStockMatch(
-        text: text,
-        requirement: requirement,
-        items: items,
-        localeCode: 'de',
-      ),
-    );
     expect(matches.map((item) => item.id), ['carrots']);
     expect(others.map((item) => item.id), ['carrots-old', 'rice']);
   });
@@ -83,7 +92,7 @@ void main() {
       ];
 
       expect(
-        bestIngredientStockMatch(
+        _bestMatch(
           text: rice,
           requirement: riceRequirement,
           items: items,
@@ -105,7 +114,7 @@ void main() {
     test('the same food from a brand does not stand in either', () {
       const carrots = '300 g Karotten';
       expect(
-        bestIngredientStockMatch(
+        _bestMatch(
           text: carrots,
           requirement: const TemplateIngredientParser().parseRequirement(
             ingredient: carrots,
@@ -129,7 +138,7 @@ void main() {
 
     test('supplies the line when it fits', () {
       expect(
-        bestIngredientStockMatch(
+        _bestMatch(
           text: rice,
           requirement: riceRequirement,
           items: [
@@ -145,7 +154,7 @@ void main() {
 
   test('an ingredient that names no amount fits any item of its name', () {
     expect(
-      bestIngredientStockMatch(
+      _bestMatch(
         text: 'Milch',
         requirement: null,
         items: items,
@@ -248,7 +257,7 @@ void main() {
       '100 g Testreis',
     ]) {
       expect(
-        bestIngredientStockMatch(
+        _bestMatch(
           text: text,
           requirement: const TemplateIngredientParser().parseRequirement(
             ingredient: text,
@@ -284,7 +293,7 @@ void main() {
       expect(matches, isEmpty);
       expect(others.map((item) => item.id), ['cakes']);
       expect(
-        bestIngredientStockMatch(
+        _bestMatch(
           text: rice,
           requirement: riceRequirement,
           items: [cakes],
