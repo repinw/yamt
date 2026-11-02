@@ -11,7 +11,10 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_stock_add_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_missing_values_hint.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../test/features/shoppinglist/support/fake_shopping_list_repository.dart';
 
 const _openKey = Key('open_stock_add');
 
@@ -59,7 +62,15 @@ Widget _buildHarness({
   required ValueChanged<InventoryStockAddResult?> onDone,
   InventoryItem? item,
 }) {
-  final container = ProviderContainer();
+  // The page asks whether the item is on the shopping list. The real
+  // repository reaches Firebase Auth, which the test app has not set up, and
+  // the household's user profile, which can still be loading when the test
+  // disposes the container.
+  final shoppingList = FakeShoppingListRepository();
+  addTearDown(shoppingList.dispose);
+  final container = ProviderContainer(
+    overrides: [shoppingListRepositoryProvider.overrideWithValue(shoppingList)],
+  );
   addTearDown(container.dispose);
 
   return UncontrolledProviderScope(
