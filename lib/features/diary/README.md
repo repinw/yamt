@@ -183,7 +183,7 @@ Main application adapters and mappers:
   (`presentation/widgets/calorie_new_goal_flow.dart`) for "Ziel ändern" and
   when the active goal was reached. The entry details page saves its changes through
   the Calories `calorieEntrySaverProvider`.
-- `features/health` for connection status and connection actions through
+- `features/health` for the connection status through
   `health_connection_actions.dart`.
 - `features/inventory` for repository-backed quick-eat data, the public
   Inventory presentation flows used to complete inventory and manual-product
