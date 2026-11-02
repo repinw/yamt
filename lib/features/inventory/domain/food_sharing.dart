@@ -18,14 +18,23 @@ final class FoodSharing {
   ///
   /// A food that [staysPrivate], such as an AI estimate, shares nothing
   /// (#655, #701), and neither does a product outside the catalog that does
-  /// not ask for it (#698). A picked catalog product points the item at its
-  /// catalog id at once; a new one only once the catalog has it (#806).
+  /// not ask for it (#698). A product the user typed without any search hit
+  /// reaches the catalog only with a barcode, so home-made foods stay the
+  /// user's own. A picked catalog product points the item at its catalog id
+  /// at once; a new one only once the catalog has it (#806).
   factory forNewItem({
     required bool staysPrivate,
     required bool requiresGlobalPersistence,
     required bool picksCatalogProduct,
+    required bool picksExternalProduct,
+    required bool hasBarcode,
   }) {
-    if (staysPrivate) {
+    if (staysPrivate ||
+        _typedWithoutBarcode(
+          picksCatalogProduct: picksCatalogProduct,
+          picksExternalProduct: picksExternalProduct,
+          hasBarcode: hasBarcode,
+        )) {
       return _private;
     }
     return FoodSharing._(
@@ -37,26 +46,36 @@ final class FoodSharing {
 
   /// A picked food that replaces the product of a Vorrat item.
   ///
-  /// A food that [staysPrivate] shares nothing, and the item keeps its
-  /// pending id (#701). Without a picked catalog product a new one is
-  /// written even when it does not ask for it, unlike
-  /// [FoodSharing.forNewItem] (#698). That is kept as it was and not checked
-  /// (#789). The item points at a new catalog product only once the catalog
-  /// has it.
+  /// It shares as [FoodSharing.forNewItem] would; a private food keeps its
+  /// pending id. The item points at a catalog product that the swap writes
+  /// only once the catalog has it.
   factory forSwap({
     required bool staysPrivate,
     required bool requiresGlobalPersistence,
     required bool picksCatalogProduct,
+    required bool picksExternalProduct,
+    required bool hasBarcode,
   }) {
-    if (staysPrivate) {
-      return _private;
-    }
-    final catalogProduct = requiresGlobalPersistence || !picksCatalogProduct;
-    return FoodSharing._(
-      catalogProduct: catalogProduct,
-      barcodeCandidate: true,
-      catalogIdAtOnce: !catalogProduct,
+    final newItem = FoodSharing.forNewItem(
+      staysPrivate: staysPrivate,
+      requiresGlobalPersistence: requiresGlobalPersistence,
+      picksCatalogProduct: picksCatalogProduct,
+      picksExternalProduct: picksExternalProduct,
+      hasBarcode: hasBarcode,
     );
+    return FoodSharing._(
+      catalogProduct: newItem.catalogProduct,
+      barcodeCandidate: newItem.barcodeCandidate,
+      catalogIdAtOnce: newItem.catalogIdAtOnce && !newItem.catalogProduct,
+    );
+  }
+
+  static bool _typedWithoutBarcode({
+    required bool picksCatalogProduct,
+    required bool picksExternalProduct,
+    required bool hasBarcode,
+  }) {
+    return !picksCatalogProduct && !picksExternalProduct && !hasBarcode;
   }
 
   static const _private = FoodSharing._(

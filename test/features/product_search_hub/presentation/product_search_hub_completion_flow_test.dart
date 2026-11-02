@@ -833,7 +833,22 @@ void main() {
       return catalog;
     }
 
-    testWidgets('learns an own product', (tester) async {
+    testWidgets('learns an own product with a barcode', (tester) async {
+      final catalog = await save(
+        tester,
+        InventoryReceiptManualProductResult(
+          item: _manualItemWithNutrition(barcode: '4006381333931'),
+          action: InventoryReceiptManualProductAction.addToInventory,
+          skipMissingBarcodePrompt: true,
+        ),
+      );
+
+      expect(catalog.appendedItems.single.name, 'Muesli');
+    });
+
+    testWidgets('keeps an own product without a barcode private', (
+      tester,
+    ) async {
       final catalog = await save(
         tester,
         InventoryReceiptManualProductResult(
@@ -843,7 +858,7 @@ void main() {
         ),
       );
 
-      expect(catalog.appendedItems.single.name, 'Muesli');
+      expect(catalog.appendedItems, isEmpty);
     });
 
     testWidgets('does not learn an AI food, the meal of one user (#655)', (

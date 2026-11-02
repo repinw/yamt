@@ -155,6 +155,8 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     staysPrivate: promptResult.item.staysPrivate,
     requiresGlobalPersistence: result.requiresGlobalPersistence,
     picksCatalogProduct: result.selectedGlobalFoodItemId != null,
+    picksExternalProduct: result.selectedProduct != null,
+    hasBarcode: promptResult.barcode != null,
   );
   final globalProduct = buildInventoryManualAddGlobalFoodItem(
     item: promptResult.item,
