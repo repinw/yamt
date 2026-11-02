@@ -57,6 +57,7 @@ import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
+import '../../test/helpers/soft_keyboard_test_utils.dart';
 
 const _startKey = ValueKey<String>('start-free-cooking');
 
@@ -94,6 +95,9 @@ void main() {
     await tester.enterText(find.byKey(FreeCookingTextSheet.fieldKey), 'Salz');
     await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
     await tester.pumpAndSettle();
+    // The sheet's keyboard can still show up after it closed. Wait for it
+    // here, so that the wait in `_cookNamed` sees the keyboard of the name.
+    await waitForKeyboardClosed(tester);
     expect(find.byKey(FreeCookingRowList.rowKey(2)), findsOneWidget);
 
     await tester.drag(
@@ -103,9 +107,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(FreeCookingRowList.rowKey(2)), findsNothing);
 
-    await tester.enterText(find.byKey(FreeCookingHeader.nameKey), 'Pfanne');
-    await tester.tap(find.byKey(FreeCookingActions.cookKey));
-    await tester.pumpAndSettle();
+    await _cookNamed(tester, 'Pfanne');
 
     // "Kochen" goes straight on to the "Gekocht" step.
     expect(find.byType(CookedMealPage), findsOneWidget);
@@ -171,8 +173,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(meals.saved.single.name, 'Reis');
 
-    // "Gekocht" still renames it.
+    // "Gekocht" still renames it. The keyboard closes first, because while
+    // it opens it moves the switch that the next tap aims at.
     await tester.enterText(find.byKey(CookedMealSummary.nameKey), 'Reisschale');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await waitForKeyboardClosed(tester);
+    await tester.pumpAndSettle();
     await _showCookbookSwitch(tester);
     await tester.tap(find.byKey(CookedMealCookbookSwitch.switchKey));
     await tester.pumpAndSettle();
@@ -208,9 +214,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(FreeCookingHeader.nameKey), 'Reis');
-    await tester.tap(find.byKey(FreeCookingActions.cookKey));
-    await tester.pumpAndSettle();
+    await _cookNamed(tester, 'Reis');
 
     await _showCookbookSwitch(tester);
     await tester.tap(find.byKey(CookedMealCookbookSwitch.switchKey));
@@ -235,9 +239,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(FreeCookingHeader.nameKey), 'Wraps');
-    await tester.tap(find.byKey(FreeCookingActions.cookKey));
-    await tester.pumpAndSettle();
+    await _cookNamed(tester, 'Wraps');
 
     await tester.tap(
       find.byKey(CookedMealPotSection.servingKey(inPieces: true)),
@@ -642,6 +644,19 @@ PreparedMeal _combinedMeal() {
     components: [component(200), component(100)],
     inPot: true,
   );
+}
+
+/// Types [name] as the dish name and cooks.
+///
+/// The emulator keyboard of the name can show up after "Kochen" took the
+/// focus away. It shrinks the "Gekocht" step and moves what the next tap aims
+/// at, so this waits until it is gone.
+Future<void> _cookNamed(WidgetTester tester, String name) async {
+  await tester.enterText(find.byKey(FreeCookingHeader.nameKey), name);
+  await tester.tap(find.byKey(FreeCookingActions.cookKey));
+  await tester.pumpAndSettle();
+  await waitForKeyboardClosed(tester);
+  await tester.pumpAndSettle();
 }
 
 /// Scrolls the "Gekocht" step down to the cookbook switch.
