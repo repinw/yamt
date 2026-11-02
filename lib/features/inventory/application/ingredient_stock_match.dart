@@ -7,30 +7,6 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
-/// The best Vorrat match for [requirement] of the ingredient [text], or
-/// `null` when no item fits: the first of the `matches` of
-/// [ingredientStockCandidates].
-InventoryItem? bestIngredientStockMatch({
-  required String text,
-  required TemplateIngredientRequirement? requirement,
-  required List<InventoryItem> items,
-  required String? localeCode,
-  RecipeIngredientAmountConversion? amountConversion,
-}) {
-  if (requirement == null && !ingredientNamesNoAmount(text)) {
-    return null;
-  }
-  final scored = _scored(text, items, localeCode);
-  final best = _bestFullScore(scored);
-  return scored
-      .firstWhereOrNull(
-        (match) =>
-            _standsIn(match, best) &&
-            ingredientItemFits(match.item, requirement, amountConversion),
-      )
-      ?.item;
-}
-
 /// The Vorrat items that can supply [requirement] of the ingredient [text]:
 /// the `matches` that match its name best of all items, and the `others`,
 /// first the weaker name matches, best first, then the rest in a fitting
