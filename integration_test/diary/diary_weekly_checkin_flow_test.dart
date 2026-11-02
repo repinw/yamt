@@ -30,14 +30,18 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_result.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
+import 'package:yamt/features/health/data/health_weight_sample_repository.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
+import 'package:yamt/features/health/data/progress_photo_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/helpers/fake_health_weight_sample_repository.dart';
+import '../../test/helpers/fake_progress_photo_repository.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 
 // 2026-09-01 is a Tuesday. The goal counts from it, so its first check-in
@@ -69,31 +73,43 @@ CalorieEntry _entry(int day, double kcal) {
 List<Override> _overrides(
   FakeCalorieSettingsRepository settings,
   FakeCalorieLogRepository log,
-) => [
-  appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-  clockProvider.overrideWithValue(() => _now),
-  calorieSettingsRepositoryProvider.overrideWithValue(settings),
-  calorieLogRepositoryProvider.overrideWithValue(log),
-  plannedEntryRepositoryProvider.overrideWithValue(
-    FakePlannedEntryRepository(),
-  ),
-  burnWeekRunStateRepositoryProvider.overrideWithValue(
-    FakeBurnWeekRunStateRepository(),
-  ),
-  healthConnectionServiceProvider.overrideWith(
-    (ref) =>
-        FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
-  ),
-  healthWeightServiceProvider.overrideWith(
-    (ref) => FakeHealthWeightService(const []),
-  ),
-  manualHealthWeightRepositoryProvider.overrideWith(
-    (ref) => FakeManualHealthWeightRepository([
-      ManualHealthWeightEntry(day: _goalStart, weightKg: 82),
-      ManualHealthWeightEntry(day: DateTime(2026, 9, 7), weightKg: 81.4),
-    ]),
-  ),
-];
+) {
+  // The check-in's weight series also reads the Health weights in the
+  // cloud, and its photo step the progress photos. The real repositories
+  // reach Firebase Auth, which the test app has not set up.
+  final weightSamples = FakeHealthWeightSampleRepository();
+  final photos = FakeProgressPhotoRepository();
+  addTearDown(weightSamples.dispose);
+  addTearDown(photos.dispose);
+  return [
+    appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+    clockProvider.overrideWithValue(() => _now),
+    calorieSettingsRepositoryProvider.overrideWithValue(settings),
+    calorieLogRepositoryProvider.overrideWithValue(log),
+    plannedEntryRepositoryProvider.overrideWithValue(
+      FakePlannedEntryRepository(),
+    ),
+    burnWeekRunStateRepositoryProvider.overrideWithValue(
+      FakeBurnWeekRunStateRepository(),
+    ),
+    healthConnectionServiceProvider.overrideWith(
+      (ref) => FakeHealthConnectionService(
+        const HealthConnectionStatus.unsupported(),
+      ),
+    ),
+    healthWeightServiceProvider.overrideWith(
+      (ref) => FakeHealthWeightService(const []),
+    ),
+    healthWeightSampleRepositoryProvider.overrideWithValue(weightSamples),
+    progressPhotoRepositoryProvider.overrideWithValue(photos),
+    manualHealthWeightRepositoryProvider.overrideWith(
+      (ref) => FakeManualHealthWeightRepository([
+        ManualHealthWeightEntry(day: _goalStart, weightKg: 82),
+        ManualHealthWeightEntry(day: DateTime(2026, 9, 7), weightKg: 81.4),
+      ]),
+    ),
+  ];
+}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
