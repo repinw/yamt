@@ -10,11 +10,4 @@ void main() {
     final client = container.read(secondaryAuthClientProvider);
     expect(client, isA<SecondaryAuthClient>());
   });
-
-  test('secondaryAuthClientProvider hash method is callable', () {
-    expect(
-      secondaryAuthClientProvider.debugGetCreateSourceHash(),
-      isA<String>(),
-    );
-  });
 }

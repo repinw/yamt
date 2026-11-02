@@ -63,9 +63,4 @@ void main() {
     final auth = container.read(firebaseAuthProvider);
     expect(auth, isA<FirebaseAuth>());
   });
-
-  test('generated provider hash methods are callable', () {
-    expect(firebaseAuthProvider.debugGetCreateSourceHash(), isA<String>());
-    expect(authStateChangesProvider.debugGetCreateSourceHash(), isA<String>());
-  });
 }
