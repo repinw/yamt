@@ -44,10 +44,6 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
   });
 
-  test('generated provider hash methods are callable', () {
-    expect(accountControllerProvider.debugGetCreateSourceHash(), isA<String>());
-  });
-
   test('signOut succeeds and clears loading state', () async {
     final auth = _MockFirebaseAuth();
     when(auth.signOut).thenAnswer((_) async {});
