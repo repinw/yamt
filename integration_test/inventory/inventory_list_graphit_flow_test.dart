@@ -181,6 +181,24 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
 }
 
+/// Pumps the Vorrat page until its list shows. The first frames of a run on
+/// the emulator can take seconds, longer than [_settle] waits.
+Future<void> _pumpHarness(WidgetTester tester) async {
+  await tester.pumpWidget(_buildHarness());
+  await _pumpUntilFound(tester, find.byKey(InventoryEntriesSliver.listKey));
+  await _settle(tester);
+}
+
+Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
+  final end = tester.binding.clock.fromNowBy(const Duration(seconds: 8));
+  while (finder.evaluate().isEmpty) {
+    if (tester.binding.clock.now().isAfter(end)) {
+      throw TestFailure('Timed out waiting for $finder.');
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
 Future<void> _pumpUntilAbsent(WidgetTester tester, Finder finder) async {
   final end = tester.binding.clock.fromNowBy(const Duration(seconds: 8));
   while (finder.evaluate().isNotEmpty) {
@@ -198,10 +216,8 @@ void main() {
 
   testWidgets('Vorrat filters by chip, switches to tiles, sorts, opens '
       'a meal and its editor', (tester) async {
-    await tester.pumpWidget(_buildHarness());
-    await _settle(tester);
+    await _pumpHarness(tester);
 
-    expect(find.byKey(InventoryEntriesSliver.listKey), findsOneWidget);
     expect(find.text('3 LEBENSMITTEL'), findsOneWidget);
 
     await _tapChip(tester, InventoryQuickFilter.low);
@@ -279,8 +295,7 @@ void main() {
 
   testWidgets('the Vorrat search works in the selection mode and offers the '
       'catalog', (tester) async {
-    await tester.pumpWidget(_buildHarness());
-    await _settle(tester);
+    await _pumpHarness(tester);
 
     await tester.longPress(
       find.byKey(const ValueKey('inventory_entry_row_skyr')),
