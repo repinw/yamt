@@ -159,24 +159,46 @@ void main() {
       expect(request.resolvedProduct.packageWeight, '250 g');
     });
 
-    test(
-      'generates a global id and requires persistence for manual-only data',
-      () {
-        final request = buildInventoryItemCandidateSwapRequestFromManualResult(
-          result: InventoryReceiptManualProductResult(
-            item: _item(weight: '100 g'),
-            action: InventoryReceiptManualProductAction.addToInventory,
-            requiresGlobalPersistence: false,
-          ),
-          matcher: GlobalFoodItemMatcher(),
-        );
+    test('shares a typed product with a barcode', () {
+      final request = buildInventoryItemCandidateSwapRequestFromManualResult(
+        result: InventoryReceiptManualProductResult(
+          item: _item(weight: '100 g', barcode: '4006381333931'),
+          action: InventoryReceiptManualProductAction.addToInventory,
+        ),
+        matcher: GlobalFoodItemMatcher(),
+      );
 
-        expect(request.sharing.catalogProduct, isTrue);
-        expect(request.weight, '100 g');
-        expect(request.resolvedProduct.id, startsWith('global-food-'));
-        expect(request.resolvedProduct.packageWeight, '100 g');
-      },
-    );
+      expect(request.sharing.catalogProduct, isTrue);
+      expect(request.weight, '100 g');
+      expect(request.resolvedProduct.id, startsWith('global-food-'));
+      expect(request.resolvedProduct.packageWeight, '100 g');
+    });
+
+    test('keeps a typed product without a barcode private', () {
+      final request = buildInventoryItemCandidateSwapRequestFromManualResult(
+        result: InventoryReceiptManualProductResult(
+          item: _item(weight: '100 g'),
+          action: InventoryReceiptManualProductAction.addToInventory,
+        ),
+        matcher: GlobalFoodItemMatcher(),
+      );
+
+      expect(request.sharing.sharesAnything, isFalse);
+    });
+
+    test('keeps an own recent food private like a new item', () {
+      final request = buildInventoryItemCandidateSwapRequestFromManualResult(
+        result: InventoryReceiptManualProductResult(
+          item: _item(weight: '100 g', barcode: '4006381333931'),
+          action: InventoryReceiptManualProductAction.addToInventory,
+          requiresGlobalPersistence: false,
+        ),
+        matcher: GlobalFoodItemMatcher(),
+      );
+
+      expect(request.sharing.sharesAnything, isFalse);
+      expect(request.sharing.catalogIdAtOnce, isFalse);
+    });
 
     test('keeps an AI food private (#701)', () {
       final request = buildInventoryItemCandidateSwapRequestFromManualResult(
@@ -193,12 +215,18 @@ void main() {
   });
 }
 
-InventoryItem _item({String name = 'Milk', String? brand, String? weight}) {
+InventoryItem _item({
+  String name = 'Milk',
+  String? brand,
+  String? weight,
+  String? barcode,
+}) {
   return InventoryItem.create(
     id: 'item-1',
     name: name,
     brand: brand,
     weight: weight,
+    barcode: barcode,
     entryDate: DateTime.utc(2026),
     storeName: 'Store',
     quantity: 1,

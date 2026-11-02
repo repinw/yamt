@@ -802,6 +802,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   other users' scans or a shared serving suggestion; its last serving is
   remembered for its user only (#701). AI foods saved before the mark existed are
   not known as such.
+- A product the user types without picking a search hit goes into the
+  shared catalog only with a barcode, as packaged goods; without one, such
+  as a home-made dish, it stays the user's own. A picked catalog product
+  records its barcode and fills fields the catalog still misses, and an
+  Open Food Facts hit joins the catalog. "Produkt ersetzen" shares the same
+  way as adding a new Vorrat item, so an own food picked again from the
+  recent items stays private there too.
 - The Vorrat eat page of an AI food shows lean / normal / rich chips under
   its name and its ingredients, collapsed, below the amount. A chip saves
   the level on the item at once: its nutrition follows the level from then
@@ -880,9 +887,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   item's picture but is stored as the user's private food photo
   (`users/{uid}/food_photos/`, visible to the household), and no photo goes
   to `product_images` (#658). The nutrition table photo is shared as usual,
-  and the product itself still goes into the shared catalog. A new front
-  photo with a package is shared again; closing the camera keeps the
-  private one.
+  and the product itself still goes into the shared catalog when it has a
+  barcode. A new front photo with a package is shared again; closing the
+  camera keeps the private one.
 - The photos also give the serving (#527): the front one piece of a
   multipack ("6 x 25 g" becomes a 150 g package with 25 g per piece), the
   nutrition table its per-portion heading ("pro Riegel (25 g)"). It is saved

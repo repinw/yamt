@@ -118,7 +118,9 @@ buildInventoryItemCandidateSwapRequestFromCandidate({
     sharing: FoodSharing.forSwap(
       staysPrivate: false,
       requiresGlobalPersistence: candidate.requiresPersistence,
-      picksCatalogProduct: true,
+      picksCatalogProduct: !candidate.requiresPersistence,
+      picksExternalProduct: candidate.requiresPersistence,
+      hasBarcode: candidate.item.normalizedBarcode != null,
     ),
     weight: sourceItem.weight ?? candidate.item.packageWeight,
   );
@@ -169,7 +171,9 @@ buildInventoryItemCandidateSwapRequestFromManualResult({
       sharing: FoodSharing.forSwap(
         staysPrivate: false,
         requiresGlobalPersistence: true,
-        picksCatalogProduct: true,
+        picksCatalogProduct: false,
+        picksExternalProduct: true,
+        hasBarcode: result.item.normalizedBarcode != null,
       ),
       weight: result.item.weight,
     );
@@ -191,6 +195,8 @@ buildInventoryItemCandidateSwapRequestFromManualResult({
       staysPrivate: result.item.staysPrivate,
       requiresGlobalPersistence: result.requiresGlobalPersistence,
       picksCatalogProduct: selectedGlobalFoodItemId != null,
+      picksExternalProduct: false,
+      hasBarcode: result.item.normalizedBarcode != null,
     ),
     weight: result.item.weight,
     aiEstimated: result.item.aiEstimated,

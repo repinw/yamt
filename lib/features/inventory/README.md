@@ -280,9 +280,9 @@ already documented as a reusable presentation surface.
 - `domain/food_sharing.dart` is the one place that decides what saving a
   picked food shares with other users: a catalog product, a barcode
   candidate, and whether the item points at the catalog id at once. The
-  manual save and the product swap only carry out its answer. A swap
-  without a picked catalog product writes a new one, unlike a new item
-  (#698); that rule is kept as it was and not checked (#789).
+  manual save and the product swap only carry out its answer, and both
+  share alike. A product the user typed without a search hit reaches the
+  catalog only with a barcode; without one it stays the user's own.
 
 ## Providers
 
