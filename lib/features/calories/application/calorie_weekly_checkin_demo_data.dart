@@ -135,7 +135,6 @@ CalorieWeeklyCheckInPlan calorieWeeklyCheckInDemoPlan({
     ),
     hasWeeklyTrainingSchedule: true,
     sessionKcal: _demoSessionKcal,
-    previousTdeeKcal: _demoPreviousTdeeKcal,
     previousGoalKcal: _demoPreviousGoalKcal,
     measurement: (
       tdeeKcal: _demoLearnedTdeeKcal,

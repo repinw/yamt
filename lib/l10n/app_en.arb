@@ -1162,7 +1162,6 @@
   "caloriesWeeklyCheckInBlockedUnstableWeight": "Weight data was too noisy this week for a reliable TDEE update. Add steadier weigh-ins and try again.",
   "caloriesWeeklyCheckInLaterAction": "Later",
   "caloriesWeeklyCheckInApplyFailed": "Could not close the weekly check-in.",
-  "caloriesWeeklyCheckInRejectFailed": "Could not reject the weekly check-in.",
   "caloriesWeeklyCheckInHintReadyTitle": "Weekly check-in ready",
   "caloriesWeeklyCheckInHintReadyBody": "Your last 7 completed days are ready to review.",
   "caloriesWeeklyCheckInHintBlockedTitle": "Weekly check-in needs data",
@@ -3090,18 +3089,9 @@
   "diaryCheckInWeightChart": "Weight",
   "diaryCheckInTrend": "Trend",
   "diaryCheckInTdeeChart": "Expenditure (TDEE) per run",
-  "diaryCheckInUseMeasured": "Use the measured one",
-  "diaryCheckInUseMeasuredDetail": "TDEE {kcal} from this run",
-  "@diaryCheckInUseMeasuredDetail": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryCheckInKeepPrevious": "Keep the previous one",
-  "diaryCheckInKeepPreviousDetail": "TDEE {kcal}, goal as last week",
-  "@diaryCheckInKeepPreviousDetail": {
+  "diaryCheckInMeasuredTdee": "Measured TDEE",
+  "diaryCheckInMeasuredTdeeDetail": "TDEE {kcal} from this run",
+  "@diaryCheckInMeasuredTdeeDetail": {
     "placeholders": {
       "kcal": {
         "type": "String"

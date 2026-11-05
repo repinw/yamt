@@ -32,7 +32,6 @@ CalorieWeeklyCheckInPlan _plan({bool measured = true}) {
     ),
     hasWeeklyTrainingSchedule: true,
     sessionKcal: plan.sessionKcal,
-    previousTdeeKcal: plan.previousTdeeKcal,
     previousGoalKcal: plan.previousGoalKcal,
     measurement: null,
     progress: plan.progress,
@@ -75,7 +74,7 @@ void main() {
 
       final state = container.read(provider).value!;
       expect(state.step, DiaryWeeklyCheckInStep.review);
-      expect(state.useMeasured, isTrue);
+      expect(state.targets.isMeasured, isTrue);
       expect(state.trainingDays, isEmpty);
       expect(state.plan.nextRun.suggestedTrainingDays, isNotEmpty);
     },
@@ -104,12 +103,9 @@ void main() {
       final controller = container.read(provider.notifier);
       final pauseDay = container.read(provider).value!.plan.nextRun.days[1];
 
-      controller
-        ..setUseMeasured(useMeasured: true)
-        ..toggleTrainingDay(pauseDay);
+      controller.toggleTrainingDay(pauseDay);
 
       final state = container.read(provider).value!;
-      expect(state.useMeasured, isFalse);
       expect(state.trainingDays, isNot(contains(pauseDay)));
       expect(state.targets.isMeasured, isFalse);
     },
@@ -118,7 +114,6 @@ void main() {
   test('a reload of the same window keeps the step and the choices', () async {
     final (:container, :provider) = await _start();
     container.read(provider.notifier)
-      ..setUseMeasured(useMeasured: false)
       ..goTo(DiaryWeeklyCheckInStep.targets)
       ..clearTrainingDays();
 
@@ -127,7 +122,6 @@ void main() {
 
     final state = container.read(provider).value!;
     expect(state.step, DiaryWeeklyCheckInStep.targets);
-    expect(state.useMeasured, isFalse);
     expect(state.trainingDays, isEmpty);
   });
 

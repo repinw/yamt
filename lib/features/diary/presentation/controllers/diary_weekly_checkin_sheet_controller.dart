@@ -8,7 +8,7 @@ part 'diary_weekly_checkin_sheet_controller.g.dart';
 
 /// The steps of the weekly check-in sheet.
 enum DiaryWeeklyCheckInStep {
-  /// Look back since the goal start and pick the TDEE.
+  /// Look back since the goal start and show the measured TDEE.
   review,
 
   /// Plan the training days of the next run.
@@ -28,7 +28,6 @@ class DiaryWeeklyCheckInSheetState {
   const new({
     required this.plan,
     required this.step,
-    required this.useMeasured,
     required this.trainingDays,
   });
 
@@ -38,28 +37,21 @@ class DiaryWeeklyCheckInSheetState {
   /// The current step.
   final DiaryWeeklyCheckInStep step;
 
-  /// Whether the measured TDEE applies from now on.
-  final bool useMeasured;
-
   /// The planned training days of the next run.
   final Set<DateTime> trainingDays;
 
   /// Targets of the next run for the current choices.
-  CalorieWeeklyCheckInTargets get targets => plan.targetsFor(
-    useMeasured: useMeasured,
-    trainingDays: trainingDays.length,
-  );
+  CalorieWeeklyCheckInTargets get targets =>
+      plan.targetsFor(trainingDays: trainingDays.length);
 
   /// Returns a copy with the given fields replaced.
   DiaryWeeklyCheckInSheetState copyWith({
     DiaryWeeklyCheckInStep? step,
-    bool? useMeasured,
     Set<DateTime>? trainingDays,
   }) {
     return DiaryWeeklyCheckInSheetState(
       plan: plan,
       step: step ?? this.step,
-      useMeasured: useMeasured ?? this.useMeasured,
       trainingDays: trainingDays ?? this.trainingDays,
     );
   }
@@ -97,14 +89,12 @@ class DiaryWeeklyCheckInSheetController
       return DiaryWeeklyCheckInSheetState(
         plan: plan,
         step: previous.step,
-        useMeasured: previous.useMeasured && plan.measurement != null,
         trainingDays: plan.nextRun.keepTrainingDays(previous.trainingDays),
       );
     }
     return DiaryWeeklyCheckInSheetState(
       plan: plan,
       step: DiaryWeeklyCheckInStep.review,
-      useMeasured: plan.measurement != null,
       // The user picks the days; "Wie letzter Run" plans the last ones again.
       trainingDays: Set<DateTime>.unmodifiable(plan.nextRun.fixedTrainingDays),
     );
@@ -118,15 +108,6 @@ class DiaryWeeklyCheckInSheetController
       return;
     }
     state = AsyncData(next(current));
-  }
-
-  /// Picks the measured TDEE or keeps the previous one.
-  void setUseMeasured({required bool useMeasured}) {
-    _update(
-      (current) => current.copyWith(
-        useMeasured: useMeasured && current.plan.measurement != null,
-      ),
-    );
   }
 
   /// Moves to [step].

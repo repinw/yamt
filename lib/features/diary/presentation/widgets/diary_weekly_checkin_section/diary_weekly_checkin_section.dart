@@ -257,8 +257,7 @@ class _DiaryWeeklyCheckInSectionState
     required PendingCalorieGoalWeeklyCheckIn pending,
   }) async {
     switch (result?.action) {
-      case DiaryWeeklyCheckInSheetAction.apply ||
-          DiaryWeeklyCheckInSheetAction.reject:
+      case DiaryWeeklyCheckInSheetAction.apply:
         await _decide(checkInData, pending, result!);
       case DiaryWeeklyCheckInSheetAction.trackMissingWeight:
         if (mounted) {
@@ -282,24 +281,18 @@ class _DiaryWeeklyCheckInSectionState
     return false;
   }
 
-  /// Saves the training days of the next run and the TDEE decision.
+  /// Saves the training days of the next run and applies the check-in.
   Future<void> _decide(
     CalorieWeeklyCheckInData checkInData,
     PendingCalorieGoalWeeklyCheckIn pending,
     DiaryWeeklyCheckInSheetResult result,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final apply = result.action == DiaryWeeklyCheckInSheetAction.apply;
     _hide(pending);
-    final saved = apply
-        ? await _checkIn.applyWeeklyCheckIn(
-            checkInData,
-            training: result.training,
-          )
-        : await _checkIn.rejectWeeklyCheckIn(
-            checkInData,
-            training: result.training,
-          );
+    final saved = await _checkIn.applyWeeklyCheckIn(
+      checkInData,
+      training: result.training,
+    );
     if (!mounted) {
       return;
     }
@@ -310,9 +303,7 @@ class _DiaryWeeklyCheckInSectionState
     }
     _showAgain(pending);
     ScaffoldMessenger.of(context).showAppSnackBar(
-      apply
-          ? l10n.caloriesWeeklyCheckInApplyFailed
-          : l10n.caloriesWeeklyCheckInRejectFailed,
+      l10n.caloriesWeeklyCheckInApplyFailed,
       tone: AppSnackBarTone.error,
     );
   }

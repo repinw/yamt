@@ -79,7 +79,8 @@ class CalorieGoalWeeklyCheckInSnapshot {
   final DateTime? invalidatedAt;
 
   /// Whether the user rejected this weekly check-in update to keep the
-  /// previous TDEE.
+  /// previous TDEE. Only app versions up to 3.10 offer that choice; newer
+  /// ones still read it, so such a snapshot never counts as learned.
   @JsonKey(defaultValue: false)
   final bool isRejected;
 
@@ -97,7 +98,6 @@ class CalorieGoalWeeklyCheckInSnapshot {
   CalorieGoalWeeklyCheckInSnapshot copyWith({
     Object? inputHash = _keepValue,
     Object? invalidatedAt = _keepValue,
-    Object? isRejected = _keepValue,
   }) {
     return CalorieGoalWeeklyCheckInSnapshot(
       windowStartDate: windowStartDate,
@@ -113,9 +113,7 @@ class CalorieGoalWeeklyCheckInSnapshot {
       invalidatedAt: invalidatedAt == _keepValue
           ? this.invalidatedAt
           : invalidatedAt as DateTime?,
-      isRejected: isRejected == _keepValue
-          ? this.isRejected
-          : (isRejected as bool?) ?? false,
+      isRejected: isRejected,
       macroWeightKg: macroWeightKg,
     );
   }

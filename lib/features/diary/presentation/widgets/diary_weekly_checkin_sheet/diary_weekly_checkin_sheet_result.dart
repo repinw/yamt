@@ -8,9 +8,6 @@ enum DiaryWeeklyCheckInSheetAction {
   /// Use the measured TDEE.
   apply,
 
-  /// Keep the previous TDEE.
-  reject,
-
   /// Track a missing weight first.
   trackMissingWeight,
 
@@ -19,8 +16,7 @@ enum DiaryWeeklyCheckInSheetAction {
 }
 
 /// Result of the weekly check-in sheet: the decision and, for
-/// [DiaryWeeklyCheckInSheetAction.apply] and
-/// [DiaryWeeklyCheckInSheetAction.reject], the training days of the planned
+/// [DiaryWeeklyCheckInSheetAction.apply], the training days of the planned
 /// run.
 typedef DiaryWeeklyCheckInSheetResult = ({
   DiaryWeeklyCheckInSheetAction action,
