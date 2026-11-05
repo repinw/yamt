@@ -188,7 +188,7 @@ void main() {
     await tester.tap(find.byKey(_launcherKey));
     await tester.pumpAndSettle();
     expect(
-      find.byKey(DiaryWeeklyCheckInSheetKeys.useMeasuredChoice),
+      find.byKey(DiaryWeeklyCheckInSheetKeys.measuredTdeeRow),
       findsOneWidget,
     );
 
@@ -300,10 +300,9 @@ void main() {
 
     await _pumpSection(tester, settings, log);
 
-    // The section opens the due check-in. Keep the previous TDEE, plan the
-    // Thursday and Monday of the last run again, and add the Tuesday.
+    // The section opens the due check-in. Plan the Thursday and Monday of
+    // the last run again, and add the Tuesday.
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
-    await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.keepPreviousChoice);
     await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
     await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.sameAsLastRunButton);
     await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.trainingDay(0));
@@ -316,7 +315,7 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
     await _tapByKey(tester, CalorieGoalCalculatorSheetKeys.sheetBackButton);
 
-    // The check-in is open again on the review step, with the previous TDEE.
+    // The check-in is open again on the review step.
     expect(
       find.byKey(CalorieGoalCalculatorSheetKeys.sheetBackButton),
       findsNothing,
@@ -330,10 +329,9 @@ void main() {
       find.byKey(DiaryWeeklyCheckInSheetKeys.trainingDay(0)),
       findsNothing,
     );
-    expectSelected(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice);
-    expectSelected(
-      DiaryWeeklyCheckInSheetKeys.useMeasuredChoice,
-      isSelected: false,
+    expect(
+      find.byKey(DiaryWeeklyCheckInSheetKeys.measuredTdeeRow),
+      findsOneWidget,
     );
 
     // The training step still plans the added Tuesday.

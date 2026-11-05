@@ -19,14 +19,9 @@ abstract final class DiaryWeeklyCheckInSheetKeys {
     'diary-weekly-checkin-start-week',
   );
 
-  /// The choice that uses the measured TDEE.
-  static const useMeasuredChoice = ValueKey<String>(
-    'diary-weekly-checkin-use-measured',
-  );
-
-  /// The choice that keeps the previous TDEE.
-  static const keepPreviousChoice = ValueKey<String>(
-    'diary-weekly-checkin-keep-previous',
+  /// The row with the measured TDEE and the goal it gives.
+  static const measuredTdeeRow = ValueKey<String>(
+    'diary-weekly-checkin-measured-tdee',
   );
 
   /// The row that opens the goal calculator.

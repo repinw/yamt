@@ -145,24 +145,13 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         );
   }
 
-  /// Apply weekly check in, with the [training] of the next run.
+  /// Applies the weekly check-in with the [training] of the next run.
+  ///
+  /// Saves the whole decision at once, so a failure leaves nothing half
+  /// applied and the check-in open for another try.
   Future<bool> applyWeeklyCheckIn(
     CalorieWeeklyCheckInData checkInData, {
     CalorieRunTrainingChoice? training,
-  }) => _decide(checkInData, accept: true, training: training);
-
-  /// Reject weekly check in, with the [training] of the next run.
-  Future<bool> rejectWeeklyCheckIn(
-    CalorieWeeklyCheckInData checkInData, {
-    CalorieRunTrainingChoice? training,
-  }) => _decide(checkInData, accept: false, training: training);
-
-  /// Saves the whole decision at once, so a failure leaves nothing half
-  /// applied and the check-in open for another try.
-  Future<bool> _decide(
-    CalorieWeeklyCheckInData checkInData, {
-    required bool accept,
-    required CalorieRunTrainingChoice? training,
   }) {
     return _keepAliveDuring((goalController) async {
       final pending = checkInData.pendingWeeklyCheckIn;
@@ -179,7 +168,6 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         settings: settings,
         pending: pending,
         snapshot: checkInData.snapshotFor(pending, calculation),
-        accept: accept,
         today: ref.read(clockProvider)(),
         training: training,
       );

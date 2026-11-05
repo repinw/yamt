@@ -26,7 +26,6 @@ class CalorieWeeklyCheckInPlan {
     required this.nextRun,
     required this.hasWeeklyTrainingSchedule,
     required this.sessionKcal,
-    required this.previousTdeeKcal,
     required this.previousGoalKcal,
     required this.measurement,
     required this.progress,
@@ -59,9 +58,6 @@ class CalorieWeeklyCheckInPlan {
   /// kcal of one training session.
   final double sessionKcal;
 
-  /// TDEE before this check-in.
-  final double previousTdeeKcal;
-
   /// Daily goal before this check-in.
   final double previousGoalKcal;
 
@@ -87,12 +83,9 @@ class CalorieWeeklyCheckInPlan {
   final bool isLosingWeight;
 
   /// Targets of the next run with [trainingDays] sessions, from the measured
-  /// TDEE when [useMeasured] is set and a measurement exists.
-  CalorieWeeklyCheckInTargets targetsFor({
-    required bool useMeasured,
-    required int trainingDays,
-  }) {
-    final measured = useMeasured ? measurement : null;
+  /// TDEE when a measurement exists.
+  CalorieWeeklyCheckInTargets targetsFor({required int trainingDays}) {
+    final measured = measurement;
     final goalKcal = measured?.goalKcal ?? previousGoalKcal;
     final week = resolveTrainingWeekGoals(
       baseGoalKcal: goalKcal,

@@ -2074,10 +2074,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not close the weekly check-in.';
 
   @override
-  String get caloriesWeeklyCheckInRejectFailed =>
-      'Could not reject the weekly check-in.';
-
-  @override
   String get caloriesWeeklyCheckInHintReadyTitle => 'Weekly check-in ready';
 
   @override
@@ -5224,19 +5220,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCheckInTdeeChart => 'Expenditure (TDEE) per run';
 
   @override
-  String get diaryCheckInUseMeasured => 'Use the measured one';
+  String get diaryCheckInMeasuredTdee => 'Measured TDEE';
 
   @override
-  String diaryCheckInUseMeasuredDetail(String kcal) {
+  String diaryCheckInMeasuredTdeeDetail(String kcal) {
     return 'TDEE $kcal from this run';
-  }
-
-  @override
-  String get diaryCheckInKeepPrevious => 'Keep the previous one';
-
-  @override
-  String diaryCheckInKeepPreviousDetail(String kcal) {
-    return 'TDEE $kcal, goal as last week';
   }
 
   @override

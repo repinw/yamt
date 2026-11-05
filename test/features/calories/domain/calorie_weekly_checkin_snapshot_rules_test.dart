@@ -94,31 +94,28 @@ void main() {
 
     CalorieGoalSettings? decide(
       CalorieGoalSettings settings, {
-      required bool accept,
       CalorieRunTrainingChoice? training,
     }) => decideWeeklyCheckIn(
       settings: settings,
       pending: pending,
       snapshot: snapshot,
-      accept: accept,
       today: due,
       training: training,
     );
 
-    test('accepting applies the new goal and clears the check-in', () {
-      final next = decide(open, accept: true)!;
+    test('deciding applies the new goal and clears the check-in', () {
+      final next = decide(open)!;
 
       expect(next.sortedGoalHistory.last.dailyKcalGoal, 2580);
       expect(next.pendingWeeklyCheckIn, isNull);
     });
 
-    test('accepting a goal the history already holds adds no entry', () {
+    test('a goal the history already holds adds no entry', () {
       final settings = decided.copyWithPendingWeeklyCheckIn(pending);
       final next = decideWeeklyCheckIn(
         settings: settings,
         pending: pending,
         snapshot: decided.sortedGoalHistory.last.weeklyCheckInSnapshot!,
-        accept: true,
         today: due,
       )!;
 
@@ -126,36 +123,19 @@ void main() {
       expect(next.pendingWeeklyCheckIn, isNull);
     });
 
-    test('rejecting keeps the goal from before the window', () {
-      final next = decide(open, accept: false)!;
-
-      final latest = next.sortedGoalHistory.last;
-      expect(latest.dailyKcalGoal, 2400);
-      expect(latest.weeklyCheckInSnapshot?.isRejected, isTrue);
-      expect(next.pendingWeeklyCheckIn, isNull);
-    });
-
     test('the training days of the next run come with the decision', () {
       final next = decide(
         open,
-        accept: false,
         training: (runDay: due, trainingDays: {DateTime(2026, 4, 16)}),
       )!;
 
       expect(next.isTrainingDay(DateTime(2026, 4, 16)), isTrue);
-      expect(
-        next.sortedGoalHistory.last.weeklyCheckInSnapshot?.isRejected,
-        isTrue,
-      );
+      expect(next.sortedGoalHistory.last.dailyKcalGoal, 2580);
     });
 
     test('a run that has ended decides nothing', () {
       expect(
-        decide(
-          open,
-          accept: true,
-          training: (runDay: start, trainingDays: {start}),
-        ),
+        decide(open, training: (runDay: start, trainingDays: {start})),
         isNull,
       );
     });
