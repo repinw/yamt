@@ -8,10 +8,9 @@ import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_
 /// The settings after the user decided the weekly check-in [pending], so the
 /// whole decision is saved at once.
 ///
-/// [training] first sets the training days of the planned run. With [accept],
-/// the goal of [snapshot] applies, unless the history already holds it.
-/// Otherwise the goal from before the window stays and [snapshot] is kept as
-/// rejected. The pending check-in is cleared.
+/// [training] first sets the training days of the planned run. Then the goal
+/// of [snapshot] applies, unless the history already holds it. The pending
+/// check-in is cleared.
 ///
 /// Returns `null` when the run of [training] ended before [today], so a sheet
 /// left open into a later run decides nothing.
@@ -19,7 +18,6 @@ CalorieGoalSettings? decideWeeklyCheckIn({
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn pending,
   required CalorieGoalWeeklyCheckInSnapshot snapshot,
-  required bool accept,
   required DateTime today,
   CalorieRunTrainingChoice? training,
 }) {
@@ -31,16 +29,7 @@ CalorieGoalSettings? decideWeeklyCheckIn({
     }
     next = trained;
   }
-  if (!accept) {
-    next = next.applyWeeklyCheckInGoal(
-      completedAt: pending.dueDate,
-      dailyKcalGoal: goalKcalBeforeWeeklyCheckIn(
-        settings: next,
-        checkInWindowStartDate: pending.windowStartDate,
-      ),
-      weeklyCheckInSnapshot: snapshot.copyWith(isRejected: true),
-    );
-  } else if (!hasMatchingWeeklyCheckInSnapshot(
+  if (!hasMatchingWeeklyCheckInSnapshot(
     settings: next,
     dailyKcalGoal: snapshot.baseGoalKcal,
     weeklyCheckInSnapshot: snapshot,

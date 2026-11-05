@@ -10,15 +10,14 @@ import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sh
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Step 1: weight and TDEE since the goal start, and the TDEE to go on with.
+/// Step 1: weight and TDEE since the goal start, and the measured TDEE that
+/// the next run goes on with.
 class DiaryWeeklyCheckInReviewStep extends StatelessWidget {
   /// Creates the review step.
   const new({
     required this.plan,
-    required this.useMeasured,
     required this.lowConfidence,
     required this.format,
-    required this.onUseMeasured,
     required this.onChangeGoal,
     super.key,
   });
@@ -26,17 +25,11 @@ class DiaryWeeklyCheckInReviewStep extends StatelessWidget {
   /// Plan of the check-in.
   final CalorieWeeklyCheckInPlan plan;
 
-  /// Whether the measured TDEE is picked.
-  final bool useMeasured;
-
   /// Whether the measurement had only few weights.
   final bool lowConfidence;
 
   /// Number formats.
   final DiaryWeeklyCheckInNumberFormat format;
-
-  /// Called with the picked TDEE.
-  final ValueChanged<bool> onUseMeasured;
 
   /// Opens the goal calculator.
   final VoidCallback onChangeGoal;
@@ -46,10 +39,6 @@ class DiaryWeeklyCheckInReviewStep extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final progress = plan.progress;
     final measurement = plan.measurement;
-    final previousTargets = plan.targetsFor(
-      useMeasured: false,
-      trainingDays: plan.previousTrainingDayCount,
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -71,33 +60,16 @@ class DiaryWeeklyCheckInReviewStep extends StatelessWidget {
         if (measurement != null) ...[
           const SizedBox(height: AppSpacing.lg),
           DiaryWeeklyCheckInChoiceTile(
-            key: DiaryWeeklyCheckInSheetKeys.useMeasuredChoice,
-            isSelected: useMeasured,
-            leading: DiaryWeeklyCheckInRadioMark(isSelected: useMeasured),
-            title: l10n.diaryCheckInUseMeasured,
-            detail: l10n.diaryCheckInUseMeasuredDetail(
+            key: DiaryWeeklyCheckInSheetKeys.measuredTdeeRow,
+            leading: const Icon(Icons.insights_rounded),
+            title: l10n.diaryCheckInMeasuredTdee,
+            detail: l10n.diaryCheckInMeasuredTdeeDetail(
               format.kcal(measurement.tdeeKcal),
             ),
             trailing: DiaryWeeklyCheckInChoiceValue(
               value: format.kcal(measurement.goalKcal),
               caption: l10n.diaryCheckInGoalKcalCaption,
             ),
-            onTap: () => onUseMeasured(true),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          DiaryWeeklyCheckInChoiceTile(
-            key: DiaryWeeklyCheckInSheetKeys.keepPreviousChoice,
-            isSelected: !useMeasured,
-            leading: DiaryWeeklyCheckInRadioMark(isSelected: !useMeasured),
-            title: l10n.diaryCheckInKeepPrevious,
-            detail: l10n.diaryCheckInKeepPreviousDetail(
-              format.kcal(plan.previousTdeeKcal),
-            ),
-            trailing: DiaryWeeklyCheckInChoiceValue(
-              value: format.kcal(previousTargets.goalKcal),
-              caption: l10n.diaryCheckInGoalKcalCaption,
-            ),
-            onTap: () => onUseMeasured(false),
           ),
           if (lowConfidence) ...[
             const SizedBox(height: AppSpacing.sm),

@@ -135,10 +135,10 @@ is the one accepted exception, for `features/home_widget`.
 
 - `presentation/widgets/diary_weekly_checkin_sheet/` owns the weekly check-in
   as a tall bottom sheet in three steps: the review since the goal start with
-  the choice between the measured and the previous TDEE, the training days of
+  the measured TDEE and the goal it gives, the training days of
   the next run (Calories `TrainingDayChips` and `TrainingWeekDepotChart`), and
   the new targets. "Woche starten" saves the training days of the run, then
-  applies or rejects the check-in, in one Calories controller action. A reached goal shows its own page and asks for
+  applies the check-in, in one Calories controller action. A reached goal shows its own page and asks for
   a new goal. The sheet controller keeps the step and the choices while the
   data reloads. "Ziel ändern" closes the sheet for the Calories new-goal
   sheet; when that closes without a new goal, the section opens the check-in

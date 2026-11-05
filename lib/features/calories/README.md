@@ -212,7 +212,8 @@ projection of the charts.
 The protein and fat targets of a day use the macro weight from the goal
 history (`macroWeightKgForDay`), not the current calculator profile weight.
 A weekly check-in snapshot stores the trend weight on its window end, or on the
-last weigh-in before it, as `macroWeightKg`; a rejected check-in stores it too.
+last weigh-in before it, as `macroWeightKg`; a rejected check-in, which only
+app versions up to 3.10 could save, stores it too.
 A calculated goal entry supplies its profile weight as the start weight. A
 check-in without any weigh-in keeps the previous weight. The smoothed trend
 weight is right here because the macros need a calm level, not a slope.

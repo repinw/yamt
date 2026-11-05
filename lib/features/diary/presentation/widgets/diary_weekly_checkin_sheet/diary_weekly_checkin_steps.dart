@@ -73,11 +73,8 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
         children: [
           DiaryWeeklyCheckInReviewStep(
             plan: plan,
-            useMeasured: state.useMeasured,
             lowConfidence: lowConfidence,
             format: format,
-            onUseMeasured: (useMeasured) =>
-                controller().setUseMeasured(useMeasured: useMeasured),
             onChangeGoal: () => onPop(DiaryWeeklyCheckInSheetAction.newGoal),
           ),
         ],
@@ -131,9 +128,7 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
           FilledButton(
             key: DiaryWeeklyCheckInSheetKeys.startWeekButton,
             onPressed: () => onPop(
-              state.useMeasured
-                  ? DiaryWeeklyCheckInSheetAction.apply
-                  : DiaryWeeklyCheckInSheetAction.reject,
+              DiaryWeeklyCheckInSheetAction.apply,
               plan.nextRun.choice(state.trainingDays),
             ),
             child: Text(l10n.diaryCheckInStartWeek),

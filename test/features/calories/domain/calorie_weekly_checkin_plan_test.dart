@@ -25,7 +25,6 @@ CalorieWeeklyCheckInPlan _plan({
     ),
     hasWeeklyTrainingSchedule: hasWeeklyTrainingSchedule,
     sessionKcal: 350,
-    previousTdeeKcal: 2164,
     previousGoalKcal: 1614,
     measurement: measurement,
     progress: null,
@@ -39,7 +38,7 @@ CalorieWeeklyCheckInPlan _plan({
 
 void main() {
   test('the measured TDEE sets the goal and splits it over the week', () {
-    final targets = _plan().targetsFor(useMeasured: true, trainingDays: 3);
+    final targets = _plan().targetsFor(trainingDays: 3);
 
     expect(targets.isMeasured, isTrue);
     expect(targets.goalKcal, 1690);
@@ -52,8 +51,8 @@ void main() {
     expect(targets.macroWeightKg, 80);
   });
 
-  test('keeping the previous TDEE keeps the previous goal', () {
-    final targets = _plan().targetsFor(useMeasured: false, trainingDays: 0);
+  test('without a measurement the previous goal applies', () {
+    final targets = _plan(measurement: null).targetsFor(trainingDays: 0);
 
     expect(targets.isMeasured, isFalse);
     expect(targets.goalKcal, 1614);
@@ -62,16 +61,8 @@ void main() {
     expect(targets.restDayKcal, 1614);
   });
 
-  test('without a measurement the previous goal applies', () {
-    final targets = _plan(measurement: null)
-        .targetsFor(useMeasured: true, trainingDays: 3);
-
-    expect(targets.isMeasured, isFalse);
-    expect(targets.goalKcal, 1614);
-  });
-
   test('the extra kcal of the measured goal go to carbs', () {
-    final targets = _plan().targetsFor(useMeasured: true, trainingDays: 3);
+    final targets = _plan().targetsFor(trainingDays: 3);
 
     expect(targets.macros.carbs, greaterThan(targets.previousMacros.carbs));
     expect(targets.macros.fat, targets.previousMacros.fat);
@@ -79,8 +70,8 @@ void main() {
 
   test('a weekly schedule counts training without a session', () {
     final withSchedule = _plan(hasWeeklyTrainingSchedule: true)
-        .targetsFor(useMeasured: true, trainingDays: 0);
-    final withSession = _plan().targetsFor(useMeasured: true, trainingDays: 3);
+        .targetsFor(trainingDays: 0);
+    final withSession = _plan().targetsFor(trainingDays: 3);
 
     expect(withSchedule.macros.protein, withSession.macros.protein);
   });

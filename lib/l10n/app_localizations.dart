@@ -3592,12 +3592,6 @@ abstract class AppLocalizations {
   /// **'Could not close the weekly check-in.'**
   String get caloriesWeeklyCheckInApplyFailed;
 
-  /// No description provided for @caloriesWeeklyCheckInRejectFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not reject the weekly check-in.'**
-  String get caloriesWeeklyCheckInRejectFailed;
-
   /// No description provided for @caloriesWeeklyCheckInHintReadyTitle.
   ///
   /// In en, this message translates to:
@@ -8839,29 +8833,17 @@ abstract class AppLocalizations {
   /// **'Expenditure (TDEE) per run'**
   String get diaryCheckInTdeeChart;
 
-  /// No description provided for @diaryCheckInUseMeasured.
+  /// No description provided for @diaryCheckInMeasuredTdee.
   ///
   /// In en, this message translates to:
-  /// **'Use the measured one'**
-  String get diaryCheckInUseMeasured;
+  /// **'Measured TDEE'**
+  String get diaryCheckInMeasuredTdee;
 
-  /// No description provided for @diaryCheckInUseMeasuredDetail.
+  /// No description provided for @diaryCheckInMeasuredTdeeDetail.
   ///
   /// In en, this message translates to:
   /// **'TDEE {kcal} from this run'**
-  String diaryCheckInUseMeasuredDetail(String kcal);
-
-  /// No description provided for @diaryCheckInKeepPrevious.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep the previous one'**
-  String get diaryCheckInKeepPrevious;
-
-  /// No description provided for @diaryCheckInKeepPreviousDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'TDEE {kcal}, goal as last week'**
-  String diaryCheckInKeepPreviousDetail(String kcal);
+  String diaryCheckInMeasuredTdeeDetail(String kcal);
 
   /// No description provided for @diaryCheckInGoalKcalCaption.
   ///

@@ -62,8 +62,6 @@ import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_ca
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_weekly_checkin_sheet/diary_weekly_checkin_choice_tile.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -355,10 +353,6 @@ void main() {
       find.byKey(DiaryWeeklyCheckInCardKeys.continueButton),
     );
     await _pumpFrames(tester);
-    await _tapCheckInSheet(
-      tester,
-      DiaryWeeklyCheckInSheetKeys.useMeasuredChoice,
-    );
     await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
     await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.trainingDay(2));
     final choices = sheetState();
@@ -607,7 +601,7 @@ void main() {
 
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
 
-    await _finishWeeklyCheckIn(tester, keepPrevious: false);
+    await _finishWeeklyCheckIn(tester);
     await _pumpFrames(tester, count: 4);
 
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
@@ -643,87 +637,12 @@ void main() {
 
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
 
-    await _finishWeeklyCheckIn(tester, keepPrevious: false);
+    await _finishWeeklyCheckIn(tester);
     await _pumpFrames(tester);
 
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
     expect(find.text('Could not close the weekly check-in.'), findsOneWidget);
-  });
-
-  testWidgets('hides weekly check-in hint and dialog when reject succeeds', (
-    tester,
-  ) async {
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2200,
-        calculatorProfile: null,
-        effectiveDate: addLocalDays(selectedDay, -14),
-      ),
-    );
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      settingsRepository: settingsRepository,
-      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
-        windowStartDate: DateTime(2026, 4, 20),
-      ),
-    );
-
-    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
-    expect(
-      find.byKey(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice),
-      findsOneWidget,
-    );
-
-    await _finishWeeklyCheckIn(tester, keepPrevious: true);
-    await _pumpFrames(tester);
-
-    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
-    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
-    expect(
-      find.byKey(DiaryWeeklyCheckInCardKeys.showAgainButton),
-      findsNothing,
-    );
-
-    final currentSettings = await settingsRepository.readSettings();
-    expect(
-      currentSettings.goalHistory.last.weeklyCheckInSnapshot?.isRejected,
-      isTrue,
-    );
-    // The base goal stays; the planned training days only split it.
-    expect(currentSettings.baseGoalKcalForDay(selectedDay), 2200);
-  });
-
-  testWidgets('shows weekly check-in hint again when reject fails', (
-    tester,
-  ) async {
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2200,
-        calculatorProfile: null,
-        effectiveDate: addLocalDays(selectedDay, -14),
-      ),
-    )..saveShouldFail = true;
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      settingsRepository: settingsRepository,
-      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
-        windowStartDate: DateTime(2026, 4, 20),
-      ),
-    );
-
-    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
-
-    await _finishWeeklyCheckIn(tester, keepPrevious: true);
-    await _pumpFrames(tester);
-
-    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
-    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
-    expect(find.text('Could not reject the weekly check-in.'), findsOneWidget);
   });
 
   testWidgets(
@@ -745,10 +664,6 @@ void main() {
           )
           .requireValue!;
 
-      await _tapCheckInSheet(
-        tester,
-        DiaryWeeklyCheckInSheetKeys.keepPreviousChoice,
-      );
       await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
       await _tapCheckInSheet(
         tester,
@@ -778,16 +693,7 @@ void main() {
         find.byKey(CalorieGoalCalculatorSheetKeys.stepCounter),
         findsNothing,
       );
-      expect(
-        tester
-            .widget<DiaryWeeklyCheckInChoiceTile>(
-              find.byKey(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice),
-            )
-            .isSelected,
-        isTrue,
-      );
       expect(sheetState().step, DiaryWeeklyCheckInStep.review);
-      expect(sheetState().useMeasured, isFalse);
       expect(sheetState().trainingDays, choices.trainingDays);
     },
   );
@@ -1496,17 +1402,7 @@ Future<void> _tapCheckInSheet(WidgetTester tester, Key key) async {
 }
 
 /// Walks the check-in sheet to its last step and starts the week.
-Future<void> _finishWeeklyCheckIn(
-  WidgetTester tester, {
-  required bool keepPrevious,
-}) async {
-  if (keepPrevious) {
-    final choice = find.byKey(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice);
-    await tester.ensureVisible(choice);
-    await _pumpFrames(tester);
-    await tester.tap(choice);
-    await _pumpFrames(tester);
-  }
+Future<void> _finishWeeklyCheckIn(WidgetTester tester) async {
   for (var step = 0; step < 3; step++) {
     await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
     await _pumpFrames(tester);

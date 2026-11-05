@@ -116,7 +116,6 @@ Future<CalorieWeeklyCheckInPlan?> _buildPlan(
     hasWeeklyTrainingSchedule:
         goalProfile?.trainingWeekdays.isNotEmpty ?? false,
     sessionKcal: settings.trainingSessionKcalForDay(today),
-    previousTdeeKcal: calculation?.previousTdeeKcal ?? 0,
     previousGoalKcal:
         calculation?.previousGoalKcal ??
         goalKcalBeforeWeeklyCheckIn(

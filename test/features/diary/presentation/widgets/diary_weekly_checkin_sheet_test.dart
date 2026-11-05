@@ -39,7 +39,7 @@ void main() {
 
     expect(find.text('Week done'), findsOneWidget);
     expect(
-      find.byKey(DiaryWeeklyCheckInSheetKeys.useMeasuredChoice),
+      find.byKey(DiaryWeeklyCheckInSheetKeys.measuredTdeeRow),
       findsOneWidget,
     );
 
@@ -171,38 +171,6 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.photoAdd), findsNothing);
   });
 
-  testWidgets('keeping the previous TDEE returns reject', (tester) async {
-    final results = <DiaryWeeklyCheckInSheetResult?>[];
-    await tester.pumpWidget(
-      _scoped(_App(checkInData: _readyData(), onResult: results.add)),
-    );
-    await _openSheet(tester);
-
-    await _tapVisible(
-      tester,
-      find.byKey(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
-    await tester.pumpAndSettle();
-    await _tapVisible(
-      tester,
-      find.byKey(DiaryWeeklyCheckInSheetKeys.noSessionButton),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
-    await tester.pumpAndSettle();
-    expect(find.text('previous'), findsOneWidget);
-
-    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.startWeekButton));
-    await tester.pumpAndSettle();
-
-    expect(results.single!.action, DiaryWeeklyCheckInSheetAction.reject);
-    expect(results.single!.training!.trainingDays, isEmpty);
-  });
-
   testWidgets('later and change goal close the sheet with their action', (
     tester,
   ) async {
@@ -332,7 +300,6 @@ CalorieWeeklyCheckInPlan _latePlan() {
     ),
     hasWeeklyTrainingSchedule: plan.hasWeeklyTrainingSchedule,
     sessionKcal: plan.sessionKcal,
-    previousTdeeKcal: plan.previousTdeeKcal,
     previousGoalKcal: plan.previousGoalKcal,
     measurement: plan.measurement,
     progress: plan.progress,

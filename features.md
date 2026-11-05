@@ -385,8 +385,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Weekly check-in with weight trend, learned TDEE, target refresh, and blocking
   reasons for missing intake or weight data. It is a tall sheet in four
   steps: a look back since the goal start (trend, eaten, training days, weight
-  chart, and the TDEE of each run) with the choice "Gemessenen übernehmen" or
-  "Bisherigen behalten" and a link to change the goal; the training days of
+  chart, and the TDEE of each run) with the measured TDEE and the goal it
+  gives, and a link to change the goal; the training days of
   the next run, which start empty ("Wie letzter Run" plans the last ones
   again, and the date chips and the bars of the week chart switch a day);
   the progress photos of a pose
@@ -395,11 +395,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   adds or replaces today's photo and "Weiter" skips it; and the new targets
   with the
   training and rest day split and the macros before and after. "Woche
-  starten" saves the choice and the training days. A reached goal shows a
+  starten" applies the measured TDEE and saves the training days; there is
+  no option to keep the previous TDEE, since the goal follows the daily TDEE
+  anyway. A reached goal shows a
   congratulations page instead of the look back. The goal sheet that the
   check-in opens has a tonal back arrow. Leaving it without a new goal, by the
   arrow, "Abbrechen", or a swipe, opens the check-in again on the same step
-  with the choices made so far, still undecided. A check-in swiped away or
+  with the training days chosen so far, still undecided. A check-in swiped away or
   put off with "Später" also keeps its step and choices for "Fortsetzen"
   while the diary stays open.
 - Burn Week budget model with daily goal, activity credit, carryover, skipped
@@ -422,8 +424,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   disclaimer on the onboarding summary and in the macro settings. No training
   days are preset.
 - The body weight for the protein and fat targets follows the user week by
-  week. Each 7-day check-in saves the trend weight of its last day, also when
-  the user keeps the old calorie goal, and a new calculated goal saves its
+  week. Each 7-day check-in saves the trend weight of its last day, and a
+  new calculated goal saves its
   start weight. A day uses the latest of these on or before it, so the macros
   stay fixed within a week and past days keep their targets.
 - Inventory-backed delete/restore behavior for entries created from stock.
