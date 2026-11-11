@@ -128,7 +128,7 @@ class AiChefImageGenerator {
     }
 
     final model = FirebaseAI.googleAI().generativeModel(
-      model: 'gemini-3.1-flash-image',
+      model: 'gemini-nano-banana-2.1',
       generationConfig: GenerationConfig(
         responseModalities: [ResponseModalities.text, ResponseModalities.image],
       ),
