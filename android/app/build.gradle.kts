@@ -38,7 +38,7 @@ dependencies {
   implementation("androidx.credentials:credentials:1.6.0")
   implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
 
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
 
