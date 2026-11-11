@@ -197,9 +197,9 @@ domain and data. Data depends on domain. Domain depends on nothing.
   `build`.
 - NEVER call `ref.read(p.future)` or `container.read(p.future)`. An
   auto-dispose provider without a listener disposes during loading and throws
-  `StateError: The provider X was disposed during loading state`. Read the
-  repository, take the data from the caller, or hold a `container.listen`
-  subscription for the whole operation. *Enforced by:
+  `ProviderDisposedException: The provider X was disposed during loading
+  state`. Read the repository, take the data from the caller, or hold a
+  `container.listen` subscription for the whole operation. *Enforced by:
   `test/architecture/autodispose_future_read_test.dart`.*
 
 ### Rendering AsyncValue

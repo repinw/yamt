@@ -74,7 +74,7 @@ final class ProgressPhotoOverviewProvider
 }
 
 String _$progressPhotoOverviewHash() =>
-    r'a8404f7237e24970485145cf1a66231999111313';
+    r'b88bbda6d2990fa27571e1db62418f70092a4239';
 
 /// The progress photos of [scope]: those of the current or of one past goal,
 /// or all photos, also those from before the first goal.

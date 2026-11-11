@@ -109,7 +109,10 @@ void main() {
       );
       final pending = eating.stage(_item(), 250)!;
       await container.pump();
-      expect(container.exists(inventoryItemEatControllerProvider), isFalse);
+      expect(
+        container.read(inventoryItemEatControllerProvider.exists),
+        isFalse,
+      );
 
       expect(await eating.discard(pending.id), isTrue);
 

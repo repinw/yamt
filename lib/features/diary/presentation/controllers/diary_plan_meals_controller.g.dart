@@ -79,7 +79,7 @@ final class DiaryPlanMealsProvider
   }
 }
 
-String _$diaryPlanMealsHash() => r'cab03c18ae8c5362f824f1999b7b98503e75ce01';
+String _$diaryPlanMealsHash() => r'f3bb12159d42c753dc5ae6ad2875f2f7b6b5d5b9';
 
 /// The Vorrat meal of each meal plan on [day], by plan id, as the meal is
 /// now. Loads the meals only when the day has a meal plan.
