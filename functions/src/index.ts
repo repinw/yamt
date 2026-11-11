@@ -14,9 +14,11 @@ initializeApp();
  * households when the Firebase Auth user is deleted (account deletion and
  * the account-link conflict paths). Global catalog contributions stay.
  *
- * v1 trigger: v2 has no plain Auth delete trigger. europe-west1 sits in the
- * eur3 multi-region of the Firestore database. Retries are on because every
- * step is idempotent.
+ * 1st gen trigger. 2nd gen has onUserDeleted since firebase-functions 7.4,
+ * but a function cannot change its generation in place: the move needs a
+ * deploy under a new name. Until then the runtime stays at Node.js 22, the
+ * last one 1st gen supports. europe-west1 sits in the eur3 multi-region of
+ * the Firestore database. Retries are on because every step is idempotent.
  */
 export const deleteAccountData = functions
   .region('europe-west1')
