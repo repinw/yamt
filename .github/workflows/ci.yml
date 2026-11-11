@@ -290,7 +290,7 @@ jobs:
 
       - name: Upload the device log
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logcat-${{ strategy.job-index }}
           path: logcat.txt
