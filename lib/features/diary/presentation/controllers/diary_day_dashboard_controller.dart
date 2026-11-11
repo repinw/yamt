@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:riverpod/misc.dart' show ProviderDisposedException;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -289,5 +290,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
 }
 
 bool _isDisposedDuringProviderLoad(Object error) {
-  return error is StateError && error.message.contains('disposed');
+  // Riverpod reports it with ProviderDisposedException; the calorie providers
+  // throw their own StateError.
+  return error is ProviderDisposedException ||
+      (error is StateError && error.message.contains('disposed'));
 }

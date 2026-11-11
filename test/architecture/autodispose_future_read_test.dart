@@ -39,8 +39,8 @@ void main() {
         ..writeln(
           '\nPer architecture.md, calling .read(provider.future) on '
           'unlistened auto-disposed providers causes disposal during '
-          'loading (StateError). Query repository directly or pass data '
-          'from the caller.',
+          'loading (ProviderDisposedException). Query repository directly '
+          'or pass data from the caller.',
         );
 
       expect(violations, isEmpty, reason: failureMessage.toString());

@@ -199,6 +199,6 @@ void main() {
     await settle(tester);
 
     // The test fails when a timer of the provider is still pending now.
-    expect(container.exists(diaryPaceShareProvider(today)), isFalse);
+    expect(container.read(diaryPaceShareProvider(today).exists), isFalse);
   });
 }

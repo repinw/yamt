@@ -166,7 +166,7 @@ void main() {
 
       expect(summary.read(), isNull);
       expect(
-        container.exists(diaryDayDashboardControllerProvider(selectedDay)),
+        container.read(diaryDayDashboardControllerProvider(selectedDay).exists),
         isFalse,
       );
       expect(cachedEntryName(), 'Cached oats');
