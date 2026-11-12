@@ -4,12 +4,12 @@ publish_to: 'none'
 version: 3.10.0+43
 
 environment:
-  sdk: ^3.13.7
+  sdk: ^3.14.0
 
 dependencies:
   android_intent_plus: ^6.1.0
   archive: ^4.6.0
-  cached_network_image: ^4.0.6
+  cached_network_image: ^4.0.7
   cloud_firestore: ^7.1.0
   collection: ^1.19.1
   connectivity_plus: ^7.3.2
