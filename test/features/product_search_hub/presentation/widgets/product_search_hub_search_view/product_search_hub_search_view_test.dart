@@ -31,15 +31,17 @@ Widget _buildHarness({
   List<InventoryItem> recentItems = const <InventoryItem>[],
   FakeConnectivity? connectivity,
 }) {
-  return ProviderScope(
-    overrides: [
-      if (connectivity != null)
-        connectivityProvider.overrideWithValue(connectivity),
-      voiceSearchServiceProvider.overrideWithValue(_FakeVoiceSearchService()),
-      inventoryItemRepositoryProvider.overrideWithValue(
-        _FakeInventoryItemRepository(recentItems),
-      ),
-    ],
+  return UncontrolledProviderScope(
+    container: ProviderContainer.test(
+      overrides: [
+        if (connectivity != null)
+          connectivityProvider.overrideWithValue(connectivity),
+        voiceSearchServiceProvider.overrideWithValue(_FakeVoiceSearchService()),
+        inventoryItemRepositoryProvider.overrideWithValue(
+          _FakeInventoryItemRepository(recentItems),
+        ),
+      ],
+    ),
     child: MaterialApp(
       locale: const Locale('en'),
       localizationsDelegates: appLocalizationsDelegates,

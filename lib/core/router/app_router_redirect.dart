@@ -18,7 +18,7 @@ String? appRouterRedirect(Ref ref, GoRouterState state) {
   if (invite != null) {
     // The sign-in and onboarding redirects may come first, so the invite
     // waits until the household page opens.
-    ref.read(pendingHouseholdInviteProvider.notifier).invite = invite;
+    ref.read(pendingHouseholdInviteProvider.notifier).hold(invite);
   }
   // An app older than the minimum version must not open. While the check
   // loads or fails, the app opens: a lost connection must not lock anyone out.

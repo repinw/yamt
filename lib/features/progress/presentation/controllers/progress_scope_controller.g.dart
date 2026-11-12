@@ -48,7 +48,7 @@ final class ProgressScopeControllerProvider
 }
 
 String _$progressScopeControllerHash() =>
-    r'1de9191933280d011d787ac168a1692f5794b9f4';
+    r'0ba27a514bb1dc8f5a6bb48b32b19bfa62c28257';
 
 /// Which goals the Fortschritt tab shows: the current one, all, or one past
 /// goal.

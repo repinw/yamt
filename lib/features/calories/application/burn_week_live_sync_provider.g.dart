@@ -26,7 +26,7 @@ final class BurnWeekLiveSyncTickerPeriodProvider
         argument: null,
         retry: null,
         name: r'burnWeekLiveSyncTickerPeriodProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -54,7 +54,7 @@ final class BurnWeekLiveSyncTickerPeriodProvider
 }
 
 String _$burnWeekLiveSyncTickerPeriodHash() =>
-    r'd97d27e1e4e02e2c694b8fd5f9ccb3990a124e44';
+    r'1200f452b0aabf2552a64cbbf1e49a036e77291d';
 
 /// Keeps Burn Week sync active outside the widget tree.
 

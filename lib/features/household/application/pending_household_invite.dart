@@ -9,11 +9,11 @@ class PendingHouseholdInvite extends _$PendingHouseholdInvite {
   @override
   HouseholdInvite? build() => null;
 
-  /// The waiting invite.
-  HouseholdInvite? get invite => state;
-
-  /// Keeps [value] until the join form takes it.
-  set invite(HouseholdInvite? value) => state = value;
+  /// Keeps [invite] until the join form takes it.
+  void hold(HouseholdInvite invite) {
+    if (state == invite) return;
+    state = invite;
+  }
 
   /// Returns the waiting invite and forgets it.
   HouseholdInvite? take() {

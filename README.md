@@ -255,7 +255,7 @@ werden nach Möglichkeit mit lokalen Fakes oder der Emulator Suite geprüft.
 
 ```bash
 flutter test
-flutter analyze
+tool/ci_analyze.sh
 ```
 
 Android-Integrationstests verwenden einen sauberen, headless gestarteten

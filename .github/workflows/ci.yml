@@ -63,11 +63,13 @@ jobs:
           flutter pub get
           (cd tools/architecture_lints && dart pub get)
 
+      # Fails on every issue except max_file_lines in old files.
       - name: Analyze
-        run: flutter analyze lib test integration_test
+        run: tool/ci_analyze.sh
 
-      # `flutter analyze <directory>` does not report analyzer plugin lints
-      # such as max_file_lines, so the changed files are analyzed one by one.
+      # Old files may keep their plugin lints such as max_file_lines, but a
+      # changed file must not get a new one: the changed files are compared
+      # with the base one by one.
       - name: No new lints in changed files
         run: tool/ci_changed_file_lints.sh origin/${{ github.base_ref || 'master' }}
 

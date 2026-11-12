@@ -258,9 +258,7 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/shared/widgets/auth_form_components.dart': 1,
   },
-  'bare-keep-alive': {
-    'lib/features/calories/application/burn_week_live_sync_provider.dart': 1,
-  },
+  'bare-keep-alive': {},
   'export': {
     'lib/core/widgets/text_voice_search_bar/text_voice_search_bar.dart': 1,
     'lib/features/diary/presentation/controllers/diary_day_dashboard_controller.dart':

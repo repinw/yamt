@@ -2,9 +2,9 @@
 # Fails when a Dart file changed against the base branch has a rule that fires
 # more often than on the base branch (architecture.md, Gates, item 3).
 #
-# `dart analyze <directory>` does not report analyzer plugin lints such as
-# max_file_lines, but `dart analyze <file>...` does. This script therefore
-# analyzes the changed files one by one, on HEAD and on the merge base.
+# Old files may keep their findings (tool/ci_analyze.sh lets max_file_lines
+# pass), so this script analyzes the changed files one by one, on HEAD and on
+# the merge base, and compares the counts.
 #
 # Usage: tool/ci_changed_file_lints.sh [base-ref]   (default: origin/master)
 set -euo pipefail

@@ -34,7 +34,7 @@ class ProgressScopeSwitch extends ConsumerWidget {
         ref.watch(calorieGoalArchiveProvider).value ??
         const <TdeeAnalyticsGoalCycle>[];
     void select(ProgressScope scope) =>
-        ref.read(progressScopeControllerProvider.notifier).scope = scope;
+        ref.read(progressScopeControllerProvider.notifier).show(scope);
     return Wrap(
       spacing: AppSpacing.xs,
       children: [
