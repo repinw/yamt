@@ -7,10 +7,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_budget_card_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/device/local_notifications.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
@@ -41,6 +43,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/helpers/auth_user_data_key_session.dart';
+import '../../test/helpers/fake_local_notifications.dart';
 import '../../test/helpers/long_press_test_utils.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 import '../../test/helpers/time_picker_test_utils.dart';
@@ -66,6 +69,7 @@ Widget _buildApp(
   FakeCalorieSettingsRepository settings,
   FakeCalorieLogRepository log,
   MemoryAppPreferences preferences,
+  FakeLocalNotifications notifications,
 ) {
   final user = _MockUser();
   when(() => user.uid).thenReturn('user-1');
@@ -102,6 +106,7 @@ Widget _buildApp(
     overrides: [
       appPreferencesProvider.overrideWithValue(preferences),
       clockProvider.overrideWithValue(() => _now),
+      localNotificationsProvider.overrideWithValue(notifications),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
       firebaseAuthProvider.overrideWithValue(auth),
@@ -147,6 +152,7 @@ Widget _buildApp(
 const _markerKey = 'diary_pace_marker_v1';
 const _sharesKey = 'diary_meal_shares_v1';
 const _timesKey = 'diary_meal_times_v1';
+const _noticeKey = 'diary_pace_notification_on_v1';
 
 /// An oat breakfast of 300 kcal, eaten at 8:00.
 final _oats = CalorieEntry.create(
@@ -173,6 +179,11 @@ String? _text(WidgetTester tester, Key key) =>
 
 String? _part(WidgetTester tester, MealType meal) =>
     _text(tester, DiaryMealSharesEditor.partKey(meal));
+
+/// Whether the menu's notification switch is on.
+bool _noticeOn(WidgetTester tester) => tester
+    .widget<AppSwitchListTile>(find.byKey(DiaryBudgetCardKeys.paceNoticeSwitch))
+    .value;
 
 /// The words on a time button of the parts of the day, such as "bis 09:00".
 String? _time(WidgetTester tester, Key key) => tester
@@ -205,6 +216,8 @@ double _markerShare(WidgetTester tester) {
 /// Drags on the blocks of the parts of the day from [from] to [to] percent
 /// of the day.
 Future<void> _drag(WidgetTester tester, int from, int to) async {
+  await tester.ensureVisible(find.byKey(DiaryMealSharesEditor.blocksKey));
+  await tester.pumpAndSettle();
   final rect = tester.getRect(find.byKey(DiaryMealSharesEditor.blocksKey));
   const inset = AppBudgetCard.mealSharesHandle / 2;
   Offset at(int percent) => Offset(
@@ -255,10 +268,13 @@ void main() {
     );
     final log = FakeCalorieLogRepository(initialEntries: [_oats]);
     final preferences = MemoryAppPreferences();
+    final notifications = FakeLocalNotifications();
     addTearDown(settings.dispose);
     addTearDown(log.dispose);
 
-    await tester.pumpWidget(_buildApp(settings, log, preferences));
+    await tester.pumpWidget(
+      _buildApp(settings, log, preferences, notifications),
+    );
     await tester.pumpAndSettle();
 
     // Off by default: no marker on the kcal line, no target in the heading.
@@ -275,10 +291,23 @@ void main() {
     await _openMenu(tester);
     expect(find.byKey(DiaryBudgetCardKeys.paceSwitch), findsOneWidget);
     expect(find.byKey(DiaryMealSharesEditor.blocksKey), findsNothing);
+    expect(find.byKey(DiaryBudgetCardKeys.paceNoticeSwitch), findsNothing);
 
     await _tap(tester, DiaryBudgetCardKeys.paceSwitch);
     expect(preferences.getIntSync(_markerKey), 1);
     expect(find.byKey(DiaryMealSharesEditor.blocksKey), findsOneWidget);
+
+    // The notification switch comes with the marker, off by default; turning
+    // it on asks for the permission once and is kept.
+    await tester.ensureVisible(
+      find.byKey(DiaryBudgetCardKeys.paceNoticeSwitch),
+    );
+    await tester.pumpAndSettle();
+    expect(_noticeOn(tester), isFalse);
+    await _tap(tester, DiaryBudgetCardKeys.paceNoticeSwitch);
+    expect(_noticeOn(tester), isTrue);
+    expect(notifications.permissionRequests, 1);
+    expect(preferences.getStringSync(_noticeKey), 'set');
     expect(_part(tester, MealType.breakfast), '25 % · 500 kcal');
     expect(_time(tester, DiaryMealSharesEditor.startKey), 'ab 06:00');
     expect(
@@ -341,6 +370,7 @@ void main() {
     await _tap(tester, DiaryBudgetCardKeys.paceSwitch);
     expect(preferences.getIntSync(_markerKey), isNull);
     expect(find.byKey(DiaryMealSharesEditor.blocksKey), findsNothing);
+    expect(find.byKey(DiaryBudgetCardKeys.paceNoticeSwitch), findsNothing);
     await _closeMenu(tester);
     expect(_marker, findsNothing);
     expect(_breakfastTarget(tester), isNull);
