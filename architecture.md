@@ -29,6 +29,9 @@ code that you may know:
 - **Dart 3.13 constructors:** write `const new({super.key})`, not
   `const MyWidget({super.key})`. *Enforced by:
   `unnecessary_type_name_in_constructor`.*
+- **New SDK APIs:** `sdk-news.md` lists what Flutter 3.50, Dart 3.14,
+  material_ui 1.11 and Riverpod 3.5 added. Read it before you reach for an
+  older pattern, and renew it with every SDK upgrade.
 - **Riverpod 3** with code generation. Functional providers take a plain
   `Ref ref`. There are no generated `FooRef` types.
 - **Material:** import `package:material_ui/material_ui.dart`. NEVER import
@@ -552,11 +555,11 @@ strings. Report existing compatibility code in changed files to the user.
    pull request.
 2. `flutter gen-l10n` if ARB files changed.
 3. `tool/ci_changed_file_lints.sh` reports no new issue, and
-   `flutter analyze lib test integration_test` passes. Analyzing a directory
-   does not report plugin lints such as `max_file_lines`, so the script
-   analyzes the changed files one by one. An issue in a file that you did not
-   change is legacy. In a file that you changed, no rule may fire more often
-   than on `origin/master`.
+   `tool/ci_analyze.sh` passes. It analyzes `lib`, `test` and
+   `integration_test` and fails on every issue except `max_file_lines`, which
+   fires in every old file over 300 lines. The first script compares the
+   changed files with `origin/master` one by one: in a file that you changed,
+   no rule may fire more often than there.
 4. `flutter test -d flutter-tester test/architecture` passes.
 5. Tests of the affected features pass.
 6. `npx jscpd lib` lists no clone in a file that you changed. The project

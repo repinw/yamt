@@ -22,9 +22,9 @@ class ProgressScopeController extends _$ProgressScopeController {
     return ProgressScope.goal;
   }
 
-  /// The shown scope.
-  ProgressScope get scope => state;
-
-  /// Shows the goals of the given scope.
-  set scope(ProgressScope value) => state = value;
+  /// Shows the goals of [scope].
+  void show(ProgressScope scope) {
+    if (state == scope) return;
+    state = scope;
+  }
 }

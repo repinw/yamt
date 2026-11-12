@@ -39,14 +39,12 @@ Future<bool> completeInventoryManualAddEatFlow({
 
   final container = ProviderScope.containerOf(context, listen: false);
   final inventorySubscription = container.listen(
-    inventoryItemsControllerProvider,
+    inventoryItemsControllerProvider.future,
     (previous, next) {},
     fireImmediately: true,
   );
   try {
-    final inventoryReady = container.read(
-      inventoryItemsControllerProvider.future,
-    );
+    final inventoryReady = inventorySubscription.read();
     final inventoryController = container.read(
       inventoryItemsControllerProvider.notifier,
     );

@@ -45,8 +45,9 @@ void main() {
 
   test('a picked past goal goes back to the current goal when the goals '
       'change', () async {
-    container.read(progressScopeControllerProvider.notifier).scope =
-        const ProgressPastGoalScope(1);
+    container
+        .read(progressScopeControllerProvider.notifier)
+        .show(const ProgressPastGoalScope(1));
 
     await changeGoals();
 
@@ -54,8 +55,9 @@ void main() {
   });
 
   test('all goals stay picked when the goals change', () async {
-    container.read(progressScopeControllerProvider.notifier).scope =
-        ProgressScope.all;
+    container
+        .read(progressScopeControllerProvider.notifier)
+        .show(ProgressScope.all);
 
     await changeGoals();
 

@@ -18,9 +18,8 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 part 'burn_week_live_sync_provider.g.dart';
 
 /// How often Burn Week live sync should re-check the current day.
-@riverpod
+@Riverpod(keepAlive: true)
 Duration? burnWeekLiveSyncTickerPeriod(Ref ref) {
-  ref.keepAlive();
   return const Duration(minutes: 1);
 }
 
