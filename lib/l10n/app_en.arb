@@ -4377,6 +4377,127 @@
   "@diaryBudgetMenuPaceNoticeDebug": {
     "description": "Debug-build-only button in the budget card menu that shows the free kcal notification a few seconds later."
   },
+  "diaryStepsLabel": "steps",
+  "@diaryStepsLabel": {
+    "description": "Word after the number of steps of the day on the diary's steps card, e.g. 8,432 steps."
+  },
+  "diaryStepsUnknown": "–",
+  "@diaryStepsUnknown": {
+    "description": "Shown in place of the number of steps when Health could not be read."
+  },
+  "diaryStepsLoadFailed": "Steps could not be read",
+  "@diaryStepsLoadFailed": {
+    "description": "Screen reader label of the diary's steps card when Health could not be read."
+  },
+  "diaryStepsSemantics": "{steps, plural, =1{1 step} other{{steps} steps}}",
+  "@diaryStepsSemantics": {
+    "description": "Screen reader label of the diary's steps card.",
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryStepsOfGoal": "/ {goal}",
+  "@diaryStepsOfGoal": {
+    "description": "Text after the number of steps of the day when the user has a steps goal, e.g. 8,432 / 10,000. Keep it short; an icon says these are steps.",
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryStepsGoalSemantics": "{steps} of {goal} steps",
+  "@diaryStepsGoalSemantics": {
+    "description": "Screen reader label of the diary's steps card with a steps goal.",
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryStepsMenuTitle": "Steps",
+  "@diaryStepsMenuTitle": {
+    "description": "Heading of the menu that a tap on the diary's steps card opens."
+  },
+  "diaryStepsMenuGoal": "Steps goal",
+  "@diaryStepsMenuGoal": {
+    "description": "Small heading over the steps goal in the steps card menu."
+  },
+  "diaryStepsMenuGoalNone": "No goal",
+  "@diaryStepsMenuGoalNone": {
+    "description": "Shown in place of the goal number, and on the chip that removes the goal."
+  },
+  "diaryStepsMenuPerDay": "steps a day",
+  "@diaryStepsMenuPerDay": {
+    "description": "Under the big goal number in the steps card menu."
+  },
+  "diaryStepsMenuLess": "{steps} fewer",
+  "@diaryStepsMenuLess": {
+    "description": "Tooltip of the minus button that lowers the steps goal.",
+    "placeholders": {
+      "steps": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryStepsMenuMore": "{steps} more",
+  "@diaryStepsMenuMore": {
+    "description": "Tooltip of the plus button that raises the steps goal.",
+    "placeholders": {
+      "steps": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryStepsMenuShow": "Show in the diary",
+  "@diaryStepsMenuShow": {
+    "description": "Title of the switch in the steps card menu that takes the steps out of the diary."
+  },
+  "diaryStepsMenuGoalFailed": "The steps goal could not be saved",
+  "@diaryStepsMenuGoalFailed": {
+    "description": "Snackbar when saving the steps goal failed."
+  },
+  "diaryStepsMenuShowHint": "Turn them on again in the settings under Health",
+  "@diaryStepsMenuShowHint": {
+    "description": "Subtitle of the switch in the steps card menu that takes the steps out of the diary."
+  },
+  "diaryStepsRaiseText": "In the last 7 days you met your steps goal on average. Do you take the challenge of {steps} more steps a day?",
+  "@diaryStepsRaiseText": {
+    "description": "Question on the steps card after a week that met the steps goal on average. The placeholder is the number of steps a day the goal would go up by, e.g. 100.",
+    "placeholders": {
+      "steps": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryStepsRaiseYes": "Yes",
+  "@diaryStepsRaiseYes": {
+    "description": "Button that raises the steps goal."
+  },
+  "diaryStepsRaiseNo": "No",
+  "@diaryStepsRaiseNo": {
+    "description": "Button that keeps the steps goal as it is."
+  },
+  "settingsStepsTitle": "Steps in the diary",
+  "@settingsStepsTitle": {
+    "description": "Title of the settings switch that shows the user's steps from Health in the diary."
+  },
+  "settingsStepsSubtitle": "Shows your steps under the daily budget",
+  "@settingsStepsSubtitle": {
+    "description": "Subtitle of the settings switch for steps in the diary."
+  },
+  "settingsStepsDenied": "No access to your steps. Allow it in Health and try again.",
+  "@settingsStepsDenied": {
+    "description": "Snackbar when the user turned steps on but did not grant the steps permission."
+  },
+  "settingsStepsFailed": "Steps could not be changed",
+  "@settingsStepsFailed": {
+    "description": "Snackbar when turning steps on or off failed with an error."
+  },
   "diaryPaceNoticeChannelName": "Free kcal",
   "@diaryPaceNoticeChannelName": {
     "description": "Android notification channel of the free kcal notification."

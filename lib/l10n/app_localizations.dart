@@ -5312,10 +5312,10 @@ abstract class AppLocalizations {
   /// **'Steps'**
   String get diaryStepsTitle;
 
-  /// No description provided for @diaryStepsLoadFailed.
+  /// Screen reader label of the diary's steps card when Health could not be read.
   ///
   /// In en, this message translates to:
-  /// **'Steps could not be loaded'**
+  /// **'Steps could not be read'**
   String get diaryStepsLoadFailed;
 
   /// No description provided for @diaryStepDetailsTitle.
@@ -11100,6 +11100,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Test notification in 5 s (debug)'**
   String get diaryBudgetMenuPaceNoticeDebug;
+
+  /// Word after the number of steps of the day on the diary's steps card, e.g. 8,432 steps.
+  ///
+  /// In en, this message translates to:
+  /// **'steps'**
+  String get diaryStepsLabel;
+
+  /// Shown in place of the number of steps when Health could not be read.
+  ///
+  /// In en, this message translates to:
+  /// **'–'**
+  String get diaryStepsUnknown;
+
+  /// Screen reader label of the diary's steps card.
+  ///
+  /// In en, this message translates to:
+  /// **'{steps, plural, =1{1 step} other{{steps} steps}}'**
+  String diaryStepsSemantics(int steps);
+
+  /// Text after the number of steps of the day when the user has a steps goal, e.g. 8,432 / 10,000. Keep it short; an icon says these are steps.
+  ///
+  /// In en, this message translates to:
+  /// **'/ {goal}'**
+  String diaryStepsOfGoal(String goal);
+
+  /// Screen reader label of the diary's steps card with a steps goal.
+  ///
+  /// In en, this message translates to:
+  /// **'{steps} of {goal} steps'**
+  String diaryStepsGoalSemantics(int steps, int goal);
+
+  /// Heading of the menu that a tap on the diary's steps card opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get diaryStepsMenuTitle;
+
+  /// Small heading over the steps goal in the steps card menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps goal'**
+  String get diaryStepsMenuGoal;
+
+  /// Shown in place of the goal number, and on the chip that removes the goal.
+  ///
+  /// In en, this message translates to:
+  /// **'No goal'**
+  String get diaryStepsMenuGoalNone;
+
+  /// Under the big goal number in the steps card menu.
+  ///
+  /// In en, this message translates to:
+  /// **'steps a day'**
+  String get diaryStepsMenuPerDay;
+
+  /// Tooltip of the minus button that lowers the steps goal.
+  ///
+  /// In en, this message translates to:
+  /// **'{steps} fewer'**
+  String diaryStepsMenuLess(String steps);
+
+  /// Tooltip of the plus button that raises the steps goal.
+  ///
+  /// In en, this message translates to:
+  /// **'{steps} more'**
+  String diaryStepsMenuMore(String steps);
+
+  /// Title of the switch in the steps card menu that takes the steps out of the diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Show in the diary'**
+  String get diaryStepsMenuShow;
+
+  /// Snackbar when saving the steps goal failed.
+  ///
+  /// In en, this message translates to:
+  /// **'The steps goal could not be saved'**
+  String get diaryStepsMenuGoalFailed;
+
+  /// Subtitle of the switch in the steps card menu that takes the steps out of the diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn them on again in the settings under Health'**
+  String get diaryStepsMenuShowHint;
+
+  /// Question on the steps card after a week that met the steps goal on average. The placeholder is the number of steps a day the goal would go up by, e.g. 100.
+  ///
+  /// In en, this message translates to:
+  /// **'In the last 7 days you met your steps goal on average. Do you take the challenge of {steps} more steps a day?'**
+  String diaryStepsRaiseText(String steps);
+
+  /// Button that raises the steps goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get diaryStepsRaiseYes;
+
+  /// Button that keeps the steps goal as it is.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get diaryStepsRaiseNo;
+
+  /// Title of the settings switch that shows the user's steps from Health in the diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps in the diary'**
+  String get settingsStepsTitle;
+
+  /// Subtitle of the settings switch for steps in the diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows your steps under the daily budget'**
+  String get settingsStepsSubtitle;
+
+  /// Snackbar when the user turned steps on but did not grant the steps permission.
+  ///
+  /// In en, this message translates to:
+  /// **'No access to your steps. Allow it in Health and try again.'**
+  String get settingsStepsDenied;
+
+  /// Snackbar when turning steps on or off failed with an error.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps could not be changed'**
+  String get settingsStepsFailed;
 
   /// Android notification channel of the free kcal notification.
   ///

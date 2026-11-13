@@ -23,6 +23,7 @@ import 'package:yamt/features/settings/presentation/widgets/settings_home_widget
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_plan_shortage_reminder_tile/settings_plan_shortage_reminder_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_profile_card/settings_profile_card.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_steps_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -71,6 +72,7 @@ class SettingsPage extends ConsumerWidget {
                           title: l10n.settingsHealthGoalsSectionTitle,
                           children: const [
                             SettingsHealthConnectTile(),
+                            SettingsStepsTile(),
                             _CalorieGoalStartTile(),
                             _CalorieGoalCalculatorTile(),
                             _MacroGoalsTile(),

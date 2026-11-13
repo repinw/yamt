@@ -3153,7 +3153,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryStepsTitle => 'Steps';
 
   @override
-  String get diaryStepsLoadFailed => 'Steps could not be loaded';
+  String get diaryStepsLoadFailed => 'Steps could not be read';
 
   @override
   String get diaryStepDetailsTitle => 'Step details';
@@ -6698,6 +6698,89 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryBudgetMenuPaceNoticeDebug =>
       'Test notification in 5 s (debug)';
+
+  @override
+  String get diaryStepsLabel => 'steps';
+
+  @override
+  String get diaryStepsUnknown => '–';
+
+  @override
+  String diaryStepsSemantics(int steps) {
+    String _temp0 = intl.Intl.pluralLogic(
+      steps,
+      locale: localeName,
+      other: '$steps steps',
+      one: '1 step',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryStepsOfGoal(String goal) {
+    return '/ $goal';
+  }
+
+  @override
+  String diaryStepsGoalSemantics(int steps, int goal) {
+    return '$steps of $goal steps';
+  }
+
+  @override
+  String get diaryStepsMenuTitle => 'Steps';
+
+  @override
+  String get diaryStepsMenuGoal => 'Steps goal';
+
+  @override
+  String get diaryStepsMenuGoalNone => 'No goal';
+
+  @override
+  String get diaryStepsMenuPerDay => 'steps a day';
+
+  @override
+  String diaryStepsMenuLess(String steps) {
+    return '$steps fewer';
+  }
+
+  @override
+  String diaryStepsMenuMore(String steps) {
+    return '$steps more';
+  }
+
+  @override
+  String get diaryStepsMenuShow => 'Show in the diary';
+
+  @override
+  String get diaryStepsMenuGoalFailed => 'The steps goal could not be saved';
+
+  @override
+  String get diaryStepsMenuShowHint =>
+      'Turn them on again in the settings under Health';
+
+  @override
+  String diaryStepsRaiseText(String steps) {
+    return 'In the last 7 days you met your steps goal on average. Do you take the challenge of $steps more steps a day?';
+  }
+
+  @override
+  String get diaryStepsRaiseYes => 'Yes';
+
+  @override
+  String get diaryStepsRaiseNo => 'No';
+
+  @override
+  String get settingsStepsTitle => 'Steps in the diary';
+
+  @override
+  String get settingsStepsSubtitle => 'Shows your steps under the daily budget';
+
+  @override
+  String get settingsStepsDenied =>
+      'No access to your steps. Allow it in Health and try again.';
+
+  @override
+  String get settingsStepsFailed => 'Steps could not be changed';
 
   @override
   String get diaryPaceNoticeChannelName => 'Free kcal';

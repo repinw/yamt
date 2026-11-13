@@ -134,3 +134,94 @@ final class DiaryBalanceCardFamily extends $Family
   @override
   String toString() => r'diaryBalanceCardProvider';
 }
+
+/// First day of the run week that [day] belongs to, or null while the day's
+/// balance has not loaded or the day has no run.
+
+@ProviderFor(diaryRunWeekStart)
+final diaryRunWeekStartProvider = DiaryRunWeekStartFamily._();
+
+/// First day of the run week that [day] belongs to, or null while the day's
+/// balance has not loaded or the day has no run.
+
+final class DiaryRunWeekStartProvider
+    extends $FunctionalProvider<DateTime?, DateTime?, DateTime?>
+    with $Provider<DateTime?> {
+  /// First day of the run week that [day] belongs to, or null while the day's
+  /// balance has not loaded or the day has no run.
+  DiaryRunWeekStartProvider._({
+    required DiaryRunWeekStartFamily super.from,
+    required DateTime super.argument,
+  }) : super(
+         retry: null,
+         name: r'diaryRunWeekStartProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryRunWeekStartHash();
+
+  @override
+  String toString() {
+    return r'diaryRunWeekStartProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<DateTime?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  DateTime? create(Ref ref) {
+    final argument = this.argument as DateTime;
+    return diaryRunWeekStart(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DateTime? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DateTime?>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DiaryRunWeekStartProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$diaryRunWeekStartHash() => r'3f0ff504bb64f8173ba953c2989990118feb403b';
+
+/// First day of the run week that [day] belongs to, or null while the day's
+/// balance has not loaded or the day has no run.
+
+final class DiaryRunWeekStartFamily extends $Family
+    with $FunctionalFamilyOverride<DateTime?, DateTime> {
+  DiaryRunWeekStartFamily._()
+    : super(
+        retry: null,
+        name: r'diaryRunWeekStartProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// First day of the run week that [day] belongs to, or null while the day's
+  /// balance has not loaded or the day has no run.
+
+  DiaryRunWeekStartProvider call(DateTime day) =>
+      DiaryRunWeekStartProvider._(argument: day, from: this);
+
+  @override
+  String toString() => r'diaryRunWeekStartProvider';
+}
