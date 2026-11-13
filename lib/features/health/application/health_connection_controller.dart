@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/health/application/health_steps_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 
@@ -97,10 +99,14 @@ class HealthConnectionController extends _$HealthConnectionController {
 
     try {
       final service = ref.read(healthConnectionServiceProvider);
+      final preferences = ref.read(appPreferencesProvider);
       final result = await service.disconnect();
+      // Android revokes every permission, the steps too.
+      await preferences.remove(healthStepsPreferenceKey);
       if (!ref.mounted) {
         return result;
       }
+      ref.invalidate(healthStepsControllerProvider);
       final nextStatus = await _loadStatusFallback(
         previousStatus: previousStatus,
       );

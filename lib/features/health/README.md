@@ -4,7 +4,8 @@
 
 Health owns platform health access, Health Connect permission state, health
 weight samples, manual fallback weight entries, and the user's progress
-photos. From the platform it reads only weight.
+photos. From the platform it reads weight, and steps once the user turns
+them on.
 
 ## Owns
 
@@ -42,6 +43,20 @@ photos. From the platform it reads only weight.
   settings, and disconnect actions; the manual weight entries carry add, update,
   and delete per entry, which fall back to manual storage when Health is not ready,
   and the ignore of a Health weighing (`setIgnored`).
+
+- Steps, only to show (`application/daily_steps_provider.dart`): the
+  steps of a calendar day from Health, each step counted once across apps
+  and devices. Steps are off until the user turns them on (saved on the
+  device, `application/health_steps_controller.dart`); turning them on
+  connects Health when needed and asks for the steps read permission, which
+  is apart from the weight access. Disconnecting Health turns them off. The
+  steps of a day are null while steps are off, Health is not ready, or the
+  day lies ahead; today's value is read again every five minutes and when
+  the app comes back. The user can save a steps goal per day
+  (`application/health_steps_goal_controller.dart`), only to show. A run
+  week whose seven days met the goal on average offers 100 steps more a
+  day, until the user answers (`application/health_steps_goal_raise.dart`). Steps
+  never enter a calorie or TDEE calculation.
 
 - Progress photos: body photos per day and pose, end-to-end encrypted. Each
   file has its own key, kept in the sealed photo document.
