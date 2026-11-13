@@ -86,7 +86,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to scan receipts.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>This app reads your weight from Apple Health to track your progress in YAMT.</string>
+	<string>This app reads your weight from Apple Health to track your progress in YAMT, and your steps when you turn them on.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>This app writes weight entries to Apple Health from YAMT.</string>
 	<key>NSMicrophoneUsageDescription</key>
