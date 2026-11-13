@@ -65,8 +65,17 @@ week, and the longer trends are going, so the diary can stay focused on today.
 - "Aktuelles Ziel" covers the current goal from its start; "Gesamt" covers
   all goals from the start of the first one and hides the goal card and the
   run. A past goal covers its start to the day before the next goal. It shows
-  no forecast, no TDEE change lines, and no week section. Charts cover at least 7 days, so a goal that just started still shows
-  a trend. A dashed line marks each goal start inside a chart.
+  no forecast, no TDEE change lines, and no week section. Charts cover at
+  least 7 days, so a goal that just started still shows a trend. A dashed
+  line marks each goal start inside a chart.
+- The kg per week of the weight section and of the weight list is the
+  average change of the trend weight over the shown period, never a recent
+  pace: from the trend of the day before the period, or from the first
+  weigh-in in it, to its last day or the last weigh-in before it. Under 7
+  days it is left out. The weight section names those days under it ("Ø seit
+  7. Sept."; for a past goal, or when the last weigh-in lies before today,
+  "Ø 1. Sept. – 9. Sept."). The forecast still follows the pace of the last
+  14 days. The goal menu shows the same last day for a past goal.
 - Averages count only past or current days with entries that are no pause
   days. The training and rest day comparison ends the day before today.
 - A TDEE point appears only after the user decided on the weekly check-in. A

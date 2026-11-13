@@ -6,11 +6,12 @@ import 'package:yamt/features/health/application/weight_series_provider.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/domain/progress_weight.dart';
+import 'package:yamt/features/progress/domain/progress_weight_rate.dart';
 
 part 'progress_weight_provider.g.dart';
 
-/// Weight trend of the period of [scope] with the goal starts and the
-/// forecast for the goal weight.
+/// Weight trend of the period of [scope] with its average rate, the goal
+/// starts, and the forecast for the goal weight.
 @riverpod
 Future<ProgressWeight> progressWeight(Ref ref, ProgressScope scope) async {
   final today = normalizeLocalDay(ref.watch(clockProvider)());
@@ -21,15 +22,14 @@ Future<ProgressWeight> progressWeight(Ref ref, ProgressScope scope) async {
     today: today,
   );
   final chartStart = period.chartStart;
-  final trend = RecentWeightTrend.fromSeries(
-    await ref.watch(weightSeriesProvider.future),
-    today: period.end,
-    dayCount: localDaysBetween(chartStart, period.end) + 1,
-    // A past goal's slope leaves out the days of the goal before it.
-    notBefore: scope is ProgressPastGoalScope ? period.start : null,
-  );
+  final series = await ref.watch(weightSeriesProvider.future);
   return ProgressWeight.fromTrend(
-    trend: trend,
+    trend: RecentWeightTrend.fromSeries(
+      series,
+      today: period.end,
+      dayCount: localDaysBetween(chartStart, period.end) + 1,
+    ),
+    rate: ProgressWeightRate.of(series, start: period.start, end: period.end),
     goalStarts: [
       for (final start in period.goalStarts)
         if (start.day.isAfter(chartStart)) start,

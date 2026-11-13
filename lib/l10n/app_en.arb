@@ -1712,6 +1712,25 @@
       }
     }
   },
+  "progressWeightRateSince": "avg. since {date}",
+  "@progressWeightRateSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightRateRange": "avg. {start} – {end}",
+  "@progressWeightRateRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
   "progressWeightForecast": "expected {date}",
   "@progressWeightForecast": {
     "placeholders": {

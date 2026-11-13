@@ -1496,6 +1496,25 @@
       }
     }
   },
+  "progressWeightRateSince": "Ø seit {date}",
+  "@progressWeightRateSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightRateRange": "Ø {start} – {end}",
+  "@progressWeightRateRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
   "progressWeightForecast": "voraussichtlich {date}",
   "@progressWeightForecast": {
     "placeholders": {

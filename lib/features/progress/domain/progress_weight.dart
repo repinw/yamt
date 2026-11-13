@@ -3,22 +3,27 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/tdee_anticipation_calculator.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
+import 'package:yamt/features/progress/domain/progress_weight_rate.dart';
 
-/// Weight trend of a period with the goal starts and the forecast for the
-/// goal.
+/// Weight trend of a period with its average rate, the goal starts, and the
+/// forecast for the goal.
 @immutable
 class ProgressWeight {
   /// Creates the weight progress.
   const new({
     required this.trend,
+    required this.rate,
     required this.goalStarts,
     required this.projectedGoalDate,
     required this.isGoalReached,
   });
 
   /// Adds the goal of [profile] and its forecast to [trend].
+  ///
+  /// The forecast follows the pace of the last days, not [rate].
   factory fromTrend({
     required RecentWeightTrend trend,
+    required ProgressWeightRate? rate,
     required List<ProgressGoalStart> goalStarts,
     required CalorieCalculatorProfile? profile,
     required DateTime today,
@@ -36,6 +41,7 @@ class ProgressWeight {
           );
     return ProgressWeight(
       trend: trend,
+      rate: rate,
       goalStarts: goalStarts,
       projectedGoalDate: projection == null || projection.isAchieved
           ? null
@@ -46,6 +52,10 @@ class ProgressWeight {
 
   /// Weigh-ins and trend weight per day, oldest first.
   final RecentWeightTrend trend;
+
+  /// Average change per week over the period, or `null` with too few days
+  /// of weights in it.
+  final ProgressWeightRate? rate;
 
   /// First day of each goal in the chart, oldest first.
   final List<ProgressGoalStart> goalStarts;

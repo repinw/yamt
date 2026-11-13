@@ -7,8 +7,8 @@ import 'package:yamt/features/progress/presentation/widgets/progress_weight_char
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Head of the weight list: the change since the start of the range, the
-/// trend, the way left to the goal weight, the pace, and the chart with the
-/// goal weight.
+/// trend, the way left to the goal weight, the average pace over the range,
+/// and the chart with the goal weight.
 class ProgressWeightListSummary extends StatelessWidget {
   /// Creates the summary of [list].
   const new({required this.list, super.key});
@@ -35,7 +35,7 @@ class ProgressWeightListSummary extends StatelessWidget {
     final trendKg = trend.trendWeightKg;
     final change = list.changeKg;
     final toTarget = list.kgToTarget;
-    final perWeek = trend.trendKgPerWeek;
+    final perWeek = list.kgPerWeek;
     return Column(
       key: summaryKey,
       crossAxisAlignment: CrossAxisAlignment.stretch,

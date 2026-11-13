@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_progress_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/progress/application/progress_weight_provider.dart';
@@ -18,8 +19,9 @@ import 'package:yamt/features/progress/presentation/widgets/progress_section_sta
 import 'package:yamt/features/progress/presentation/widgets/progress_weight_chart.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// The weight trend of the period of a scope with the goal starts and the
-/// forecast for the goal weight. A tap opens the list of all weights.
+/// The weight trend of the period of a scope with its average change per
+/// week, the days that average covers, the goal starts, and the forecast for
+/// the goal weight. A tap opens the list of all weights.
 class ProgressWeightSection extends ConsumerWidget {
   /// Creates the weight section for [scope].
   const new({required this.scope, super.key});
@@ -35,6 +37,7 @@ class ProgressWeightSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final thisYear = ref.watch(clockProvider)().year;
     return ref
         .watch(progressWeightProvider(scope))
         .when(
@@ -42,6 +45,7 @@ class ProgressWeightSection extends ConsumerWidget {
             key: sectionKey,
             weight: weight,
             endsToday: scope is! ProgressPastGoalScope,
+            thisYear: thisYear,
           ),
           loading: () => const ProgressSectionLoading(),
           error: (_, _) => const ProgressSectionError(),
@@ -50,10 +54,16 @@ class ProgressWeightSection extends ConsumerWidget {
 }
 
 class _WeightContent extends StatelessWidget {
-  const new({required this.weight, required this.endsToday, super.key});
+  const new({
+    required this.weight,
+    required this.endsToday,
+    required this.thisYear,
+    super.key,
+  });
 
   final ProgressWeight weight;
   final bool endsToday;
+  final int thisYear;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +74,12 @@ class _WeightContent extends StatelessWidget {
     final signedKg = NumberFormat('+0.0;−0.0', locale);
     final trend = weight.trend;
     final trendKg = trend.trendWeightKg;
-    final perWeek = trend.trendKgPerWeek;
+    final rate = weight.rate;
+    String day(DateTime date) =>
+        (date.year == thisYear
+                ? DateFormat.MMMd(locale)
+                : DateFormat.yMMMd(locale))
+            .format(date);
     final projected = weight.projectedGoalDate;
     final days = trend.days;
     void openAll() => unawaited(context.push(AppRoutes.homeProgressWeights));
@@ -86,8 +101,17 @@ class _WeightContent extends StatelessWidget {
             value: trendKg == null ? '–' : kg.format(trendKg),
             unit: l10n.caloriesUnitKg,
             lines: [
-              if (perWeek != null)
-                l10n.progressWeightPerWeek(signedKg.format(perWeek)),
+              if (rate != null) ...[
+                l10n.progressWeightPerWeek(signedKg.format(rate.kgPerWeek)),
+                // A rate that stops before today names its last day too.
+                if (endsToday && rate.until == days.last.day)
+                  l10n.progressWeightRateSince(day(rate.since))
+                else
+                  l10n.progressWeightRateRange(
+                    day(rate.since),
+                    day(rate.until),
+                  ),
+              ],
               if (weight.isGoalReached)
                 l10n.progressWeightGoalReached
               else if (projected != null)

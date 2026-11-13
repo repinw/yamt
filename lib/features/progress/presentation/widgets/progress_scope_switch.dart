@@ -107,9 +107,16 @@ class _GoalMenuChip extends ConsumerWidget {
                     ),
                   ),
                   Text(switch (goal.endDate) {
+                    // The last day the goal covers, as its sections show it.
                     final end? when index > 0 => l10n.progressGoalMenuRange(
                       day(goal.startDate),
-                      day(end),
+                      day(
+                        progressGoalLastDay(
+                          start: goal.startDate,
+                          end: end,
+                          nextStart: goals[index - 1].startDate,
+                        ),
+                      ),
                     ),
                     _ => l10n.progressGoalMenuSince(day(goal.startDate)),
                   }, style: textTheme.bodySmall),

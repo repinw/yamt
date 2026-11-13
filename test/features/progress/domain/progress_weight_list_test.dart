@@ -135,8 +135,17 @@ void main() {
     final list = _list();
 
     expect(list.changeKg, closeTo(-1.7, 1e-9));
+    // 1.7 kg in the 17 days since the first trend weight of the range.
+    expect(list.kgPerWeek, closeTo(-0.7, 1e-9));
     expect(list.kgToTarget, closeTo(4.3, 1e-9));
     expect(list.targetWeightKg, 78);
+  });
+
+  test('a range with under seven days of weights has no pace', () {
+    final list = _list(series: _series(from: 19));
+
+    expect(list.changeKg, closeTo(-0.5, 1e-9));
+    expect(list.kgPerWeek, isNull);
   });
 
   test('counts from the trend of the day before the range', () {

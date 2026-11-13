@@ -8,6 +8,7 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
+import 'package:yamt/features/progress/domain/progress_weight_rate.dart';
 import 'package:yamt/features/progress/domain/progress_weight_runs.dart';
 
 /// Which days the weight list covers.
@@ -108,6 +109,7 @@ class ProgressWeightList {
     required this.targetWeightKg,
     required this.kgToTarget,
     required this.changeKg,
+    required this.kgPerWeek,
     required this.runs,
   });
 
@@ -203,6 +205,11 @@ class ProgressWeightList {
       targetWeightKg: target,
       kgToTarget: left != null && left > 0 ? left : null,
       changeKg: first == null || current == null ? null : current - first,
+      kgPerWeek: ProgressWeightRate.of(
+        series,
+        start: start,
+        end: today,
+      )?.kgPerWeek,
       runs: List.unmodifiable(runs.reversed),
     );
   }
@@ -229,6 +236,10 @@ class ProgressWeightList {
   /// The change of the trend weight since the day before the range, or
   /// since its first trend day without a weigh-in before the range.
   final double? changeKg;
+
+  /// Average change of the trend weight per week over the range, or `null`
+  /// with too few days of weights in it.
+  final double? kgPerWeek;
 
   /// The runs with weighings, newest first.
   final List<ProgressWeightRun> runs;

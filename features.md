@@ -458,7 +458,11 @@ and feature description docs. This is product-facing; architecture rules stay in
     other with a slider between them; both days can be picked. Without
     photos the section offers "Foto hinzufügen";
   - the weight trend: weigh-ins as squares, the trend as a line through gaps,
-    the trend per week, and the day the trend reaches the goal weight.
+    the average change of the trend per week over the selected scope with
+    the days it covers ("Ø seit 7. Sept.": the current goal from its start,
+    "Gesamt" from the first goal or first weigh-in, a past goal only its own
+    days; left out under 7 days of weights), and the day the trend reaches
+    the goal weight.
     "Alle Gewichte" (or a tap on the section) opens the weight list;
   - the daily TDEE: a line per day from the first goal on, the value that
     the day's intake and weight trend imply as a small grey square, and a
@@ -480,7 +484,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   profile's weight card. Chips "Ziel" (default), "4 Wochen", and "Alles"
   pick the range. At the top: the trend change since the start of the range
   ("Seit Zielstart 7. Sept."), the trend, the kg still to go to the goal
-  weight (hidden once it is reached or while maintaining), and the pace;
+  weight (hidden once it is reached or while maintaining), and the average
+  pace per week over the range;
   below, the weight chart with the goal weight as a dashed orange line.
   Then every weighing as its own row (day, time, kg, "Von Hand" or
   "Waage"), newest first, grouped by the 7-day runs of the goal ("Run 3 ·
