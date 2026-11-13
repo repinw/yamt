@@ -49,6 +49,9 @@ settings.
   (`ProfileTrainingEditController`, calories `CalorieRunTrainingService`).
 - `presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart` is the settings-owned tile that
   delegates Health connection actions to the Health feature.
+- `presentation/widgets/settings_steps_tile.dart` is the switch for the steps
+  in the diary. Turning it on connects Health when needed. Health owns the
+  choice.
 - Reusable settings tile components under `presentation/widgets/settings_tiles/`.
 
 Other features should compose the page or complete settings widgets instead of

@@ -122,6 +122,16 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Diary
 
 - Daily diary page for meals, calorie balance, activity, and weight.
+- Steps from Health Connect or Apple Health, only to look at: a narrow card
+  under the daily budget shows the steps of the day and one slot per day of
+  the run week, which fill day by day. A tap on the card opens its menu
+  with the "Schrittziel" (minus and plus in steps of 500, or 5.000, 7.500
+  and 10.000 with one tap). With a goal the card names it, a line fills up
+  to it, a full slot is the goal, the card shines in gold foil once the day
+  reaches it, and a flame shows at twice the goal. After a week whose seven
+  days met the goal on average, today's card asks whether the goal goes up
+  by 100 steps a day. Off until the user turns on "Schritte im Tagebuch" in
+  the settings; turning it on connects Health when needed.
 - Date selection and calendar strip navigation. Swiping the diary slides to
   the previous or next day. The top bar shows yesterday, today, tomorrow, the
   day after tomorrow, or the weekday in small capitals over the date.

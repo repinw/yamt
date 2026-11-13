@@ -3,14 +3,17 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_overdue_plans_hint.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_page_header.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_steps_card/diary_steps_card.dart';
 
-/// Scrollable content of one diary day: daily card, header, and meals.
+/// Scrollable content of one diary day: daily card, steps, header, and
+/// meals.
 class DiaryDayView extends ConsumerWidget {
   /// Creates the view of [day].
   const new({required this.day, required this.weeklyCheckInKey, super.key});
@@ -53,6 +56,12 @@ class DiaryDayView extends ConsumerWidget {
           ),
           sliver: SliverList.list(
             children: [
+              _NarrowContent(
+                child: DiaryStepsCard(
+                  day: day,
+                  weekStart: ref.watch(diaryRunWeekStartProvider(day)),
+                ),
+              ),
               DiaryPageHeader(
                 selectedDay: day,
                 dashboardData: dashboardData,

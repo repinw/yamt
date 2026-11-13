@@ -26,3 +26,11 @@ DiaryBalanceCardData? diaryBalanceCard(Ref ref, DateTime day) {
   return DiaryBalanceSource.fromDashboardData(data)
       .resolve(now: ref.watch(diaryTodayProvider));
 }
+
+/// First day of the run week that [day] belongs to, or null while the day's
+/// balance has not loaded or the day has no run.
+@riverpod
+DateTime? diaryRunWeekStart(Ref ref, DateTime day) => ref.watch(
+  diaryBalanceCardProvider(day)
+      .select((card) => card?.loadedMetrics?.runWeekStart),
+);

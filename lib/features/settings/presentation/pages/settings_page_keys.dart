@@ -43,6 +43,9 @@ abstract final class SettingsPageKeys {
     'settings-custom-colors-tile',
   );
 
+  /// Steps switch row.
+  static const stepsTile = ValueKey<String>('settings-steps-tile');
+
   /// Day-before reminder switch row.
   static const planShortageReminderTile = ValueKey<String>(
     'settings-plan-shortage-reminder-tile',
