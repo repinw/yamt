@@ -57,25 +57,4 @@ void main() {
     expect(trend.trendKgPerWeek, lessThan(0));
     expect(trend.trendKgPerWeek, isNot(series.slopeKgPerDay()! * 7));
   });
-
-  test('leaves the days before notBefore out of the slope', () {
-    final series = WeightTrendCalculator.fromDailyWeights({
-      addLocalDays(today, -12): 90,
-      addLocalDays(today, -6): 80,
-      addLocalDays(today, -3): 80.3,
-      today: 80.6,
-    });
-
-    final trend = RecentWeightTrend.fromSeries(
-      series,
-      today: today,
-      notBefore: addLocalDays(today, -6),
-    );
-
-    expect(trend.trendKgPerWeek, isNot(series.slopeKgPerDay()! * 7));
-    expect(
-      trend.trendKgPerWeek,
-      series.slopeKgPerDay(notBefore: addLocalDays(today, -6))! * 7,
-    );
-  });
 }

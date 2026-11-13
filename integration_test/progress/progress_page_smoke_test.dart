@@ -21,6 +21,7 @@ import 'package:yamt/features/progress/presentation/widgets/'
 import 'package:yamt/features/progress/presentation/widgets/'
     'progress_weight_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+import 'package:yamt/l10n/app_localizations_de.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/helpers/progress_source_overrides.dart';
@@ -75,6 +76,12 @@ void main() {
       await tester.scrollUntilVisible(find.byKey(key), 300);
       expect(find.byKey(key), findsOneWidget);
     }
+    // The weekly rate says which days it covers, here from the goal start.
+    final rateSince = find.text(
+      AppLocalizationsDe().progressWeightRateSince('7. Sept.'),
+      skipOffstage: false,
+    );
+    expect(rateSince, findsOneWidget);
 
     final allChip = find.byKey(ProgressScopeSwitch.chipKey(ProgressScope.all));
     await tester.fling(
@@ -87,6 +94,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(ProgressGoalCard.cardKey), findsNothing);
     expect(find.byKey(ProgressWeightSection.sectionKey), findsOneWidget);
+    expect(rateSince, findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

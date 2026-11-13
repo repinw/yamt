@@ -2946,6 +2946,16 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String progressWeightRateSince(String date) {
+    return 'Ø seit $date';
+  }
+
+  @override
+  String progressWeightRateRange(String start, String end) {
+    return 'Ø $start – $end';
+  }
+
+  @override
   String progressWeightForecast(String date) {
     return 'voraussichtlich $date';
   }

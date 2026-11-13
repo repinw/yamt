@@ -75,6 +75,21 @@ const int progressFallbackDays = 28;
 /// The first day of a goal and its number among all goals, starting at 1.
 typedef ProgressGoalStart = ({int number, DateTime day});
 
+/// Last day of a goal from [start] to [end] that the goal starting on
+/// [nextStart] follows: a goal ended on the day the next one starts leaves
+/// that day to it.
+DateTime progressGoalLastDay({
+  required DateTime start,
+  required DateTime end,
+  required DateTime nextStart,
+}) {
+  final first = normalizeLocalDay(start);
+  final beforeNext = previousLocalDay(normalizeLocalDay(nextStart));
+  var last = normalizeLocalDay(end);
+  if (last.isAfter(beforeNext)) last = beforeNext;
+  return last.isBefore(first) ? first : last;
+}
+
 /// The days that the Fortschritt tab covers for one [ProgressScope].
 @immutable
 class ProgressPeriod {
@@ -98,16 +113,15 @@ class ProgressPeriod {
       if (number >= 1 && number <= cycles.length - 2) {
         final goal = cycles[cycles.length - number];
         final start = normalizeLocalDay(goal.startDate);
-        // A goal ended on the day the next one starts leaves that day to it.
-        final beforeNext = previousLocalDay(
-          normalizeLocalDay(cycles[cycles.length - number - 1].startDate),
+        final ended = goal.endDate;
+        final end = progressGoalLastDay(
+          start: start,
+          end: ended == null || ended.isAfter(today) ? today : ended,
+          nextStart: cycles[cycles.length - number - 1].startDate,
         );
-        var end = normalizeLocalDay(goal.endDate ?? today);
-        if (end.isAfter(beforeNext)) end = beforeNext;
-        if (end.isAfter(today)) end = today;
         return ProgressPeriod(
           start: start,
-          end: end.isBefore(start) ? start : end,
+          end: end,
           goalStarts: List.unmodifiable([(number: number, day: start)]),
         );
       }

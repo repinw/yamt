@@ -8,14 +8,14 @@ part of 'progress_weight_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Weight trend of the period of [scope] with the goal starts and the
-/// forecast for the goal weight.
+/// Weight trend of the period of [scope] with its average rate, the goal
+/// starts, and the forecast for the goal weight.
 
 @ProviderFor(progressWeight)
 final progressWeightProvider = ProgressWeightFamily._();
 
-/// Weight trend of the period of [scope] with the goal starts and the
-/// forecast for the goal weight.
+/// Weight trend of the period of [scope] with its average rate, the goal
+/// starts, and the forecast for the goal weight.
 
 final class ProgressWeightProvider
     extends
@@ -25,8 +25,8 @@ final class ProgressWeightProvider
           FutureOr<ProgressWeight>
         >
     with $FutureModifier<ProgressWeight>, $FutureProvider<ProgressWeight> {
-  /// Weight trend of the period of [scope] with the goal starts and the
-  /// forecast for the goal weight.
+  /// Weight trend of the period of [scope] with its average rate, the goal
+  /// starts, and the forecast for the goal weight.
   ProgressWeightProvider._({
     required ProgressWeightFamily super.from,
     required ProgressScope super.argument,
@@ -71,10 +71,10 @@ final class ProgressWeightProvider
   }
 }
 
-String _$progressWeightHash() => r'feb7f82454b3252025ccebd94f5a15a4c204a088';
+String _$progressWeightHash() => r'49083e2cc0e0a2a3207c56f10c13d68946c20ad4';
 
-/// Weight trend of the period of [scope] with the goal starts and the
-/// forecast for the goal weight.
+/// Weight trend of the period of [scope] with its average rate, the goal
+/// starts, and the forecast for the goal weight.
 
 final class ProgressWeightFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<ProgressWeight>, ProgressScope> {
@@ -87,8 +87,8 @@ final class ProgressWeightFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Weight trend of the period of [scope] with the goal starts and the
-  /// forecast for the goal weight.
+  /// Weight trend of the period of [scope] with its average rate, the goal
+  /// starts, and the forecast for the goal weight.
 
   ProgressWeightProvider call(ProgressScope scope) =>
       ProgressWeightProvider._(argument: scope, from: this);

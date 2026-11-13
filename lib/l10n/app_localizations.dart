@@ -4900,6 +4900,18 @@ abstract class AppLocalizations {
   /// **'{kg} kg / week'**
   String progressWeightPerWeek(String kg);
 
+  /// No description provided for @progressWeightRateSince.
+  ///
+  /// In en, this message translates to:
+  /// **'avg. since {date}'**
+  String progressWeightRateSince(String date);
+
+  /// No description provided for @progressWeightRateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'avg. {start} – {end}'**
+  String progressWeightRateRange(String start, String end);
+
   /// No description provided for @progressWeightForecast.
   ///
   /// In en, this message translates to:

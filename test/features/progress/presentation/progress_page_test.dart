@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/controllers/progress_scope_controller.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
@@ -25,6 +26,7 @@ import '../../calories/support/fake_calories_repositories.dart';
 Future<FakeCalorieLogRepository> _pumpProgressPage(
   WidgetTester tester, {
   CalorieGoalSettings? goals,
+  List<ManualHealthWeightEntry> extraWeighIns = const [],
 }) async {
   tester.view.physicalSize = const Size(1080, 6000);
   addTearDown(tester.view.reset);
@@ -41,6 +43,7 @@ Future<FakeCalorieLogRepository> _pumpProgressPage(
       overrides: progressSourceOverrides(
         settingsRepository: settings,
         calorieLog: calorieLog,
+        extraWeighIns: extraWeighIns,
       ),
       child: MaterialApp.router(
         locale: const Locale('de'),
@@ -75,6 +78,15 @@ void main() {
     expect(find.byKey(ProgressTdeeSection.sectionKey), findsOneWidget);
     expect(find.byKey(ProgressDayTypeSection.sectionKey), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('says that the weekly rate counts from the goal start', (
+    tester,
+  ) async {
+    await _pumpProgressPage(tester);
+
+    final l10n = AppLocalizationsDe();
+    expect(find.text(l10n.progressWeightRateSince('7. Sept.')), findsOneWidget);
   });
 
   testWidgets('fills the goal bar as far as the weight got', (tester) async {
@@ -131,6 +143,23 @@ void main() {
       expect(find.byType(ProgressGoalDetails), findsNothing);
     });
 
+    testWidgets('the menu shows the last day a past goal covers', (
+      tester,
+    ) async {
+      await _pumpProgressPage(tester, goals: progressTwoGoalSettings());
+
+      await tester.tap(find.byKey(ProgressScopeSwitch.goalMenuKey));
+      await tester.pumpAndSettle();
+
+      // It ended on 10 September, the day the next goal started.
+      expect(
+        find.text(
+          AppLocalizationsDe().progressGoalMenuRange('1. Sept.', '9. Sept.'),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('an older entry selects that past goal', (tester) async {
       await _pumpProgressPage(tester, goals: progressTwoGoalSettings());
 
@@ -148,7 +177,40 @@ void main() {
       );
       expect(find.byKey(ProgressWeekSection.sectionKey), findsNothing);
       expect(find.byKey(ProgressWeightSection.sectionKey), findsOneWidget);
+      // Its weigh-ins start on 6 September: too few days for a rate.
+      expect(find.textContaining('Ø'), findsNothing);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the weekly rate names the days of each scope', (tester) async {
+      await _pumpProgressPage(
+        tester,
+        goals: progressTwoGoalSettings(),
+        extraWeighIns: [
+          ManualHealthWeightEntry(day: DateTime(2026, 8, 25), weightKg: 85),
+        ],
+      );
+      final l10n = AppLocalizationsDe();
+
+      expect(
+        find.text(l10n.progressWeightRateSince('10. Sept.')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(ProgressScopeSwitch.chipKey(ProgressScope.all)),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text(l10n.progressWeightRateSince('1. Sept.')),
+        findsOneWidget,
+      );
+
+      await pick(tester, 1);
+      expect(
+        find.text(l10n.progressWeightRateRange('1. Sept.', '9. Sept.')),
+        findsOneWidget,
+      );
     });
   });
 

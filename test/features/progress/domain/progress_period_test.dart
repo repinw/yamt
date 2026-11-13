@@ -170,6 +170,26 @@ void main() {
     });
   });
 
+  test('a goal leaves the day the next one starts to it', () {
+    DateTime lastDay(DateTime end) => progressGoalLastDay(
+      start: DateTime(2026, 9),
+      end: end,
+      nextStart: DateTime(2026, 9, 10),
+    );
+
+    expect(lastDay(DateTime(2026, 9, 10, 8)), DateTime(2026, 9, 9));
+    expect(lastDay(DateTime(2026, 9, 5)), DateTime(2026, 9, 5));
+    // A goal ended on the day it started keeps that day.
+    expect(
+      progressGoalLastDay(
+        start: DateTime(2026, 9, 10),
+        end: DateTime(2026, 9, 10),
+        nextStart: DateTime(2026, 9, 10),
+      ),
+      DateTime(2026, 9, 10),
+    );
+  });
+
   test('the current and the all scope end today', () {
     for (final scope in [ProgressScope.goal, ProgressScope.all]) {
       expect(
