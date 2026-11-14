@@ -1001,11 +1001,44 @@
       }
     }
   },
-  "shoppingListNameFieldLabel": "Name",
-  "shoppingListBrandFieldLabel": "Brand (optional)",
+  "shoppingAddFieldHint": "e.g. 2 milk",
+  "shoppingAddQuantityHint": "Quantity found: {quantity}×",
+  "@shoppingAddQuantityHint": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingAddQuantity": "{quantity}×",
+  "@shoppingAddQuantity": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingAddNewEntry": "Add “{name}”",
+  "@shoppingAddNewEntry": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingAddAddedTitle": "Just added · tap to take back",
+  "shoppingAddHitSaved": "Saved",
+  "shoppingAddTakeBackFailed": "Could not take it back. Please try again.",
+  "shoppingAddTakeBackAction": "Take back \"{name}\"",
+  "@shoppingAddTakeBackAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingListAddAction": "Add item",
   "shoppingListEmptyState": "Your shopping list is empty.",
-  "shoppingListInvalidNameError": "Please enter an item name.",
   "shoppingListAddFailedError": "Could not add item. Please try again.",
   "shoppingListLoadFailed": "Could not load shopping list items.",
   "shoppingListRetryAction": "Retry",

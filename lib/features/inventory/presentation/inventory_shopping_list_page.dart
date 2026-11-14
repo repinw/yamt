@@ -5,7 +5,6 @@ import 'package:yamt/features/inventory/application/inventory_quick_eat_data_pro
 import 'package:yamt/features/inventory/application/inventory_shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_plan_needs.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_suggestions.dart';
 
 /// Finished shopping surface with inventory-owned recommendation input.
 class InventoryShoppingListPage extends ConsumerWidget {
@@ -16,11 +15,8 @@ class InventoryShoppingListPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final suggestions = ref.watch(inventoryShoppingSuggestionsProvider);
     return ShoppingListPage(
-      suggestionStrip: ShoppingListSuggestions(
-        key: const ValueKey('shopping-suggestions'),
-        suggestions: suggestions,
-        onRetry: () => ref.invalidate(inventoryShoppingStockProvider),
-      ),
+      suggestions: suggestions,
+      onRetrySuggestions: () => ref.invalidate(inventoryShoppingStockProvider),
       planNeedsSection: ShoppingListPlanNeeds(
         groups: ref.watch(inventoryShoppingPlanNeedGroupsProvider),
         onRetry: () => ref

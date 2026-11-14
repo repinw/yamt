@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_shopping_constants.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -14,7 +15,6 @@ import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_lis
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_page_keys.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_suggestions.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_suggestion_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -38,14 +38,17 @@ ShoppingListItem _item(
   isFavorite: isFavorite,
 );
 
-Widget _app(ProviderContainer container, {Widget? suggestionStrip}) {
+Widget _app(
+  ProviderContainer container, {
+  AsyncValue<List<ShoppingSuggestion>> suggestions = const AsyncData([]),
+}) {
   return UncontrolledProviderScope(
     container: container,
     child: MaterialApp(
       locale: const Locale('en'),
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: ShoppingListPage(suggestionStrip: suggestionStrip),
+      home: ShoppingListPage(suggestions: suggestions),
     ),
   );
 }
@@ -207,21 +210,213 @@ void main() {
   });
 
   group('add', () {
-    testWidgets('the add button opens the dialog and adds the entry', (
+    Future<void> openSheet(WidgetTester tester) async {
+      await tester.tap(find.byKey(ShoppingListPageKeys.addButton));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> type(WidgetTester tester, String text) async {
+      await tester.enterText(
+        find.byKey(ShoppingListPageKeys.addSheetField),
+        text,
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the sheet adds typed entries one after another and stays '
+        'open', (tester) async {
+      final repository = await _pump(tester, const []);
+
+      await openSheet(tester);
+      await type(tester, 'Bread');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      await type(tester, 'Eggs');
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetNewEntry));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(ShoppingListPageKeys.addSheetField), findsOneWidget);
+      expect(
+        tester
+            .widget<TextField>(find.byKey(ShoppingListPageKeys.addSheetField))
+            .controller!
+            .text,
+        isEmpty,
+      );
+      expect(
+        [for (final item in repository.savedItems) item.name],
+        ['Bread', 'Eggs'],
+      );
+
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetDoneButton));
+      await tester.pumpAndSettle();
+      expect(find.byKey(ShoppingListPageKeys.addSheetField), findsNothing);
+      expect(_progress(tester), '0 of 2 in the cart');
+    });
+
+    testWidgets('a leading count is the quantity of the new entry', (
       tester,
     ) async {
       final repository = await _pump(tester, const []);
 
-      await tester.tap(find.byKey(ShoppingListPageKeys.addButton));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextFormField).first, 'Bread');
-      await tester.tap(find.widgetWithText(FilledButton, 'Add item').last);
+      await openSheet(tester);
+      await type(tester, '2 milk');
+      expect(find.text('Quantity found: 2×'), findsOneWidget);
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetNewEntry));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AlertDialog), findsNothing);
-      expect(repository.savedItems.single.name, 'Bread');
-      expect(find.text('Bread'), findsOneWidget);
-      expect(_progress(tester), '0 of 1 in the cart');
+      final saved = repository.savedItems.single;
+      expect((saved.name, saved.quantity), ('milk', 2));
+    });
+
+    testWidgets('a chip of an added entry takes it back', (tester) async {
+      final repository = await _pump(tester, const []);
+
+      await openSheet(tester);
+      await type(tester, 'Bread');
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetNewEntry));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetAdded(0)));
+      await tester.pumpAndSettle();
+
+      expect(repository.savedItems, isEmpty);
+      expect(find.byKey(ShoppingListPageKeys.addSheetAdded(0)), findsNothing);
+    });
+
+    testWidgets('taking back the first of two additions to one entry takes '
+        'both back', (tester) async {
+      final repository = await _pump(tester, const []);
+
+      await openSheet(tester);
+      await type(tester, 'Bread');
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetNewEntry));
+      await tester.pumpAndSettle();
+      await type(tester, '2 Eggs');
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetNewEntry));
+      await tester.pumpAndSettle();
+      await type(tester, 'bread');
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetNewEntry));
+      await tester.pumpAndSettle();
+      expect(
+        [for (final item in repository.savedItems) (item.name, item.quantity)],
+        [('Bread', 2), ('Eggs', 2)],
+      );
+
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetAdded(0)));
+      await tester.pumpAndSettle();
+
+      expect(
+        [for (final item in repository.savedItems) (item.name, item.quantity)],
+        [('Eggs', 2)],
+      );
+      expect(find.byKey(ShoppingListPageKeys.addSheetAdded(0)), findsNothing);
+      expect(find.byKey(ShoppingListPageKeys.addSheetAdded(1)), findsOneWidget);
+      expect(find.byKey(ShoppingListPageKeys.addSheetAdded(2)), findsNothing);
+    });
+
+    testWidgets('typing offers saved products and suggestions as hits with '
+        'the typed quantity', (tester) async {
+      final repository = FakeShoppingListRepository(
+        initialItems: [
+          _item(
+            'oatmilk',
+            name: 'Oat milk',
+            isFavorite: true,
+          ).copyWith(quantity: 0, isArchived: true),
+        ],
+      );
+      await tester.pumpWidget(
+        _app(
+          _container(repository),
+          suggestions: const AsyncData([
+            ShoppingSuggestion(name: 'Milk', brand: 'Farm', isOutOfStock: true),
+            ShoppingSuggestion(name: 'Butter', purchaseCount: 3),
+          ]),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await openSheet(tester);
+      expect(
+        find.byKey(ShoppingListPageKeys.addSheetHit('oat milk|')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ShoppingListPageKeys.addSheetHit('milk|farm')),
+        findsNothing,
+      );
+
+      await type(tester, '3 mil');
+      expect(
+        find.byKey(ShoppingListPageKeys.addSheetHit('butter|')),
+        findsNothing,
+      );
+      await tester.tap(
+        find.byKey(ShoppingListPageKeys.addSheetHit('milk|farm')),
+      );
+      await tester.pumpAndSettle();
+
+      final milk = repository.savedItems.singleWhere(
+        (item) => item.name == 'Milk',
+      );
+      expect((milk.brand, milk.quantity), ('Farm', 3));
+      await type(tester, 'mil');
+      expect(
+        find.byKey(ShoppingListPageKeys.addSheetHit('milk|farm')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('a failed save keeps the text and says so in the sheet', (
+      tester,
+    ) async {
+      final repository = await _pump(tester, const []);
+      repository.saveAllShouldFail = true;
+
+      await openSheet(tester);
+      await type(tester, 'Bread');
+      await tester.tap(find.byKey(ShoppingListPageKeys.addSheetNewEntry));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Could not add item. Please try again.'),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<TextField>(find.byKey(ShoppingListPageKeys.addSheetField))
+            .controller!
+            .text,
+        'Bread',
+      );
+    });
+
+    testWidgets('the sheet fits a small screen at large text', (tester) async {
+      await _setView(tester, const Size(320, 568));
+      await tester.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(
+            size: Size(320, 568),
+            textScaler: TextScaler.linear(2),
+          ),
+          child: _app(
+            _container(FakeShoppingListRepository()),
+            suggestions: const AsyncData([
+              ShoppingSuggestion(
+                name: 'Frische Bio-Alpenmilch 3,5 % Fett',
+                brand: 'Berchtesgadener Land',
+                isLowStock: true,
+              ),
+            ]),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await openSheet(tester);
+      await type(tester, '12 Frische Bio-Alpenmilch');
+
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('adds a purchase suggestion once and hides it', (tester) async {
@@ -229,12 +424,9 @@ void main() {
       await tester.pumpWidget(
         _app(
           _container(repository),
-          suggestionStrip: const ShoppingListSuggestions(
-            key: ValueKey('shopping-suggestions'),
-            suggestions: AsyncData([
-              ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
-            ]),
-          ),
+          suggestions: const AsyncData([
+            ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
+          ]),
         ),
       );
       await tester.pumpAndSettle();
@@ -251,13 +443,11 @@ void main() {
     testWidgets('the cross pushes a suggestion behind the others and the '
         'order is kept on the device', (tester) async {
       final preferences = MemoryAppPreferences();
-      const strip = ShoppingListSuggestions(
-        suggestions: AsyncData([
-          ShoppingSuggestion(name: 'Milk', isOutOfStock: true),
-          ShoppingSuggestion(name: 'Oats', isLowStock: true),
-          ShoppingSuggestion(name: 'Butter', purchaseCount: 3),
-        ]),
-      );
+      const strip = AsyncData([
+        ShoppingSuggestion(name: 'Milk', isOutOfStock: true),
+        ShoppingSuggestion(name: 'Oats', isLowStock: true),
+        ShoppingSuggestion(name: 'Butter', purchaseCount: 3),
+      ]);
       List<String> order() => [
         for (final card in tester.widgetList<ShoppingSuggestionCard>(
           find.byType(ShoppingSuggestionCard),
@@ -277,7 +467,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           _container(FakeShoppingListRepository(), preferences: preferences),
-          suggestionStrip: strip,
+          suggestions: strip,
         ),
       );
       await tester.pumpAndSettle();
@@ -292,7 +482,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           _container(FakeShoppingListRepository(), preferences: preferences),
-          suggestionStrip: strip,
+          suggestions: strip,
         ),
       );
       await tester.pumpAndSettle();
@@ -310,22 +500,24 @@ void main() {
           ),
           child: _app(
             _container(FakeShoppingListRepository()),
-            suggestionStrip: ShoppingListSuggestions(
-              suggestions: AsyncData([
-                for (var index = 0; index < 20; index++)
-                  ShoppingSuggestion(
-                    name: 'Frische Bio-Alpenmilch 3,5 % Fett Nummer $index',
-                    brand: 'Berchtesgadener Land',
-                    isLowStock: true,
-                  ),
-              ]),
-            ),
+            suggestions: AsyncData([
+              for (var index = 0; index < 20; index++)
+                ShoppingSuggestion(
+                  name: 'Frische Bio-Alpenmilch 3,5 % Fett Nummer $index',
+                  brand: 'Berchtesgadener Land',
+                  isLowStock: true,
+                ),
+            ]),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
+      expect(
+        tester.getSize(find.byType(ShoppingSuggestionCard).first).width,
+        lessThanOrEqualTo(360 - 2 * AppSpacing.xxl),
+      );
       await tester.drag(
         find.byKey(ShoppingListPageKeys.suggestionStrip),
         const Offset(-600, 0),
@@ -344,12 +536,9 @@ void main() {
       await tester.pumpWidget(
         _app(
           container,
-          suggestionStrip: const ShoppingListSuggestions(
-            key: ValueKey('shopping-suggestions'),
-            suggestions: AsyncData([
-              ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
-            ]),
-          ),
+          suggestions: const AsyncData([
+            ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
+          ]),
         ),
       );
       await tester.pumpAndSettle();

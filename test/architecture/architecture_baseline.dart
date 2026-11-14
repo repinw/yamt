@@ -243,8 +243,6 @@ const architectureBaseline = <String, Map<String, int>>{
         3,
     'lib/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_preview_card.dart':
         6,
-    'lib/features/shoppinglist/presentation/widgets/shopping_quick_add_dialog.dart':
-        1,
   },
   'ignore-comment': {
     'lib/core/theme/metric_accent_colors.dart': 1,
