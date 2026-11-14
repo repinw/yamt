@@ -8,12 +8,12 @@ part of 'shopping_list_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The shopping list repository of the current household.
+/// The shopping list repository of the current household and user.
 
 @ProviderFor(shoppingListRepository)
 final shoppingListRepositoryProvider = ShoppingListRepositoryProvider._();
 
-/// The shopping list repository of the current household.
+/// The shopping list repository of the current household and user.
 
 final class ShoppingListRepositoryProvider
     extends
@@ -23,7 +23,7 @@ final class ShoppingListRepositoryProvider
           ShoppingListRepository
         >
     with $Provider<ShoppingListRepository> {
-  /// The shopping list repository of the current household.
+  /// The shopping list repository of the current household and user.
   ShoppingListRepositoryProvider._()
     : super(
         from: null,
@@ -59,4 +59,4 @@ final class ShoppingListRepositoryProvider
 }
 
 String _$shoppingListRepositoryHash() =>
-    r'ac2a633d8def994a279aa57de4f454a31738f81a';
+    r'e10662a370e7f90702a648447833755f0a4f1048';

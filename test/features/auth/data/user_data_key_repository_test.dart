@@ -18,6 +18,7 @@ void main() {
     const deleted = <String>[
       'calorie_entries',
       'planned_entries',
+      'shopping_list_items',
       'calorie_settings',
       'health_weights',
       'health_weight_samples',

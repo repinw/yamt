@@ -299,6 +299,15 @@ describe('household data', () => {
     await assertSucceeds(db.doc('households/h1/prepared_meals/m1').get());
   });
 
+  it('keeps the shelf choices encrypted and inside the household', async () => {
+    const path = 'households/h1/shopping_shelf_choices/all';
+    const member = account(env, 'bob').firestore();
+    await assertSucceeds(member.doc(path).set(encrypted));
+    await assertSucceeds(member.doc(path).get());
+    await assertFails(member.doc(path).set({ ...encrypted, choices: {} }));
+    await assertFails(account(env, 'dora').firestore().doc(path).get());
+  });
+
   it('refuses plaintext fields beyond the payload', async () => {
     const db = account(env, 'bob').firestore();
     await assertFails(

@@ -987,6 +987,12 @@ service cloud.firestore {
           && isEncryptedDocument(request.resource.data, []);
       }
 
+      match /shopping_shelf_choices/{choiceId} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, []);
+      }
+
       match /prepared_meals/{mealId} {
         allow read, delete: if isHouseholdMember(householdId);
         allow create, update: if isHouseholdMember(householdId)
@@ -1065,6 +1071,13 @@ service cloud.firestore {
       allow create, update: if isOwner(uid)
         && isEncryptedDocument(request.resource.data, ['logged_at'])
         && request.resource.data.logged_at is timestamp;
+    }
+
+    // The private shopping list, next to the household one.
+    match /users/{uid}/shopping_list_items/{itemId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && isEncryptedDocument(request.resource.data, []);
     }
 
     // Planned food, kept apart from the calorie entries so no sum counts it.

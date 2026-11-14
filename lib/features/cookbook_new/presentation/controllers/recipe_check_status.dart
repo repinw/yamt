@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_line_split.dart';
 
 part 'recipe_check_status.g.dart';
 
@@ -9,7 +10,8 @@ part 'recipe_check_status.g.dart';
 typedef RecipeCheckStatus = ({int missing, int partial});
 
 /// The ingredients of the recipe [recipeId] that are missing or only partly
-/// there and whose shopping text is not on the shopping list yet.
+/// there and whose shopping text is not on the shopping list yet, by the
+/// product name the list keeps for it ([splitShoppingLine]).
 @riverpod
 RecipeCheckStatus recipeCheckStatus(
   Ref ref,
@@ -23,7 +25,7 @@ RecipeCheckStatus recipeCheckStatus(
       if ((line.isMissing || line.isPartial) &&
           !isSourceItemInActiveShoppingList(
             item: (
-              name: line.shoppingLabel,
+              name: splitShoppingLine(line.shoppingLabel).name,
               brand: null,
               initialQuantity: 1,
               unitPrice: 0,

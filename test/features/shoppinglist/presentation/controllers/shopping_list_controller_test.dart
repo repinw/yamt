@@ -493,6 +493,9 @@ class _EmptyStreamShoppingListRepository implements ShoppingListRepository {
   bool holdsUnmigratedItems = false;
 
   @override
+  bool get privateUnreadable => false;
+
+  @override
   Future<List<ShoppingListItem>> readAll() async {
     return const <ShoppingListItem>[];
   }

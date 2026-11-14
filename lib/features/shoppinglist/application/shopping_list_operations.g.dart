@@ -8,13 +8,15 @@ part of 'shopping_list_operations.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Active product keys for integrations that add shopping entries.
+/// Active product keys of the household list, for integrations that add
+/// shopping entries there.
 
 @ProviderFor(activeShoppingListItemKeys)
 final activeShoppingListItemKeysProvider =
     ActiveShoppingListItemKeysProvider._();
 
-/// Active product keys for integrations that add shopping entries.
+/// Active product keys of the household list, for integrations that add
+/// shopping entries there.
 
 final class ActiveShoppingListItemKeysProvider
     extends
@@ -24,7 +26,8 @@ final class ActiveShoppingListItemKeysProvider
           Set<ShoppingListItemMatchKey>
         >
     with $Provider<Set<ShoppingListItemMatchKey>> {
-  /// Active product keys for integrations that add shopping entries.
+  /// Active product keys of the household list, for integrations that add
+  /// shopping entries there.
   ActiveShoppingListItemKeysProvider._()
     : super(
         from: null,

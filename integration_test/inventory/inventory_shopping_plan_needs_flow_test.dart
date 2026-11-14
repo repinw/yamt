@@ -13,8 +13,7 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
-import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_plan_needs.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
@@ -104,30 +103,23 @@ void main() {
       ),
     );
 
-    final add = find.byKey(
-      ShoppingListPlanNeeds.addKey(
-        ShoppingPlanNeed(
-          name: 'Haferflocken',
-          day: tomorrow,
-          mealType: MealType.breakfast,
-          amount: 0,
-          inMilliliters: false,
-          isPartial: true,
-        ),
-      ),
-    );
+    final add = find.byKey(ShoppingListPageKeys.suggestion('haferflocken|'));
     for (var i = 0; i < 50 && add.evaluate().isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(add, findsOneWidget);
     // 100 g in stock cover a third of the 300 g plan.
-    expect(find.textContaining('200 g missing'), findsOneWidget);
+    expect(find.textContaining('For Thu · Breakfast'), findsOneWidget);
 
     await tester.tap(add);
     for (var i = 0; i < 50 && shopping.savedItems.isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(shopping.savedItems.single.name, 'Haferflocken');
+    expect(shopping.savedItems.single.plannedFor, (
+      day: DateTime(2026, 10, 8),
+      mealType: MealType.breakfast,
+    ));
     expect(tester.takeException(), isNull);
   });
 }

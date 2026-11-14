@@ -1,7 +1,7 @@
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_plan_needs.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The answer of [ShoppingPlanNeedsDialog]: the ticked needs, and whether
@@ -106,4 +106,29 @@ class _ShoppingPlanNeedsDialogState extends State<ShoppingPlanNeedsDialog> {
       ],
     );
   }
+}
+
+/// The amount line of [need]: what is missing, with the brand; only the
+/// brand, maybe empty, when the need has no amount.
+String shoppingPlanNeedSubtitle(
+  ShoppingPlanNeed need,
+  AppLocalizations l10n,
+  String localeName,
+) {
+  final brand = need.brand?.trim() ?? '';
+  final value = need.amount;
+  if (value == null) {
+    return brand;
+  }
+  final number = (NumberFormat.decimalPattern(
+    localeName,
+  )..maximumFractionDigits = 0).format(value.ceil());
+  final amount = l10n.shoppingListPlanNeedAmount(
+    number,
+    need.inMilliliters ? l10n.caloriesUnitMilliliter : l10n.caloriesUnitGram,
+  );
+  final text = need.isPartial
+      ? l10n.shoppingListPlanNeedMissing(amount)
+      : amount;
+  return brand.isEmpty ? text : l10n.shoppingListPlanNeedBrand(brand, text);
 }

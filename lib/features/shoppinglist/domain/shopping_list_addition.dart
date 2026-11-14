@@ -1,4 +1,5 @@
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_planned_meal.dart';
 
 /// Pure normalization and merging for shopping-list additions.
 class ShoppingListAddition {
@@ -12,6 +13,8 @@ class ShoppingListAddition {
     required double estimatedUnitPrice,
     String? brand,
     String? note,
+    ShoppingPlannedMeal? plannedFor,
+    bool isPrivate = false,
   }) {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) return null;
@@ -21,16 +24,20 @@ class ShoppingListAddition {
       name: trimmedName,
       brand: trimmedBrand?.isEmpty ?? true ? null : trimmedBrand,
       note: trimmedNote?.isEmpty ?? true ? null : trimmedNote,
+      plannedFor: plannedFor,
       quantity: quantity < 1 ? 1 : quantity,
       estimatedUnitPrice: estimatedUnitPrice.isFinite && estimatedUnitPrice > 0
           ? estimatedUnitPrice
           : 0,
+      isPrivate: isPrivate,
     );
   }
 
-  /// Merges by normalized name and brand. An entry that is still to buy gets
+  /// Merges by normalized name and brand within the same list, household or
+  /// private. An entry that is still to buy gets
   /// the quantity on top; a ticked-off or archived one comes back with the
-  /// new quantity alone. A note of the addition replaces the old note.
+  /// new quantity alone. A note or planned meal of the addition replaces the
+  /// old one.
   List<ShoppingListItem> mergeAddedItem({
     required List<ShoppingListItem> previousItems,
     required ShoppingListAddInput input,
@@ -38,6 +45,7 @@ class ShoppingListAddition {
   }) {
     final index = previousItems.indexWhere(
       (item) =>
+          item.isPrivate == input.isPrivate &&
           item.normalizedName == input.normalizedName &&
           item.normalizedBrand == input.normalizedBrand,
     );
@@ -54,7 +62,11 @@ class ShoppingListAddition {
     quantity: (current.isOpen ? current.quantity : 0) + input.quantity,
     isArchived: false,
     isDone: false,
+    // An entry that comes back takes the new note and meal, or none.
     note: input.note,
+    clearNote: !current.isOpen && input.note == null,
+    plannedFor: input.plannedFor,
+    clearPlannedFor: !current.isOpen && input.plannedFor == null,
     estimatedUnitPrice: input.estimatedUnitPrice > 0
         ? input.estimatedUnitPrice
         : current.estimatedUnitPrice,
@@ -70,6 +82,8 @@ class ShoppingListAddInput {
     required this.quantity,
     required this.estimatedUnitPrice,
     this.note,
+    this.plannedFor,
+    this.isPrivate = false,
   });
 
   /// Trimmed product name.
@@ -84,8 +98,14 @@ class ShoppingListAddInput {
   /// Trimmed optional note.
   final String? note;
 
+  /// The planned meal the entry is for.
+  final ShoppingPlannedMeal? plannedFor;
+
   /// Nonnegative price.
   final double estimatedUnitPrice;
+
+  /// Whether the entry goes on the private list.
+  final bool isPrivate;
 
   /// Case-insensitive product name.
   String get normalizedName => name.toLowerCase();
@@ -99,9 +119,11 @@ class ShoppingListAddInput {
     name: name,
     brand: brand,
     note: note,
+    plannedFor: plannedFor,
     normalizedName: normalizedName,
     normalizedBrand: normalizedBrand,
     quantity: quantity,
     estimatedUnitPrice: estimatedUnitPrice,
+    isPrivate: isPrivate,
   );
 }

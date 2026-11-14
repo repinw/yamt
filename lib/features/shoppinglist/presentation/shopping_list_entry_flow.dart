@@ -36,9 +36,10 @@ abstract final class ShoppingListEntryFlow {
     );
   }
 
-  /// Runs [action] on the list controller. The message for a failed save
-  /// still shows when the widget behind [context] is gone by then.
-  static Future<void> run(
+  /// Runs [action] on the list controller and returns whether it saved. The
+  /// message for a failed save still shows when the widget behind [context]
+  /// is gone by then.
+  static Future<bool> run(
     BuildContext context,
     WidgetRef ref,
     Future<bool> Function(ShoppingListController controller) action,
@@ -47,11 +48,13 @@ abstract final class ShoppingListEntryFlow {
     action(ref.read(shoppingListControllerProvider.notifier)),
   );
 
-  static Future<void> _report(BuildContext context, Future<bool> saving) async {
+  static Future<bool> _report(BuildContext context, Future<bool> saving) async {
     final messenger = ScaffoldMessenger.of(context);
     final message = AppLocalizations.of(context)!.shoppingListSaveFailed;
-    if (!await saving) {
+    final saved = await saving;
+    if (!saved) {
       messenger.showAppSnackBar(message, tone: AppSnackBarTone.error);
     }
+    return saved;
   }
 }

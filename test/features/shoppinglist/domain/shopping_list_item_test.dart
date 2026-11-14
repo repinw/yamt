@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 void main() {
@@ -24,6 +25,46 @@ void main() {
     expect(decoded.quantity, item.quantity);
     expect(decoded.estimatedUnitPrice, item.estimatedUnitPrice);
     expect(decoded.isDone, isTrue);
+  });
+
+  test('the planned meal is stored as a day and a meal, without words', () {
+    final item = ShoppingListItem(
+      id: 'item-1',
+      name: 'Milk',
+      normalizedName: 'milk',
+      normalizedBrand: '',
+      quantity: 1,
+      estimatedUnitPrice: 0,
+      plannedFor: (day: DateTime(2026, 11, 19), mealType: MealType.breakfast),
+    );
+
+    final json = item.toJson();
+    final decoded = ShoppingListItem.fromJson(json);
+
+    expect(json['planned_for'], {
+      'day': '2026-11-19',
+      'meal_type': 'breakfast',
+    });
+    expect(decoded.plannedFor, (
+      day: DateTime(2026, 11, 19),
+      mealType: MealType.breakfast,
+    ));
+  });
+
+  test('fromJson throws on a planned meal it cannot read', () {
+    final json = {
+      ...const ShoppingListItem(
+        id: 'item-1',
+        name: 'Milk',
+        normalizedName: 'milk',
+        normalizedBrand: '',
+        quantity: 1,
+        estimatedUnitPrice: 0,
+      ).toJson(),
+      'planned_for': {'day': '2026-11-19', 'meal_type': 'brunch'},
+    };
+
+    expect(() => ShoppingListItem.fromJson(json), throwsFormatException);
   });
 
   test('fromJson throws without the done flag', () {

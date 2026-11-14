@@ -251,9 +251,9 @@ void main() {
 
     await _controller(container).finish(await _check(container));
 
-    expect(shopping.savedItems.map((item) => item.name), [
-      '1 Zwiebel',
-      '200 g Karotten',
+    expect(shopping.savedItems.map((item) => (item.name, item.note)), [
+      ('Zwiebel', null),
+      ('Karotten', '200 g'),
     ]);
   });
 

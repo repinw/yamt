@@ -120,7 +120,9 @@ void main() {
         '600 g Karotten': ['carrots'],
         '300 g Paprika': [pepper.id],
       });
-      expect(shopping.saved.map((item) => item.name), ['200 g Karotten']);
+      expect(shopping.saved.map((item) => (item.name, item.note)), [
+        ('Karotten', '200 g'),
+      ]);
     },
   );
 
@@ -179,7 +181,9 @@ void main() {
     }
     expect(find.byType(RecipePage), findsOneWidget);
     expect(templates.saved.single.recipeIngredients, _recipe.recipeIngredients);
-    expect(shopping.saved.map((item) => item.name), ['200 g Erbsen']);
+    expect(shopping.saved.map((item) => (item.name, item.note)), [
+      ('Erbsen', '200 g'),
+    ]);
 
     await tester.tap(find.byKey(RecipePage.cookKey));
     await tester.pumpAndSettle();

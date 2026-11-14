@@ -62,7 +62,9 @@ void main() {
     expect(saved.ignoredRecipeIngredients, ['Salz']);
     expect(saved.updatedAt, now);
     expect(steps, ['recipe']);
-    expect(list.savedItems.map((item) => item.name), ['1 Zwiebel']);
+    expect(list.savedItems.map((item) => (item.name, item.note)), [
+      ('Zwiebel', null),
+    ]);
   });
 
   test('a failed recipe save stops before anything changed', () async {

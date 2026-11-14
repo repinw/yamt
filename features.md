@@ -1214,28 +1214,57 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Shopping List
 
-- Shopping list page with the entries as tiles and a line "3 von 9 im
-  Wagen" with a bar over them. A tile shows the first letter, the name, the
-  brand, and the quantity when it is more than one.
+- Shopping list page with a switch "Haushalt · 5", "Privat · 2", "Beide · 7"
+  at the top and a line under it that says who sees the list shown. The
+  household list is shared with the household; the private list is the
+  user's own, encrypted with the user's key. "Beide" shows both for one trip
+  through the shop, with a lock on the private tiles. The choice is
+  remembered on the phone. The add button says where an entry goes ("Zum
+  Haushalt hinzufügen", "Privat hinzufügen"); in "Beide" it goes to the
+  household.
+- The entries show as tiles grouped by shelf in the order of a way through
+  the supermarket (Obst & Gemüse first, Haushalt last), under a heading per
+  shelf, with a line "3 von 9 im Wagen" and a bar over them. A tile shows
+  the product's icon, the name, the brand, a note ("500 g", "Für Do ·
+  Frühstück"), and the quantity when it is more than one. A product the app
+  does not know sits under "Sonstiges" with a dashed outline. The order
+  button switches between "Nach Regal" and "A–Z".
+- The app knows common products in German and English with their shelf and
+  icon, also as part of a longer name ("Vollkornnudeln" counts as pasta).
 - A tap on a tile puts the entry into the cart; it keeps its quantity. The
   tile shows a tick for a moment before it moves, and a second tap in that
   moment takes the tick back. The cart sits under the tiles as chips; a tap
   on a chip puts the entry back on the list.
-- A long press on a tile opens its details: quantity, Dauerauftrag, Favorit,
-  "In den Wagen" and "Von der Liste nehmen".
+- A long press on a tile opens its details: quantity, shelf, Dauerauftrag,
+  Favorit, "In den Wagen" and "Von der Liste nehmen". The shelf row asks
+  "Wo steht X?" with all shelves; the choice is remembered for that product
+  in the household.
 - "Artikel hinzufügen" opens a sheet that stays open until "Fertig", so
   several entries go in one after another. Typing "2 Milch" adds two; a
   number in front of a unit ("500 g Hack") stays part of the name. While
-  typing, the sheet offers favorites and products the Vorrat suggests
-  (used up, almost empty, bought often); with an empty field it offers the
-  favorites. What the sheet added shows as chips; a tap takes one back.
-  Adding a product that is in the cart brings it back onto the list with
-  the new quantity.
-- Suggestions from the Vorrat (used up, almost empty, bought often) sit in a
-  strip over the tiles that scrolls sideways. A tap puts one on the list.
-  The cross pushes it behind the others, so the next ones move up; the order
-  is remembered on the phone.
-- "Fertig" asks once and then takes everything in the cart off the list.
+  typing, the sheet offers favorites, products the Vorrat suggests (used up,
+  almost empty, bought often) and products the app knows, each with its
+  shelf, plus the typed text as a new entry with the shelf it will get, and
+  "Mehr aus <Regal>" chips. With an empty field it offers the favorites as
+  chips. What the sheet added shows as chips; a tap takes one back. Adding a
+  product that is in the cart brings it back onto the list with the new
+  quantity.
+- Suggestions sit in a strip over the tiles that scrolls sideways. What the
+  planned meals need and the Vorrat cannot cover comes first, with the meal
+  it is for ("Für Do · Frühstück"); then what the Vorrat suggests. A tap puts
+  one on the list, a planned one with its day and meal, which the tile shows
+  in the language of each member; a day outside the coming week shows as its
+  date. The cross pushes
+  it behind the others, so the next ones move up; the order is remembered on
+  the phone.
+- "Liste importieren" in the app bar reads a list pasted as text or a
+  photographed note with AI. A review shows each product with its shelf,
+  note and count; products on the list already are unticked and say so.
+  Lines that are not products are shown as skipped. The ticked ones go on
+  the list in one step.
+- "Fertig" opens a page with what is in the cart, how many stay open, and
+  which saved products stay saved. "Einkauf abschließen" takes the cart of
+  the list shown off the list; the receipt is imported later in the Vorrat.
   Favorites and products with a Dauerauftrag stay saved.
 - Firestore-backed list repository.
 - Public operations used by inventory and templates.

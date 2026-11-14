@@ -906,6 +906,16 @@
   },
   "shoppingAddAddedTitle": "Gerade hinzugefügt · antippen nimmt zurück",
   "shoppingAddHitSaved": "Gespeichert",
+  "shoppingAddNewEntryUnknown": "Landet unter Sonstiges, das Regal wählst du später",
+  "shoppingAddMoreFromShelf": "Mehr aus {shelf}",
+  "@shoppingAddMoreFromShelf": {
+    "placeholders": {
+      "shelf": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingAddFavoritesTitle": "Favoriten",
   "shoppingShelfProduce": "Obst & Gemüse",
   "shoppingShelfBakery": "Brot & Backwaren",
   "shoppingShelfMeatFish": "Fleisch & Fisch",
@@ -917,6 +927,123 @@
   "shoppingShelfDrugstore": "Drogerie",
   "shoppingShelfHousehold": "Haushalt",
   "shoppingShelfOther": "Sonstiges",
+  "shoppingImportTitle": "Liste importieren",
+  "shoppingImportModeText": "Text einfügen",
+  "shoppingImportModeScan": "Zettel scannen",
+  "shoppingImportTextTitle": "Füge deine Liste ein",
+  "shoppingImportTextHint": "Aus einem Chat, einer Notiz oder einem Rezept, so wie sie ist. Wir lesen Artikel, Mengen und Regale heraus.",
+  "shoppingImportFieldHint": "Milch\n2 Paprika\n500 g Hackfleisch",
+  "shoppingImportLineCount": "{count, plural, =0{Noch keine Zeile} =1{1 Zeile eingefügt} other{{count} Zeilen eingefügt}}",
+  "@shoppingImportLineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportClear": "Leeren",
+  "shoppingImportPaste": "Aus Zwischenablage einfügen",
+  "shoppingImportReadAction": "Mit KI auslesen",
+  "shoppingImportScanTitle": "Scanne deinen Zettel",
+  "shoppingImportScanHint": "Wir lesen Handschrift, gedruckte Listen und Rezeptseiten. Danach prüfst du, was erkannt wurde.",
+  "shoppingImportScanAction": "Scannen",
+  "shoppingImportScanFailed": "Der Scan hat nicht geklappt.",
+  "shoppingImportReading": "Wir lesen deine Liste …",
+  "shoppingImportReadFailed": "Wir konnten die Liste nicht lesen.",
+  "shoppingImportNothingFound": "Wir haben keine Artikel gefunden.",
+  "shoppingImportRetry": "Erneut versuchen",
+  "shoppingImportReviewTitle": "Erkannte Artikel",
+  "shoppingImportFoundCount": "{count, plural, =1{1 Artikel gefunden} other{{count} Artikel gefunden}}",
+  "@shoppingImportFoundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportReviewHint": "Tippe auf einen Namen, um ihn zu ändern; Abgewähltes wird nicht übernommen.",
+  "shoppingImportAlreadyListed": "Steht schon auf der Liste ({count}×)",
+  "@shoppingImportAlreadyListed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportNotInCatalog": "Nicht im Katalog · kommt unter Sonstiges",
+  "shoppingImportRowWithNote": "{place} · Notiz: {note}",
+  "@shoppingImportRowWithNote": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingImportQuantity": "{count}×",
+  "@shoppingImportQuantity": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportQuantityOnTop": "+{count} dazu",
+  "@shoppingImportQuantityOnTop": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportSkipped": "{count, plural, =1{1 Zeile überlesen:} other{{count} Zeilen überlesen:}}",
+  "@shoppingImportSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportAddAction": "{count, plural, =0{Nichts ausgewählt} =1{1 Artikel auf die Liste} other{{count} Artikel auf die Liste}}",
+  "@shoppingImportAddAction": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportRenameTitle": "Name ändern",
+  "shoppingShelfRow": "Regal",
+  "shoppingShelfUnassigned": "Noch kein Regal · antippen zum Zuordnen",
+  "shoppingShelfPickerTitle": "Wo steht {name}?",
+  "@shoppingShelfPickerTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingShelfPickerHint": "Die Wahl gilt ab jetzt für jeden Eintrag „{name}“ in deinem Haushalt.",
+  "@shoppingShelfPickerHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingShelfRemember": "Für {name} merken",
+  "@shoppingShelfRemember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingShelfSaveFailed": "Das Regal konnte nicht gespeichert werden. Bitte erneut versuchen.",
+  "shoppingListOrderByShelf": "Nach Regal",
+  "shoppingListOrderByName": "A–Z",
   "shoppingAddTakeBackFailed": "Konnte nicht zurückgenommen werden. Bitte erneut versuchen.",
   "shoppingAddTakeBackAction": "„{name}“ zurücknehmen",
   "@shoppingAddTakeBackAction": {
@@ -926,6 +1053,25 @@
       }
     }
   },
+  "shoppingListScopeHousehold": "Haushalt",
+  "shoppingListScopePrivate": "Privat",
+  "shoppingListScopeBoth": "Beide",
+  "shoppingListScopeCount": "{scope} · {count}",
+  "@shoppingListScopeCount": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListScopeHouseholdHint": "Geteilt mit allen in deinem Haushalt.",
+  "shoppingListScopePrivateHint": "Nur du siehst diese Liste.",
+  "shoppingListScopeBothHint": "Beide Listen zusammen, für einen Gang durch den Laden.",
+  "shoppingListAddHousehold": "Zum Haushalt hinzufügen",
+  "shoppingListAddPrivate": "Privat hinzufügen",
   "shoppingListAddAction": "Artikel hinzufügen",
   "shoppingListEmptyState": "Deine Einkaufsliste ist leer.",
   "shoppingListAddFailedError": "Artikel konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
@@ -962,20 +1108,54 @@
   "shoppingListPutBackHint": "zurück auf die Liste holen",
   "shoppingListDetailsHint": "Menge und mehr öffnen",
   "shoppingListFinishAction": "Fertig",
-  "shoppingListMoveToCartAction": "In den Wagen",
-  "shoppingListPutBackAction": "Zurück auf die Liste",
-  "shoppingListRemoveFromListAction": "Von der Liste nehmen",
-  "shoppingListSaveFailed": "Die Einkaufsliste konnte nicht gespeichert werden.",
-  "shoppingListFinishDialogTitle": "Einkauf abschließen?",
-  "shoppingListFinishDialogMessage": "{count, plural, =1{1 Artikel im Wagen verschwindet von der Liste.} other{{count} Artikel im Wagen verschwinden von der Liste.}}",
-  "@shoppingListFinishDialogMessage": {
+  "shoppingFinishTitle": "Einkauf abschließen",
+  "shoppingFinishDoneCount": "{count, plural, =1{1 Artikel erledigt} other{{count} Artikel erledigt}}",
+  "@shoppingFinishDoneCount": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "shoppingListFinishConfirmAction": "Abschließen",
+  "shoppingFinishHint": "Sie verschwinden von der Liste. Den Beleg importierst du später im Vorrat.",
+  "shoppingFinishOpenLeft": "{count, plural, =1{1 Artikel bleibt offen und steht beim nächsten Einkauf wieder oben.} other{{count} Artikel bleiben offen und stehen beim nächsten Einkauf wieder oben.}}",
+  "@shoppingFinishOpenLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingNameListSeparator": ", ",
+  "shoppingNameListLast": "{names} und {last}",
+  "@shoppingNameListLast": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingDetailSeparator": " · ",
+  "shoppingFinishSavedStay": "{count, plural, =1{{names} bleibt gespeichert und lässt sich mit einem Tipp wieder auf die Liste setzen.} other{{names} bleiben gespeichert und lassen sich mit einem Tipp wieder auf die Liste setzen.}}",
+  "@shoppingFinishSavedStay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingFinishCloseAction": "Schließen",
+  "shoppingListMoveToCartAction": "In den Wagen",
+  "shoppingListPutBackAction": "Zurück auf die Liste",
+  "shoppingListRemoveFromListAction": "Von der Liste nehmen",
+  "shoppingPrivateListLoadFailed": "Deine private Liste konnte nicht geladen werden.",
+  "shoppingListSaveFailed": "Die Einkaufsliste konnte nicht gespeichert werden.",
   "caloriesOcrFailed": "Nährwertetikett konnte nicht erkannt werden.",
   "caloriesOcrAppCheckThrottled": "Nährwertscan ist vorübergehend blockiert. Bitte versuche es später erneut.",
   "caloriesOcrRetakePhoto": "Nicht alle Pflichtwerte der Nährwerttabelle waren sicher lesbar. Bitte fotografiere die ganze Tabelle scharf und ohne Spiegelung.",
@@ -2291,8 +2471,8 @@
       }
     }
   },
-  "shoppingListPlanNeedGroup": "{day} · {meal}",
-  "@shoppingListPlanNeedGroup": {
+  "shoppingListPlannedFor": "Für {day} · {meal}",
+  "@shoppingListPlannedFor": {
     "placeholders": {
       "day": {
         "type": "String"
@@ -2313,9 +2493,6 @@
       }
     }
   },
-  "shoppingListPlanNeedsLoadFailed": "Der Bedarf deiner Pläne konnte nicht geladen werden",
-  "shoppingListPlanNeedsRetry": "Bedarf neu laden",
-  "shoppingListPlanNeedsTitle": "Für deinen Plan",
   "shoppingListSuggestionsTitle": "Vorschläge",
   "shoppingListSuggestionAddHint": "auf die Liste setzen",
   "shoppingListSuggestionPushBackAction": "{name} hinten anstellen",

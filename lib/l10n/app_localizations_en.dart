@@ -1715,6 +1715,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingAddHitSaved => 'Saved';
 
   @override
+  String get shoppingAddNewEntryUnknown =>
+      'Goes under Other, you pick the shelf later';
+
+  @override
+  String shoppingAddMoreFromShelf(String shelf) {
+    return 'More from $shelf';
+  }
+
+  @override
+  String get shoppingAddFavoritesTitle => 'Favorites';
+
+  @override
   String get shoppingShelfProduce => 'Fruit & veg';
 
   @override
@@ -1748,6 +1760,170 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingShelfOther => 'Other';
 
   @override
+  String get shoppingImportTitle => 'Import a list';
+
+  @override
+  String get shoppingImportModeText => 'Paste text';
+
+  @override
+  String get shoppingImportModeScan => 'Scan a note';
+
+  @override
+  String get shoppingImportTextTitle => 'Paste your list';
+
+  @override
+  String get shoppingImportTextHint =>
+      'From a chat, a note or a recipe, just as it is. We pick out the products, amounts and shelves.';
+
+  @override
+  String get shoppingImportFieldHint => 'Milk\n2 peppers\n500 g minced meat';
+
+  @override
+  String shoppingImportLineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines pasted',
+      one: '1 line pasted',
+      zero: 'No lines yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingImportClear => 'Clear';
+
+  @override
+  String get shoppingImportPaste => 'Paste from clipboard';
+
+  @override
+  String get shoppingImportReadAction => 'Read with AI';
+
+  @override
+  String get shoppingImportScanTitle => 'Scan your note';
+
+  @override
+  String get shoppingImportScanHint =>
+      'We read handwriting, printed lists and recipe pages. Then you check what we found.';
+
+  @override
+  String get shoppingImportScanAction => 'Scan';
+
+  @override
+  String get shoppingImportScanFailed => 'The scan did not work.';
+
+  @override
+  String get shoppingImportReading => 'Reading your list …';
+
+  @override
+  String get shoppingImportReadFailed => 'We could not read the list.';
+
+  @override
+  String get shoppingImportNothingFound => 'We found no products.';
+
+  @override
+  String get shoppingImportRetry => 'Try again';
+
+  @override
+  String get shoppingImportReviewTitle => 'Products found';
+
+  @override
+  String shoppingImportFoundCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count products found',
+      one: '1 product found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingImportReviewHint =>
+      'Tap a name to change it; unselected products stay off the list.';
+
+  @override
+  String shoppingImportAlreadyListed(int count) {
+    return 'Already on the list ($count×)';
+  }
+
+  @override
+  String get shoppingImportNotInCatalog =>
+      'Not in the catalog · goes under Other';
+
+  @override
+  String shoppingImportRowWithNote(String place, String note) {
+    return '$place · Note: $note';
+  }
+
+  @override
+  String shoppingImportQuantity(int count) {
+    return '$count×';
+  }
+
+  @override
+  String shoppingImportQuantityOnTop(int count) {
+    return '+$count more';
+  }
+
+  @override
+  String shoppingImportSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines skipped:',
+      one: '1 line skipped:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingImportAddAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count products to the list',
+      one: 'Add 1 product to the list',
+      zero: 'Nothing selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingImportRenameTitle => 'Change name';
+
+  @override
+  String get shoppingShelfRow => 'Shelf';
+
+  @override
+  String get shoppingShelfUnassigned => 'No shelf yet · tap to assign';
+
+  @override
+  String shoppingShelfPickerTitle(String name) {
+    return 'Where is $name?';
+  }
+
+  @override
+  String shoppingShelfPickerHint(String name) {
+    return 'From now on this applies to every \"$name\" entry in your household.';
+  }
+
+  @override
+  String shoppingShelfRemember(String name) {
+    return 'Remember for $name';
+  }
+
+  @override
+  String get shoppingShelfSaveFailed =>
+      'Could not save the shelf. Please try again.';
+
+  @override
+  String get shoppingListOrderByShelf => 'By shelf';
+
+  @override
+  String get shoppingListOrderByName => 'A–Z';
+
+  @override
   String get shoppingAddTakeBackFailed =>
       'Could not take it back. Please try again.';
 
@@ -1755,6 +1931,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String shoppingAddTakeBackAction(String name) {
     return 'Take back \"$name\"';
   }
+
+  @override
+  String get shoppingListScopeHousehold => 'Household';
+
+  @override
+  String get shoppingListScopePrivate => 'Private';
+
+  @override
+  String get shoppingListScopeBoth => 'Both';
+
+  @override
+  String shoppingListScopeCount(String scope, int count) {
+    return '$scope · $count';
+  }
+
+  @override
+  String get shoppingListScopeHouseholdHint =>
+      'Shared with everyone in your household.';
+
+  @override
+  String get shoppingListScopePrivateHint => 'Only you see this list.';
+
+  @override
+  String get shoppingListScopeBothHint =>
+      'Both lists together, for one trip through the shop.';
+
+  @override
+  String get shoppingListAddHousehold => 'Add to household';
+
+  @override
+  String get shoppingListAddPrivate => 'Add privately';
 
   @override
   String get shoppingListAddAction => 'Add item';
@@ -1811,6 +2018,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListFinishAction => 'Done';
 
   @override
+  String get shoppingFinishTitle => 'Finish shopping';
+
+  @override
+  String shoppingFinishDoneCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items done',
+      one: '1 item done',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingFinishHint =>
+      'They leave the list. Import the receipt later in your pantry.';
+
+  @override
+  String shoppingFinishOpenLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items stay open and are at the top next time.',
+      one: '1 item stays open and is at the top next time.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingNameListSeparator => ', ';
+
+  @override
+  String shoppingNameListLast(String names, String last) {
+    return '$names and $last';
+  }
+
+  @override
+  String get shoppingDetailSeparator => ' · ';
+
+  @override
+  String shoppingFinishSavedStay(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$names stay saved and go back on the list with one tap.',
+      one: '$names stays saved and goes back on the list with one tap.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingFinishCloseAction => 'Close';
+
+  @override
   String get shoppingListMoveToCartAction => 'Into the cart';
 
   @override
@@ -1820,24 +2081,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListRemoveFromListAction => 'Take off the list';
 
   @override
+  String get shoppingPrivateListLoadFailed =>
+      'Could not load your private list.';
+
+  @override
   String get shoppingListSaveFailed => 'Could not save the shopping list.';
-
-  @override
-  String get shoppingListFinishDialogTitle => 'Finish shopping?';
-
-  @override
-  String shoppingListFinishDialogMessage(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count items in the cart leave the list.',
-      one: '1 item in the cart leaves the list.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get shoppingListFinishConfirmAction => 'Finish';
 
   @override
   String get caloriesOcrFailed =>
@@ -4490,24 +4738,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String shoppingListPlanNeedGroup(String day, String meal) {
-    return '$day · $meal';
+  String shoppingListPlannedFor(String day, String meal) {
+    return 'For $day · $meal';
   }
 
   @override
   String shoppingListPlanNeedBrand(String brand, String amount) {
     return '$brand · $amount';
   }
-
-  @override
-  String get shoppingListPlanNeedsLoadFailed =>
-      'The needs of your plans could not be loaded';
-
-  @override
-  String get shoppingListPlanNeedsRetry => 'Reload plan needs';
-
-  @override
-  String get shoppingListPlanNeedsTitle => 'For your plan';
 
   @override
   String get shoppingListSuggestionsTitle => 'Suggestions';

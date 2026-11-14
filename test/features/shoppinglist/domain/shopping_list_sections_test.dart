@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/shoppinglist/application/shopping_list_sections.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_sections.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_shelf.dart';
 
 ShoppingListItem _item(
   String id, {
@@ -25,11 +26,20 @@ List<String> _ids(List<ShoppingListItem> items) => [
   for (final item in items) item.id,
 ];
 
+List<ShoppingListItem> _tiles(ShoppingListSections sections) => [
+  for (final group in sections.tileGroups)
+    for (final tile in group.tiles) tile.item,
+];
+
+List<ShoppingListItem> _groupItems(ShoppingListTileGroup group) => [
+  for (final tile in group.tiles) tile.item,
+];
+
 void main() {
   test('an empty list has empty sections and zero counts', () {
     final sections = ShoppingListSections(const []);
 
-    expect(sections.tiles, isEmpty);
+    expect(_tiles(sections), isEmpty);
     expect(sections.cart, isEmpty);
     expect(sections.saved, isEmpty);
     expect((sections.entryCount, sections.doneCount), (0, 0));
@@ -43,7 +53,7 @@ void main() {
       _item('d', isDone: true),
     ]);
 
-    expect(_ids(sections.tiles), ['a', 'c']);
+    expect(_ids(_tiles(sections)), ['a', 'c']);
     expect(_ids(sections.cart), ['b', 'd']);
     expect((sections.entryCount, sections.doneCount), (4, 2));
   });
@@ -55,7 +65,7 @@ void main() {
       _item('c', isArchived: true, isDone: true),
     ]);
 
-    expect(_ids(sections.tiles), ['a']);
+    expect(_ids(_tiles(sections)), ['a']);
     expect(sections.cart, isEmpty);
     expect((sections.entryCount, sections.doneCount), (1, 0));
   });
@@ -69,7 +79,7 @@ void main() {
     ]);
 
     expect(_ids(sections.saved), ['fav', 'repeat', 'both']);
-    expect(_ids(sections.tiles), ['plain', 'fav']);
+    expect(_ids(_tiles(sections)), ['plain', 'fav']);
     expect(_ids(sections.cart), ['both']);
     expect((sections.entryCount, sections.doneCount), (3, 1));
   });
@@ -80,7 +90,7 @@ void main() {
       justTicked: {'a'},
     );
 
-    expect(_ids(sections.tiles), ['a', 'c']);
+    expect(_ids(_tiles(sections)), ['a', 'c']);
     expect(_ids(sections.cart), ['b']);
     expect((sections.entryCount, sections.doneCount), (3, 2));
   });
@@ -91,7 +101,7 @@ void main() {
       justTicked: {'a', 'gone'},
     );
 
-    expect(_ids(sections.tiles), ['a']);
+    expect(_ids(_tiles(sections)), ['a']);
     expect(_ids(sections.cart), ['b']);
     expect((sections.entryCount, sections.doneCount), (2, 1));
   });
@@ -102,7 +112,7 @@ void main() {
       justTicked: {'a'},
     );
 
-    expect(sections.tiles, isEmpty);
+    expect(_tiles(sections), isEmpty);
     expect(sections.cart, isEmpty);
     expect(sections.entryCount, 0);
   });
@@ -113,9 +123,9 @@ void main() {
       pendingDone: const {'a': true, 'b': false},
     );
 
-    expect(_ids(sections.tiles), ['b', 'c']);
+    expect(_ids(_tiles(sections)), ['b', 'c']);
     expect(_ids(sections.cart), ['a']);
-    expect(sections.tiles.first.isDone, isFalse);
+    expect(_tiles(sections).first.isDone, isFalse);
     expect((sections.entryCount, sections.doneCount), (3, 1));
   });
 
@@ -127,8 +137,34 @@ void main() {
       pendingDone: const {'a': true},
     );
 
-    expect(sections.tiles.single.isDone, isTrue);
+    expect(_tiles(sections).single.isDone, isTrue);
     expect(sections.cart, isEmpty);
     expect(sections.doneCount, 1);
+  });
+
+  test('by shelf the tiles stand under their shelves in shop order, with '
+      'the household choice', () {
+    final sections = ShoppingListSections(
+      [_item('Milch'), _item('Qwrtz'), _item('Äpfel')],
+      choices: const {'qwrtz': ShoppingShelf.frozen},
+    );
+
+    expect(
+      [
+        for (final group in sections.tileGroups)
+          '${group.shelf?.name}: ${_ids(_groupItems(group))}',
+      ],
+      ['produce: [Äpfel]', 'chilled: [Milch]', 'frozen: [Qwrtz]'],
+    );
+  });
+
+  test('by name the tiles stand in one group without a shelf', () {
+    final sections = ShoppingListSections([
+      _item('b'),
+      _item('a'),
+    ], byShelf: false);
+
+    expect(sections.tileGroups.single.shelf, isNull);
+    expect(_ids(_tiles(sections)), ['a', 'b']);
   });
 }

@@ -26,7 +26,8 @@ typedef ShoppingListSourceItem = ({
   double unitPrice,
 });
 
-/// Active product keys for integrations that add shopping entries.
+/// Active product keys of the household list, for integrations that add
+/// shopping entries there.
 @riverpod
 Set<ShoppingListItemMatchKey> activeShoppingListItemKeys(Ref ref) {
   final items = ref.watch(shoppingListControllerProvider).asData?.value;
@@ -64,12 +65,13 @@ String normalizeShoppingListValue(String value) {
   return value.trim().toLowerCase();
 }
 
-/// Compute active shopping list item keys.
+/// The products still to buy on the household list. Other features add to
+/// the household list, so an entry on the private list does not count.
 Set<ShoppingListItemMatchKey> computeActiveShoppingListItemKeys(
   List<ShoppingListItem> items,
 ) {
   return items
-      .where((item) => item.isOpen)
+      .where((item) => item.isOpen && !item.isPrivate)
       .map(
         (item) => (
           normalizedName: normalizeShoppingListValue(item.normalizedName),

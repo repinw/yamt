@@ -6,13 +6,22 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// The bar under the list: add an entry, finish the shopping trip.
 class ShoppingListBottomBar extends StatelessWidget {
   /// Creates the bar.
-  const new({required this.onAdd, required this.onFinish, super.key});
+  const new({
+    required this.onAdd,
+    required this.onFinish,
+    this.addLabel,
+    super.key,
+  });
 
   /// Opens the add dialog.
   final VoidCallback onAdd;
 
   /// Finishes the trip; null while nothing is in the cart.
   final VoidCallback? onFinish;
+
+  /// The label of the add button, which says where an entry goes; the
+  /// plain add label when null.
+  final String? addLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +41,7 @@ class ShoppingListBottomBar extends StatelessWidget {
               onPressed: onAdd,
               icon: const Icon(Icons.add),
               label: Text(
-                l10n.shoppingListAddAction,
+                addLabel ?? l10n.shoppingListAddAction,
                 overflow: TextOverflow.ellipsis,
               ),
             ),

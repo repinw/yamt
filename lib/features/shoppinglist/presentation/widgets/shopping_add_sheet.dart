@@ -2,12 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_shopping_constants.dart';
-import 'package:yamt/features/shoppinglist/domain/shopping_add_hits.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_planned_meal.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_quick_entry.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_add_hit_tile.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_scope_controller.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_add_hit_list.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -61,7 +62,12 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
     super.dispose();
   }
 
-  Future<void> _add(String name, String? brand, int quantity) async {
+  Future<void> _add(
+    String name,
+    String? brand,
+    int quantity, {
+    ShoppingPlannedMeal? plannedFor,
+  }) async {
     if (_saving || name.trim().isEmpty) return;
     setState(() => _saving = true);
     final label = quantity > 1
@@ -69,7 +75,13 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
         : name;
     final revert = await ref
         .read(shoppingListControllerProvider.notifier)
-        .addItemWithRevert(name: name, brand: brand, quantity: quantity);
+        .addItemWithRevert(
+          name: name,
+          brand: brand,
+          plannedFor: plannedFor,
+          quantity: quantity,
+          isPrivate: ref.read(shoppingListScopeControllerProvider).addsPrivate,
+        );
     if (!mounted) return;
     if (revert != null) _field.clear();
     setState(() {
@@ -122,7 +134,14 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
           children: [
             _fieldRow(l10n, entry),
             if (_added.isNotEmpty) _addedRow(l10n, Theme.of(context)),
-            Flexible(child: _hitList(l10n, entry)),
+            Flexible(
+              child: ShoppingAddHitList(
+                entry: entry,
+                suggestions: widget.suggestions,
+                onAdd: (name, brand, {plannedFor}) =>
+                    _add(name, brand, entry.quantity, plannedFor: plannedFor),
+              ),
+            ),
           ],
         ),
       ),
@@ -164,41 +183,6 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
       ],
     ),
   );
-
-  Widget _hitList(AppLocalizations l10n, ShoppingQuickEntry entry) {
-    final items = ref.watch(shoppingListControllerProvider).asData?.value ?? [];
-    final hits = shoppingAddHits(
-      entry.text,
-      items: items,
-      suggestions: widget.suggestions,
-    );
-    return ListView(
-      shrinkWrap: true,
-      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-      children: [
-        if (entry.text.isNotEmpty)
-          ListTile(
-            key: ShoppingListPageKeys.addSheetNewEntry,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xxl,
-            ),
-            leading: const Icon(Icons.add_rounded),
-            title: Text(l10n.shoppingAddNewEntry(entry.text)),
-            trailing: entry.quantity > 1
-                ? Text(l10n.shoppingAddQuantity(entry.quantity))
-                : null,
-            onTap: () => _add(entry.text, null, entry.quantity),
-          ),
-        for (final hit in hits)
-          ShoppingAddHitTile(
-            key: ShoppingListPageKeys.addSheetHit(hit.key),
-            hit: hit,
-            quantity: entry.quantity,
-            onTap: () => _add(hit.name, hit.brand, entry.quantity),
-          ),
-      ],
-    );
-  }
 
   Widget _addedRow(AppLocalizations l10n, ThemeData theme) => Padding(
     padding: const EdgeInsets.fromLTRB(

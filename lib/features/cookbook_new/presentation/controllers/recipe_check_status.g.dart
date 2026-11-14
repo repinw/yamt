@@ -9,13 +9,15 @@ part of 'recipe_check_status.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// The ingredients of the recipe [recipeId] that are missing or only partly
-/// there and whose shopping text is not on the shopping list yet.
+/// there and whose shopping text is not on the shopping list yet, by the
+/// product name the list keeps for it ([splitShoppingLine]).
 
 @ProviderFor(recipeCheckStatus)
 final recipeCheckStatusProvider = RecipeCheckStatusFamily._();
 
 /// The ingredients of the recipe [recipeId] that are missing or only partly
-/// there and whose shopping text is not on the shopping list yet.
+/// there and whose shopping text is not on the shopping list yet, by the
+/// product name the list keeps for it ([splitShoppingLine]).
 
 final class RecipeCheckStatusProvider
     extends
@@ -26,7 +28,8 @@ final class RecipeCheckStatusProvider
         >
     with $Provider<RecipeCheckStatus> {
   /// The ingredients of the recipe [recipeId] that are missing or only partly
-  /// there and whose shopping text is not on the shopping list yet.
+  /// there and whose shopping text is not on the shopping list yet, by the
+  /// product name the list keeps for it ([splitShoppingLine]).
   RecipeCheckStatusProvider._({
     required RecipeCheckStatusFamily super.from,
     required (String, String) super.argument,
@@ -79,10 +82,11 @@ final class RecipeCheckStatusProvider
   }
 }
 
-String _$recipeCheckStatusHash() => r'ccc1177be5337b79c3fe50c9ac45852b153a7ef4';
+String _$recipeCheckStatusHash() => r'd29f0a1221300e24879a64056258ca60b83a853d';
 
 /// The ingredients of the recipe [recipeId] that are missing or only partly
-/// there and whose shopping text is not on the shopping list yet.
+/// there and whose shopping text is not on the shopping list yet, by the
+/// product name the list keeps for it ([splitShoppingLine]).
 
 final class RecipeCheckStatusFamily extends $Family
     with $FunctionalFamilyOverride<RecipeCheckStatus, (String, String)> {
@@ -96,7 +100,8 @@ final class RecipeCheckStatusFamily extends $Family
       );
 
   /// The ingredients of the recipe [recipeId] that are missing or only partly
-  /// there and whose shopping text is not on the shopping list yet.
+  /// there and whose shopping text is not on the shopping list yet, by the
+  /// product name the list keeps for it ([splitShoppingLine]).
 
   RecipeCheckStatusProvider call(String recipeId, String localeCode) =>
       RecipeCheckStatusProvider._(argument: (recipeId, localeCode), from: this);

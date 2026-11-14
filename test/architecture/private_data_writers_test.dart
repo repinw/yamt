@@ -15,6 +15,7 @@ const _privateCollectionNames = <String>[
   'burn_week_run_state',
   'inventory_items',
   'shopping_list_items',
+  'shopping_shelf_choices',
   'prepared_meals',
   'prepared_meal_templates',
   'kitchen_utensils',
@@ -43,6 +44,7 @@ const _allowedFiles = <String>{
   'lib/features/inventory/data/prepared_meal_template_store.dart',
   'lib/features/kitchen_utensils/data/kitchen_utensil_store.dart',
   'lib/features/shoppinglist/data/shopping_list_repository.dart',
+  'lib/features/shoppinglist/data/shopping_shelf_choice_repository.dart',
   'lib/features/inventory/data/firestore_inventory_calorie_entry_commit_store.dart',
   'lib/features/inventory/data/prepared_meal_calorie_entry_commit_store.dart',
 };
