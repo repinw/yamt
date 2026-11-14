@@ -3206,7 +3206,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryStepsTitle => 'Schritte';
 
   @override
-  String get diaryStepsLoadFailed => 'Schritte konnten nicht geladen werden';
+  String get diaryStepsLoadFailed => 'Schritte konnten nicht gelesen werden';
 
   @override
   String get diaryStepDetailsTitle => 'Schritte Details';
@@ -6808,6 +6808,91 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryBudgetMenuPaceNoticeDebug => 'Test-Meldung in 5 s (Debug)';
+
+  @override
+  String get diaryStepsLabel => 'Schritte';
+
+  @override
+  String get diaryStepsUnknown => '–';
+
+  @override
+  String diaryStepsSemantics(int steps) {
+    String _temp0 = intl.Intl.pluralLogic(
+      steps,
+      locale: localeName,
+      other: '$steps Schritte',
+      one: '1 Schritt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryStepsOfGoal(String goal) {
+    return '/ $goal';
+  }
+
+  @override
+  String diaryStepsGoalSemantics(int steps, int goal) {
+    return '$steps von $goal Schritten';
+  }
+
+  @override
+  String get diaryStepsMenuTitle => 'Schritte';
+
+  @override
+  String get diaryStepsMenuGoal => 'Schrittziel';
+
+  @override
+  String get diaryStepsMenuGoalNone => 'Kein Ziel';
+
+  @override
+  String get diaryStepsMenuPerDay => 'Schritte am Tag';
+
+  @override
+  String diaryStepsMenuLess(String steps) {
+    return '$steps weniger';
+  }
+
+  @override
+  String diaryStepsMenuMore(String steps) {
+    return '$steps mehr';
+  }
+
+  @override
+  String get diaryStepsMenuShow => 'Im Tagebuch zeigen';
+
+  @override
+  String get diaryStepsMenuGoalFailed =>
+      'Das Schrittziel ließ sich nicht speichern';
+
+  @override
+  String get diaryStepsMenuShowHint =>
+      'Wieder einschalten in den Einstellungen unter Health';
+
+  @override
+  String diaryStepsRaiseText(String steps) {
+    return 'Du hast in den letzten 7 Tagen durchschnittlich dein Schrittziel erreicht. Möchtest du die Herausforderung annehmen und $steps Schritte täglich mehr machen?';
+  }
+
+  @override
+  String get diaryStepsRaiseYes => 'Ja';
+
+  @override
+  String get diaryStepsRaiseNo => 'Nein';
+
+  @override
+  String get settingsStepsTitle => 'Schritte im Tagebuch';
+
+  @override
+  String get settingsStepsSubtitle =>
+      'Zeigt deine Schritte unter dem Tagesbudget';
+
+  @override
+  String get settingsStepsDenied =>
+      'Kein Zugriff auf deine Schritte. Erlaube ihn in Health und versuch es noch einmal.';
+
+  @override
+  String get settingsStepsFailed => 'Schritte ließen sich nicht umstellen';
 
   @override
   String get diaryPaceNoticeChannelName => 'Freie kcal';
