@@ -11,13 +11,16 @@ class ShoppingListAddition {
     required int quantity,
     required double estimatedUnitPrice,
     String? brand,
+    String? note,
   }) {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) return null;
     final trimmedBrand = brand?.trim();
+    final trimmedNote = note?.trim();
     return ShoppingListAddInput(
       name: trimmedName,
       brand: trimmedBrand?.isEmpty ?? true ? null : trimmedBrand,
+      note: trimmedNote?.isEmpty ?? true ? null : trimmedNote,
       quantity: quantity < 1 ? 1 : quantity,
       estimatedUnitPrice: estimatedUnitPrice.isFinite && estimatedUnitPrice > 0
           ? estimatedUnitPrice
@@ -27,7 +30,7 @@ class ShoppingListAddition {
 
   /// Merges by normalized name and brand. An entry that is still to buy gets
   /// the quantity on top; a ticked-off or archived one comes back with the
-  /// new quantity alone.
+  /// new quantity alone. A note of the addition replaces the old note.
   List<ShoppingListItem> mergeAddedItem({
     required List<ShoppingListItem> previousItems,
     required ShoppingListAddInput input,
@@ -51,6 +54,7 @@ class ShoppingListAddition {
     quantity: (current.isOpen ? current.quantity : 0) + input.quantity,
     isArchived: false,
     isDone: false,
+    note: input.note,
     estimatedUnitPrice: input.estimatedUnitPrice > 0
         ? input.estimatedUnitPrice
         : current.estimatedUnitPrice,
@@ -65,6 +69,7 @@ class ShoppingListAddInput {
     required this.brand,
     required this.quantity,
     required this.estimatedUnitPrice,
+    this.note,
   });
 
   /// Trimmed product name.
@@ -75,6 +80,9 @@ class ShoppingListAddInput {
 
   /// Positive quantity.
   final int quantity;
+
+  /// Trimmed optional note.
+  final String? note;
 
   /// Nonnegative price.
   final double estimatedUnitPrice;
@@ -90,6 +98,7 @@ class ShoppingListAddInput {
     id: id,
     name: name,
     brand: brand,
+    note: note,
     normalizedName: normalizedName,
     normalizedBrand: normalizedBrand,
     quantity: quantity,

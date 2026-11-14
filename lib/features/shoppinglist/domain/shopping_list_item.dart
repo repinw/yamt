@@ -9,6 +9,7 @@ class ShoppingListItem {
     required this.quantity,
     required this.estimatedUnitPrice,
     this.brand,
+    this.note,
     this.isFavorite = false,
     this.isArchived = false,
     this.isDone = false,
@@ -23,6 +24,7 @@ class ShoppingListItem {
       id: _stringValue(json['id']),
       name: _stringValue(json['name']),
       brand: _nullableStringValue(json['brand']),
+      note: _nullableStringValue(json['note']),
       normalizedName: _stringValue(json['normalized_name']),
       normalizedBrand: _stringValue(json['normalized_brand']),
       quantity: _intValue(json['quantity']),
@@ -44,6 +46,9 @@ class ShoppingListItem {
 
   /// The brand.
   final String? brand;
+
+  /// A free note, such as "500 g" or the meal it is for.
+  final String? note;
 
   /// The normalized name.
   final String normalizedName;
@@ -90,6 +95,7 @@ class ShoppingListItem {
       'id': id,
       'name': name,
       'brand': brand,
+      'note': note,
       'normalized_name': normalizedName,
       'normalized_brand': normalizedBrand,
       'quantity': quantity,
@@ -108,6 +114,8 @@ class ShoppingListItem {
     String? id,
     String? name,
     String? brand,
+    String? note,
+    bool clearNote = false,
     String? normalizedName,
     String? normalizedBrand,
     int? quantity,
@@ -124,6 +132,7 @@ class ShoppingListItem {
       id: id ?? this.id,
       name: name ?? this.name,
       brand: brand ?? this.brand,
+      note: clearNote ? null : note ?? this.note,
       normalizedName: normalizedName ?? this.normalizedName,
       normalizedBrand: normalizedBrand ?? this.normalizedBrand,
       quantity: quantity ?? this.quantity,

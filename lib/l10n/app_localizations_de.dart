@@ -1744,6 +1744,39 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shoppingAddHitSaved => 'Gespeichert';
 
   @override
+  String get shoppingShelfProduce => 'Obst & Gemüse';
+
+  @override
+  String get shoppingShelfBakery => 'Brot & Backwaren';
+
+  @override
+  String get shoppingShelfMeatFish => 'Fleisch & Fisch';
+
+  @override
+  String get shoppingShelfChilled => 'Kühlregal';
+
+  @override
+  String get shoppingShelfFrozen => 'Tiefkühl';
+
+  @override
+  String get shoppingShelfPantry => 'Trockenware';
+
+  @override
+  String get shoppingShelfDrinks => 'Getränke';
+
+  @override
+  String get shoppingShelfSweets => 'Süßes & Snacks';
+
+  @override
+  String get shoppingShelfDrugstore => 'Drogerie';
+
+  @override
+  String get shoppingShelfHousehold => 'Haushalt';
+
+  @override
+  String get shoppingShelfOther => 'Sonstiges';
+
+  @override
   String get shoppingAddTakeBackFailed =>
       'Konnte nicht zurückgenommen werden. Bitte erneut versuchen.';
 

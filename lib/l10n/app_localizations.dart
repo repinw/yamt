@@ -2944,6 +2944,72 @@ abstract class AppLocalizations {
   /// **'Saved'**
   String get shoppingAddHitSaved;
 
+  /// No description provided for @shoppingShelfProduce.
+  ///
+  /// In en, this message translates to:
+  /// **'Fruit & veg'**
+  String get shoppingShelfProduce;
+
+  /// No description provided for @shoppingShelfBakery.
+  ///
+  /// In en, this message translates to:
+  /// **'Bread & bakery'**
+  String get shoppingShelfBakery;
+
+  /// No description provided for @shoppingShelfMeatFish.
+  ///
+  /// In en, this message translates to:
+  /// **'Meat & fish'**
+  String get shoppingShelfMeatFish;
+
+  /// No description provided for @shoppingShelfChilled.
+  ///
+  /// In en, this message translates to:
+  /// **'Chilled'**
+  String get shoppingShelfChilled;
+
+  /// No description provided for @shoppingShelfFrozen.
+  ///
+  /// In en, this message translates to:
+  /// **'Frozen'**
+  String get shoppingShelfFrozen;
+
+  /// No description provided for @shoppingShelfPantry.
+  ///
+  /// In en, this message translates to:
+  /// **'Pantry'**
+  String get shoppingShelfPantry;
+
+  /// No description provided for @shoppingShelfDrinks.
+  ///
+  /// In en, this message translates to:
+  /// **'Drinks'**
+  String get shoppingShelfDrinks;
+
+  /// No description provided for @shoppingShelfSweets.
+  ///
+  /// In en, this message translates to:
+  /// **'Sweets & snacks'**
+  String get shoppingShelfSweets;
+
+  /// No description provided for @shoppingShelfDrugstore.
+  ///
+  /// In en, this message translates to:
+  /// **'Drugstore'**
+  String get shoppingShelfDrugstore;
+
+  /// No description provided for @shoppingShelfHousehold.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get shoppingShelfHousehold;
+
+  /// No description provided for @shoppingShelfOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get shoppingShelfOther;
+
   /// No description provided for @shoppingAddTakeBackFailed.
   ///
   /// In en, this message translates to:

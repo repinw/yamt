@@ -1715,6 +1715,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingAddHitSaved => 'Saved';
 
   @override
+  String get shoppingShelfProduce => 'Fruit & veg';
+
+  @override
+  String get shoppingShelfBakery => 'Bread & bakery';
+
+  @override
+  String get shoppingShelfMeatFish => 'Meat & fish';
+
+  @override
+  String get shoppingShelfChilled => 'Chilled';
+
+  @override
+  String get shoppingShelfFrozen => 'Frozen';
+
+  @override
+  String get shoppingShelfPantry => 'Pantry';
+
+  @override
+  String get shoppingShelfDrinks => 'Drinks';
+
+  @override
+  String get shoppingShelfSweets => 'Sweets & snacks';
+
+  @override
+  String get shoppingShelfDrugstore => 'Drugstore';
+
+  @override
+  String get shoppingShelfHousehold => 'Household';
+
+  @override
+  String get shoppingShelfOther => 'Other';
+
+  @override
   String get shoppingAddTakeBackFailed =>
       'Could not take it back. Please try again.';
 

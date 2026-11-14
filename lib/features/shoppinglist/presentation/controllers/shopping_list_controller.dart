@@ -72,12 +72,14 @@ class ShoppingListController extends _$ShoppingListController {
   Future<bool> addItem({
     required String name,
     String? brand,
+    String? note,
     int quantity = 1,
     double estimatedUnitPrice = 0,
   }) async {
     final revert = await addItemWithRevert(
       name: name,
       brand: brand,
+      note: note,
       quantity: quantity,
       estimatedUnitPrice: estimatedUnitPrice,
     );
@@ -89,17 +91,41 @@ class ShoppingListController extends _$ShoppingListController {
   Future<ShoppingListRevert?> addItemWithRevert({
     required String name,
     String? brand,
+    String? note,
     int quantity = 1,
     double estimatedUnitPrice = 0,
   }) {
     final input = _addition.parseAddItemInput(
       name: name,
       brand: brand,
+      note: note,
       quantity: quantity,
       estimatedUnitPrice: estimatedUnitPrice,
     );
     if (input == null) return Future.value();
     return _mutateWithRevert((items) => _add(items, input));
+  }
+
+  /// Adds or merges several products in one save, as an import does. Entries
+  /// without a name are left out. Returns the change for [revert], or null
+  /// when nothing is valid or the save fails.
+  Future<ShoppingListRevert?> addItemsWithRevert(
+    List<({String name, String? brand, String? note, int quantity})> entries,
+  ) {
+    final inputs = [
+      for (final entry in entries)
+        ?_addition.parseAddItemInput(
+          name: entry.name,
+          brand: entry.brand,
+          note: entry.note,
+          quantity: entry.quantity,
+          estimatedUnitPrice: 0,
+        ),
+    ];
+    if (inputs.isEmpty) return Future.value();
+    return _mutateWithRevert(
+      (items) => inputs.fold<List<ShoppingListItem>>(items, _add),
+    );
   }
 
   /// Undoes a change recorded by [addItemWithRevert].
