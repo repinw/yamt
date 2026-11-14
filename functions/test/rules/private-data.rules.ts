@@ -32,6 +32,7 @@ const payloadOnly = [
   'calorie_product_overrides',
   'progress_photos',
   'shopping_list_items',
+  'ai_chef_settings',
 ];
 // Private collections that also keep the time in plaintext for queries.
 const timed = ['calorie_entries', 'planned_entries'];

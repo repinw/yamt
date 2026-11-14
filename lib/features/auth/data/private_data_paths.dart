@@ -19,6 +19,7 @@ List<String> privateDataCollections(String uid) {
     '$userPath/health_weight_samples',
     '$userPath/calorie_product_overrides',
     '$userPath/$_progressPhotos',
+    '$userPath/ai_chef_settings',
   ];
 }
 
