@@ -14,17 +14,25 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_en
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_progress_header.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_saved_products.dart';
 
-/// The list as tiles with the cart under them, then the saved products and
-/// the suggestions.
+/// The suggestions strip, the list as tiles with the cart under them, then
+/// the saved products and what the plans need.
 class ShoppingListContent extends ConsumerStatefulWidget {
   /// The shopping list content.
-  const new({required this.items, this.suggestionsSection, super.key});
+  const new({
+    required this.items,
+    this.suggestionStrip,
+    this.planNeedsSection,
+    super.key,
+  });
 
   /// The items.
   final List<ShoppingListItem> items;
 
-  /// Optional widget slot for rendering suggestions.
-  final Widget? suggestionsSection;
+  /// Optional slot over the tiles, for the suggestions strip.
+  final Widget? suggestionStrip;
+
+  /// Optional slot under the list, for what the plans need.
+  final Widget? planNeedsSection;
 
   @override
   ConsumerState<ShoppingListContent> createState() =>
@@ -100,21 +108,23 @@ class _ShoppingListContentState extends ConsumerState<ShoppingListContent> {
         AppSpacing.xxxl,
       ),
       children: [
-        if (sections.entryCount == 0)
-          const ShoppingListEmptyState()
-        else ...[
+        if (sections.entryCount > 0) ...[
           ShoppingListProgressHeader(
             doneCount: sections.doneCount,
             entryCount: sections.entryCount,
           ),
           const SizedBox(height: AppSpacing.md),
+        ],
+        ?widget.suggestionStrip,
+        if (sections.entryCount == 0)
+          const ShoppingListEmptyState()
+        else
           ShoppingListEntryGrid(
             items: sections.tiles,
             onTap: _toggle,
             onLongPress: (item) =>
                 unawaited(showShoppingListEntrySheet(context, item.id)),
           ),
-        ],
         if (sections.cart.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xs),
           ShoppingListCartSection(items: sections.cart, onPutBack: _toggle),
@@ -124,7 +134,7 @@ class _ShoppingListContentState extends ConsumerState<ShoppingListContent> {
           key: const ValueKey('saved-products'),
           items: sections.saved,
         ),
-        ?widget.suggestionsSection,
+        ?widget.planNeedsSection,
       ],
     );
   }

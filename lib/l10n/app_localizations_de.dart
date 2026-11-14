@@ -4519,12 +4519,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shoppingListSuggestionsTitle => 'Vorschläge';
 
   @override
-  String get shoppingListSuggestionsExplanation =>
-      'Fast leere Vorräte und häufig gekaufte Artikel aus deinen Belegen.';
+  String get shoppingListSuggestionAddHint => 'auf die Liste setzen';
 
   @override
-  String get shoppingListSuggestionsEmpty =>
-      'Noch keine Vorschläge. Sie erscheinen bei niedrigem Vorrat oder wiederholten Käufen auf verschiedenen Belegen.';
+  String shoppingListSuggestionPushBackAction(String name) {
+    return '$name hinten anstellen';
+  }
+
+  @override
+  String shoppingListSuggestionBrandReason(String brand, String reason) {
+    return '$brand · $reason';
+  }
 
   @override
   String get shoppingListSuggestionsRetry => 'Vorschläge erneut laden';

@@ -7531,17 +7531,23 @@ abstract class AppLocalizations {
   /// **'Suggestions'**
   String get shoppingListSuggestionsTitle;
 
-  /// No description provided for @shoppingListSuggestionsExplanation.
+  /// No description provided for @shoppingListSuggestionAddHint.
   ///
   /// In en, this message translates to:
-  /// **'Low stock and frequently purchased products from your receipts.'**
-  String get shoppingListSuggestionsExplanation;
+  /// **'put on the list'**
+  String get shoppingListSuggestionAddHint;
 
-  /// No description provided for @shoppingListSuggestionsEmpty.
+  /// No description provided for @shoppingListSuggestionPushBackAction.
   ///
   /// In en, this message translates to:
-  /// **'No suggestions yet. Low stock or repeated purchases on different receipts will appear here.'**
-  String get shoppingListSuggestionsEmpty;
+  /// **'Move {name} to the back'**
+  String shoppingListSuggestionPushBackAction(String name);
+
+  /// No description provided for @shoppingListSuggestionBrandReason.
+  ///
+  /// In en, this message translates to:
+  /// **'{brand} · {reason}'**
+  String shoppingListSuggestionBrandReason(String brand, String reason);
 
   /// No description provided for @shoppingListSuggestionsRetry.
   ///

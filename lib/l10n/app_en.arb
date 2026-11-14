@@ -2579,8 +2579,26 @@
   "shoppingListPlanNeedsRetry": "Reload plan needs",
   "shoppingListPlanNeedsTitle": "For your plan",
   "shoppingListSuggestionsTitle": "Suggestions",
-  "shoppingListSuggestionsExplanation": "Low stock and frequently purchased products from your receipts.",
-  "shoppingListSuggestionsEmpty": "No suggestions yet. Low stock or repeated purchases on different receipts will appear here.",
+  "shoppingListSuggestionAddHint": "put on the list",
+  "shoppingListSuggestionPushBackAction": "Move {name} to the back",
+  "@shoppingListSuggestionPushBackAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListSuggestionBrandReason": "{brand} · {reason}",
+  "@shoppingListSuggestionBrandReason": {
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingListSuggestionsRetry": "Reload suggestions",
   "shoppingListConsumptionDays": "Consumed on {count} days",
   "@shoppingListConsumptionDays": {
