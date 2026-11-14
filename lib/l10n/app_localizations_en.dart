@@ -4456,12 +4456,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListSuggestionsTitle => 'Suggestions';
 
   @override
-  String get shoppingListSuggestionsExplanation =>
-      'Low stock and frequently purchased products from your receipts.';
+  String get shoppingListSuggestionAddHint => 'put on the list';
 
   @override
-  String get shoppingListSuggestionsEmpty =>
-      'No suggestions yet. Low stock or repeated purchases on different receipts will appear here.';
+  String shoppingListSuggestionPushBackAction(String name) {
+    return 'Move $name to the back';
+  }
+
+  @override
+  String shoppingListSuggestionBrandReason(String brand, String reason) {
+    return '$brand · $reason';
+  }
 
   @override
   String get shoppingListSuggestionsRetry => 'Reload suggestions';

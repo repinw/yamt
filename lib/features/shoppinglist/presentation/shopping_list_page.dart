@@ -16,10 +16,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Defines shopping list page.
 class ShoppingListPage extends ConsumerStatefulWidget {
   /// The shopping list page.
-  const new({this.suggestionsSection, super.key});
+  const new({this.suggestionStrip, this.planNeedsSection, super.key});
 
-  /// Optional widget slot for suggestions.
-  final Widget? suggestionsSection;
+  /// Optional slot over the tiles, for the suggestions strip.
+  final Widget? suggestionStrip;
+
+  /// Optional slot under the list, for what the plans need.
+  final Widget? planNeedsSection;
 
   @override
   ConsumerState<ShoppingListPage> createState() => _ShoppingListPageState();
@@ -76,7 +79,8 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
       body: itemsAsync.when(
         data: (items) => ShoppingListContent(
           items: items,
-          suggestionsSection: widget.suggestionsSection,
+          suggestionStrip: widget.suggestionStrip,
+          planNeedsSection: widget.planNeedsSection,
         ),
         loading: () => const AppLoadingView(),
         error: (error, stackTrace) => AppErrorRetryView(

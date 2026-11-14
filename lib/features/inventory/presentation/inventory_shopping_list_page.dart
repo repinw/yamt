@@ -16,21 +16,16 @@ class InventoryShoppingListPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final suggestions = ref.watch(inventoryShoppingSuggestionsProvider);
     return ShoppingListPage(
-      suggestionsSection: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ShoppingListPlanNeeds(
-            groups: ref.watch(inventoryShoppingPlanNeedGroupsProvider),
-            onRetry: () => ref
-              ..invalidate(openPlansProvider)
-              ..invalidate(inventoryQuickEatItemsProvider),
-          ),
-          ShoppingListSuggestions(
-            key: const ValueKey('shopping-suggestions'),
-            suggestions: suggestions,
-            onRetry: () => ref.invalidate(inventoryShoppingStockProvider),
-          ),
-        ],
+      suggestionStrip: ShoppingListSuggestions(
+        key: const ValueKey('shopping-suggestions'),
+        suggestions: suggestions,
+        onRetry: () => ref.invalidate(inventoryShoppingStockProvider),
+      ),
+      planNeedsSection: ShoppingListPlanNeeds(
+        groups: ref.watch(inventoryShoppingPlanNeedGroupsProvider),
+        onRetry: () => ref
+          ..invalidate(openPlansProvider)
+          ..invalidate(inventoryQuickEatItemsProvider),
       ),
     );
   }

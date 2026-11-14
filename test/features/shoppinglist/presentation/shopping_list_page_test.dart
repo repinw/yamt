@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_shopping_constants.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
@@ -14,8 +15,10 @@ import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart'
 import 'package:yamt/features/shoppinglist/presentation/widgets/'
     'shopping_list_page_keys.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_suggestions.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_suggestion_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/memory_app_preferences.dart';
 import '../support/fake_shopping_list_repository.dart';
 
 ShoppingListItem _item(
@@ -35,21 +38,29 @@ ShoppingListItem _item(
   isFavorite: isFavorite,
 );
 
-Widget _app(ProviderContainer container, {Widget? suggestionsSection}) {
+Widget _app(ProviderContainer container, {Widget? suggestionStrip}) {
   return UncontrolledProviderScope(
     container: container,
     child: MaterialApp(
       locale: const Locale('en'),
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: ShoppingListPage(suggestionsSection: suggestionsSection),
+      home: ShoppingListPage(suggestionStrip: suggestionStrip),
     ),
   );
 }
 
-ProviderContainer _container(FakeShoppingListRepository repository) {
+ProviderContainer _container(
+  FakeShoppingListRepository repository, {
+  MemoryAppPreferences? preferences,
+}) {
   final container = ProviderContainer(
-    overrides: [shoppingListRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      shoppingListRepositoryProvider.overrideWithValue(repository),
+      appPreferencesProvider.overrideWithValue(
+        preferences ?? MemoryAppPreferences(),
+      ),
+    ],
   );
   addTearDown(container.dispose);
   addTearDown(repository.dispose);
@@ -67,6 +78,8 @@ Future<FakeShoppingListRepository> _pump(
 }
 
 Finder _tile(String id) => find.byKey(ShoppingListPageKeys.tile(id));
+Finder _suggestion(String key) =>
+    find.byKey(ShoppingListPageKeys.suggestion(key));
 Finder _chip(String id) => find.byKey(ShoppingListPageKeys.cartChip(id));
 
 String _progress(WidgetTester tester) =>
@@ -216,7 +229,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           _container(repository),
-          suggestionsSection: const ShoppingListSuggestions(
+          suggestionStrip: const ShoppingListSuggestions(
             key: ValueKey('shopping-suggestions'),
             suggestions: AsyncData([
               ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
@@ -226,17 +239,99 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.textContaining('Purchased 2 times'), findsOneWidget);
-      await tester.tap(
-        find.byWidgetPredicate(
-          (widget) => widget is IconButton && widget.tooltip == 'Add item',
-        ),
-      );
+      await tester.tap(_suggestion('milk|farm'));
       await tester.pumpAndSettle();
       expect(repository.savedItems.single.name, 'Milk');
       expect(repository.savedItems.single.brand, 'Farm');
       expect(repository.savedItems.single.quantity, 1);
       expect(find.textContaining('Purchased 2 times'), findsNothing);
       expect(find.text('Milk'), findsOneWidget);
+    });
+
+    testWidgets('the cross pushes a suggestion behind the others and the '
+        'order is kept on the device', (tester) async {
+      final preferences = MemoryAppPreferences();
+      const strip = ShoppingListSuggestions(
+        suggestions: AsyncData([
+          ShoppingSuggestion(name: 'Milk', isOutOfStock: true),
+          ShoppingSuggestion(name: 'Oats', isLowStock: true),
+          ShoppingSuggestion(name: 'Butter', purchaseCount: 3),
+        ]),
+      );
+      List<String> order() => [
+        for (final card in tester.widgetList<ShoppingSuggestionCard>(
+          find.byType(ShoppingSuggestionCard),
+        ))
+          card.suggestion.name,
+      ];
+      Future<void> pushBack(String key) async {
+        await tester.tap(
+          find.descendant(
+            of: _suggestion(key),
+            matching: find.byType(IconButton),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await tester.pumpWidget(
+        _app(
+          _container(FakeShoppingListRepository(), preferences: preferences),
+          suggestionStrip: strip,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(order(), ['Milk', 'Oats', 'Butter']);
+
+      await pushBack('milk|');
+      expect(order(), ['Oats', 'Butter', 'Milk']);
+      await pushBack('oats|');
+      expect(order(), ['Butter', 'Milk', 'Oats']);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(
+        _app(
+          _container(FakeShoppingListRepository(), preferences: preferences),
+          suggestionStrip: strip,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(order(), ['Butter', 'Milk', 'Oats']);
+    });
+
+    testWidgets('many suggestions with long names scroll sideways without '
+        'overflow at large text', (tester) async {
+      await _setView(tester, const Size(360, 800));
+      await tester.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(
+            size: Size(360, 800),
+            textScaler: TextScaler.linear(2),
+          ),
+          child: _app(
+            _container(FakeShoppingListRepository()),
+            suggestionStrip: ShoppingListSuggestions(
+              suggestions: AsyncData([
+                for (var index = 0; index < 20; index++)
+                  ShoppingSuggestion(
+                    name: 'Frische Bio-Alpenmilch 3,5 % Fett Nummer $index',
+                    brand: 'Berchtesgadener Land',
+                    isLowStock: true,
+                  ),
+              ]),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      await tester.drag(
+        find.byKey(ShoppingListPageKeys.suggestionStrip),
+        const Offset(-600, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('failed suggestion save restores suggestion and shows error', (
@@ -249,7 +344,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           container,
-          suggestionsSection: const ShoppingListSuggestions(
+          suggestionStrip: const ShoppingListSuggestions(
             key: ValueKey('shopping-suggestions'),
             suggestions: AsyncData([
               ShoppingSuggestion(name: 'Milk', brand: 'Farm', purchaseCount: 2),
@@ -258,11 +353,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.byWidgetPredicate(
-          (widget) => widget is IconButton && widget.tooltip == 'Add item',
-        ),
-      );
+      await tester.tap(_suggestion('milk|farm'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
       await tester.pumpAndSettle();

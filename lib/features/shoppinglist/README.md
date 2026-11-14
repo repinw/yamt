@@ -12,7 +12,8 @@ saved favorites, and products that come back on a schedule.
 - List mutations: adding and merging products, quantities, moving an entry
   into the cart and back, reverting an addition, and the calendar recurrence
   rules.
-- Suggestion filtering and the visible list sections.
+- Suggestion filtering, the order of pushed back suggestions (kept on the
+  device), and the visible list sections.
 - Adding products by name for later features, which skips the ones on the
   list already.
 - The shopping list page, its widgets, and its controller.
@@ -25,10 +26,13 @@ saved favorites, and products that come back on a schedule.
 
 ## Public UI
 
-- `ShoppingListPage` with its `suggestionsSection` slot. Inventory fills the
-  slot with its own suggestions and composes the finished page.
-- `ShoppingListSuggestions` renders `ShoppingSuggestion` values and hides
-  products that are already on the list.
+- `ShoppingListPage` with two slots: `suggestionStrip` over the tiles and
+  `planNeedsSection` under the list. Inventory fills both and composes the
+  finished page.
+- `ShoppingListSuggestions` renders `ShoppingSuggestion` values as a strip
+  to scroll sideways and hides products that are on the list and still to
+  buy. A tap puts a suggestion on the list; the cross pushes it behind the
+  others.
 - `ShoppingListPlanNeeds` renders the "Für deinen Plan" block from
   `ShoppingPlanNeedGroup` values, with one add button per food, and an error
   line with a retry when the needs fail to load. `groupShoppingPlanNeeds`
@@ -49,6 +53,9 @@ saved favorites, and products that come back on a schedule.
   is in the cart or archived brings it back with the new quantity alone. A
   due schedule does the same with the schedule's quantity.
 - Finishing the trip removes the entries in the cart.
+- A suggestion pushed back comes after every suggestion that was not, the
+  one pushed back longest ago first. The order is kept on the device, not
+  in the household.
 - Removing or clearing a saved product archives its entry and keeps the
   favorite and the schedule. Re-adding reuses the same entry and never
   duplicates an active item.

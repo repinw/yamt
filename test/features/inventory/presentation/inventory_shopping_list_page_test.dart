@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_page_keys.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_plan_needs.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -89,7 +90,7 @@ void main() {
       expect(find.text('Out of stock'), findsOneWidget);
       expect(find.text('Low stock'), findsNothing);
       expect(find.text('Milk'), findsOneWidget);
-      await tester.tap(find.byTooltip('Add item'));
+      await tester.tap(find.byKey(ShoppingListPageKeys.suggestion('milk|')));
       await tester.pumpAndSettle();
       expect(repository.savedItems.single.name, 'Milk');
       expect(find.text('Out of stock'), findsNothing);

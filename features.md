@@ -1225,6 +1225,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   "In den Wagen" and "Von der Liste nehmen".
 - Quick add with name and optional brand. Adding a product that is in the
   cart brings it back onto the list with the new quantity.
+- Suggestions from the Vorrat (used up, almost empty, bought often) sit in a
+  strip over the tiles that scrolls sideways. A tap puts one on the list.
+  The cross pushes it behind the others, so the next ones move up; the order
+  is remembered on the phone.
 - "Fertig" asks once and then takes everything in the cart off the list.
   Favorites and products with a Dauerauftrag stay saved.
 - Firestore-backed list repository.

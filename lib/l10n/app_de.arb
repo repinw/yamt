@@ -2273,8 +2273,26 @@
   "shoppingListPlanNeedsRetry": "Bedarf neu laden",
   "shoppingListPlanNeedsTitle": "Für deinen Plan",
   "shoppingListSuggestionsTitle": "Vorschläge",
-  "shoppingListSuggestionsExplanation": "Fast leere Vorräte und häufig gekaufte Artikel aus deinen Belegen.",
-  "shoppingListSuggestionsEmpty": "Noch keine Vorschläge. Sie erscheinen bei niedrigem Vorrat oder wiederholten Käufen auf verschiedenen Belegen.",
+  "shoppingListSuggestionAddHint": "auf die Liste setzen",
+  "shoppingListSuggestionPushBackAction": "{name} hinten anstellen",
+  "@shoppingListSuggestionPushBackAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListSuggestionBrandReason": "{brand} · {reason}",
+  "@shoppingListSuggestionBrandReason": {
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingListSuggestionsRetry": "Vorschläge erneut laden",
   "shoppingListConsumptionDays": "An {count} Tagen verbraucht",
   "@shoppingListConsumptionDays": {

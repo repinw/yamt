@@ -34,6 +34,13 @@ class ShoppingListPageKeys {
   /// The button in the entry sheet that moves the entry to or from the cart.
   static const sheetCartButton = Key('shopping_list_sheet_cart_button');
 
+  /// The strip of suggestions that scrolls sideways.
+  static const suggestionStrip = Key('shopping_list_suggestion_strip');
+
+  /// The card of the suggestion with [suggestionKey].
+  static Key suggestion(String suggestionKey) =>
+      ValueKey('shopping_list_suggestion_$suggestionKey');
+
   /// The tile of the entry with [id].
   static Key tile(String id) => ValueKey('shopping_list_tile_$id');
 

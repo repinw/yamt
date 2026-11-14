@@ -37,4 +37,21 @@ void main() {
       isFalse,
     );
   });
+
+  test('visible suggestions leave out listed products and put pushed back '
+      'ones last', () {
+    const oats = ShoppingSuggestion(name: 'Oats');
+    const butter = ShoppingSuggestion(name: 'Butter');
+
+    final visible = visibleShoppingSuggestions(
+      [_suggestion, oats, butter],
+      items: [_milk()],
+      pushedBack: const ['oats|'],
+    );
+
+    expect(
+      [for (final suggestion in visible) suggestion.name],
+      ['Butter', 'Oats'],
+    );
+  });
 }
