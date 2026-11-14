@@ -11,6 +11,7 @@ class ShoppingListItem {
     this.brand,
     this.isFavorite = false,
     this.isArchived = false,
+    this.isDone = false,
     this.repeatEveryDays = 0,
     this.repeatQuantity = 1,
     this.nextDueDate,
@@ -28,6 +29,7 @@ class ShoppingListItem {
       estimatedUnitPrice: _doubleValue(json['estimated_unit_price']),
       isFavorite: json['is_favorite'] == true,
       isArchived: json['is_archived'] == true,
+      isDone: _boolValue(json['is_done']),
       repeatEveryDays: (json['repeat_every_days'] as num?)?.toInt() ?? 0,
       repeatQuantity: (json['repeat_quantity'] as num?)?.toInt() ?? 1,
       nextDueDate: DateTime.tryParse(json['next_due_date']?.toString() ?? ''),
@@ -61,6 +63,9 @@ class ShoppingListItem {
   /// Saved product currently outside the shopping list.
   final bool isArchived;
 
+  /// In the cart: ticked off, with [quantity] kept as it was asked for.
+  final bool isDone;
+
   /// Calendar-day recurrence interval; zero disables recurrence.
   final int repeatEveryDays;
 
@@ -73,8 +78,11 @@ class ShoppingListItem {
   /// Whether removing the list entry must retain its saved settings.
   bool get isSaved => isFavorite || repeatEveryDays > 0;
 
-  /// The estimated total.
-  double get estimatedTotal => estimatedUnitPrice * quantity;
+  /// On the list and still to buy.
+  bool get isOpen => !isArchived && !isDone;
+
+  /// On the list and ticked off.
+  bool get isInCart => !isArchived && isDone;
 
   /// To json.
   Map<String, dynamic> toJson() {
@@ -88,6 +96,7 @@ class ShoppingListItem {
       'estimated_unit_price': estimatedUnitPrice,
       'is_favorite': isFavorite,
       'is_archived': isArchived,
+      'is_done': isDone,
       'repeat_every_days': repeatEveryDays,
       'repeat_quantity': repeatQuantity,
       'next_due_date': nextDueDate?.toIso8601String(),
@@ -105,6 +114,7 @@ class ShoppingListItem {
     double? estimatedUnitPrice,
     bool? isFavorite,
     bool? isArchived,
+    bool? isDone,
     int? repeatEveryDays,
     int? repeatQuantity,
     DateTime? nextDueDate,
@@ -120,6 +130,7 @@ class ShoppingListItem {
       estimatedUnitPrice: estimatedUnitPrice ?? this.estimatedUnitPrice,
       isFavorite: isFavorite ?? this.isFavorite,
       isArchived: isArchived ?? this.isArchived,
+      isDone: isDone ?? this.isDone,
       repeatEveryDays: repeatEveryDays ?? this.repeatEveryDays,
       repeatQuantity: repeatQuantity ?? this.repeatQuantity,
       nextDueDate: clearNextDueDate ? null : nextDueDate ?? this.nextDueDate,
@@ -141,6 +152,13 @@ class ShoppingListItem {
       return value;
     }
     throw FormatException('Expected a nullable string but got: $value');
+  }
+
+  static bool _boolValue(Object? value) {
+    if (value is bool) {
+      return value;
+    }
+    throw FormatException('Expected a bool but got: $value');
   }
 
   static int _intValue(Object? value) {

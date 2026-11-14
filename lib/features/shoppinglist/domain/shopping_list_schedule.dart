@@ -5,7 +5,9 @@ DateTime shoppingDate(DateTime value) =>
     DateTime(value.year, value.month, value.day);
 
 /// Applies each overdue schedule once, skipping missed intervals.
-/// Schedule advancement and list reactivation are persisted together.
+/// Schedule advancement and list reactivation are persisted together. An
+/// entry that is still to buy keeps its quantity; a ticked-off or archived
+/// one comes back with the schedule's quantity.
 List<ShoppingListItem>? renewDueShoppingItems(
   List<ShoppingListItem> items,
   DateTime now,
@@ -23,7 +25,8 @@ List<ShoppingListItem>? renewDueShoppingItems(
         changed = true;
         return item.copyWith(
           isArchived: false,
-          quantity: !item.isArchived && item.quantity > 0
+          isDone: false,
+          quantity: item.isOpen
               ? item.quantity
               : item.repeatQuantity.clamp(1, 999),
           nextDueDate: _nextDate(due, today, item.repeatEveryDays),
@@ -52,7 +55,7 @@ List<ShoppingListItem> removeShoppingItems(
     if (!shouldRemove(item))
       item
     else if (item.isSaved)
-      item.copyWith(quantity: 0, isArchived: true),
+      item.copyWith(quantity: 0, isArchived: true, isDone: false),
 ];
 
 /// Configures and immediately applies a due schedule in one item update.

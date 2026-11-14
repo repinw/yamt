@@ -3,6 +3,8 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
+import 'package:yamt/core/domain/app_update_status.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_subscription.dart';
@@ -19,10 +21,12 @@ class ShoppingListController extends _$ShoppingListController {
   final _subscription = ShoppingListSubscription();
   final _queue = SerializedMutationQueue();
   final _addition = const ShoppingListAddition();
+  var _awaitsUpdateStatus = false;
 
   @override
   Future<List<ShoppingListItem>> build() async {
     final repository = ref.watch(shoppingListRepositoryProvider);
+    _awaitsUpdateStatus = false;
     ref.onDispose(() => unawaited(_subscription.cancel()));
     final items = await _subscription.start(
       repository,
@@ -31,12 +35,31 @@ class ShoppingListController extends _$ShoppingListController {
     );
     if (!ref.mounted) return items;
     final due = renewDueShoppingItems(items, DateTime.now());
-    if (due == null) return items;
+    if (due == null && !_mustRewriteStoredItems(repository)) return items;
+    final next = due ?? items;
     try {
-      return await repository.saveAll(due) ? due : items;
+      return await repository.saveAll(next) ? next : items;
     } on Object {
       return items;
     }
+  }
+
+  /// Temporary migration, added in 3.11.0: removed in 3.14.0. Whether the
+  /// stored list holds entries from before the done flag and this app may
+  /// rewrite them: an app below the minimum version must not, and until the
+  /// status is known the entries stay as they are.
+  bool _mustRewriteStoredItems(ShoppingListRepository repository) {
+    if (!repository.holdsUnmigratedItems) return false;
+    final updateStatus = ref.read(appUpdateStatusProvider).value;
+    if (updateStatus == null && !_awaitsUpdateStatus) {
+      _awaitsUpdateStatus = true;
+      ref.listen(
+        appUpdateStatusProvider,
+        (_, _) => unawaited(processDue()),
+        onError: (_, _) {},
+      );
+    }
+    return updateStatus != null && updateStatus is! AppUpdateRequired;
   }
 
   /// Reloads the current list.
@@ -102,19 +125,19 @@ class ShoppingListController extends _$ShoppingListController {
     (item) => item.copyWith(quantity: item.quantity + 1, isArchived: false),
   );
 
-  /// Reduces the quantity; zero keeps the entry crossed off.
+  /// Reduces the requested quantity, down to one.
   Future<bool> decrementQuantity(String id) => _update(
     id,
-    (item) => item.copyWith(quantity: (item.quantity - 1).clamp(0, 999999)),
+    (item) => item.copyWith(quantity: (item.quantity - 1).clamp(1, 999999)),
   );
 
-  /// Clears completed entries without deleting saved products.
-  Future<bool> clearCrossedOffItems() => _mutate(
-    (items) => removeShoppingItems(
-      items,
-      (item) => item.quantity == 0 && !item.isArchived,
-    ),
-  );
+  /// Puts an entry into the cart or back onto the list; its quantity stays.
+  Future<bool> setDone(String id, {required bool done}) =>
+      _update(id, (item) => item.copyWith(isDone: done));
+
+  /// Takes the entries in the cart off the list; saved products stay saved.
+  Future<bool> finishTrip() =>
+      _mutate((items) => removeShoppingItems(items, (item) => item.isInCart));
 
   /// Toggles persistence in the favorites section.
   Future<bool> toggleFavorite(String id) =>
@@ -145,17 +168,27 @@ class ShoppingListController extends _$ShoppingListController {
   /// Re-adds a saved product without duplicating an existing active entry.
   Future<bool> addSavedItem(String id) => _update(
     id,
-    (item) => item.quantity > 0 && !item.isArchived
+    (item) => item.isOpen
         ? item
         : item.copyWith(
-            quantity: item.repeatEveryDays > 0 ? item.repeatQuantity : 1,
+            quantity: !item.isArchived
+                ? item.quantity
+                : item.repeatEveryDays > 0
+                ? item.repeatQuantity
+                : 1,
             isArchived: false,
+            isDone: false,
           ),
   );
 
   /// Applies overdue schedules on resume and while the list is alive.
-  Future<bool> processDue() =>
-      _mutate((items) => renewDueShoppingItems(items, DateTime.now()));
+  Future<bool> processDue() => _mutate(
+    (items) =>
+        renewDueShoppingItems(items, DateTime.now()) ??
+        (_mustRewriteStoredItems(ref.read(shoppingListRepositoryProvider))
+            ? [...items]
+            : null),
+  );
 
   Future<bool> _update(
     String id,

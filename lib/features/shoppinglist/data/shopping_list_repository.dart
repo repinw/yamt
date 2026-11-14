@@ -8,6 +8,7 @@ import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_item_migration.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 part 'shopping_list_repository.g.dart';
@@ -48,6 +49,12 @@ class ShoppingListRepository {
 
   final SealedCollection? _collection;
   Future<void> _writeBarrier = Future<void>.value();
+  bool _holdsUnmigratedItems = false;
+
+  /// Temporary migration, added in 3.11.0: removed in 3.14.0. Whether the
+  /// last read held a document from before `is_done`. Reads hand such
+  /// documents out in the new shape; [saveAll] stores them in it.
+  bool get holdsUnmigratedItems => _holdsUnmigratedItems;
 
   /// Watches all shopping list items in realtime.
   ///
@@ -140,9 +147,16 @@ class ShoppingListRepository {
 
   List<ShoppingListItem> _decode(List<OpenedDocument> documents) {
     final items = <ShoppingListItem>[];
+    _holdsUnmigratedItems = documents.any(
+      (document) => !document.data.containsKey('is_done'),
+    );
     for (final document in documents) {
       try {
-        items.add(ShoppingListItem.fromJson(document.data));
+        items.add(
+          ShoppingListItem.fromJson(
+            migrateStoredShoppingListItem(document.data),
+          ),
+        );
       } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted shopping list item ${document.id}.',

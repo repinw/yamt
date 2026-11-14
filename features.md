@@ -1214,11 +1214,19 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Shopping List
 
-- Shopping list page with stats for entries, total quantity, and estimated
-  total.
-- Quick add with name and optional brand.
-- Quantity increase/decrease.
-- Cross-off behavior and clear-crossed-off action.
+- Shopping list page with the entries as tiles and a line "3 von 9 im
+  Wagen" with a bar over them. A tile shows the first letter, the name, the
+  brand, and the quantity when it is more than one.
+- A tap on a tile puts the entry into the cart; it keeps its quantity. The
+  tile shows a tick for a moment before it moves, and a second tap in that
+  moment takes the tick back. The cart sits under the tiles as chips; a tap
+  on a chip puts the entry back on the list.
+- A long press on a tile opens its details: quantity, Dauerauftrag, Favorit,
+  "In den Wagen" and "Von der Liste nehmen".
+- Quick add with name and optional brand. Adding a product that is in the
+  cart brings it back onto the list with the new quantity.
+- "Fertig" asks once and then takes everything in the cart off the list.
+  Favorites and products with a Dauerauftrag stay saved.
 - Firestore-backed list repository.
 - Public operations used by inventory and templates.
 - Reminder the day before planned food that misses ingredients: a phone

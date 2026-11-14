@@ -1001,9 +1001,6 @@
       }
     }
   },
-  "shoppingListStatsEntries": "Entries",
-  "shoppingListStatsQuantity": "Total quantity",
-  "shoppingListStatsEstimatedTotal": "Estimated total",
   "shoppingListNameFieldLabel": "Name",
   "shoppingListBrandFieldLabel": "Brand (optional)",
   "shoppingListAddAction": "Add item",
@@ -1015,17 +1012,48 @@
   "shoppingListQuantityLabel": "Qty",
   "shoppingListIncreaseQuantityAction": "Increase quantity",
   "shoppingListDecreaseQuantityAction": "Decrease quantity",
-  "shoppingListClearCrossedOffAction": "Clear crossed-off ({count})",
-  "@shoppingListClearCrossedOffAction": {
+  "shoppingListProgress": "{done} of {total} in the cart",
+  "@shoppingListProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListTileHint": "Tap to tick off · hold for quantity and more",
+  "shoppingListCartTitle": "In the cart · tap to put back",
+  "shoppingListCartEntry": "{quantity}× {name}",
+  "@shoppingListCartEntry": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListTickOffHint": "tick off",
+  "shoppingListPutBackHint": "put back on the list",
+  "shoppingListDetailsHint": "open quantity and more",
+  "shoppingListFinishAction": "Done",
+  "shoppingListMoveToCartAction": "Into the cart",
+  "shoppingListPutBackAction": "Back onto the list",
+  "shoppingListRemoveFromListAction": "Take off the list",
+  "shoppingListSaveFailed": "Could not save the shopping list.",
+  "shoppingListFinishDialogTitle": "Finish shopping?",
+  "shoppingListFinishDialogMessage": "{count, plural, =1{1 item in the cart leaves the list.} other{{count} items in the cart leave the list.}}",
+  "@shoppingListFinishDialogMessage": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "shoppingListClearCrossedOffDialogTitle": "Clear crossed-off items?",
-  "shoppingListClearCrossedOffDialogMessage": "All crossed-off items will be removed from the shopping list.",
-  "shoppingListClearCrossedOffConfirmAction": "Clear",
+  "shoppingListFinishConfirmAction": "Finish",
   "caloriesOcrFailed": "Nutrition label scan failed. Please try again.",
   "caloriesOcrAppCheckThrottled": "Nutrition scan is temporarily blocked. Please try again later.",
   "caloriesOcrRetakePhoto": "Not every mandatory value of the nutrition table was clearly readable. Please take a sharp photo of the whole table without glare.",
@@ -2555,8 +2583,6 @@
   "shoppingListSuggestionsEmpty": "No suggestions yet. Low stock or repeated purchases on different receipts will appear here.",
   "shoppingListSuggestionsRetry": "Reload suggestions",
   "shoppingListConsumptionDays": "Consumed on {count} days",
-  "shoppingListOpenTitle": "To buy",
-  "shoppingListDoneTitle": "Done",
   "@shoppingListConsumptionDays": {
     "placeholders": {
       "count": {
@@ -2576,9 +2602,19 @@
   "shoppingListProductSettings": "Item settings",
   "shoppingListRemoveFavorite": "Remove favorite",
   "shoppingListAddFavorite": "Save as favorite",
-  "shoppingListSettingsFailed": "Could not save settings.",
   "shoppingListSavedProducts": "Favorites & recurring items",
   "shoppingListRepeatSummary": "{quantity} items every {days} days",
+  "shoppingListScheduleSummary": "{schedule} · {next}",
+  "@shoppingListScheduleSummary": {
+    "placeholders": {
+      "schedule": {
+        "type": "String"
+      },
+      "next": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingListNextDue": "Next due: {date}",
   "shoppingListFavorite": "Favorite",
   "@shoppingListPurchaseCount": {

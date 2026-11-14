@@ -6,6 +6,7 @@ ShoppingListItem _item({
   int quantity = 0,
   bool favorite = true,
   bool archived = true,
+  bool done = false,
   int days = 7,
   DateTime? due,
 }) => ShoppingListItem(
@@ -17,6 +18,7 @@ ShoppingListItem _item({
   estimatedUnitPrice: 2,
   isFavorite: favorite,
   isArchived: archived,
+  isDone: done,
   repeatEveryDays: days,
   repeatQuantity: 2,
   nextDueDate: due ?? DateTime(2026, 9),
@@ -31,6 +33,7 @@ void main() {
       'normalized_brand': '',
       'quantity': 1,
       'estimated_unit_price': 0,
+      'is_done': false,
     });
     expect(old.isFavorite, isFalse);
     expect(old.isArchived, isFalse);
@@ -54,6 +57,20 @@ void main() {
     ], DateTime(2026, 9))!;
     expect(next.single.quantity, 5);
     expect(next.single.nextDueDate, DateTime(2026, 9, 8));
+  });
+  test('a due entry in the cart comes back with the schedule quantity', () {
+    final next = renewDueShoppingItems([
+      _item(quantity: 5, archived: false, done: true),
+    ], DateTime(2026, 9))!;
+    expect(next.single.isDone, isFalse);
+    expect(next.single.quantity, 2);
+  });
+  test('removing a saved entry in the cart archives it as not done', () {
+    final removed = removeShoppingItems([
+      _item(quantity: 3, archived: false, done: true),
+    ], (_) => true).single;
+    expect(removed.isArchived, isTrue);
+    expect(removed.isDone, isFalse);
   });
   test('disabled and future schedules do not change list', () {
     expect(

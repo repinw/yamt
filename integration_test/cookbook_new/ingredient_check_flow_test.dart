@@ -450,6 +450,9 @@ class _FakeActivityRepository implements InventoryActivityEventRepository {
 }
 
 class _FakeShoppingListRepository implements ShoppingListRepository {
+  @override
+  bool holdsUnmigratedItems = false;
+
   List<ShoppingListItem> saved = const [];
 
   @override

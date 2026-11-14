@@ -28,8 +28,8 @@ void main() {
 
   test('favorite survives clearing and can be re-added after reload', () async {
     await controller.toggleFavorite(current().id);
-    await controller.decrementQuantity(current().id);
-    await controller.clearCrossedOffItems();
+    await controller.setDone(current().id, done: true);
+    await controller.finishTrip();
     expect(current().isArchived, isTrue);
     await controller.refresh();
     controller = container.read(shoppingListControllerProvider.notifier);

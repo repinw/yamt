@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_schedule_dialog/shopping_schedule_form.dart';
@@ -5,6 +6,24 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Editable recurrence settings returned only after confirmation.
 typedef ShoppingScheduleInput = ({int days, int quantity, DateTime firstDue});
+
+/// The schedule of [item] in words with its next date, or null without one.
+String? shoppingScheduleSummary(BuildContext context, ShoppingListItem item) {
+  if (item.repeatEveryDays <= 0) return null;
+  final l10n = AppLocalizations.of(context)!;
+  final due = item.nextDueDate;
+  final summary = l10n.shoppingListRepeatSummary(
+    item.repeatQuantity,
+    item.repeatEveryDays,
+  );
+  if (due == null) return summary;
+  final date = DateFormat.yMd(Localizations.localeOf(context).toLanguageTag())
+      .format(due);
+  return l10n.shoppingListScheduleSummary(
+    summary,
+    l10n.shoppingListNextDue(date),
+  );
+}
 
 /// Edits an interval, quantity and first due date.
 Future<ShoppingScheduleInput?> showShoppingScheduleDialog(

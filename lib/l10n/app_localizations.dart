@@ -2908,24 +2908,6 @@ abstract class AppLocalizations {
   /// **'{count} portions'**
   String preparedMealTemplatePortions(int count);
 
-  /// No description provided for @shoppingListStatsEntries.
-  ///
-  /// In en, this message translates to:
-  /// **'Entries'**
-  String get shoppingListStatsEntries;
-
-  /// No description provided for @shoppingListStatsQuantity.
-  ///
-  /// In en, this message translates to:
-  /// **'Total quantity'**
-  String get shoppingListStatsQuantity;
-
-  /// No description provided for @shoppingListStatsEstimatedTotal.
-  ///
-  /// In en, this message translates to:
-  /// **'Estimated total'**
-  String get shoppingListStatsEstimatedTotal;
-
   /// No description provided for @shoppingListNameFieldLabel.
   ///
   /// In en, this message translates to:
@@ -2992,29 +2974,95 @@ abstract class AppLocalizations {
   /// **'Decrease quantity'**
   String get shoppingListDecreaseQuantityAction;
 
-  /// No description provided for @shoppingListClearCrossedOffAction.
+  /// No description provided for @shoppingListProgress.
   ///
   /// In en, this message translates to:
-  /// **'Clear crossed-off ({count})'**
-  String shoppingListClearCrossedOffAction(int count);
+  /// **'{done} of {total} in the cart'**
+  String shoppingListProgress(int done, int total);
 
-  /// No description provided for @shoppingListClearCrossedOffDialogTitle.
+  /// No description provided for @shoppingListTileHint.
   ///
   /// In en, this message translates to:
-  /// **'Clear crossed-off items?'**
-  String get shoppingListClearCrossedOffDialogTitle;
+  /// **'Tap to tick off · hold for quantity and more'**
+  String get shoppingListTileHint;
 
-  /// No description provided for @shoppingListClearCrossedOffDialogMessage.
+  /// No description provided for @shoppingListCartTitle.
   ///
   /// In en, this message translates to:
-  /// **'All crossed-off items will be removed from the shopping list.'**
-  String get shoppingListClearCrossedOffDialogMessage;
+  /// **'In the cart · tap to put back'**
+  String get shoppingListCartTitle;
 
-  /// No description provided for @shoppingListClearCrossedOffConfirmAction.
+  /// No description provided for @shoppingListCartEntry.
   ///
   /// In en, this message translates to:
-  /// **'Clear'**
-  String get shoppingListClearCrossedOffConfirmAction;
+  /// **'{quantity}× {name}'**
+  String shoppingListCartEntry(int quantity, String name);
+
+  /// No description provided for @shoppingListTickOffHint.
+  ///
+  /// In en, this message translates to:
+  /// **'tick off'**
+  String get shoppingListTickOffHint;
+
+  /// No description provided for @shoppingListPutBackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'put back on the list'**
+  String get shoppingListPutBackHint;
+
+  /// No description provided for @shoppingListDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'open quantity and more'**
+  String get shoppingListDetailsHint;
+
+  /// No description provided for @shoppingListFinishAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get shoppingListFinishAction;
+
+  /// No description provided for @shoppingListMoveToCartAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Into the cart'**
+  String get shoppingListMoveToCartAction;
+
+  /// No description provided for @shoppingListPutBackAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Back onto the list'**
+  String get shoppingListPutBackAction;
+
+  /// No description provided for @shoppingListRemoveFromListAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Take off the list'**
+  String get shoppingListRemoveFromListAction;
+
+  /// No description provided for @shoppingListSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the shopping list.'**
+  String get shoppingListSaveFailed;
+
+  /// No description provided for @shoppingListFinishDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish shopping?'**
+  String get shoppingListFinishDialogTitle;
+
+  /// No description provided for @shoppingListFinishDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item in the cart leaves the list.} other{{count} items in the cart leave the list.}}'**
+  String shoppingListFinishDialogMessage(int count);
+
+  /// No description provided for @shoppingListFinishConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get shoppingListFinishConfirmAction;
 
   /// No description provided for @caloriesOcrFailed.
   ///
@@ -7507,18 +7555,6 @@ abstract class AppLocalizations {
   /// **'Consumed on {count} days'**
   String shoppingListConsumptionDays(int count);
 
-  /// No description provided for @shoppingListOpenTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'To buy'**
-  String get shoppingListOpenTitle;
-
-  /// No description provided for @shoppingListDoneTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Done'**
-  String get shoppingListDoneTitle;
-
   /// No description provided for @shoppingListLowStock.
   ///
   /// In en, this message translates to:
@@ -7591,12 +7627,6 @@ abstract class AppLocalizations {
   /// **'Save as favorite'**
   String get shoppingListAddFavorite;
 
-  /// No description provided for @shoppingListSettingsFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not save settings.'**
-  String get shoppingListSettingsFailed;
-
   /// No description provided for @shoppingListSavedProducts.
   ///
   /// In en, this message translates to:
@@ -7608,6 +7638,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{quantity} items every {days} days'**
   String shoppingListRepeatSummary(int quantity, int days);
+
+  /// No description provided for @shoppingListScheduleSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{schedule} · {next}'**
+  String shoppingListScheduleSummary(String schedule, String next);
 
   /// No description provided for @shoppingListNextDue.
   ///

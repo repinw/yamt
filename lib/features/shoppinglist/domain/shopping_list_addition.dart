@@ -25,7 +25,9 @@ class ShoppingListAddition {
     );
   }
 
-  /// Merges by normalized name and brand, reactivating saved entries.
+  /// Merges by normalized name and brand. An entry that is still to buy gets
+  /// the quantity on top; a ticked-off or archived one comes back with the
+  /// new quantity alone.
   List<ShoppingListItem> mergeAddedItem({
     required List<ShoppingListItem> previousItems,
     required ShoppingListAddInput input,
@@ -46,8 +48,9 @@ class ShoppingListAddition {
     ShoppingListItem current,
     ShoppingListAddInput input,
   ) => current.copyWith(
-    quantity: (current.isArchived ? 0 : current.quantity) + input.quantity,
+    quantity: (current.isOpen ? current.quantity : 0) + input.quantity,
     isArchived: false,
+    isDone: false,
     estimatedUnitPrice: input.estimatedUnitPrice > 0
         ? input.estimatedUnitPrice
         : current.estimatedUnitPrice,

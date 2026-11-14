@@ -1,12 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
-import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_schedule_dialog/shopping_list_schedule_dialog.dart';
+import 'package:yamt/features/shoppinglist/presentation/shopping_list_entry_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Favorite and recurrence controls shared by listed and saved products.
+/// Favorite and recurrence controls of a saved product.
 class ShoppingListProductMenu extends ConsumerWidget {
   /// Creates product settings.
   const new({required this.item, super.key});
@@ -19,7 +17,9 @@ class ShoppingListProductMenu extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
       tooltip: l10n.shoppingListProductSettings,
-      onSelected: (action) => _select(context, ref, action),
+      onSelected: (action) => action == 'favorite'
+          ? ShoppingListEntryFlow.toggleFavorite(context, ref, item)
+          : ShoppingListEntryFlow.editSchedule(context, ref, item),
       itemBuilder: (_) => [
         PopupMenuItem(
           value: 'favorite',
@@ -35,32 +35,5 @@ class ShoppingListProductMenu extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  Future<void> _select(
-    BuildContext context,
-    WidgetRef ref,
-    String action,
-  ) async {
-    final controller = ref.read(shoppingListControllerProvider.notifier);
-    bool saved;
-    if (action == 'favorite') {
-      saved = await controller.toggleFavorite(item.id);
-    } else {
-      final input = await showShoppingScheduleDialog(context, item);
-      if (input == null || !context.mounted) return;
-      saved = await controller.setSchedule(
-        item.id,
-        days: input.days,
-        quantity: input.quantity,
-        firstDue: input.firstDue,
-      );
-    }
-    if (!saved && context.mounted) {
-      ScaffoldMessenger.of(context).showAppSnackBar(
-        AppLocalizations.of(context)!.shoppingListSettingsFailed,
-        tone: AppSnackBarTone.error,
-      );
-    }
   }
 }

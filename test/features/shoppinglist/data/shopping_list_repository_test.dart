@@ -228,4 +228,39 @@ void main() {
 
     expect(saved, isFalse);
   });
+
+  group('documents from before the done flag', () {
+    Map<String, dynamic> stored({required int quantity}) => <String, dynamic>{
+      'id': 'a',
+      'name': 'Milk',
+      'brand': null,
+      'normalized_name': 'milk',
+      'normalized_brand': '',
+      'quantity': quantity,
+      'estimated_unit_price': 0,
+    };
+
+    test('are read in the new shape and marked for a rewrite', () async {
+      final firestore = FakeFirebaseFirestore();
+      await put(firestore, 'a', stored(quantity: 0));
+      final target = repository(firestore);
+
+      final items = await target.readAll();
+
+      expect((items.single.isDone, items.single.quantity), (true, 1));
+      expect(target.holdsUnmigratedItems, isTrue);
+    });
+
+    test('are stored in the new shape by the next save', () async {
+      final firestore = FakeFirebaseFirestore();
+      await put(firestore, 'a', stored(quantity: 2));
+      final target = repository(firestore);
+
+      await target.saveAll(await target.readAll());
+      final items = await target.readAll();
+
+      expect((items.single.isDone, items.single.quantity), (false, 2));
+      expect(target.holdsUnmigratedItems, isFalse);
+    });
+  });
 }

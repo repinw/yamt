@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_product_menu.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_schedule_dialog/shopping_list_schedule_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Reusable favorites and scheduled entries remain available after clearing.
@@ -38,7 +38,7 @@ class ShoppingListSavedProducts extends ConsumerWidget {
                 IconButton(
                   tooltip: l10n.shoppingListAddAction,
                   icon: const Icon(Icons.add),
-                  onPressed: item.quantity > 0 && !item.isArchived
+                  onPressed: item.isOpen
                       ? null
                       : () => _add(context, ref, item),
                 ),
@@ -51,21 +51,13 @@ class ShoppingListSavedProducts extends ConsumerWidget {
   }
 
   String _subtitle(BuildContext context, ShoppingListItem item) {
-    final l10n = AppLocalizations.of(context)!;
+    final brand = item.brand ?? '';
+    final schedule = shoppingScheduleSummary(context, item);
     return [
-      if (item.brand?.isNotEmpty ?? false) item.brand!,
-      if (item.repeatEveryDays > 0)
-        l10n.shoppingListRepeatSummary(
-          item.repeatQuantity,
-          item.repeatEveryDays,
-        ),
-      if (item.nextDueDate != null && item.repeatEveryDays > 0)
-        l10n.shoppingListNextDue(
-          DateFormat.yMd(Localizations.localeOf(context).toLanguageTag())
-              .format(item.nextDueDate!),
-        ),
-      if (item.isFavorite && item.repeatEveryDays == 0)
-        l10n.shoppingListFavorite,
+      if (brand.isNotEmpty) brand,
+      ?schedule,
+      if (schedule == null && item.isFavorite)
+        AppLocalizations.of(context)!.shoppingListFavorite,
     ].join(' · ');
   }
 
