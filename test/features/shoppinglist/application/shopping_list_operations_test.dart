@@ -23,6 +23,8 @@ ShoppingListItem _shoppingItem({
   required String normalizedName,
   required String normalizedBrand,
   int quantity = 1,
+  bool isDone = false,
+  bool isArchived = false,
 }) {
   return ShoppingListItem(
     id: id,
@@ -31,6 +33,8 @@ ShoppingListItem _shoppingItem({
     normalizedBrand: normalizedBrand,
     quantity: quantity,
     estimatedUnitPrice: 1,
+    isDone: isDone,
+    isArchived: isArchived,
   );
 }
 
@@ -39,7 +43,8 @@ void main() {
     expect(normalizeShoppingListValue(' MILK '), 'milk');
   });
 
-  test('computeActiveShoppingListItemKeys ignores zero-quantity items', () {
+  test('computeActiveShoppingListItemKeys ignores entries in the cart and '
+      'archived ones', () {
     final keys = computeActiveShoppingListItemKeys(<ShoppingListItem>[
       _shoppingItem(
         id: 'a',
@@ -51,7 +56,15 @@ void main() {
         id: 'b',
         normalizedName: 'bread',
         normalizedBrand: '',
+        quantity: 2,
+        isDone: true,
+      ),
+      _shoppingItem(
+        id: 'c',
+        normalizedName: 'eggs',
+        normalizedBrand: '',
         quantity: 0,
+        isArchived: true,
       ),
     ]);
 

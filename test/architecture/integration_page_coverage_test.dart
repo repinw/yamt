@@ -12,7 +12,6 @@ const _legacyPagesWithoutIntegrationTest = <String>{
   'lib/features/auth/presentation/welcome_page.dart',
   'lib/features/kitchen_utensils/presentation/kitchen_utensils_page.dart',
   'lib/features/onboarding/presentation/calorie_goal_onboarding_page.dart',
-  'lib/features/shoppinglist/presentation/shopping_list_page.dart',
 };
 
 final _import = RegExp(

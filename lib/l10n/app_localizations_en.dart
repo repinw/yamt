@@ -1691,15 +1691,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shoppingListStatsEntries => 'Entries';
-
-  @override
-  String get shoppingListStatsQuantity => 'Total quantity';
-
-  @override
-  String get shoppingListStatsEstimatedTotal => 'Estimated total';
-
-  @override
   String get shoppingListNameFieldLabel => 'Name';
 
   @override
@@ -1734,20 +1725,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListDecreaseQuantityAction => 'Decrease quantity';
 
   @override
-  String shoppingListClearCrossedOffAction(int count) {
-    return 'Clear crossed-off ($count)';
+  String shoppingListProgress(int done, int total) {
+    return '$done of $total in the cart';
   }
 
   @override
-  String get shoppingListClearCrossedOffDialogTitle =>
-      'Clear crossed-off items?';
+  String get shoppingListTileHint =>
+      'Tap to tick off · hold for quantity and more';
 
   @override
-  String get shoppingListClearCrossedOffDialogMessage =>
-      'All crossed-off items will be removed from the shopping list.';
+  String get shoppingListCartTitle => 'In the cart · tap to put back';
 
   @override
-  String get shoppingListClearCrossedOffConfirmAction => 'Clear';
+  String shoppingListCartEntry(int quantity, String name) {
+    return '$quantity× $name';
+  }
+
+  @override
+  String get shoppingListTickOffHint => 'tick off';
+
+  @override
+  String get shoppingListPutBackHint => 'put back on the list';
+
+  @override
+  String get shoppingListDetailsHint => 'open quantity and more';
+
+  @override
+  String get shoppingListFinishAction => 'Done';
+
+  @override
+  String get shoppingListMoveToCartAction => 'Into the cart';
+
+  @override
+  String get shoppingListPutBackAction => 'Back onto the list';
+
+  @override
+  String get shoppingListRemoveFromListAction => 'Take off the list';
+
+  @override
+  String get shoppingListSaveFailed => 'Could not save the shopping list.';
+
+  @override
+  String get shoppingListFinishDialogTitle => 'Finish shopping?';
+
+  @override
+  String shoppingListFinishDialogMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items in the cart leave the list.',
+      one: '1 item in the cart leaves the list.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingListFinishConfirmAction => 'Finish';
 
   @override
   String get caloriesOcrFailed =>
@@ -4439,12 +4472,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shoppingListOpenTitle => 'To buy';
-
-  @override
-  String get shoppingListDoneTitle => 'Done';
-
-  @override
   String get shoppingListLowStock => 'Low stock';
 
   @override
@@ -4486,14 +4513,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListAddFavorite => 'Save as favorite';
 
   @override
-  String get shoppingListSettingsFailed => 'Could not save settings.';
-
-  @override
   String get shoppingListSavedProducts => 'Favorites & recurring items';
 
   @override
   String shoppingListRepeatSummary(int quantity, int days) {
     return '$quantity items every $days days';
+  }
+
+  @override
+  String shoppingListScheduleSummary(String schedule, String next) {
+    return '$schedule · $next';
   }
 
   @override

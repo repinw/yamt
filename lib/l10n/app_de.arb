@@ -879,9 +879,6 @@
       }
     }
   },
-  "shoppingListStatsEntries": "Positionen",
-  "shoppingListStatsQuantity": "Gesamtmenge",
-  "shoppingListStatsEstimatedTotal": "Geschätzte Summe",
   "shoppingListNameFieldLabel": "Name",
   "shoppingListBrandFieldLabel": "Marke (optional)",
   "shoppingListAddAction": "Artikel hinzufügen",
@@ -893,17 +890,48 @@
   "shoppingListQuantityLabel": "Menge",
   "shoppingListIncreaseQuantityAction": "Menge erhöhen",
   "shoppingListDecreaseQuantityAction": "Menge verringern",
-  "shoppingListClearCrossedOffAction": "Durchgestrichene löschen ({count})",
-  "@shoppingListClearCrossedOffAction": {
+  "shoppingListProgress": "{done} von {total} im Wagen",
+  "@shoppingListProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListTileHint": "Antippen hakt ab · gedrückt halten für Menge und mehr",
+  "shoppingListCartTitle": "Im Wagen · antippen holt zurück",
+  "shoppingListCartEntry": "{quantity}× {name}",
+  "@shoppingListCartEntry": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListTickOffHint": "abhaken",
+  "shoppingListPutBackHint": "zurück auf die Liste holen",
+  "shoppingListDetailsHint": "Menge und mehr öffnen",
+  "shoppingListFinishAction": "Fertig",
+  "shoppingListMoveToCartAction": "In den Wagen",
+  "shoppingListPutBackAction": "Zurück auf die Liste",
+  "shoppingListRemoveFromListAction": "Von der Liste nehmen",
+  "shoppingListSaveFailed": "Die Einkaufsliste konnte nicht gespeichert werden.",
+  "shoppingListFinishDialogTitle": "Einkauf abschließen?",
+  "shoppingListFinishDialogMessage": "{count, plural, =1{1 Artikel im Wagen verschwindet von der Liste.} other{{count} Artikel im Wagen verschwinden von der Liste.}}",
+  "@shoppingListFinishDialogMessage": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "shoppingListClearCrossedOffDialogTitle": "Durchgestrichene Artikel löschen?",
-  "shoppingListClearCrossedOffDialogMessage": "Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.",
-  "shoppingListClearCrossedOffConfirmAction": "Löschen",
+  "shoppingListFinishConfirmAction": "Abschließen",
   "caloriesOcrFailed": "Nährwertetikett konnte nicht erkannt werden.",
   "caloriesOcrAppCheckThrottled": "Nährwertscan ist vorübergehend blockiert. Bitte versuche es später erneut.",
   "caloriesOcrRetakePhoto": "Nicht alle Pflichtwerte der Nährwerttabelle waren sicher lesbar. Bitte fotografiere die ganze Tabelle scharf und ohne Spiegelung.",
@@ -2249,8 +2277,6 @@
   "shoppingListSuggestionsEmpty": "Noch keine Vorschläge. Sie erscheinen bei niedrigem Vorrat oder wiederholten Käufen auf verschiedenen Belegen.",
   "shoppingListSuggestionsRetry": "Vorschläge erneut laden",
   "shoppingListConsumptionDays": "An {count} Tagen verbraucht",
-  "shoppingListOpenTitle": "Noch einkaufen",
-  "shoppingListDoneTitle": "Erledigt",
   "@shoppingListConsumptionDays": {
     "placeholders": {
       "count": {
@@ -2270,9 +2296,19 @@
   "shoppingListProductSettings": "Artikeleinstellungen",
   "shoppingListRemoveFavorite": "Favorit entfernen",
   "shoppingListAddFavorite": "Als Favorit speichern",
-  "shoppingListSettingsFailed": "Einstellungen konnten nicht gespeichert werden.",
   "shoppingListSavedProducts": "Favoriten & Daueraufträge",
   "shoppingListRepeatSummary": "{quantity} Stück alle {days} Tage",
+  "shoppingListScheduleSummary": "{schedule} · {next}",
+  "@shoppingListScheduleSummary": {
+    "placeholders": {
+      "schedule": {
+        "type": "String"
+      },
+      "next": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingListNextDue": "Nächster Termin: {date}",
   "shoppingListFavorite": "Favorit",
   "@shoppingListPurchaseCount": {

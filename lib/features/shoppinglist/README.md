@@ -9,8 +9,9 @@ saved favorites, and products that come back on a schedule.
 
 - Shopping list items with their favorite and recurrence settings, stored
   encrypted with the household key.
-- List mutations: adding and merging products, quantities, crossing off,
-  reverting an addition, and the calendar recurrence rules.
+- List mutations: adding and merging products, quantities, moving an entry
+  into the cart and back, reverting an addition, and the calendar recurrence
+  rules.
 - Suggestion filtering and the visible list sections.
 - Adding products by name for later features, which skips the ones on the
   list already.
@@ -41,6 +42,13 @@ saved favorites, and products that come back on a schedule.
 
 ## Rules
 
+- An entry is to buy, in the cart (done), or archived. An entry in the cart
+  keeps the quantity it was asked for. Only entries to buy count as "on the
+  list" for suggestions, plan needs, and additions from other features.
+- Adding a product that is to buy puts the quantity on top. Adding one that
+  is in the cart or archived brings it back with the new quantity alone. A
+  due schedule does the same with the schedule's quantity.
+- Finishing the trip removes the entries in the cart.
 - Removing or clearing a saved product archives its entry and keeps the
   favorite and the schedule. Re-adding reuses the same entry and never
   duplicates an active item.

@@ -267,6 +267,9 @@ class _EmptyVorrat implements InventoryItemRepository {
 
 class _EmptyShoppingList implements ShoppingListRepository {
   @override
+  bool holdsUnmigratedItems = false;
+
+  @override
   Stream<List<ShoppingListItem>> watchAll() =>
       Stream.value(const <ShoppingListItem>[]);
 

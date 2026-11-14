@@ -22,6 +22,9 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   bool emitRealtimeOnSave = true;
 
   @override
+  bool holdsUnmigratedItems = false;
+
+  @override
   Future<List<ShoppingListItem>> readAll() async {
     if (onReadAll != null) {
       return await onReadAll!();

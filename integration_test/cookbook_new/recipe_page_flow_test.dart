@@ -740,6 +740,9 @@ class _FakeActivityRepository implements InventoryActivityEventRepository {
 
 class _FakeShoppingListRepository implements ShoppingListRepository {
   @override
+  bool holdsUnmigratedItems = false;
+
+  @override
   Stream<List<ShoppingListItem>> watchAll() async* {
     yield const <ShoppingListItem>[];
   }

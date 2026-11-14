@@ -69,7 +69,7 @@ Set<ShoppingListItemMatchKey> computeActiveShoppingListItemKeys(
   List<ShoppingListItem> items,
 ) {
   return items
-      .where((item) => item.quantity > 0 && !item.isArchived)
+      .where((item) => item.isOpen)
       .map(
         (item) => (
           normalizedName: normalizeShoppingListValue(item.normalizedName),

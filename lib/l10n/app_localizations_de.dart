@@ -1719,15 +1719,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get shoppingListStatsEntries => 'Positionen';
-
-  @override
-  String get shoppingListStatsQuantity => 'Gesamtmenge';
-
-  @override
-  String get shoppingListStatsEstimatedTotal => 'Geschätzte Summe';
-
-  @override
   String get shoppingListNameFieldLabel => 'Name';
 
   @override
@@ -1764,20 +1755,63 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shoppingListDecreaseQuantityAction => 'Menge verringern';
 
   @override
-  String shoppingListClearCrossedOffAction(int count) {
-    return 'Durchgestrichene löschen ($count)';
+  String shoppingListProgress(int done, int total) {
+    return '$done von $total im Wagen';
   }
 
   @override
-  String get shoppingListClearCrossedOffDialogTitle =>
-      'Durchgestrichene Artikel löschen?';
+  String get shoppingListTileHint =>
+      'Antippen hakt ab · gedrückt halten für Menge und mehr';
 
   @override
-  String get shoppingListClearCrossedOffDialogMessage =>
-      'Alle durchgestrichenen Artikel werden von der Einkaufsliste entfernt.';
+  String get shoppingListCartTitle => 'Im Wagen · antippen holt zurück';
 
   @override
-  String get shoppingListClearCrossedOffConfirmAction => 'Löschen';
+  String shoppingListCartEntry(int quantity, String name) {
+    return '$quantity× $name';
+  }
+
+  @override
+  String get shoppingListTickOffHint => 'abhaken';
+
+  @override
+  String get shoppingListPutBackHint => 'zurück auf die Liste holen';
+
+  @override
+  String get shoppingListDetailsHint => 'Menge und mehr öffnen';
+
+  @override
+  String get shoppingListFinishAction => 'Fertig';
+
+  @override
+  String get shoppingListMoveToCartAction => 'In den Wagen';
+
+  @override
+  String get shoppingListPutBackAction => 'Zurück auf die Liste';
+
+  @override
+  String get shoppingListRemoveFromListAction => 'Von der Liste nehmen';
+
+  @override
+  String get shoppingListSaveFailed =>
+      'Die Einkaufsliste konnte nicht gespeichert werden.';
+
+  @override
+  String get shoppingListFinishDialogTitle => 'Einkauf abschließen?';
+
+  @override
+  String shoppingListFinishDialogMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Artikel im Wagen verschwinden von der Liste.',
+      one: '1 Artikel im Wagen verschwindet von der Liste.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingListFinishConfirmAction => 'Abschließen';
 
   @override
   String get caloriesOcrFailed =>
@@ -4501,12 +4535,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get shoppingListOpenTitle => 'Noch einkaufen';
-
-  @override
-  String get shoppingListDoneTitle => 'Erledigt';
-
-  @override
   String get shoppingListLowStock => 'Fast leer';
 
   @override
@@ -4548,15 +4576,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shoppingListAddFavorite => 'Als Favorit speichern';
 
   @override
-  String get shoppingListSettingsFailed =>
-      'Einstellungen konnten nicht gespeichert werden.';
-
-  @override
   String get shoppingListSavedProducts => 'Favoriten & Daueraufträge';
 
   @override
   String shoppingListRepeatSummary(int quantity, int days) {
     return '$quantity Stück alle $days Tage';
+  }
+
+  @override
+  String shoppingListScheduleSummary(String schedule, String next) {
+    return '$schedule · $next';
   }
 
   @override

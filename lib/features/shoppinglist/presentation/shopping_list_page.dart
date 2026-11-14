@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/'
-    'shopping_list_content/shopping_list_content.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/'
-    'shopping_quick_add_dialog.dart';
+import 'package:yamt/features/shoppinglist/presentation/shopping_list_entry_flow.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_bottom_bar.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_content/shopping_list_content.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_finish_dialog.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_quick_add_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list page.
@@ -51,10 +51,10 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final currency = NumberFormat.currency(locale: locale, symbol: '€');
     final controller = ref.read(shoppingListControllerProvider.notifier);
     final itemsAsync = ref.watch(shoppingListControllerProvider);
+    final cartCount =
+        itemsAsync.asData?.value.where((item) => item.isInCart).length ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -65,21 +65,17 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
         ),
         title: Text(l10n.homeShopping),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openShoppingAddDialog(
+      bottomNavigationBar: ShoppingListBottomBar(
+        onAdd: () => _openShoppingAddDialog(
           context: context,
           controller: controller,
           l10n: l10n,
         ),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.shoppingListAddAction),
+        onFinish: cartCount == 0 ? null : () => _finish(cartCount),
       ),
       body: itemsAsync.when(
         data: (items) => ShoppingListContent(
           items: items,
-          controller: controller,
-          l10n: l10n,
-          currency: currency,
           suggestionsSection: widget.suggestionsSection,
         ),
         loading: () => const AppLoadingView(),
@@ -89,6 +85,19 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
           retryLabel: l10n.shoppingListRetryAction,
         ),
       ),
+    );
+  }
+
+  Future<void> _finish(int cartCount) async {
+    final confirmed = await showShoppingListFinishDialog(
+      context,
+      cartCount: cartCount,
+    );
+    if (!confirmed || !mounted) return;
+    await ShoppingListEntryFlow.run(
+      context,
+      ref,
+      (controller) => controller.finishTrip(),
     );
   }
 

@@ -1,76 +1,131 @@
-import 'package:intl/intl.dart';
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_shopping_constants.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_sections.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
-import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
+import 'package:yamt/features/shoppinglist/presentation/shopping_list_entry_flow.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_cart_section.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_content/shopping_list_empty_state.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_content/shopping_list_entries_section.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_entry_grid.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_entry_sheet.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_progress_header.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_saved_products.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_stats_card.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines shopping list content.
-class ShoppingListContent extends StatelessWidget {
+/// The list as tiles with the cart under them, then the saved products and
+/// the suggestions.
+class ShoppingListContent extends ConsumerStatefulWidget {
   /// The shopping list content.
-  const new({
-    required this.items,
-    required this.controller,
-    required this.l10n,
-    required this.currency,
-    this.suggestionsSection,
-    super.key,
-  });
+  const new({required this.items, this.suggestionsSection, super.key});
 
   /// The items.
   final List<ShoppingListItem> items;
-
-  /// The controller.
-  final ShoppingListController controller;
-
-  /// The l10n.
-  final AppLocalizations l10n;
-
-  /// The currency.
-  final NumberFormat currency;
 
   /// Optional widget slot for rendering suggestions.
   final Widget? suggestionsSection;
 
   @override
-  Widget build(BuildContext context) {
-    final sections = ShoppingListSections(items);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 104),
-      children: _children(sections),
-    );
+  ConsumerState<ShoppingListContent> createState() =>
+      _ShoppingListContentState();
+}
+
+class _ShoppingListContentState extends ConsumerState<ShoppingListContent> {
+  /// Entries ticked a moment ago, each with the timer that lets it go.
+  final _justTicked = <String, Timer>{};
+
+  /// The done state of taps whose save has not finished, by entry id. Saves
+  /// run one after another, so the list state can lag behind the finger.
+  final _pendingDone = <String, ({bool done, int change})>{};
+  var _changes = 0;
+
+  @override
+  void dispose() {
+    for (final timer in _justTicked.values) {
+      timer.cancel();
+    }
+    super.dispose();
   }
 
-  List<Widget> _children(ShoppingListSections sections) => [
-    _stats(sections),
-    const SizedBox(height: 24),
-    if (sections.entryCount == 0) const ShoppingListEmptyState(),
-    if (sections.open.isNotEmpty) _entries(sections.open),
-    ShoppingListSavedProducts(
-      key: const ValueKey('saved-products'),
-      items: sections.saved,
-    ),
-    ?suggestionsSection,
-    if (sections.done.isNotEmpty) _entries(sections.done, completed: true),
-  ];
+  /// Sections work on [ShoppingListSections], which already applied
+  /// [_pendingDone], so [item] carries the state the user sees.
+  void _toggle(ShoppingListItem item) {
+    final done = !item.isDone;
+    final change = ++_changes;
+    setState(() {
+      _pendingDone[item.id] = (done: done, change: change);
+      _justTicked.remove(item.id)?.cancel();
+      if (done) {
+        _justTicked[item.id] = Timer(AppShopping.tickLinger, () {
+          if (mounted) setState(() => _justTicked.remove(item.id));
+        });
+      }
+    });
+    unawaited(_save(item.id, done: done, change: change));
+  }
 
-  Widget _stats(ShoppingListSections sections) => ShoppingListStatsCard(
-    entryCount: sections.entryCount,
-    totalQuantity: sections.totalQuantity,
-    estimatedTotal: sections.estimatedTotal,
-    currency: currency,
-    l10n: l10n,
-  );
+  Future<void> _save(
+    String id, {
+    required bool done,
+    required int change,
+  }) async {
+    await ShoppingListEntryFlow.run(
+      context,
+      ref,
+      (controller) => controller.setDone(id, done: done),
+    );
+    // Saved or failed: the list state is right again, unless a later tap on
+    // the same entry is still on its way.
+    if (mounted && _pendingDone[id]?.change == change) {
+      setState(() => _pendingDone.remove(id));
+    }
+  }
 
-  Widget _entries(List<ShoppingListItem> entries, {bool completed = false}) =>
-      ShoppingListEntriesSection(
-        items: entries,
-        controller: controller,
-        currency: currency,
-        completed: completed,
-      );
+  @override
+  Widget build(BuildContext context) {
+    final sections = ShoppingListSections(
+      widget.items,
+      justTicked: _justTicked.keys.toSet(),
+      pendingDone: {
+        for (final MapEntry(:key, :value) in _pendingDone.entries)
+          key: value.done,
+      },
+    );
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xxl,
+        AppSpacing.xs,
+        AppSpacing.xxl,
+        AppSpacing.xxxl,
+      ),
+      children: [
+        if (sections.entryCount == 0)
+          const ShoppingListEmptyState()
+        else ...[
+          ShoppingListProgressHeader(
+            doneCount: sections.doneCount,
+            entryCount: sections.entryCount,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ShoppingListEntryGrid(
+            items: sections.tiles,
+            onTap: _toggle,
+            onLongPress: (item) =>
+                unawaited(showShoppingListEntrySheet(context, item.id)),
+          ),
+        ],
+        if (sections.cart.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xs),
+          ShoppingListCartSection(items: sections.cart, onPutBack: _toggle),
+        ],
+        const SizedBox(height: AppSpacing.xl),
+        ShoppingListSavedProducts(
+          key: const ValueKey('saved-products'),
+          items: sections.saved,
+        ),
+        ?widget.suggestionsSection,
+      ],
+    );
+  }
 }

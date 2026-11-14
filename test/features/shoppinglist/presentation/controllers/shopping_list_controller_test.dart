@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
+import 'package:yamt/core/domain/app_update_status.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -14,6 +16,7 @@ ShoppingListItem _item(
   String? brand,
   int quantity = 1,
   double estimatedUnitPrice = 0,
+  bool isDone = false,
 }) {
   final normalizedBrand = (brand ?? '').trim().toLowerCase();
   return ShoppingListItem(
@@ -24,6 +27,7 @@ ShoppingListItem _item(
     normalizedBrand: normalizedBrand,
     quantity: quantity,
     estimatedUnitPrice: estimatedUnitPrice,
+    isDone: isDone,
   );
 }
 
@@ -59,11 +63,24 @@ Future<void> _waitForItems(
 }
 
 Future<ProviderContainer> _createContainer(
-  FakeShoppingListRepository repository,
-) async {
+  FakeShoppingListRepository repository, {
+  AppUpdateStatus? updateStatus,
+}) async {
   final container = ProviderContainer(
-    overrides: [shoppingListRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      shoppingListRepositoryProvider.overrideWithValue(repository),
+      appUpdateStatusProvider.overrideWith(
+        (ref) => updateStatus == null
+            ? const Stream.empty()
+            : Stream.value(updateStatus),
+      ),
+    ],
   );
+  if (updateStatus != null) {
+    final status = container.listen(appUpdateStatusProvider, (_, _) {});
+    addTearDown(status.close);
+    await container.read(appUpdateStatusProvider.future);
+  }
   addTearDown(container.dispose);
   addTearDown(repository.dispose);
   final subscription = _keepAlive(container);
@@ -83,6 +100,62 @@ void main() {
 
     expect(items, hasLength(1));
     expect(items?.single.id, 'a');
+  });
+
+  group('entries stored before the done flag', () {
+    FakeShoppingListRepository unmigrated() =>
+        FakeShoppingListRepository(initialItems: <ShoppingListItem>[_item('a')])
+          ..holdsUnmigratedItems = true;
+
+    test('are stored again once the app may rewrite them', () async {
+      final repository = unmigrated();
+
+      await _createContainer(repository, updateStatus: const AppUpToDate());
+
+      expect(repository.savedItems.single.id, 'a');
+    });
+
+    test('stay as they are in an app below the minimum version', () async {
+      final repository = unmigrated();
+
+      await _createContainer(
+        repository,
+        updateStatus: const AppUpdateRequired(),
+      );
+
+      expect(repository.savedItems, isEmpty);
+    });
+
+    test('stay as they are until the update status is known', () async {
+      final repository = unmigrated();
+
+      final container = await _createContainer(repository);
+      await container
+          .read(shoppingListControllerProvider.notifier)
+          .processDue();
+
+      expect(repository.savedItems, isEmpty);
+    });
+
+    test(
+      'are stored by the next schedule check after a missed start',
+      () async {
+        final repository = FakeShoppingListRepository(
+          initialItems: <ShoppingListItem>[_item('a')],
+        );
+        final container = await _createContainer(
+          repository,
+          updateStatus: const AppUpToDate(),
+        );
+        repository.holdsUnmigratedItems = true;
+
+        await container
+            .read(shoppingListControllerProvider.notifier)
+            .processDue();
+
+        expect(repository.savedItems.single.id, 'a');
+      },
+    );
   });
 
   test('watchAll stream updates shopping list in realtime', () async {
@@ -317,18 +390,53 @@ void main() {
     expect(items?.single.name, 'Bread');
   });
 
-  test('decrementQuantity keeps item and sets quantity to zero', () async {
+  test('decrementQuantity stops at one', () async {
     final repository = FakeShoppingListRepository(
-      initialItems: <ShoppingListItem>[_item('a')],
+      initialItems: <ShoppingListItem>[_item('a', quantity: 2)],
     );
     final container = await _createContainer(repository);
     final controller = container.read(shoppingListControllerProvider.notifier);
 
     await controller.decrementQuantity('a');
+    await controller.decrementQuantity('a');
 
     final items = container.read(shoppingListControllerProvider).asData?.value;
-    expect(items, hasLength(1));
-    expect(items?.single.quantity, 0);
+    expect(items?.single.quantity, 1);
+    expect(items?.single.isDone, isFalse);
+  });
+
+  test('setDone puts an entry into the cart and back, quantity kept', () async {
+    final repository = FakeShoppingListRepository(
+      initialItems: <ShoppingListItem>[_item('a', quantity: 3)],
+    );
+    final container = await _createContainer(repository);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+    ShoppingListItem current() =>
+        container.read(shoppingListControllerProvider).requireValue.single;
+
+    expect(await controller.setDone('a', done: true), isTrue);
+    expect((current().isDone, current().quantity), (true, 3));
+    expect(repository.savedItems.single.isDone, isTrue);
+
+    expect(await controller.setDone('a', done: false), isTrue);
+    expect((current().isDone, current().quantity), (false, 3));
+  });
+
+  test('adding a product that is in the cart brings it back with the new '
+      'quantity', () async {
+    final repository = FakeShoppingListRepository(
+      initialItems: <ShoppingListItem>[_item('a', quantity: 3, isDone: true)],
+    );
+    final container = await _createContainer(repository);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+
+    await controller.addItem(name: 'Milk', quantity: 2);
+
+    final item = container
+        .read(shoppingListControllerProvider)
+        .requireValue
+        .single;
+    expect((item.id, item.isDone, item.quantity), ('a', false, 2));
   });
 
   test('decrementQuantity keeps state unchanged for unknown id', () async {
@@ -345,17 +453,17 @@ void main() {
     expect(items?.single.quantity, 2);
   });
 
-  test('clearCrossedOffItems removes only items with quantity zero', () async {
+  test('finishTrip removes only the entries in the cart', () async {
     final repository = FakeShoppingListRepository(
       initialItems: <ShoppingListItem>[
-        _item('a', quantity: 0),
+        _item('a', quantity: 4, isDone: true),
         _item('b', name: 'Bread', quantity: 2),
       ],
     );
     final container = await _createContainer(repository);
     final controller = container.read(shoppingListControllerProvider.notifier);
 
-    await controller.clearCrossedOffItems();
+    await controller.finishTrip();
 
     final items = container.read(shoppingListControllerProvider).asData?.value;
     expect(items, hasLength(1));
@@ -371,7 +479,7 @@ void main() {
     final container = await _createContainer(repository);
     final controller = container.read(shoppingListControllerProvider.notifier);
 
-    final result = await controller.decrementQuantity('a');
+    final result = await controller.incrementQuantity('a');
 
     expect(result, isFalse);
     final items = container.read(shoppingListControllerProvider).asData?.value;
@@ -381,6 +489,9 @@ void main() {
 }
 
 class _EmptyStreamShoppingListRepository implements ShoppingListRepository {
+  @override
+  bool holdsUnmigratedItems = false;
+
   @override
   Future<List<ShoppingListItem>> readAll() async {
     return const <ShoppingListItem>[];
