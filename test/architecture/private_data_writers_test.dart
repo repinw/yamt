@@ -12,6 +12,7 @@ const _privateCollectionNames = <String>[
   'health_weight_samples',
   'calorie_product_overrides',
   'progress_photos',
+  'ai_chef_settings',
   'burn_week_run_state',
   'inventory_items',
   'shopping_list_items',
@@ -26,6 +27,7 @@ const _privateCollectionNames = <String>[
 
 /// Files that encrypt what they write to the private collections.
 const _allowedFiles = <String>{
+  'lib/features/ai_chef/data/ai_chef_exclusions_repository.dart',
   'lib/features/auth/data/private_data_paths.dart',
   'lib/features/auth/data/user_data_key_repository.dart',
   'lib/features/calories/data/burn_week_run_state_repository.dart',

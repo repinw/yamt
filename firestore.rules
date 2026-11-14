@@ -1100,6 +1100,13 @@ service cloud.firestore {
         && isEncryptedDocument(request.resource.data, []);
     }
 
+    // Ingredients the user never wants in an AI recipe.
+    match /users/{uid}/ai_chef_settings/{settingsId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && isEncryptedDocument(request.resource.data, []);
+    }
+
     match /users/{uid}/health_weights/{weightId} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid)

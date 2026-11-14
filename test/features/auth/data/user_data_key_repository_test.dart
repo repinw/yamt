@@ -24,6 +24,7 @@ void main() {
       'health_weight_samples',
       'calorie_product_overrides',
       'progress_photos',
+      'ai_chef_settings',
     ];
     for (final collection in deleted) {
       await firestore.doc('users/u1/$collection/d1').set(<String, dynamic>{
