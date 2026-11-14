@@ -1223,8 +1223,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   on a chip puts the entry back on the list.
 - A long press on a tile opens its details: quantity, Dauerauftrag, Favorit,
   "In den Wagen" and "Von der Liste nehmen".
-- Quick add with name and optional brand. Adding a product that is in the
-  cart brings it back onto the list with the new quantity.
+- "Artikel hinzufügen" opens a sheet that stays open until "Fertig", so
+  several entries go in one after another. Typing "2 Milch" adds two; a
+  number in front of a unit ("500 g Hack") stays part of the name. While
+  typing, the sheet offers favorites and products the Vorrat suggests
+  (used up, almost empty, bought often); with an empty field it offers the
+  favorites. What the sheet added shows as chips; a tap takes one back.
+  Adding a product that is in the cart brings it back onto the list with
+  the new quantity.
 - Suggestions from the Vorrat (used up, almost empty, bought often) sit in a
   strip over the tiles that scrolls sideways. A tap puts one on the list.
   The cross pushes it behind the others, so the next ones move up; the order

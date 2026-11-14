@@ -49,4 +49,32 @@ void main() {
 
     expect(restored.map((entry) => entry.id), ['a', 'c']);
   });
+
+  test('undoing an older change undoes the newer changes to its entries '
+      'first', () {
+    final changes = <ShoppingListRevert>[
+      {'milk': item('milk')},
+      {'bread': null},
+      {'milk': null},
+    ];
+
+    expect(shoppingListRevertChain(changes, 2), [0, 2]);
+    expect(shoppingListRevertChain(changes, 1), [1]);
+    expect(shoppingListRevertChain(changes, 0), [0]);
+  });
+
+  test('undoing an add and its newer merge leaves no entry', () {
+    final added = item('milk');
+    final merged = added.copyWith(quantity: 3);
+    final changes = <ShoppingListRevert>[
+      {'milk': added},
+      {'milk': null},
+    ];
+
+    final chain = shoppingListRevertChain(changes, 1);
+    final restored = [for (final index in chain) changes[index]]
+        .fold([merged], applyShoppingListRevert);
+
+    expect(restored, isEmpty);
+  });
 }

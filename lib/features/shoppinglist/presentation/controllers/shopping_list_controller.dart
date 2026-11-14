@@ -103,8 +103,13 @@ class ShoppingListController extends _$ShoppingListController {
   }
 
   /// Undoes a change recorded by [addItemWithRevert].
-  Future<bool> revert(ShoppingListRevert revert) =>
-      _mutate((items) => applyShoppingListRevert(items, revert));
+  Future<bool> revert(ShoppingListRevert revert) => revertAll([revert]);
+
+  /// Undoes the changes in [reverts], newest first, in one save.
+  Future<bool> revertAll(List<ShoppingListRevert> reverts) => _mutate(
+    (items) =>
+        reverts.fold<List<ShoppingListItem>>(items, applyShoppingListRevert),
+  );
 
   List<ShoppingListItem> _add(
     List<ShoppingListItem> items,

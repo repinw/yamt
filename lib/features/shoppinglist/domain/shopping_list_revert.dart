@@ -24,6 +24,24 @@ ShoppingListRevert shoppingListRevertOf(
   };
 }
 
+/// The positions in [changes], newest first, to undo so that the change at
+/// [index] is undone without losing a newer change: every newer change that
+/// touched an entry it touched, or one of theirs, newest first, then [index].
+///
+/// Undoing only the change at [index] would put back the entries as they were
+/// before it and drop what a newer change did to them.
+List<int> shoppingListRevertChain(List<ShoppingListRevert> changes, int index) {
+  final touched = {...changes[index].keys};
+  final chain = [index];
+  for (var newer = index - 1; newer >= 0; newer--) {
+    if (changes[newer].keys.any(touched.contains)) {
+      touched.addAll(changes[newer].keys);
+      chain.insert(0, newer);
+    }
+  }
+  return chain;
+}
+
 /// Puts the entries recorded in [revert] back into [items].
 List<ShoppingListItem> applyShoppingListRevert(
   List<ShoppingListItem> items,

@@ -15,6 +15,9 @@ abstract final class AppShopping {
   /// Size of the tick in a letter disc, as a fraction of its diameter.
   static const double letterDiscTickRatio = 0.6;
 
+  /// Most of the screen height the add sheet takes.
+  static const double addSheetHeightFraction = 0.85;
+
   /// Width of a suggestion card at text scale one.
   static const double suggestionCardWidth = 220;
 

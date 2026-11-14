@@ -2908,17 +2908,53 @@ abstract class AppLocalizations {
   /// **'{count} portions'**
   String preparedMealTemplatePortions(int count);
 
-  /// No description provided for @shoppingListNameFieldLabel.
+  /// No description provided for @shoppingAddFieldHint.
   ///
   /// In en, this message translates to:
-  /// **'Name'**
-  String get shoppingListNameFieldLabel;
+  /// **'e.g. 2 milk'**
+  String get shoppingAddFieldHint;
 
-  /// No description provided for @shoppingListBrandFieldLabel.
+  /// No description provided for @shoppingAddQuantityHint.
   ///
   /// In en, this message translates to:
-  /// **'Brand (optional)'**
-  String get shoppingListBrandFieldLabel;
+  /// **'Quantity found: {quantity}×'**
+  String shoppingAddQuantityHint(int quantity);
+
+  /// No description provided for @shoppingAddQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'{quantity}×'**
+  String shoppingAddQuantity(int quantity);
+
+  /// No description provided for @shoppingAddNewEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Add “{name}”'**
+  String shoppingAddNewEntry(String name);
+
+  /// No description provided for @shoppingAddAddedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Just added · tap to take back'**
+  String get shoppingAddAddedTitle;
+
+  /// No description provided for @shoppingAddHitSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get shoppingAddHitSaved;
+
+  /// No description provided for @shoppingAddTakeBackFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not take it back. Please try again.'**
+  String get shoppingAddTakeBackFailed;
+
+  /// No description provided for @shoppingAddTakeBackAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Take back \"{name}\"'**
+  String shoppingAddTakeBackAction(String name);
 
   /// No description provided for @shoppingListAddAction.
   ///
@@ -2931,12 +2967,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your shopping list is empty.'**
   String get shoppingListEmptyState;
-
-  /// No description provided for @shoppingListInvalidNameError.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter an item name.'**
-  String get shoppingListInvalidNameError;
 
   /// No description provided for @shoppingListAddFailedError.
   ///

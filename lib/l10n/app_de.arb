@@ -879,11 +879,44 @@
       }
     }
   },
-  "shoppingListNameFieldLabel": "Name",
-  "shoppingListBrandFieldLabel": "Marke (optional)",
+  "shoppingAddFieldHint": "z. B. 2 Milch",
+  "shoppingAddQuantityHint": "Menge erkannt: {quantity}×",
+  "@shoppingAddQuantityHint": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingAddQuantity": "{quantity}×",
+  "@shoppingAddQuantity": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingAddNewEntry": "„{name}“ hinzufügen",
+  "@shoppingAddNewEntry": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingAddAddedTitle": "Gerade hinzugefügt · antippen nimmt zurück",
+  "shoppingAddHitSaved": "Gespeichert",
+  "shoppingAddTakeBackFailed": "Konnte nicht zurückgenommen werden. Bitte erneut versuchen.",
+  "shoppingAddTakeBackAction": "„{name}“ zurücknehmen",
+  "@shoppingAddTakeBackAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingListAddAction": "Artikel hinzufügen",
   "shoppingListEmptyState": "Deine Einkaufsliste ist leer.",
-  "shoppingListInvalidNameError": "Bitte einen Artikelnamen eingeben.",
   "shoppingListAddFailedError": "Artikel konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
   "shoppingListLoadFailed": "Einkaufsartikel konnten nicht geladen werden.",
   "shoppingListRetryAction": "Erneut versuchen",

@@ -26,13 +26,11 @@ saved favorites, and products that come back on a schedule.
 
 ## Public UI
 
-- `ShoppingListPage` with two slots: `suggestionStrip` over the tiles and
-  `planNeedsSection` under the list. Inventory fills both and composes the
-  finished page.
-- `ShoppingListSuggestions` renders `ShoppingSuggestion` values as a strip
-  to scroll sideways and hides products that are on the list and still to
-  buy. A tap puts a suggestion on the list; the cross pushes it behind the
-  others.
+- `ShoppingListPage` takes the `suggestions` of a later feature as
+  `ShoppingSuggestion` values, with `onRetrySuggestions`, and a
+  `planNeedsSection` slot under the list. Inventory passes its suggestions
+  and composes the finished page. The page shows the suggestions as a strip
+  over the tiles and offers them as hits in the add sheet.
 - `ShoppingListPlanNeeds` renders the "Für deinen Plan" block from
   `ShoppingPlanNeedGroup` values, with one add button per food, and an error
   line with a retry when the needs fail to load. `groupShoppingPlanNeeds`
@@ -53,6 +51,8 @@ saved favorites, and products that come back on a schedule.
   is in the cart or archived brings it back with the new quantity alone. A
   due schedule does the same with the schedule's quantity.
 - Finishing the trip removes the entries in the cart.
+- The add field reads a leading count up to 99 as the quantity ("2 Milch");
+  a number in front of a unit ("500 g Hack") stays part of the name.
 - A suggestion pushed back comes after every suggestion that was not, the
   one pushed back longest ago first. The order is kept on the device, not
   in the household.

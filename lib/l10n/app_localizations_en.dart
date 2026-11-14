@@ -1691,19 +1691,43 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shoppingListNameFieldLabel => 'Name';
+  String get shoppingAddFieldHint => 'e.g. 2 milk';
 
   @override
-  String get shoppingListBrandFieldLabel => 'Brand (optional)';
+  String shoppingAddQuantityHint(int quantity) {
+    return 'Quantity found: $quantity×';
+  }
+
+  @override
+  String shoppingAddQuantity(int quantity) {
+    return '$quantity×';
+  }
+
+  @override
+  String shoppingAddNewEntry(String name) {
+    return 'Add “$name”';
+  }
+
+  @override
+  String get shoppingAddAddedTitle => 'Just added · tap to take back';
+
+  @override
+  String get shoppingAddHitSaved => 'Saved';
+
+  @override
+  String get shoppingAddTakeBackFailed =>
+      'Could not take it back. Please try again.';
+
+  @override
+  String shoppingAddTakeBackAction(String name) {
+    return 'Take back \"$name\"';
+  }
 
   @override
   String get shoppingListAddAction => 'Add item';
 
   @override
   String get shoppingListEmptyState => 'Your shopping list is empty.';
-
-  @override
-  String get shoppingListInvalidNameError => 'Please enter an item name.';
 
   @override
   String get shoppingListAddFailedError =>

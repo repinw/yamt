@@ -5,21 +5,32 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_entry_flow.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_add_sheet.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_bottom_bar.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_content/shopping_list_content.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_finish_dialog.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_quick_add_dialog.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_suggestions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines shopping list page.
 class ShoppingListPage extends ConsumerStatefulWidget {
   /// The shopping list page.
-  const new({this.suggestionStrip, this.planNeedsSection, super.key});
+  const new({
+    this.suggestions = const AsyncData([]),
+    this.onRetrySuggestions,
+    this.planNeedsSection,
+    super.key,
+  });
 
-  /// Optional slot over the tiles, for the suggestions strip.
-  final Widget? suggestionStrip;
+  /// Products a later feature suggests. They show as a strip over the tiles
+  /// and as hits in the add sheet.
+  final AsyncValue<List<ShoppingSuggestion>> suggestions;
+
+  /// Loads [suggestions] again after they failed to load.
+  final VoidCallback? onRetrySuggestions;
 
   /// Optional slot under the list, for what the plans need.
   final Widget? planNeedsSection;
@@ -69,17 +80,22 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
         title: Text(l10n.homeShopping),
       ),
       bottomNavigationBar: ShoppingListBottomBar(
-        onAdd: () => _openShoppingAddDialog(
-          context: context,
-          controller: controller,
-          l10n: l10n,
+        onAdd: () => unawaited(
+          showShoppingAddSheet(
+            context,
+            suggestions: widget.suggestions.asData?.value ?? const [],
+          ),
         ),
         onFinish: cartCount == 0 ? null : () => _finish(cartCount),
       ),
       body: itemsAsync.when(
         data: (items) => ShoppingListContent(
           items: items,
-          suggestionStrip: widget.suggestionStrip,
+          suggestionStrip: ShoppingListSuggestions(
+            key: const ValueKey('shopping-suggestions'),
+            suggestions: widget.suggestions,
+            onRetry: widget.onRetrySuggestions,
+          ),
           planNeedsSection: widget.planNeedsSection,
         ),
         loading: () => const AppLoadingView(),
@@ -102,20 +118,6 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
       context,
       ref,
       (controller) => controller.finishTrip(),
-    );
-  }
-
-  Future<void> _openShoppingAddDialog({
-    required BuildContext context,
-    required ShoppingListController controller,
-    required AppLocalizations l10n,
-  }) {
-    return showShoppingQuickAddDialog(
-      context: context,
-      l10n: l10n,
-      onSubmit: ({required name, required brand}) {
-        return controller.addItem(name: name, brand: brand);
-      },
     );
   }
 

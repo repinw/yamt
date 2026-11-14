@@ -1,9 +1,12 @@
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 
+/// Identifies a product by [name] and [brand], whatever their spelling.
+String shoppingProductKey(String name, String? brand) =>
+    '${name.trim().toLowerCase()}|${brand?.trim().toLowerCase() ?? ''}';
+
 /// Identifies the product of a suggestion, whatever its spelling.
 String shoppingSuggestionKey(ShoppingSuggestion suggestion) =>
-    '${suggestion.name.trim().toLowerCase()}|'
-    '${suggestion.brand?.trim().toLowerCase() ?? ''}';
+    shoppingProductKey(suggestion.name, suggestion.brand);
 
 /// Puts the suggestions the user pushed back behind all others, the one
 /// pushed back longest ago first, so every suggestion gets its turn.

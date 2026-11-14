@@ -55,6 +55,8 @@ class _ShoppingListSuggestionsState
     final l10n = AppLocalizations.of(context)!;
     final items = ref.watch(shoppingListControllerProvider).asData?.value ?? [];
     final pushedBack = ref.watch(shoppingSuggestionQueueControllerProvider);
+    // The suggestions arrive as a widget value from a later feature, so the
+    // queue is put together here and not in a provider.
     final queue = widget.suggestions.whenData(
       (suggestions) => visibleShoppingSuggestions(
         suggestions,
@@ -96,7 +98,6 @@ class _ShoppingListSuggestionsState
           SingleChildScrollView(
             key: ShoppingListPageKeys.suggestionStrip,
             scrollDirection: Axis.horizontal,
-            clipBehavior: Clip.none,
             child: IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -116,7 +117,10 @@ class _ShoppingListSuggestionsState
                           .read(
                             shoppingSuggestionQueueControllerProvider.notifier,
                           )
-                          .pushBack(suggestion, current: suggestions),
+                          .pushBack(
+                            suggestion,
+                            current: widget.suggestions.asData?.value ?? [],
+                          ),
                     ),
                   ],
                 ],

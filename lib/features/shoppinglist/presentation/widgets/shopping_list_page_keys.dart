@@ -7,7 +7,7 @@ class ShoppingListPageKeys {
   /// The line that counts the entries in the cart.
   static const progressLabel = Key('shopping_list_progress_label');
 
-  /// The button that opens the add dialog.
+  /// The button that opens the add sheet.
   static const addButton = Key('shopping_list_add_button');
 
   /// The button that finishes the shopping trip.
@@ -33,6 +33,24 @@ class ShoppingListPageKeys {
 
   /// The button in the entry sheet that moves the entry to or from the cart.
   static const sheetCartButton = Key('shopping_list_sheet_cart_button');
+
+  /// The text field of the add sheet.
+  static const addSheetField = Key('shopping_list_add_sheet_field');
+
+  /// The button that closes the add sheet.
+  static const addSheetDoneButton = Key('shopping_list_add_sheet_done');
+
+  /// The row of the add sheet that adds the typed text as a new entry.
+  static const addSheetNewEntry = Key('shopping_list_add_sheet_new_entry');
+
+  /// The row of the add sheet for the known product with [hitKey].
+  static Key addSheetHit(String hitKey) =>
+      ValueKey('shopping_list_add_sheet_hit_$hitKey');
+
+  /// The chip of the add sheet for the entry it added as the [index]th, from
+  /// zero, since the sheet opened.
+  static Key addSheetAdded(int index) =>
+      ValueKey('shopping_list_add_sheet_added_$index');
 
   /// The strip of suggestions that scrolls sideways.
   static const suggestionStrip = Key('shopping_list_suggestion_strip');
