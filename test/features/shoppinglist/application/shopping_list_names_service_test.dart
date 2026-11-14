@@ -18,14 +18,44 @@ void main() {
     final repository = FakeShoppingListRepository(initialItems: [_flour]);
     addTearDown(repository.dispose);
 
-    await ShoppingListNamesService(repository)
-        .addMissing(['Mehl', '1 Zwiebel', ' ']);
+    await ShoppingListNamesService(
+      repository,
+    ).addMissing(['Mehl', '1 mittlere Zwiebel', '200 g Mehl', '2 Eier', ' ']);
 
-    expect(repository.savedItems.map((item) => (item.name, item.quantity)), [
-      ('Mehl', 1),
-      ('1 Zwiebel', 1),
-    ]);
+    expect(
+      repository.savedItems.map(
+        (item) => (item.name, item.note, item.quantity),
+      ),
+      [('Mehl', null, 1), ('Zwiebel', '1 mittlere', 1), ('Eier', null, 2)],
+    );
   });
+
+  test(
+    'a product on the private list still goes on the household list',
+    () async {
+      final repository = FakeShoppingListRepository(
+        initialItems: [
+          const ShoppingListItem(
+            id: 'onion',
+            name: 'Zwiebel',
+            normalizedName: 'zwiebel',
+            normalizedBrand: '',
+            quantity: 1,
+            estimatedUnitPrice: 0,
+            isPrivate: true,
+          ),
+        ],
+      );
+      addTearDown(repository.dispose);
+
+      await ShoppingListNamesService(repository).addMissing(['Zwiebel']);
+
+      expect(repository.savedItems.map((item) => (item.name, item.isPrivate)), [
+        ('Zwiebel', true),
+        ('Zwiebel', false),
+      ]);
+    },
+  );
 
   test('names that are all listed need no write', () async {
     final repository = FakeShoppingListRepository(initialItems: [_flour])

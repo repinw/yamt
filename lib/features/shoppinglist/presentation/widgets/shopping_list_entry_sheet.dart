@@ -4,13 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_shopping_constants.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_shelf.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_shelf_placement.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_shelf_choices_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_entry_flow.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_letter_disc.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shelf/shopping_item_disc.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shelf/shopping_shelf_labels.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shelf/shopping_shelf_picker.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_page_keys.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_schedule_dialog/shopping_list_schedule_dialog.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_planned_meal_text.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the details of the entry with [itemId]: quantity, schedule,
@@ -50,6 +57,10 @@ class _EntrySheet extends ConsumerWidget {
     if (item == null) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
     final schedule = shoppingScheduleSummary(context, item);
+    final placement = placeShoppingItem(
+      item.name,
+      ref.watch(shoppingShelfChoicesControllerProvider).value ?? const {},
+    );
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.xxl,
@@ -60,8 +71,31 @@ class _EntrySheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _Header(item: item),
+          _Header(item: item, placement: placement),
           const SizedBox(height: AppSpacing.md),
+          ListTile(
+            key: ShoppingListPageKeys.sheetShelf,
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              shoppingItemIconData(shoppingShelfIcon(placement.shelf)),
+            ),
+            title: Text(l10n.shoppingShelfRow),
+            subtitle: Text(
+              placement.isAssigned
+                  ? shoppingShelfLabel(l10n, placement.shelf)
+                  : l10n.shoppingShelfUnassigned,
+            ),
+            // The household keeps the shelf choices, so a private entry
+            // does not offer one.
+            trailing: item.isPrivate ? null : const Icon(Icons.chevron_right),
+            onTap: item.isPrivate
+                ? null
+                : () => showShoppingShelfPicker(
+                    context,
+                    name: item.name,
+                    current: placement.shelf,
+                  ),
+          ),
           ListTile(
             key: ShoppingListPageKeys.sheetSchedule,
             contentPadding: EdgeInsets.zero,
@@ -118,15 +152,24 @@ class _EntrySheet extends ConsumerWidget {
 }
 
 class _Header extends ConsumerWidget {
-  const new({required this.item});
+  const new({required this.item, required this.placement});
 
   final ShoppingListItem item;
+  final ShoppingShelfPlacement placement;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final brand = item.brand ?? '';
+    final note = shoppingEntryNoteText(
+      context,
+      item,
+      now: ref.watch(clockProvider)(),
+    );
+    final muted = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
     return Wrap(
       alignment: WrapAlignment.spaceBetween,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -136,9 +179,9 @@ class _Header extends ConsumerWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ShoppingListLetterDisc(
-              name: item.name,
-              size: AppShopping.sheetLetterDisc,
+            ShoppingItemDisc(
+              icon: placement.icon,
+              size: AppShopping.sheetItemDisc,
             ),
             const SizedBox(width: AppSpacing.md),
             Flexible(
@@ -147,12 +190,12 @@ class _Header extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(item.name, style: theme.textTheme.titleLarge),
-                  if (brand.isNotEmpty)
+                  if (brand.isNotEmpty) Text(brand, style: muted),
+                  if (note.isNotEmpty)
                     Text(
-                      brand,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                      note,
+                      key: ShoppingListPageKeys.sheetNote,
+                      style: muted,
                     ),
                 ],
               ),

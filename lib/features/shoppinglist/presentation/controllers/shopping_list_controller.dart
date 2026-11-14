@@ -3,8 +3,6 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
-import 'package:yamt/core/data/app_version_config_repository.dart';
-import 'package:yamt/core/domain/app_update_status.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_subscription.dart';
@@ -12,6 +10,8 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_addition.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_schedule.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_planned_meal.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_rewrite_gate.dart';
 
 part 'shopping_list_controller.g.dart';
 
@@ -21,12 +21,12 @@ class ShoppingListController extends _$ShoppingListController {
   final _subscription = ShoppingListSubscription();
   final _queue = SerializedMutationQueue();
   final _addition = const ShoppingListAddition();
-  var _awaitsUpdateStatus = false;
+  final _rewriteGate = ShoppingListRewriteGate();
 
   @override
   Future<List<ShoppingListItem>> build() async {
     final repository = ref.watch(shoppingListRepositoryProvider);
-    _awaitsUpdateStatus = false;
+    _rewriteGate.listen(ref, () => unawaited(processDue()));
     ref.onDispose(() => unawaited(_subscription.cancel()));
     final items = await _subscription.start(
       repository,
@@ -35,7 +35,7 @@ class ShoppingListController extends _$ShoppingListController {
     );
     if (!ref.mounted) return items;
     final due = renewDueShoppingItems(items, DateTime.now());
-    if (due == null && !_mustRewriteStoredItems(repository)) return items;
+    if (due == null && !_rewriteGate.allows(repository)) return items;
     final next = due ?? items;
     try {
       return await repository.saveAll(next) ? next : items;
@@ -44,63 +44,55 @@ class ShoppingListController extends _$ShoppingListController {
     }
   }
 
-  /// Temporary migration, added in 3.11.0: removed in 3.14.0. Whether the
-  /// stored list holds entries from before the done flag and this app may
-  /// rewrite them: an app below the minimum version must not, and until the
-  /// status is known the entries stay as they are.
-  bool _mustRewriteStoredItems(ShoppingListRepository repository) {
-    if (!repository.holdsUnmigratedItems) return false;
-    final updateStatus = ref.read(appUpdateStatusProvider).value;
-    if (updateStatus == null && !_awaitsUpdateStatus) {
-      _awaitsUpdateStatus = true;
-      ref.listen(
-        appUpdateStatusProvider,
-        (_, _) => unawaited(processDue()),
-        onError: (_, _) {},
-      );
-    }
-    return updateStatus != null && updateStatus is! AppUpdateRequired;
-  }
-
   /// Reloads the current list.
   Future<void> refresh() async {
     ref.invalidateSelf();
     await future;
   }
 
-  /// Adds or merges a product.
+  /// Adds or merges a product, on the household list unless [isPrivate].
+  /// [plannedFor] names the planned meal it is for.
   Future<bool> addItem({
     required String name,
     String? brand,
     String? note,
+    ShoppingPlannedMeal? plannedFor,
     int quantity = 1,
     double estimatedUnitPrice = 0,
+    bool isPrivate = false,
   }) async {
     final revert = await addItemWithRevert(
       name: name,
       brand: brand,
       note: note,
+      plannedFor: plannedFor,
       quantity: quantity,
       estimatedUnitPrice: estimatedUnitPrice,
+      isPrivate: isPrivate,
     );
     return revert != null;
   }
 
   /// Adds or merges a product and returns the change for [revert], or null
-  /// when the input is invalid or the save fails.
+  /// when the input is invalid or the save fails. It goes on the household
+  /// list unless [isPrivate].
   Future<ShoppingListRevert?> addItemWithRevert({
     required String name,
     String? brand,
     String? note,
+    ShoppingPlannedMeal? plannedFor,
     int quantity = 1,
     double estimatedUnitPrice = 0,
+    bool isPrivate = false,
   }) {
     final input = _addition.parseAddItemInput(
       name: name,
       brand: brand,
       note: note,
+      plannedFor: plannedFor,
       quantity: quantity,
       estimatedUnitPrice: estimatedUnitPrice,
+      isPrivate: isPrivate,
     );
     if (input == null) return Future.value();
     return _mutateWithRevert((items) => _add(items, input));
@@ -110,8 +102,9 @@ class ShoppingListController extends _$ShoppingListController {
   /// without a name are left out. Returns the change for [revert], or null
   /// when nothing is valid or the save fails.
   Future<ShoppingListRevert?> addItemsWithRevert(
-    List<({String name, String? brand, String? note, int quantity})> entries,
-  ) {
+    List<({String name, String? brand, String? note, int quantity})> entries, {
+    bool isPrivate = false,
+  }) {
     final inputs = [
       for (final entry in entries)
         ?_addition.parseAddItemInput(
@@ -120,6 +113,7 @@ class ShoppingListController extends _$ShoppingListController {
           note: entry.note,
           quantity: entry.quantity,
           estimatedUnitPrice: 0,
+          isPrivate: isPrivate,
         ),
     ];
     if (inputs.isEmpty) return Future.value();
@@ -166,9 +160,15 @@ class ShoppingListController extends _$ShoppingListController {
   Future<bool> setDone(String id, {required bool done}) =>
       _update(id, (item) => item.copyWith(isDone: done));
 
-  /// Takes the entries in the cart off the list; saved products stay saved.
-  Future<bool> finishTrip() =>
-      _mutate((items) => removeShoppingItems(items, (item) => item.isInCart));
+  /// Takes the entries in the cart that [shows] lets through off the list;
+  /// saved products stay saved.
+  Future<bool> finishTrip({bool Function(ShoppingListItem item)? shows}) =>
+      _mutate(
+        (items) => removeShoppingItems(
+          items,
+          (item) => item.isInCart && (shows?.call(item) ?? true),
+        ),
+      );
 
   /// Toggles persistence in the favorites section.
   Future<bool> toggleFavorite(String id) =>
@@ -216,7 +216,7 @@ class ShoppingListController extends _$ShoppingListController {
   Future<bool> processDue() => _mutate(
     (items) =>
         renewDueShoppingItems(items, DateTime.now()) ??
-        (_mustRewriteStoredItems(ref.read(shoppingListRepositoryProvider))
+        (_rewriteGate.allows(ref.read(shoppingListRepositoryProvider))
             ? [...items]
             : null),
   );

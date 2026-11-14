@@ -72,6 +72,12 @@ void main() {
     expect(removed.isArchived, isTrue);
     expect(removed.isDone, isFalse);
   });
+  test('removing a saved entry drops its note', () {
+    final removed = removeShoppingItems([
+      _item(quantity: 3, archived: false).copyWith(note: '2 Packungen'),
+    ], (_) => true).single;
+    expect(removed.note, isNull);
+  });
   test('disabled and future schedules do not change list', () {
     expect(
       renewDueShoppingItems([

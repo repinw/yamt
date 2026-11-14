@@ -1028,6 +1028,16 @@
   },
   "shoppingAddAddedTitle": "Just added · tap to take back",
   "shoppingAddHitSaved": "Saved",
+  "shoppingAddNewEntryUnknown": "Goes under Other, you pick the shelf later",
+  "shoppingAddMoreFromShelf": "More from {shelf}",
+  "@shoppingAddMoreFromShelf": {
+    "placeholders": {
+      "shelf": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingAddFavoritesTitle": "Favorites",
   "shoppingShelfProduce": "Fruit & veg",
   "shoppingShelfBakery": "Bread & bakery",
   "shoppingShelfMeatFish": "Meat & fish",
@@ -1039,6 +1049,194 @@
   "shoppingShelfDrugstore": "Drugstore",
   "shoppingShelfHousehold": "Household",
   "shoppingShelfOther": "Other",
+  "shoppingImportTitle": "Import a list",
+  "@shoppingImportTitle": {
+    "description": "App bar title of the page that imports a shopping list."
+  },
+  "shoppingImportModeText": "Paste text",
+  "@shoppingImportModeText": {
+    "description": "Mode switch on the import page: import from pasted text."
+  },
+  "shoppingImportModeScan": "Scan a note",
+  "@shoppingImportModeScan": {
+    "description": "Mode switch on the import page: import from a scanned handwritten or printed note."
+  },
+  "shoppingImportTextTitle": "Paste your list",
+  "@shoppingImportTextTitle": {
+    "description": "Heading above the text field in the paste mode of the import page."
+  },
+  "shoppingImportTextHint": "From a chat, a note or a recipe, just as it is. We pick out the products, amounts and shelves.",
+  "@shoppingImportTextHint": {
+    "description": "Explains under the paste heading what kind of text can be pasted."
+  },
+  "shoppingImportFieldHint": "Milk\n2 peppers\n500 g minced meat",
+  "@shoppingImportFieldHint": {
+    "description": "Placeholder of the empty text field, showing example lines of a list."
+  },
+  "shoppingImportLineCount": "{count, plural, =0{No lines yet} =1{1 line pasted} other{{count} lines pasted}}",
+  "@shoppingImportLineCount": {
+    "description": "Counter under the text field: how many non-empty lines were pasted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportClear": "Clear",
+  "@shoppingImportClear": {
+    "description": "Button that empties the pasted text in the import text field."
+  },
+  "shoppingImportPaste": "Paste from clipboard",
+  "@shoppingImportPaste": {
+    "description": "Button that pastes the clipboard contents into the import text field."
+  },
+  "shoppingImportReadAction": "Read with AI",
+  "@shoppingImportReadAction": {
+    "description": "Button that starts reading the pasted text as a shopping list; it names the AI because the text leaves the device."
+  },
+  "shoppingImportScanTitle": "Scan your note",
+  "@shoppingImportScanTitle": {
+    "description": "Heading above the scan area in the scan mode of the import page."
+  },
+  "shoppingImportScanHint": "We read handwriting, printed lists and recipe pages. Then you check what we found.",
+  "@shoppingImportScanHint": {
+    "description": "Explains under the scan heading what the scan can read and that the result is checked afterwards."
+  },
+  "shoppingImportScanAction": "Scan",
+  "@shoppingImportScanAction": {
+    "description": "Button that takes a photo of the note and starts the scan."
+  },
+  "shoppingImportScanFailed": "The scan did not work.",
+  "@shoppingImportScanFailed": {
+    "description": "Error message shown when the note scan fails."
+  },
+  "shoppingImportReading": "Reading your list …",
+  "@shoppingImportReading": {
+    "description": "Progress text while the pasted text or scanned note is being read."
+  },
+  "shoppingImportReadFailed": "We could not read the list.",
+  "@shoppingImportReadFailed": {
+    "description": "Error message when reading the list failed."
+  },
+  "shoppingImportNothingFound": "We found no products.",
+  "@shoppingImportNothingFound": {
+    "description": "Message when reading the list finished without any product."
+  },
+  "shoppingImportRetry": "Try again",
+  "@shoppingImportRetry": {
+    "description": "Button that retries reading the list after an error."
+  },
+  "shoppingImportReviewTitle": "Products found",
+  "@shoppingImportReviewTitle": {
+    "description": "App bar title of the review step that lists the recognized products."
+  },
+  "shoppingImportFoundCount": "{count, plural, =1{1 product found} other{{count} products found}}",
+  "@shoppingImportFoundCount": {
+    "description": "Count of products recognized in the review step.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportReviewHint": "Tap a name to change it; unselected products stay off the list.",
+  "@shoppingImportReviewHint": {
+    "description": "Explains in the review step how to change a product name and what unselected products mean."
+  },
+  "shoppingImportAlreadyListed": "Already on the list ({count}×)",
+  "@shoppingImportAlreadyListed": {
+    "description": "Note on a review row: the product is already on the shopping list, with the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportNotInCatalog": "Not in the catalog · goes under Other",
+  "@shoppingImportNotInCatalog": {
+    "description": "Note on a review row: the product is not in the catalog and will be filed under the Other shelf."
+  },
+  "shoppingImportRowWithNote": "{place} · Note: {note}",
+  "@shoppingImportRowWithNote": {
+    "description": "Detail line of a review row: the shelf name and the note the user wrote, separated by a middle dot.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingImportQuantity": "{count}×",
+  "@shoppingImportQuantity": {
+    "description": "Quantity of a review row, for example 2×.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportQuantityOnTop": "+{count} more",
+  "@shoppingImportQuantityOnTop": {
+    "description": "Quantity of a review row for a product already on the list: how many more will be added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportSkipped": "{count, plural, =1{1 line skipped:} other{{count} lines skipped:}}",
+  "@shoppingImportSkipped": {
+    "description": "Heading above the lines that could not be read and were skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportAddAction": "{count, plural, =0{Nothing selected} =1{Add 1 product to the list} other{Add {count} products to the list}}",
+  "@shoppingImportAddAction": {
+    "description": "Button that adds the selected products to the shopping list; the count is the number of selected products.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingImportRenameTitle": "Change name",
+  "@shoppingImportRenameTitle": {
+    "description": "Title of the dialog that changes the name of a product in the review step."
+  },
+  "shoppingShelfRow": "Shelf",
+  "shoppingShelfUnassigned": "No shelf yet · tap to assign",
+  "shoppingShelfPickerTitle": "Where is {name}?",
+  "@shoppingShelfPickerTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingShelfPickerHint": "From now on this applies to every \"{name}\" entry in your household.",
+  "@shoppingShelfPickerHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingShelfRemember": "Remember for {name}",
+  "@shoppingShelfRemember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingShelfSaveFailed": "Could not save the shelf. Please try again.",
+  "shoppingListOrderByShelf": "By shelf",
+  "shoppingListOrderByName": "A–Z",
   "shoppingAddTakeBackFailed": "Could not take it back. Please try again.",
   "shoppingAddTakeBackAction": "Take back \"{name}\"",
   "@shoppingAddTakeBackAction": {
@@ -1048,6 +1246,26 @@
       }
     }
   },
+  "shoppingListScopeHousehold": "Household",
+  "shoppingListScopePrivate": "Private",
+  "shoppingListScopeBoth": "Both",
+  "shoppingListScopeCount": "{scope} · {count}",
+  "@shoppingListScopeCount": {
+    "description": "A segment of the list switch: the list's name and how many entries it holds.",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListScopeHouseholdHint": "Shared with everyone in your household.",
+  "shoppingListScopePrivateHint": "Only you see this list.",
+  "shoppingListScopeBothHint": "Both lists together, for one trip through the shop.",
+  "shoppingListAddHousehold": "Add to household",
+  "shoppingListAddPrivate": "Add privately",
   "shoppingListAddAction": "Add item",
   "shoppingListEmptyState": "Your shopping list is empty.",
   "shoppingListAddFailedError": "Could not add item. Please try again.",
@@ -1084,20 +1302,50 @@
   "shoppingListPutBackHint": "put back on the list",
   "shoppingListDetailsHint": "open quantity and more",
   "shoppingListFinishAction": "Done",
-  "shoppingListMoveToCartAction": "Into the cart",
-  "shoppingListPutBackAction": "Back onto the list",
-  "shoppingListRemoveFromListAction": "Take off the list",
-  "shoppingListSaveFailed": "Could not save the shopping list.",
-  "shoppingListFinishDialogTitle": "Finish shopping?",
-  "shoppingListFinishDialogMessage": "{count, plural, =1{1 item in the cart leaves the list.} other{{count} items in the cart leave the list.}}",
-  "@shoppingListFinishDialogMessage": {
+  "shoppingFinishTitle": "Finish shopping",
+  "shoppingFinishDoneCount": "{count, plural, =1{1 item done} other{{count} items done}}",
+  "@shoppingFinishDoneCount": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "shoppingListFinishConfirmAction": "Finish",
+  "shoppingFinishHint": "They leave the list. Import the receipt later in your pantry.",
+  "shoppingFinishOpenLeft": "{count, plural, =1{1 item stays open and is at the top next time.} other{{count} items stay open and are at the top next time.}}",
+  "@shoppingFinishOpenLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingNameListSeparator": ", ",
+  "@shoppingNameListSeparator": {"description": "Stands between product names in a list."},
+  "shoppingNameListLast": "{names} and {last}",
+  "@shoppingNameListLast": {"description": "Joins the last name to the names before it in a list of product names.", "placeholders": {"names": {"type": "String"}, "last": {"type": "String"}}},
+  "shoppingDetailSeparator": " · ",
+  "@shoppingDetailSeparator": {"description": "Stands between the details under a product: shelf, brand, reason."},
+  "shoppingFinishSavedStay": "{count, plural, =1{{names} stays saved and goes back on the list with one tap.} other{{names} stay saved and go back on the list with one tap.}}",
+  "@shoppingFinishSavedStay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingFinishCloseAction": "Close",
+  "shoppingListMoveToCartAction": "Into the cart",
+  "shoppingListPutBackAction": "Back onto the list",
+  "shoppingListRemoveFromListAction": "Take off the list",
+  "shoppingPrivateListLoadFailed": "Could not load your private list.",
+  "@shoppingPrivateListLoadFailed": {
+    "description": "Shown on the shopping list when the private list cannot be read; the household list still shows."
+  },
+  "shoppingListSaveFailed": "Could not save the shopping list.",
   "caloriesOcrFailed": "Nutrition label scan failed. Please try again.",
   "caloriesOcrAppCheckThrottled": "Nutrition scan is temporarily blocked. Please try again later.",
   "caloriesOcrRetakePhoto": "Not every mandatory value of the nutrition table was clearly readable. Please take a sharp photo of the whole table without glare.",
@@ -2597,8 +2845,9 @@
       }
     }
   },
-  "shoppingListPlanNeedGroup": "{day} · {meal}",
-  "@shoppingListPlanNeedGroup": {
+  "shoppingListPlannedFor": "For {day} · {meal}",
+  "@shoppingListPlannedFor": {
+    "description": "Reason on a suggestion and detail on a list entry: the planned day (short weekday, or the date outside the coming week) and meal that need it.",
     "placeholders": {
       "day": {
         "type": "String"
@@ -2619,9 +2868,6 @@
       }
     }
   },
-  "shoppingListPlanNeedsLoadFailed": "The needs of your plans could not be loaded",
-  "shoppingListPlanNeedsRetry": "Reload plan needs",
-  "shoppingListPlanNeedsTitle": "For your plan",
   "shoppingListSuggestionsTitle": "Suggestions",
   "shoppingListSuggestionAddHint": "put on the list",
   "shoppingListSuggestionPushBackAction": "Move {name} to the back",

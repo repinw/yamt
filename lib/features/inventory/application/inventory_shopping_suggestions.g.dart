@@ -110,6 +110,71 @@ final class InventoryShoppingSuggestionsProvider
 String _$inventoryShoppingSuggestionsHash() =>
     r'c38cb70171abf04a1df05460f4a8c158d7c594ae';
 
+/// The stock suggestions with what the plans need in front
+/// ([shoppingSuggestionsWithPlan]). A failure of the plans fails the whole
+/// list, so one retry loads both again; while the plans load, the stock
+/// suggestions show alone.
+
+@ProviderFor(inventoryShoppingSuggestionsWithPlan)
+final inventoryShoppingSuggestionsWithPlanProvider =
+    InventoryShoppingSuggestionsWithPlanProvider._();
+
+/// The stock suggestions with what the plans need in front
+/// ([shoppingSuggestionsWithPlan]). A failure of the plans fails the whole
+/// list, so one retry loads both again; while the plans load, the stock
+/// suggestions show alone.
+
+final class InventoryShoppingSuggestionsWithPlanProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ShoppingSuggestion>>,
+          AsyncValue<List<ShoppingSuggestion>>,
+          AsyncValue<List<ShoppingSuggestion>>
+        >
+    with $Provider<AsyncValue<List<ShoppingSuggestion>>> {
+  /// The stock suggestions with what the plans need in front
+  /// ([shoppingSuggestionsWithPlan]). A failure of the plans fails the whole
+  /// list, so one retry loads both again; while the plans load, the stock
+  /// suggestions show alone.
+  InventoryShoppingSuggestionsWithPlanProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inventoryShoppingSuggestionsWithPlanProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$inventoryShoppingSuggestionsWithPlanHash();
+
+  @$internal
+  @override
+  $ProviderElement<AsyncValue<List<ShoppingSuggestion>>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AsyncValue<List<ShoppingSuggestion>> create(Ref ref) {
+    return inventoryShoppingSuggestionsWithPlan(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<List<ShoppingSuggestion>> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride:
+          $SyncValueProvider<AsyncValue<List<ShoppingSuggestion>>>(value),
+    );
+  }
+}
+
+String _$inventoryShoppingSuggestionsWithPlanHash() =>
+    r'670a5b94fe822cd8a01600eb826cd69855d3693e';
+
 /// What to buy for the open plans the Vorrat cannot cover, grouped by day
 /// and meal, without the foods already on the shopping list.
 // ponytail: plans of found foods are left out like in the demand; add them

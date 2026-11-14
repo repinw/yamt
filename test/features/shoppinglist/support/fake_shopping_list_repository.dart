@@ -25,6 +25,9 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   bool holdsUnmigratedItems = false;
 
   @override
+  bool privateUnreadable = false;
+
+  @override
   Future<List<ShoppingListItem>> readAll() async {
     if (onReadAll != null) {
       return await onReadAll!();

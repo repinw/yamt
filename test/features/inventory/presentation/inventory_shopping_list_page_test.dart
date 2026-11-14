@@ -11,7 +11,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_page_keys.dart';
-import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_plan_needs.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/inventory_item_whole_list_writes.dart';
@@ -108,21 +107,17 @@ void main() {
         matching: find.text('Reload suggestions'),
       );
       expect(suggestionsRetry, findsOneWidget);
-      // The plan needs read the same stock, so they report it too.
-      expect(
-        find.text('The needs of your plans could not be loaded'),
-        findsOneWidget,
-      );
       stock.fail = false;
       final watchesBefore = stock.watchCount;
       await tester.tap(suggestionsRetry);
       await tester.pumpAndSettle();
-      expect(stock.watchCount, watchesBefore + 1);
+      // The plan needs read the stock too, so it loads more than once.
+      expect(stock.watchCount, greaterThan(watchesBefore));
       expect(find.text('Milk'), findsOneWidget);
     },
   );
 
-  testWidgets('a plan the Vorrat cannot cover goes on the list with one tap', (
+  testWidgets('a plan the Vorrat cannot cover leads the strip with its meal', (
     tester,
   ) async {
     final tomorrow = _now.add(const Duration(days: 1));
@@ -144,13 +139,19 @@ void main() {
     );
     final repository = await _pump(tester, _StockRepository(), plans: [plan]);
 
-    expect(find.text('For your plan'), findsOneWidget);
-    expect(find.text('200 ml'), findsOneWidget);
-    await tester.tap(find.byTooltip('Add item').first);
+    expect(find.text('For Thu · Breakfast'), findsOneWidget);
+    expect(find.text('Out of stock'), findsNothing);
+    await tester.tap(find.byKey(ShoppingListPageKeys.suggestion('milk|')));
     await tester.pumpAndSettle();
 
     expect(repository.savedItems.single.name, 'Milk');
-    expect(find.text('For your plan'), findsNothing);
+    expect(repository.savedItems.single.plannedFor, (
+      day: DateTime(2026, 10, 8),
+      mealType: MealType.breakfast,
+    ));
+    expect(find.byKey(ShoppingListPageKeys.suggestion('milk|')), findsNothing);
+    // The planned meal shows on the tile.
+    expect(find.text('For Thu · Breakfast'), findsOneWidget);
   });
 
   testWidgets('plans that fail to load say so, and retry loads them', (
@@ -159,21 +160,16 @@ void main() {
     final plans = FakePlannedEntryRepository()..loadShouldFail = true;
     await _pump(tester, _StockRepository(), planRepository: plans);
 
-    expect(
-      find.text('The needs of your plans could not be loaded'),
-      findsOneWidget,
-    );
+    expect(find.text('Reload suggestions'), findsOneWidget);
     plans.loadShouldFail = false;
-    await tester.tap(find.byKey(ShoppingListPlanNeeds.retryKey));
+    await tester.tap(find.text('Reload suggestions'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('The needs of your plans could not be loaded'),
-      findsNothing,
-    );
+    expect(find.text('Reload suggestions'), findsNothing);
+    expect(find.text('Out of stock'), findsOneWidget);
   });
 
-  testWidgets('a stock failure in the plan needs recovers on their retry', (
+  testWidgets('a stock failure under a plan recovers on the strip retry', (
     tester,
   ) async {
     final tomorrow = _now.add(const Duration(days: 1));
@@ -200,13 +196,13 @@ void main() {
         ),
       ],
     );
-    expect(find.byKey(ShoppingListPlanNeeds.retryKey), findsOneWidget);
+    expect(find.text('Reload suggestions'), findsOneWidget);
 
     stock.fail = false;
-    await tester.tap(find.byKey(ShoppingListPlanNeeds.retryKey));
+    await tester.tap(find.text('Reload suggestions'));
     await tester.pumpAndSettle();
 
-    expect(find.text('For your plan'), findsOneWidget);
-    expect(find.byKey(ShoppingListPlanNeeds.retryKey), findsNothing);
+    expect(find.text('For Thu · Breakfast'), findsOneWidget);
+    expect(find.text('Reload suggestions'), findsNothing);
   });
 }

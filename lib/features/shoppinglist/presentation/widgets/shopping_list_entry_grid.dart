@@ -2,22 +2,25 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_shopping_constants.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_sections.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_entry_tile.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_page_keys.dart';
 
-/// Lays the entry tiles out in rows of equal height. The number of tiles in
-/// a row follows the width and the text size.
+/// Lays the entry tiles out as a sliver of rows of equal height, built as
+/// they scroll into view. The number of tiles in a row follows the width and
+/// the text size.
 class ShoppingListEntryGrid extends StatelessWidget {
   /// Creates the grid.
   const new({
-    required this.items,
+    required this.tiles,
     required this.onTap,
     required this.onLongPress,
+    this.markPrivate = false,
     super.key,
   });
 
-  /// The entries, in list order.
-  final List<ShoppingListItem> items;
+  /// The entries with their shelf and picture, in list order.
+  final List<ShoppingListTile> tiles;
 
   /// Called with the tapped entry.
   final ValueChanged<ShoppingListItem> onTap;
@@ -25,25 +28,26 @@ class ShoppingListEntryGrid extends StatelessWidget {
   /// Called with the long-pressed entry.
   final ValueChanged<ShoppingListItem> onLongPress;
 
+  /// Whether private entries show a lock.
+  final bool markPrivate;
+
   @override
   Widget build(BuildContext context) {
     final scale = MediaQuery.textScalerOf(context).scale(1);
-    return LayoutBuilder(
+    return SliverLayoutBuilder(
       builder: (context, constraints) {
-        final columns = _columns(constraints.maxWidth, scale);
-        return Column(
-          children: [
-            for (var start = 0; start < items.length; start += columns)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: _row(start, columns),
-                  ),
-                ),
+        final columns = _columns(constraints.crossAxisExtent, scale);
+        return SliverList.builder(
+          itemCount: (tiles.length + columns - 1) ~/ columns,
+          itemBuilder: (context, row) => Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _row(row * columns, columns),
               ),
-          ],
+            ),
+          ),
         );
       },
     );
@@ -61,17 +65,19 @@ class ShoppingListEntryGrid extends StatelessWidget {
     for (var column = 0; column < columns; column++) ...[
       if (column > 0) const SizedBox(width: AppSpacing.xs),
       Expanded(
-        child: start + column < items.length
-            ? _tile(items[start + column])
+        child: start + column < tiles.length
+            ? _tile(tiles[start + column])
             : const SizedBox.shrink(),
       ),
     ],
   ];
 
-  Widget _tile(ShoppingListItem item) => ShoppingListEntryTile(
-    key: ShoppingListPageKeys.tile(item.id),
-    item: item,
-    onTap: () => onTap(item),
-    onLongPress: () => onLongPress(item),
+  Widget _tile(ShoppingListTile tile) => ShoppingListEntryTile(
+    key: ShoppingListPageKeys.tile(tile.item.id),
+    item: tile.item,
+    placement: tile.placement,
+    onTap: () => onTap(tile.item),
+    onLongPress: () => onLongPress(tile.item),
+    markPrivate: markPrivate,
   );
 }

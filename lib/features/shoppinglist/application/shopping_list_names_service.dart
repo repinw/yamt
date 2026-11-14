@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_line_split.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_addition.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
@@ -23,20 +24,28 @@ class ShoppingListNamesService {
       computeActiveShoppingListItemKeys(await _repository.readAll());
 
   /// Adds the [names] that are not on the list yet, one of each, in one
-  /// write. Throws when the list cannot be read or written, so a failed
-  /// read never replaces the list.
+  /// write. A recipe line like "1 mittlere Zwiebel" goes on as "Zwiebel"
+  /// with the amount as its note, "2 Zwiebeln" as two "Zwiebeln"
+  /// ([splitShoppingLine]). Throws when the list
+  /// cannot be read or written, so a failed read never replaces the list.
   Future<void> addMissing(Iterable<String> names) async {
     final items = await _repository.readAll();
     final listed = computeActiveShoppingListItemKeys(items);
     final inputs = [
-      for (final name in names)
+      for (final line in names.map(splitShoppingLine))
         if (!isSourceItemInActiveShoppingList(
-          item: (name: name, brand: null, initialQuantity: 1, unitPrice: 0),
+          item: (
+            name: line.name,
+            brand: null,
+            initialQuantity: 1,
+            unitPrice: 0,
+          ),
           activeItemKeys: listed,
         ))
           ?_addition.parseAddItemInput(
-            name: name,
-            quantity: 1,
+            name: line.name,
+            note: line.note,
+            quantity: line.quantity,
             estimatedUnitPrice: 0,
           ),
     ];

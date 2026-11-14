@@ -79,8 +79,9 @@ void main() {
     expect(await _status(const []), (missing: 1, partial: 1));
   });
 
-  test('what is on the shopping list is sorted', () async {
-    expect(await _status([_listed('200 g Karotten'), _listed('1 Zwiebel')]), (
+  test('what is on the shopping list is sorted, by the product the list '
+      'keeps for the line', () async {
+    expect(await _status([_listed('Karotten'), _listed('Zwiebel')]), (
       missing: 0,
       partial: 0,
     ));

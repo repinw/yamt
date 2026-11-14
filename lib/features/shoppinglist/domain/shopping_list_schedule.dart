@@ -55,7 +55,13 @@ List<ShoppingListItem> removeShoppingItems(
     if (!shouldRemove(item))
       item
     else if (item.isSaved)
-      item.copyWith(quantity: 0, isArchived: true, isDone: false),
+      item.copyWith(
+        quantity: 0,
+        isArchived: true,
+        isDone: false,
+        clearNote: true,
+        clearPlannedFor: true,
+      ),
 ];
 
 /// Configures and immediately applies a due schedule in one item update.

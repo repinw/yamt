@@ -9,7 +9,9 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_shelf_choice_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_shelf.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/features/shoppinglist/presentation/shopping_list_page.dart';
@@ -18,6 +20,7 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/'
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_suggestion_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/fake_shopping_shelf_choice_repository.dart';
 import '../../../helpers/memory_app_preferences.dart';
 import '../support/fake_shopping_list_repository.dart';
 
@@ -56,10 +59,14 @@ Widget _app(
 ProviderContainer _container(
   FakeShoppingListRepository repository, {
   MemoryAppPreferences? preferences,
+  FakeShoppingShelfChoiceRepository? shelves,
 }) {
+  final shelfChoices = shelves ?? FakeShoppingShelfChoiceRepository();
+  addTearDown(shelfChoices.dispose);
   final container = ProviderContainer(
     overrides: [
       shoppingListRepositoryProvider.overrideWithValue(repository),
+      shoppingShelfChoiceRepositoryProvider.overrideWithValue(shelfChoices),
       appPreferencesProvider.overrideWithValue(
         preferences ?? MemoryAppPreferences(),
       ),
@@ -338,7 +345,7 @@ void main() {
 
       await openSheet(tester);
       expect(
-        find.byKey(ShoppingListPageKeys.addSheetHit('oat milk|')),
+        find.byKey(ShoppingListPageKeys.addSheetFavorite('oat milk|')),
         findsOneWidget,
       );
       expect(
@@ -365,6 +372,29 @@ void main() {
         find.byKey(ShoppingListPageKeys.addSheetHit('milk|farm')),
         findsNothing,
       );
+    });
+
+    testWidgets('a known typed name leads the hits, a word start follows '
+        'them', (tester) async {
+      await tester.pumpWidget(
+        _app(
+          _container(FakeShoppingListRepository()),
+          suggestions: const AsyncData([
+            ShoppingSuggestion(name: 'Milkshake', purchaseCount: 2),
+          ]),
+        ),
+      );
+      await tester.pumpAndSettle();
+      double top(Finder finder) => tester.getTopLeft(finder).dy;
+      final typed = find.byKey(ShoppingListPageKeys.addSheetNewEntry);
+      final hit = find.byKey(ShoppingListPageKeys.addSheetHit('milkshake|'));
+
+      await openSheet(tester);
+      await type(tester, '2 Milk');
+      expect(top(typed), lessThan(top(hit)));
+
+      await type(tester, '2 mi');
+      expect(top(typed), greaterThan(top(hit)));
     });
 
     testWidgets('a failed save keeps the text and says so in the sheet', (
@@ -766,11 +796,21 @@ void main() {
 
       await tester.tap(find.byKey(ShoppingListPageKeys.finishButton));
       await tester.pumpAndSettle();
-      expect(find.text('1 item in the cart leaves the list.'), findsOneWidget);
+      expect(find.text('1 item done'), findsOneWidget);
+      expect(
+        find.text('1 item stays open and is at the top next time.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'They leave the list. Import the receipt later in your '
+          'pantry.',
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(ShoppingListPageKeys.finishConfirmButton));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AlertDialog), findsNothing);
       expect(repository.savedItems.map((item) => item.id), ['eggs']);
       expect(_chip('milk'), findsNothing);
       expect(_tile('eggs'), findsOneWidget);
@@ -803,9 +843,105 @@ void main() {
       await tester.tap(find.byKey(ShoppingListPageKeys.finishCancelButton));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AlertDialog), findsNothing);
       expect(repository.savedItems, isEmpty);
       expect(_chip('milk'), findsOneWidget);
+    });
+  });
+
+  group('shelves', () {
+    testWidgets('tiles stand under their shelf, in the order of the shop, '
+        'and the switch shows them by name', (tester) async {
+      await _pump(tester, [
+        _item('soap'),
+        _item('milk'),
+        _item('apples'),
+        _item('zorbl'),
+      ]);
+
+      double top(String shelf) => tester
+          .getTopLeft(find.byKey(ShoppingListPageKeys.shelfHeading(shelf)))
+          .dy;
+      expect(top('produce'), lessThan(top('chilled')));
+      expect(top('chilled'), lessThan(top('drugstore')));
+      expect(top('drugstore'), lessThan(top('other')));
+
+      await tester.tap(find.byKey(ShoppingListPageKeys.orderButton));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(ShoppingListPageKeys.shelfHeading('produce')),
+        findsNothing,
+      );
+      expect(find.text('A–Z'), findsOneWidget);
+      // Reading order: row by row, left to right.
+      final names = ['soap', 'milk', 'apples', 'zorbl']
+        ..sort((a, b) {
+          final x = tester.getTopLeft(_tile(a));
+          final y = tester.getTopLeft(_tile(b));
+          return x.dy != y.dy ? x.dy.compareTo(y.dy) : x.dx.compareTo(y.dx);
+        });
+      expect(names, ['apples', 'milk', 'soap', 'zorbl']);
+    });
+
+    testWidgets('a shelf chosen in the sheet is remembered for the name', (
+      tester,
+    ) async {
+      final shelves = FakeShoppingShelfChoiceRepository();
+      final repository = FakeShoppingListRepository(
+        initialItems: [_item('zorbl')],
+      );
+      await tester.pumpWidget(_app(_container(repository, shelves: shelves)));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(ShoppingListPageKeys.shelfHeading('other')),
+        findsOneWidget,
+      );
+
+      await _openSheet(tester, 'zorbl');
+      expect(find.text('No shelf yet · tap to assign'), findsOneWidget);
+      await tester.tap(find.byKey(ShoppingListPageKeys.sheetShelf));
+      await tester.pumpAndSettle();
+      expect(find.text('Where is zorbl?'), findsOneWidget);
+      await tester.tap(find.byKey(ShoppingListPageKeys.shelfChoice('pantry')));
+      await tester.pump();
+      await tester.tap(find.byKey(ShoppingListPageKeys.shelfRemember));
+      await tester.pumpAndSettle();
+
+      expect(shelves.choices, {'zorbl': ShoppingShelf.pantry});
+      expect(find.text('Pantry'), findsOneWidget);
+      Navigator.of(tester.element(find.text('Pantry'))).pop();
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(ShoppingListPageKeys.shelfHeading('pantry')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a failed shelf save says so and keeps the picker open', (
+      tester,
+    ) async {
+      final shelves = FakeShoppingShelfChoiceRepository()..failSaves = true;
+      await tester.pumpWidget(
+        _app(
+          _container(
+            FakeShoppingListRepository(initialItems: [_item('zorbl')]),
+            shelves: shelves,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _openSheet(tester, 'zorbl');
+      await tester.tap(find.byKey(ShoppingListPageKeys.sheetShelf));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ShoppingListPageKeys.shelfRemember));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Could not save the shelf. Please try again.'),
+        findsOneWidget,
+      );
+      expect(shelves.choices, isEmpty);
     });
   });
 
@@ -917,6 +1053,26 @@ void main() {
       expect(_chip('milk'), findsNothing);
     });
 
+    testWidgets('the sheet shows the note of the entry', (tester) async {
+      await _pump(tester, [
+        const ShoppingListItem(
+          id: 'flour',
+          name: 'flour',
+          normalizedName: 'flour',
+          normalizedBrand: '',
+          quantity: 1,
+          estimatedUnitPrice: 0,
+          note: '500 g',
+        ),
+      ]);
+      await _openSheet(tester, 'flour');
+
+      expect(
+        tester.widget<Text>(find.byKey(ShoppingListPageKeys.sheetNote)).data,
+        '500 g',
+      );
+    });
+
     testWidgets('the remove button takes the entry off the list and closes', (
       tester,
     ) async {
@@ -1001,6 +1157,11 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(_tile('bread'), findsOneWidget);
+      await tester.dragUntilVisible(
+        _chip('eggs'),
+        find.byType(CustomScrollView).first,
+        const Offset(0, -200),
+      );
       expect(_chip('eggs'), findsOneWidget);
     });
 

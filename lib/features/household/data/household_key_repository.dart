@@ -36,6 +36,7 @@ const inventoryActivityEventPlaintextFields = <String>['happened_at'];
 const householdEncryptedCollections = <String>[
   'inventory_items',
   'shopping_list_items',
+  'shopping_shelf_choices',
   'prepared_meals',
   'prepared_meal_templates',
   'kitchen_utensils',

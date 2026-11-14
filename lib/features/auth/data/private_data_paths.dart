@@ -13,6 +13,7 @@ List<String> privateDataCollections(String uid) {
   return <String>[
     '$userPath/calorie_entries',
     '$userPath/planned_entries',
+    '$userPath/shopping_list_items',
     '$userPath/calorie_settings',
     '$userPath/health_weights',
     '$userPath/health_weight_samples',

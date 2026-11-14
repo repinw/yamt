@@ -7,7 +7,8 @@ import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_plan_ne
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Asks whether the needs go on the shopping list, each one tickable, and adds
-/// the ticked ones. Nothing goes on the list without the tap.
+/// the ticked ones, each with the planned meal it is for. Nothing goes on
+/// the list without the tap.
 abstract final class ShoppingPlanNeedsFlow {
   /// Shows the question for [needs]; does nothing when they are empty.
   /// Adds nothing once [isCancelled] says the plan behind them is gone.
@@ -41,7 +42,11 @@ abstract final class ShoppingPlanNeedsFlow {
       for (final need in picked) {
         saved &= await container
             .read(shoppingListControllerProvider.notifier)
-            .addItem(name: need.name, brand: need.brand);
+            .addItem(
+              name: need.name,
+              brand: need.brand,
+              plannedFor: (day: need.day, mealType: need.mealType),
+            );
       }
     } finally {
       list.close();

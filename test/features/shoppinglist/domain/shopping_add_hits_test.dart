@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_add_hits.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_catalog.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 
@@ -41,30 +43,68 @@ void main() {
     expect(hits.first.source, ShoppingAddHitSource.saved);
   });
 
-  test('a query matches saved products and suggestions by part of the name, '
-      'starts first', () {
+  test('a suggestion keeps the planned meal it is for', () {
+    final dinner = (day: DateTime(2026, 11, 17), mealType: MealType.dinner);
+    final hits = shoppingAddHits(
+      'pete',
+      items: const [],
+      suggestions: [ShoppingSuggestion(name: 'Petersilie', plannedFor: dinner)],
+    );
+
+    expect(hits.single.plannedFor, dinner);
+  });
+
+  test('a query matches at the start of a word, the name start first, '
+      'shorter names first', () {
     final hits = shoppingAddHits(
       ' mi',
       items: [_item('Hafermilch', isFavorite: true, isArchived: true)],
       suggestions: const [
-        ShoppingSuggestion(name: 'Vollmilch', isOutOfStock: true),
+        ShoppingSuggestion(name: 'Mini Mix Nesquick', isOutOfStock: true),
         ShoppingSuggestion(name: 'Minze', isLowStock: true),
         ShoppingSuggestion(name: 'Miso', purchaseCount: 4),
-        ShoppingSuggestion(name: 'Butter', purchaseCount: 2),
+        ShoppingSuggestion(name: 'Yunmi Nuggets', purchaseCount: 2),
+        ShoppingSuggestion(name: 'Paprika mix', purchaseCount: 2),
       ],
     );
 
-    expect(_names(hits), ['Minze', 'Miso', 'Hafermilch', 'Vollmilch']);
-    expect(
-      [for (final hit in hits) hit.source],
-      [
-        ShoppingAddHitSource.lowStock,
-        ShoppingAddHitSource.purchased,
-        ShoppingAddHitSource.saved,
-        ShoppingAddHitSource.outOfStock,
+    expect(_names(hits), ['Miso', 'Minze', 'Mini Mix Nesquick', 'Paprika mix']);
+    expect(hits.first.source, ShoppingAddHitSource.purchased);
+    expect(hits.first.purchaseCount, 4);
+  });
+
+  test('from three letters a query also matches inside a word, saved '
+      'products first', () {
+    final hits = shoppingAddHits(
+      'milch',
+      items: [_item('Hafermilch', isFavorite: true, isArchived: true)],
+      suggestions: const [
+        ShoppingSuggestion(name: 'Vollmilch', isOutOfStock: true),
+        ShoppingSuggestion(name: 'Milchreis', purchaseCount: 2),
       ],
     );
-    expect(hits[1].purchaseCount, 4);
+
+    expect(_names(hits), ['Milchreis', 'Hafermilch', 'Vollmilch']);
+    expect(hits[1].source, ShoppingAddHitSource.saved);
+  });
+
+  test('a typo of four letters or more still finds the product, a short '
+      'one finds nothing', () {
+    List<String> hitsFor(String query) => _names(
+      shoppingAddHits(
+        query,
+        items: const [],
+        suggestions: const [],
+        catalog: shoppingCatalogIn('de'),
+      ),
+    );
+
+    expect(hitsFor('Mlich'), contains('Milch'));
+    expect(hitsFor('Joghrut'), contains('Joghurt'));
+    // A typo in the start of a longer name, while still typing.
+    expect(hitsFor('Banna'), contains('Bananen'));
+    expect(hitsFor('Mlc'), isEmpty);
+    expect(hitsFor('Glühlampe'), isEmpty);
   });
 
   test('a product that is to buy is not offered, a saved one wins over its '

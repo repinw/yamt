@@ -1,3 +1,5 @@
+import 'package:yamt/features/shoppinglist/domain/shopping_planned_meal.dart';
+
 /// Defines shopping list item.
 class ShoppingListItem {
   /// The shopping list item.
@@ -10,21 +12,25 @@ class ShoppingListItem {
     required this.estimatedUnitPrice,
     this.brand,
     this.note,
+    this.plannedFor,
     this.isFavorite = false,
     this.isArchived = false,
     this.isDone = false,
     this.repeatEveryDays = 0,
     this.repeatQuantity = 1,
     this.nextDueDate,
+    this.isPrivate = false,
   });
 
-  /// Creates a [ShoppingListItem] for from json.
-  factory fromJson(Map<String, dynamic> json) {
+  /// Creates a [ShoppingListItem] for from json. [isPrivate] tells where the
+  /// document was stored; it is not part of the document.
+  factory fromJson(Map<String, dynamic> json, {bool isPrivate = false}) {
     return ShoppingListItem(
       id: _stringValue(json['id']),
       name: _stringValue(json['name']),
       brand: _nullableStringValue(json['brand']),
       note: _nullableStringValue(json['note']),
+      plannedFor: shoppingPlannedMealFromJson(json['planned_for']),
       normalizedName: _stringValue(json['normalized_name']),
       normalizedBrand: _stringValue(json['normalized_brand']),
       quantity: _intValue(json['quantity']),
@@ -35,6 +41,7 @@ class ShoppingListItem {
       repeatEveryDays: (json['repeat_every_days'] as num?)?.toInt() ?? 0,
       repeatQuantity: (json['repeat_quantity'] as num?)?.toInt() ?? 1,
       nextDueDate: DateTime.tryParse(json['next_due_date']?.toString() ?? ''),
+      isPrivate: isPrivate,
     );
   }
 
@@ -47,8 +54,11 @@ class ShoppingListItem {
   /// The brand.
   final String? brand;
 
-  /// A free note, such as "500 g" or the meal it is for.
+  /// A free note, such as "500 g".
   final String? note;
+
+  /// The planned meal the entry is for, shown in the language of the reader.
+  final ShoppingPlannedMeal? plannedFor;
 
   /// The normalized name.
   final String normalizedName;
@@ -80,6 +90,10 @@ class ShoppingListItem {
   /// Next scheduled local calendar date.
   final DateTime? nextDueDate;
 
+  /// On the private list of the user rather than the household list. Where
+  /// the entry is stored says so, the stored document does not.
+  final bool isPrivate;
+
   /// Whether removing the list entry must retain its saved settings.
   bool get isSaved => isFavorite || repeatEveryDays > 0;
 
@@ -96,6 +110,7 @@ class ShoppingListItem {
       'name': name,
       'brand': brand,
       'note': note,
+      'planned_for': shoppingPlannedMealToJson(plannedFor),
       'normalized_name': normalizedName,
       'normalized_brand': normalizedBrand,
       'quantity': quantity,
@@ -116,6 +131,8 @@ class ShoppingListItem {
     String? brand,
     String? note,
     bool clearNote = false,
+    ShoppingPlannedMeal? plannedFor,
+    bool clearPlannedFor = false,
     String? normalizedName,
     String? normalizedBrand,
     int? quantity,
@@ -133,6 +150,7 @@ class ShoppingListItem {
       name: name ?? this.name,
       brand: brand ?? this.brand,
       note: clearNote ? null : note ?? this.note,
+      plannedFor: clearPlannedFor ? null : plannedFor ?? this.plannedFor,
       normalizedName: normalizedName ?? this.normalizedName,
       normalizedBrand: normalizedBrand ?? this.normalizedBrand,
       quantity: quantity ?? this.quantity,
@@ -143,6 +161,7 @@ class ShoppingListItem {
       repeatEveryDays: repeatEveryDays ?? this.repeatEveryDays,
       repeatQuantity: repeatQuantity ?? this.repeatQuantity,
       nextDueDate: clearNextDueDate ? null : nextDueDate ?? this.nextDueDate,
+      isPrivate: isPrivate,
     );
   }
 

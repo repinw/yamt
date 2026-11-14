@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_planned_meal.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
 import '../../../../helpers/inventory_item_whole_list_writes.dart';
@@ -141,8 +142,11 @@ class _RecordingShoppingListController extends ShoppingListController {
   Future<ShoppingListRevert?> addItemWithRevert({
     required String name,
     String? brand,
+    String? note,
+    ShoppingPlannedMeal? plannedFor,
     int quantity = 1,
     double estimatedUnitPrice = 0.0,
+    bool isPrivate = false,
   }) async {
     _addItemInput = (
       name: name,

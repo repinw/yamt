@@ -39,6 +39,17 @@ Future<void> _waitFor(WidgetTester tester, Finder finder) async {
   expect(finder, findsOneWidget);
 }
 
+/// Pumps until the progress label reads [expected], at most five seconds.
+Future<void> _waitForProgress(WidgetTester tester, String expected) async {
+  final label = find.byKey(ShoppingListPageKeys.progressLabel);
+  String? text() =>
+      label.evaluate().isEmpty ? null : tester.widget<Text>(label).data;
+  for (var i = 0; i < 50 && text() != expected; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(text(), expected);
+}
+
 Future<void> _tap(WidgetTester tester, Finder finder) async {
   await tester.tap(finder);
   await tester.pump(const Duration(milliseconds: 100));
@@ -83,7 +94,7 @@ void main() {
         ),
       );
       await _waitFor(tester, _tile('milk'));
-      expect(find.text('0 of 3 in the cart'), findsOneWidget);
+      await _waitForProgress(tester, '0 of 3 in the cart');
 
       // Tick two entries off; after the linger they sit in the cart.
       await _tap(tester, _tile('milk'));
@@ -92,13 +103,13 @@ void main() {
       await _waitFor(tester, _chip('milk'));
       await _waitFor(tester, _chip('bread'));
       expect(_tile('milk'), findsNothing);
-      expect(find.text('2 of 3 in the cart'), findsOneWidget);
+      await _waitForProgress(tester, '2 of 3 in the cart');
 
       // Put one back.
       await _tap(tester, _chip('bread'));
       await _waitFor(tester, _tile('bread'));
       expect(_chip('bread'), findsNothing);
-      expect(find.text('1 of 3 in the cart'), findsOneWidget);
+      await _waitForProgress(tester, '1 of 3 in the cart');
 
       // Raise the quantity of an open entry in the sheet.
       await tester.longPress(_tile('eggs'));
@@ -140,7 +151,7 @@ void main() {
         tester,
         find.byKey(ShoppingListPageKeys.suggestion('butter|')),
       );
-      await _waitFor(tester, find.text('1 of 4 in the cart'));
+      await _waitForProgress(tester, '1 of 4 in the cart');
 
       // Add two entries in the sheet, one with a count, and take one back.
       await _tap(tester, find.byKey(ShoppingListPageKeys.addButton));
@@ -164,7 +175,7 @@ void main() {
       await tester.pumpAndSettle();
       await _tap(tester, find.byKey(ShoppingListPageKeys.addSheetDoneButton));
       await tester.pumpAndSettle();
-      await _waitFor(tester, find.text('1 of 5 in the cart'));
+      await _waitForProgress(tester, '1 of 5 in the cart');
 
       // Finish the trip: only the entry in the cart leaves the list.
       await _tap(tester, find.byKey(ShoppingListPageKeys.finishButton));
@@ -178,8 +189,17 @@ void main() {
       }
 
       expect(_chip('milk'), findsNothing);
-      expect(_tile('bread'), findsOneWidget);
-      expect(_tile('eggs'), findsOneWidget);
+      // Tiles are built as they scroll into view.
+      final list = find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      for (final id in ['bread', 'eggs']) {
+        await tester.scrollUntilVisible(_tile(id), 200, scrollable: list);
+        expect(_tile(id), findsOneWidget);
+      }
       expect(repository.savedItems.map((item) => item.name), [
         'Bread',
         'Eggs',

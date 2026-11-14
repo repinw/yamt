@@ -3,17 +3,35 @@ abstract final class AppShopping {
   /// Least height of an entry tile; the name may make it taller.
   static const double tileMinHeight = 88;
 
-  /// Diameter of the disc with the first letter of an entry.
-  static const double letterDisc = 30;
+  /// Edge length of the disc with the picture of an entry.
+  static const double itemDisc = 36;
 
-  /// Diameter of the letter disc in the entry sheet.
-  static const double sheetLetterDisc = 56;
+  /// Edge length of the picture disc in the entry sheet.
+  static const double sheetItemDisc = 56;
 
-  /// Size of the letter in a letter disc, as a fraction of its diameter.
-  static const double letterDiscLetterRatio = 0.46;
+  /// Size of the picture or tick in a disc, as a fraction of its edge.
+  static const double itemDiscIconRatio = 0.6;
 
-  /// Size of the tick in a letter disc, as a fraction of its diameter.
-  static const double letterDiscTickRatio = 0.6;
+  /// Least height of a shelf choice in the shelf picker.
+  static const double shelfChoiceMinHeight = 56;
+
+  /// Text scale from which the shelf picker shows one choice per row.
+  static const double shelfPickerLargeTextScale = 1.5;
+
+  /// Size of the lock on a private tile among household tiles.
+  static const double privateLockSize = 14;
+
+  /// Letter spacing of a shelf heading, which is in capitals.
+  static const double shelfHeadingLetterSpacing = 0.6;
+
+  /// Stroke width of the dashed outline of an entry without a shelf.
+  static const double unassignedOutlineWidth = 2;
+
+  /// Length of one dash, and of one gap, of that outline.
+  static const double unassignedDash = 6;
+
+  /// Diameter of the add button on a suggestion card.
+  static const double suggestionAddDisc = 30;
 
   /// Most of the screen height the add sheet takes.
   static const double addSheetHeightFraction = 0.85;

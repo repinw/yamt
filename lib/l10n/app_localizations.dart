@@ -2944,6 +2944,24 @@ abstract class AppLocalizations {
   /// **'Saved'**
   String get shoppingAddHitSaved;
 
+  /// No description provided for @shoppingAddNewEntryUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Goes under Other, you pick the shelf later'**
+  String get shoppingAddNewEntryUnknown;
+
+  /// No description provided for @shoppingAddMoreFromShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'More from {shelf}'**
+  String shoppingAddMoreFromShelf(String shelf);
+
+  /// No description provided for @shoppingAddFavoritesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get shoppingAddFavoritesTitle;
+
   /// No description provided for @shoppingShelfProduce.
   ///
   /// In en, this message translates to:
@@ -3010,6 +3028,228 @@ abstract class AppLocalizations {
   /// **'Other'**
   String get shoppingShelfOther;
 
+  /// App bar title of the page that imports a shopping list.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a list'**
+  String get shoppingImportTitle;
+
+  /// Mode switch on the import page: import from pasted text.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste text'**
+  String get shoppingImportModeText;
+
+  /// Mode switch on the import page: import from a scanned handwritten or printed note.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a note'**
+  String get shoppingImportModeScan;
+
+  /// Heading above the text field in the paste mode of the import page.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your list'**
+  String get shoppingImportTextTitle;
+
+  /// Explains under the paste heading what kind of text can be pasted.
+  ///
+  /// In en, this message translates to:
+  /// **'From a chat, a note or a recipe, just as it is. We pick out the products, amounts and shelves.'**
+  String get shoppingImportTextHint;
+
+  /// Placeholder of the empty text field, showing example lines of a list.
+  ///
+  /// In en, this message translates to:
+  /// **'Milk\n2 peppers\n500 g minced meat'**
+  String get shoppingImportFieldHint;
+
+  /// Counter under the text field: how many non-empty lines were pasted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No lines yet} =1{1 line pasted} other{{count} lines pasted}}'**
+  String shoppingImportLineCount(int count);
+
+  /// Button that empties the pasted text in the import text field.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get shoppingImportClear;
+
+  /// Button that pastes the clipboard contents into the import text field.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste from clipboard'**
+  String get shoppingImportPaste;
+
+  /// Button that starts reading the pasted text as a shopping list; it names the AI because the text leaves the device.
+  ///
+  /// In en, this message translates to:
+  /// **'Read with AI'**
+  String get shoppingImportReadAction;
+
+  /// Heading above the scan area in the scan mode of the import page.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan your note'**
+  String get shoppingImportScanTitle;
+
+  /// Explains under the scan heading what the scan can read and that the result is checked afterwards.
+  ///
+  /// In en, this message translates to:
+  /// **'We read handwriting, printed lists and recipe pages. Then you check what we found.'**
+  String get shoppingImportScanHint;
+
+  /// Button that takes a photo of the note and starts the scan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get shoppingImportScanAction;
+
+  /// Error message shown when the note scan fails.
+  ///
+  /// In en, this message translates to:
+  /// **'The scan did not work.'**
+  String get shoppingImportScanFailed;
+
+  /// Progress text while the pasted text or scanned note is being read.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your list …'**
+  String get shoppingImportReading;
+
+  /// Error message when reading the list failed.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not read the list.'**
+  String get shoppingImportReadFailed;
+
+  /// Message when reading the list finished without any product.
+  ///
+  /// In en, this message translates to:
+  /// **'We found no products.'**
+  String get shoppingImportNothingFound;
+
+  /// Button that retries reading the list after an error.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get shoppingImportRetry;
+
+  /// App bar title of the review step that lists the recognized products.
+  ///
+  /// In en, this message translates to:
+  /// **'Products found'**
+  String get shoppingImportReviewTitle;
+
+  /// Count of products recognized in the review step.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 product found} other{{count} products found}}'**
+  String shoppingImportFoundCount(int count);
+
+  /// Explains in the review step how to change a product name and what unselected products mean.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a name to change it; unselected products stay off the list.'**
+  String get shoppingImportReviewHint;
+
+  /// Note on a review row: the product is already on the shopping list, with the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Already on the list ({count}×)'**
+  String shoppingImportAlreadyListed(int count);
+
+  /// Note on a review row: the product is not in the catalog and will be filed under the Other shelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in the catalog · goes under Other'**
+  String get shoppingImportNotInCatalog;
+
+  /// Detail line of a review row: the shelf name and the note the user wrote, separated by a middle dot.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} · Note: {note}'**
+  String shoppingImportRowWithNote(String place, String note);
+
+  /// Quantity of a review row, for example 2×.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}×'**
+  String shoppingImportQuantity(int count);
+
+  /// Quantity of a review row for a product already on the list: how many more will be added.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more'**
+  String shoppingImportQuantityOnTop(int count);
+
+  /// Heading above the lines that could not be read and were skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line skipped:} other{{count} lines skipped:}}'**
+  String shoppingImportSkipped(int count);
+
+  /// Button that adds the selected products to the shopping list; the count is the number of selected products.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing selected} =1{Add 1 product to the list} other{Add {count} products to the list}}'**
+  String shoppingImportAddAction(int count);
+
+  /// Title of the dialog that changes the name of a product in the review step.
+  ///
+  /// In en, this message translates to:
+  /// **'Change name'**
+  String get shoppingImportRenameTitle;
+
+  /// No description provided for @shoppingShelfRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Shelf'**
+  String get shoppingShelfRow;
+
+  /// No description provided for @shoppingShelfUnassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'No shelf yet · tap to assign'**
+  String get shoppingShelfUnassigned;
+
+  /// No description provided for @shoppingShelfPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where is {name}?'**
+  String shoppingShelfPickerTitle(String name);
+
+  /// No description provided for @shoppingShelfPickerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'From now on this applies to every \"{name}\" entry in your household.'**
+  String shoppingShelfPickerHint(String name);
+
+  /// No description provided for @shoppingShelfRemember.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember for {name}'**
+  String shoppingShelfRemember(String name);
+
+  /// No description provided for @shoppingShelfSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the shelf. Please try again.'**
+  String get shoppingShelfSaveFailed;
+
+  /// No description provided for @shoppingListOrderByShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'By shelf'**
+  String get shoppingListOrderByShelf;
+
+  /// No description provided for @shoppingListOrderByName.
+  ///
+  /// In en, this message translates to:
+  /// **'A–Z'**
+  String get shoppingListOrderByName;
+
   /// No description provided for @shoppingAddTakeBackFailed.
   ///
   /// In en, this message translates to:
@@ -3021,6 +3261,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Take back \"{name}\"'**
   String shoppingAddTakeBackAction(String name);
+
+  /// No description provided for @shoppingListScopeHousehold.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get shoppingListScopeHousehold;
+
+  /// No description provided for @shoppingListScopePrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Private'**
+  String get shoppingListScopePrivate;
+
+  /// No description provided for @shoppingListScopeBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get shoppingListScopeBoth;
+
+  /// A segment of the list switch: the list's name and how many entries it holds.
+  ///
+  /// In en, this message translates to:
+  /// **'{scope} · {count}'**
+  String shoppingListScopeCount(String scope, int count);
+
+  /// No description provided for @shoppingListScopeHouseholdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared with everyone in your household.'**
+  String get shoppingListScopeHouseholdHint;
+
+  /// No description provided for @shoppingListScopePrivateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you see this list.'**
+  String get shoppingListScopePrivateHint;
+
+  /// No description provided for @shoppingListScopeBothHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Both lists together, for one trip through the shop.'**
+  String get shoppingListScopeBothHint;
+
+  /// No description provided for @shoppingListAddHousehold.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to household'**
+  String get shoppingListAddHousehold;
+
+  /// No description provided for @shoppingListAddPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Add privately'**
+  String get shoppingListAddPrivate;
 
   /// No description provided for @shoppingListAddAction.
   ///
@@ -3118,6 +3412,60 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get shoppingListFinishAction;
 
+  /// No description provided for @shoppingFinishTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish shopping'**
+  String get shoppingFinishTitle;
+
+  /// No description provided for @shoppingFinishDoneCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item done} other{{count} items done}}'**
+  String shoppingFinishDoneCount(int count);
+
+  /// No description provided for @shoppingFinishHint.
+  ///
+  /// In en, this message translates to:
+  /// **'They leave the list. Import the receipt later in your pantry.'**
+  String get shoppingFinishHint;
+
+  /// No description provided for @shoppingFinishOpenLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item stays open and is at the top next time.} other{{count} items stay open and are at the top next time.}}'**
+  String shoppingFinishOpenLeft(int count);
+
+  /// Stands between product names in a list.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get shoppingNameListSeparator;
+
+  /// Joins the last name to the names before it in a list of product names.
+  ///
+  /// In en, this message translates to:
+  /// **'{names} and {last}'**
+  String shoppingNameListLast(String names, String last);
+
+  /// Stands between the details under a product: shelf, brand, reason.
+  ///
+  /// In en, this message translates to:
+  /// **' · '**
+  String get shoppingDetailSeparator;
+
+  /// No description provided for @shoppingFinishSavedStay.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{names} stays saved and goes back on the list with one tap.} other{{names} stay saved and go back on the list with one tap.}}'**
+  String shoppingFinishSavedStay(int count, String names);
+
+  /// No description provided for @shoppingFinishCloseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get shoppingFinishCloseAction;
+
   /// No description provided for @shoppingListMoveToCartAction.
   ///
   /// In en, this message translates to:
@@ -3136,29 +3484,17 @@ abstract class AppLocalizations {
   /// **'Take off the list'**
   String get shoppingListRemoveFromListAction;
 
+  /// Shown on the shopping list when the private list cannot be read; the household list still shows.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your private list.'**
+  String get shoppingPrivateListLoadFailed;
+
   /// No description provided for @shoppingListSaveFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not save the shopping list.'**
   String get shoppingListSaveFailed;
-
-  /// No description provided for @shoppingListFinishDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish shopping?'**
-  String get shoppingListFinishDialogTitle;
-
-  /// No description provided for @shoppingListFinishDialogMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 item in the cart leaves the list.} other{{count} items in the cart leave the list.}}'**
-  String shoppingListFinishDialogMessage(int count);
-
-  /// No description provided for @shoppingListFinishConfirmAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish'**
-  String get shoppingListFinishConfirmAction;
 
   /// No description provided for @caloriesOcrFailed.
   ///
@@ -7591,35 +7927,17 @@ abstract class AppLocalizations {
   /// **'{amount} {unit}'**
   String shoppingListPlanNeedAmount(String amount, String unit);
 
-  /// No description provided for @shoppingListPlanNeedGroup.
+  /// Reason on a suggestion and detail on a list entry: the planned day (short weekday, or the date outside the coming week) and meal that need it.
   ///
   /// In en, this message translates to:
-  /// **'{day} · {meal}'**
-  String shoppingListPlanNeedGroup(String day, String meal);
+  /// **'For {day} · {meal}'**
+  String shoppingListPlannedFor(String day, String meal);
 
   /// No description provided for @shoppingListPlanNeedBrand.
   ///
   /// In en, this message translates to:
   /// **'{brand} · {amount}'**
   String shoppingListPlanNeedBrand(String brand, String amount);
-
-  /// No description provided for @shoppingListPlanNeedsLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'The needs of your plans could not be loaded'**
-  String get shoppingListPlanNeedsLoadFailed;
-
-  /// No description provided for @shoppingListPlanNeedsRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Reload plan needs'**
-  String get shoppingListPlanNeedsRetry;
-
-  /// No description provided for @shoppingListPlanNeedsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'For your plan'**
-  String get shoppingListPlanNeedsTitle;
 
   /// No description provided for @shoppingListSuggestionsTitle.
   ///

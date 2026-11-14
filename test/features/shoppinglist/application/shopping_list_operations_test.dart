@@ -25,6 +25,7 @@ ShoppingListItem _shoppingItem({
   int quantity = 1,
   bool isDone = false,
   bool isArchived = false,
+  bool isPrivate = false,
 }) {
   return ShoppingListItem(
     id: id,
@@ -35,12 +36,27 @@ ShoppingListItem _shoppingItem({
     estimatedUnitPrice: 1,
     isDone: isDone,
     isArchived: isArchived,
+    isPrivate: isPrivate,
   );
 }
 
 void main() {
   test('normalizeShoppingListValue trims and lowercases input', () {
     expect(normalizeShoppingListValue(' MILK '), 'milk');
+  });
+
+  test('computeActiveShoppingListItemKeys leaves the private list out: '
+      'other features add to the household list', () {
+    final keys = computeActiveShoppingListItemKeys(<ShoppingListItem>[
+      _shoppingItem(
+        id: 'a',
+        normalizedName: 'onion',
+        normalizedBrand: '',
+        isPrivate: true,
+      ),
+    ]);
+
+    expect(keys, isEmpty);
   });
 
   test('computeActiveShoppingListItemKeys ignores entries in the cart and '

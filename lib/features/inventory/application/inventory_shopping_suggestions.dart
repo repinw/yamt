@@ -9,6 +9,7 @@ import 'package:yamt/features/inventory/domain/inventory_replenishment.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_names_service.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_plan_needs.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 
@@ -37,6 +38,26 @@ AsyncValue<List<ShoppingSuggestion>> inventoryShoppingSuggestions(Ref ref) =>
               )
               .toList(growable: false),
         );
+
+/// The stock suggestions with what the plans need in front
+/// ([shoppingSuggestionsWithPlan]). A failure of the plans fails the whole
+/// list, so one retry loads both again; while the plans load, the stock
+/// suggestions show alone.
+@riverpod
+AsyncValue<List<ShoppingSuggestion>> inventoryShoppingSuggestionsWithPlan(
+  Ref ref,
+) {
+  final stock = ref.watch(inventoryShoppingSuggestionsProvider);
+  final plans = ref.watch(inventoryShoppingPlanNeedGroupsProvider);
+  if (plans case AsyncError(:final error, :final stackTrace)
+      when !plans.isLoading) {
+    return AsyncError(error, stackTrace);
+  }
+  return stock.whenData(
+    (suggestions) =>
+        shoppingSuggestionsWithPlan(plans.value ?? const [], suggestions),
+  );
+}
 
 /// What to buy for the open plans the Vorrat cannot cover, grouped by day
 /// and meal, without the foods already on the shopping list.

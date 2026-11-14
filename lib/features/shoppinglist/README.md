@@ -2,18 +2,28 @@
 
 ## Purpose
 
-Shopping List keeps the household's grocery list: what to buy and how many,
-saved favorites, and products that come back on a schedule.
+Shopping List keeps the household's grocery list and the user's private
+one: what to buy and how many, where it stands in the shop, saved
+favorites, and products that come back on a schedule.
 
 ## Owns
 
 - Shopping list items with their favorite and recurrence settings, stored
-  encrypted with the household key.
+  encrypted with the household key, and private items stored under the user
+  encrypted with the user's data key.
+- The product catalog (shelf and icon per known product, German and
+  English) and the shelf chosen per product in the household.
+- The list import: reading a pasted or photographed list with the
+  `shopping-list-import-template` AI template and the review before adding.
 - List mutations: adding and merging products, quantities, moving an entry
   into the cart and back, reverting an addition, and the calendar recurrence
   rules.
-- Suggestion filtering, the order of pushed back suggestions (kept on the
-  device), and the visible list sections.
+- Suggestion filtering, the order of pushed back suggestions, the list order
+  and the list shown (household, private, both), all kept on the device.
+- The list page view: the entries of the list shown, grouped by shelf or
+  sorted by name, with taps not saved yet, the cart, the saved products, the
+  counts per list and the finish summary. Widgets only render it; the tiles
+  are built as they scroll into view.
 - Adding products by name for later features, which skips the ones on the
   list already.
 - The shopping list page, its widgets, and its controller.
@@ -27,15 +37,18 @@ saved favorites, and products that come back on a schedule.
 ## Public UI
 
 - `ShoppingListPage` takes the `suggestions` of a later feature as
-  `ShoppingSuggestion` values, with `onRetrySuggestions`, and a
-  `planNeedsSection` slot under the list. Inventory passes its suggestions
-  and composes the finished page. The page shows the suggestions as a strip
-  over the tiles and offers them as hits in the add sheet.
-- `ShoppingListPlanNeeds` renders the "Für deinen Plan" block from
-  `ShoppingPlanNeedGroup` values, with one add button per food, and an error
-  line with a retry when the needs fail to load. `groupShoppingPlanNeeds`
-  (application) groups `ShoppingPlanNeed` values by day and meal and drops
-  foods that are already on the list.
+  `ShoppingSuggestion` values, and a `suggestionsError` slot for the time
+  they failed to load. Inventory passes its suggestions, fills the slot with
+  `ShoppingSuggestionsRetryButton` and its own retry, and composes the
+  finished page. The page shows the
+  suggestions as a strip over the tiles and offers them as hits in the add
+  sheet. The finish page offers no receipt scan; the receipt is imported
+  later in the inventory.
+- `shoppingSuggestionsWithPlan` (application) puts what the plans need in
+  front of the suggestions, once per food, with `plannedFor` set to its first
+  meal. `groupShoppingPlanNeeds` (application) groups `ShoppingPlanNeed`
+  values by day and meal and drops foods that are already on the list.
+- `showShoppingListImport` opens the list import.
 - `ShoppingPlanNeedsFlow.offer` asks whether a plan's missing foods go on
   the list, each one tickable, and adds the ticked ones; cookbook calls it
   after planning a recipe. With `offerNeverAsk` it adds a "Nicht mehr fragen"
@@ -50,7 +63,12 @@ saved favorites, and products that come back on a schedule.
 - Adding a product that is to buy puts the quantity on top. Adding one that
   is in the cart or archived brings it back with the new quantity alone. A
   due schedule does the same with the schedule's quantity.
-- Finishing the trip removes the entries in the cart.
+- Finishing the trip removes the entries in the cart of the list shown.
+- A new entry goes on the private list only while the private list is shown;
+  in "both" it goes to the household. Adding merges only within the same
+  list.
+- A shelf chosen for a product wins over the catalog; a product neither
+  knows sits under "other", shown as not assigned.
 - The add field reads a leading count up to 99 as the quantity ("2 Milch");
   a number in front of a unit ("500 g Hack") stays part of the name.
 - A suggestion pushed back comes after every suggestion that was not, the
@@ -66,6 +84,8 @@ saved favorites, and products that come back on a schedule.
 - Configuring a schedule and applying it when already due is one serialized
   save. A failed save rolls both back for a later retry. Widgets only submit
   the settings; activation does not depend on the widget staying mounted.
-- Every save replaces the whole list in one serialized write. While the user
-  is signed out or the household key is not ready, reads return no items and
-  writes fail.
+- Every save replaces the whole list in one serialized write, the household
+  part and the private part each. While the user is signed out or the
+  household key is not ready, reads return no items and writes fail.
+  Without the user's data key there are no private items, and a save that
+  holds one fails.
