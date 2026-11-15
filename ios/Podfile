@@ -1,5 +1,12 @@
 platform :ios, '15.5'
 
+# firebase_core pins the iOS SDK to 12.19.3, but CocoaPods trunk only has
+# 12.19.3 for some pods (FirebaseCore, FirebaseFirestore). FirebaseAppCheck,
+# FirebaseAuth, FirebaseStorage and FirebaseAI stop at 12.19.0, so pod install
+# cannot resolve. Pin the whole SDK to the last version every pod has.
+# Remove once firebase_core pins a version that is fully published.
+$FirebaseSDKVersion = '12.19.0'
+
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
