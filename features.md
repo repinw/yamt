@@ -1012,8 +1012,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 - "Neu" opens the menu "Neues Rezept": "Scannen" (up to 3 pages), "Liste
   einfügen" (from the clipboard), "Selbst tippen" (starts empty), "Aus Link"
   (reads a recipe page), and "Rezeptidee".
-- "Rezeptidee" asks "Worauf hast du Lust?": a "Vorrat beachten" switch (on by
-  default) and free wishes ("vegetarisch, schnell, ..."). While we put the
+- "Rezeptidee" asks in three rows without a title: "Vorrat zuerst" (on by
+  default) with "Unbedingt rein", "Wünsche" as pills, and the stored "Bloß
+  nicht" list (see AI Chef), then "Rezept vorschlagen". While we put the
   recipe together, a calm wait shows; closing the sheet drops the idea. If
   it fails, the sheet says "Wir konnten gerade kein Rezept zusammenstellen."
   with "Erneut versuchen". The idea then opens in a tall window as a normal
@@ -1584,8 +1585,19 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## AI Chef
 
-- "Rezeptidee" in the "Neues Rezept" sheet (see Cookbook): "Worauf hast du
-  Lust?", the "Vorrat beachten" switch, and free wishes.
+- "Rezeptidee" in the "Neues Rezept" sheet (see Cookbook), set up in three
+  rows without a title: "Vorrat zuerst" (switch), "Wünsche" (pills such as
+  "Lachs" or "schnell", only for this idea), and "Bloß nicht"; the main
+  action says "Rezept vorschlagen".
+- "Unbedingt rein": while "Vorrat zuerst" is on, the cook picks Vorrat items
+  that must go into the recipe from a sheet with search, sorted by "Am
+  längsten da" with each item's age in days (red from 7 days). The picks
+  show as filled chips and go only with the Vorrat on; a pick eaten since
+  then is left out of the request.
+- A stored "Bloß nicht" list: ingredients the cook types once never appear
+  in a suggested recipe. The list belongs to the user and follows them to
+  every device; each entry can be removed with its chip. "Rezept
+  vorschlagen" waits until the list is loaded.
 - The recipe, with kcal, protein, carbohydrates and fat of each ingredient,
   comes from the server prompt template `recipe-idea-template`, which can
   change without an app release. The values of one portion are the sum of the

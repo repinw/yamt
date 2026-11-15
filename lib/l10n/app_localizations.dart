@@ -152,22 +152,16 @@ abstract class AppLocalizations {
   /// **'Recipe idea'**
   String get aiChefIdeaTitle;
 
-  /// No description provided for @aiChefSetupTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'What do you feel like?'**
-  String get aiChefSetupTitle;
-
   /// No description provided for @aiChefUseInventoryTitle.
   ///
   /// In en, this message translates to:
-  /// **'Use inventory'**
+  /// **'Inventory first'**
   String get aiChefUseInventoryTitle;
 
   /// No description provided for @aiChefUseInventorySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Prefer ingredients that are currently in stock.'**
+  /// **'We use what you have at home first.'**
   String get aiChefUseInventorySubtitle;
 
   /// No description provided for @aiChefWishesLabel.
@@ -179,8 +173,92 @@ abstract class AppLocalizations {
   /// No description provided for @aiChefWishesHint.
   ///
   /// In en, this message translates to:
-  /// **'e.g. vegetarian, quick, high protein, no rice'**
+  /// **'e.g. salmon, quick'**
   String get aiChefWishesHint;
+
+  /// No description provided for @aiChefExclusionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No way'**
+  String get aiChefExclusionsLabel;
+
+  /// No description provided for @aiChefExclusionsAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient'**
+  String get aiChefExclusionsAddAction;
+
+  /// No description provided for @aiChefExclusionsInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. cilantro'**
+  String get aiChefExclusionsInputHint;
+
+  /// No description provided for @aiChefExclusionsRemoveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {ingredient}'**
+  String aiChefExclusionsRemoveTooltip(String ingredient);
+
+  /// No description provided for @aiChefExclusionsSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not save your list.'**
+  String get aiChefExclusionsSaveError;
+
+  /// No description provided for @aiChefExclusionsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load your list.'**
+  String get aiChefExclusionsLoadError;
+
+  /// No description provided for @aiChefWishesAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Wish'**
+  String get aiChefWishesAddAction;
+
+  /// No description provided for @aiChefMustUseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Must go in'**
+  String get aiChefMustUseLabel;
+
+  /// No description provided for @aiChefMustUseSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your inventory'**
+  String get aiChefMustUseSearchHint;
+
+  /// No description provided for @aiChefMustUseOldestFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest in stock'**
+  String get aiChefMustUseOldestFirst;
+
+  /// No description provided for @aiChefMustUseDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =0{today} =1{1 day} other{{days} days}}'**
+  String aiChefMustUseDays(int days);
+
+  /// No description provided for @aiChefMustUseApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply ({count})'**
+  String aiChefMustUseApply(int count);
+
+  /// No description provided for @aiChefMustUseEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your inventory is empty.'**
+  String get aiChefMustUseEmpty;
+
+  /// No description provided for @aiChefMustUseLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load your inventory.'**
+  String get aiChefMustUseLoadError;
 
   /// No description provided for @aiChefGenerateAction.
   ///

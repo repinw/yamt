@@ -65,6 +65,9 @@ class FakeAiChef {
   /// How often the template was asked.
   int templateCalls = 0;
 
+  /// The inputs of the last template request.
+  Map<String, Object?>? lastInputs;
+
   /// How often a picture was requested.
   int pictureCalls = 0;
 
@@ -84,6 +87,7 @@ class FakeAiChef {
     householdId: 'household-1',
     templateModelClient: ({required templateId, required inputs}) async {
       templateCalls += 1;
+      lastInputs = inputs;
       await Future<void>.delayed(const Duration(milliseconds: 5));
       if (templateFails) throw Exception('offline');
       return answer;

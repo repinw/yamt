@@ -37,21 +37,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiChefIdeaTitle => 'Recipe idea';
 
   @override
-  String get aiChefSetupTitle => 'What do you feel like?';
-
-  @override
-  String get aiChefUseInventoryTitle => 'Use inventory';
+  String get aiChefUseInventoryTitle => 'Inventory first';
 
   @override
   String get aiChefUseInventorySubtitle =>
-      'Prefer ingredients that are currently in stock.';
+      'We use what you have at home first.';
 
   @override
   String get aiChefWishesLabel => 'Wishes';
 
   @override
-  String get aiChefWishesHint =>
-      'e.g. vegetarian, quick, high protein, no rice';
+  String get aiChefWishesHint => 'e.g. salmon, quick';
+
+  @override
+  String get aiChefExclusionsLabel => 'No way';
+
+  @override
+  String get aiChefExclusionsAddAction => 'Ingredient';
+
+  @override
+  String get aiChefExclusionsInputHint => 'e.g. cilantro';
+
+  @override
+  String aiChefExclusionsRemoveTooltip(String ingredient) {
+    return 'Remove $ingredient';
+  }
+
+  @override
+  String get aiChefExclusionsSaveError => 'We could not save your list.';
+
+  @override
+  String get aiChefExclusionsLoadError => 'We could not load your list.';
+
+  @override
+  String get aiChefWishesAddAction => 'Wish';
+
+  @override
+  String get aiChefMustUseLabel => 'Must go in';
+
+  @override
+  String get aiChefMustUseSearchHint => 'Search your inventory';
+
+  @override
+  String get aiChefMustUseOldestFirst => 'Longest in stock';
+
+  @override
+  String aiChefMustUseDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+      zero: 'today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiChefMustUseApply(int count) {
+    return 'Apply ($count)';
+  }
+
+  @override
+  String get aiChefMustUseEmpty => 'Your inventory is empty.';
+
+  @override
+  String get aiChefMustUseLoadError => 'We could not load your inventory.';
 
   @override
   String get aiChefGenerateAction => 'Suggest a recipe';
