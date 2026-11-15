@@ -49,6 +49,7 @@ class DiaryMealEntryGroup {
       bundleTotalPortions: first.bundleTotalPortions,
       portionAmount: samePortion ? first.portionAmount : null,
       portionLabel: samePortion ? first.portionLabel : null,
+      nutritionEstimated: entries.any((entry) => entry.nutritionEstimated),
     );
   }
 }

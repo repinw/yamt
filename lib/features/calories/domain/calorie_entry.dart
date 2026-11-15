@@ -70,6 +70,7 @@ class CalorieEntry {
     this.portionAmount,
     this.portionLabel,
     this.pendingNutrition,
+    this.estimatedNutrition,
   });
 
   /// Creates a [CalorieEntry] for create.
@@ -362,6 +363,17 @@ class CalorieEntry {
   /// nothing until the meal gets its values.
   bool get nutritionPending => pendingNutrition ?? false;
 
+  /// `true` for a plan of a Kochbuch recipe, or the entry it became, whose
+  /// totals are the AI's estimate of the recipe; null for every other
+  /// entry, which stores no key for it. Read it through
+  /// [nutritionEstimated].
+  @JsonKey(name: 'nutrition_estimated', includeIfNull: false)
+  final bool? estimatedNutrition;
+
+  /// Whether the totals are the AI's rough estimate of a recipe, which the
+  /// values of its Vorrat items replace once they are known.
+  bool get nutritionEstimated => estimatedNutrition ?? false;
+
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieEntryToJson(this);
 
@@ -431,6 +443,7 @@ class CalorieEntry {
     Object? portionAmount = _keepValue,
     Object? portionLabel = _keepValue,
     bool? nutritionPending,
+    bool? nutritionEstimated,
     List<CalorieEntryBundleComponent>? bundleComponents,
     MealType? mealType,
     double? consumedAmount,
@@ -502,6 +515,11 @@ class CalorieEntry {
       isQuickEntry: isQuickEntry,
       pendingNutrition: switch (nutritionPending) {
         null => pendingNutrition,
+        true => true,
+        false => null,
+      },
+      estimatedNutrition: switch (nutritionEstimated) {
+        null => estimatedNutrition,
         true => true,
         false => null,
       },

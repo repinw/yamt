@@ -24,6 +24,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/recipe_estimate.dart';
 
 import '../../calories/support/fake_planned_entry_repository.dart';
 
@@ -133,6 +134,30 @@ PreparedMeal _recipe({Map<String, List<String>> assignments = const {}}) =>
       recipeIngredients: const ['200 g Oats'],
       recipeIngredientAssignments: assignments,
     );
+
+/// [_recipe] with the AI's estimate of 450 kcal per portion, made for its
+/// lines and two portions.
+PreparedMeal _estimatedRecipe({
+  Map<String, List<String>> assignments = const {},
+  List<String> lines = const ['200 g Oats'],
+}) => _recipe(assignments: assignments).copyWith(
+  recipeEstimate: RecipeEstimate(
+    kcal: 450,
+    protein: 20,
+    carbs: 60,
+    fat: 10,
+    portions: 2,
+    linesKey: recipeLinesKey(lines),
+    createdAt: DateTime(2026, 10, 6),
+  ),
+);
+
+/// A plan of one of four portions of [_recipe] that counts its estimate.
+CalorieEntry _recipeEstimatePlan() => _recipeReminder().copyWith(
+  nutritionPending: false,
+  nutritionEstimated: true,
+  totalKcal: 450,
+);
 
 /// A reminder of one of four portions of [_recipe].
 CalorieEntry _recipeReminder() => _mealPlan().copyWith(
@@ -425,6 +450,140 @@ void main() {
     );
     expect(saved, isEmpty);
     expect(plans.plans.map((plan) => plan.id), contains('plan-2'));
+  });
+
+  test('a recipe reminder takes the recipe estimate while an ingredient '
+      'has no item', () async {
+    when(() => templates.readAll())
+        .thenAnswer((_) async => [_estimatedRecipe()]);
+
+    final result = await service.accept(
+      _recipeReminder(),
+      items: const [],
+      meals: const [],
+    );
+
+    expect(result.missedStock, isFalse);
+    final entry = saved.single;
+    expect(entry.totalKcal, 450);
+    expect(entry.nutritionPending, isFalse);
+    expect(entry.nutritionEstimated, isTrue);
+    expect(entry.bundleSourceTemplateId, 'recipe-1');
+    verifyNever(() => pendings.stage(any(), any()));
+  });
+
+  test('an estimated plan takes the Vorrat values once its ingredients have '
+      'items', () async {
+    when(() => templates.readAll()).thenAnswer(
+      (_) async => [
+        _estimatedRecipe(
+          assignments: const {
+            '200 g Oats': ['oats-1'],
+          },
+        ),
+      ],
+    );
+
+    await service.accept(
+      _recipeEstimatePlan(),
+      items: [_oats(id: 'oats-1')],
+      meals: const [],
+    );
+
+    final entry = saved.single;
+    // 400 g oats for four portions, one of them: 100 g at 400 kcal.
+    expect(entry.totalKcal, closeTo(400, 0.01));
+    expect(entry.nutritionEstimated, isFalse);
+    expect(entry.nutritionPending, isFalse);
+  });
+
+  test('an estimated plan keeps its own values while the estimate no longer '
+      'fits and no item counts', () async {
+    when(() => templates.readAll()).thenAnswer(
+      (_) async => [
+        _estimatedRecipe(lines: const ['300 g Oats']),
+      ],
+    );
+
+    await service.accept(
+      _recipeEstimatePlan(),
+      items: const [],
+      meals: const [],
+    );
+
+    final entry = saved.single;
+    expect(entry.totalKcal, 450);
+    expect(entry.nutritionEstimated, isTrue);
+    expect(entry.nutritionPending, isFalse);
+    expect(entry.bundleSourceTemplateId, 'recipe-1');
+  });
+
+  test('an estimated plan keeps its own values while the estimate no longer '
+      'fits and its items give no kcal', () async {
+    when(() => templates.readAll()).thenAnswer(
+      // The line names no amount, so its item takes nothing.
+      (_) async => [
+        _estimatedRecipe().copyWith(recipeIngredients: const ['Oats']),
+      ],
+    );
+
+    await service.accept(
+      _recipeEstimatePlan(),
+      items: [_oats(id: 'oats-1')],
+      meals: const [],
+    );
+
+    final entry = saved.single;
+    expect(entry.totalKcal, 450);
+    expect(entry.nutritionEstimated, isTrue);
+    expect(entry.nutritionPending, isFalse);
+  });
+
+  test('an estimated plan of a removed recipe keeps its own values', () async {
+    when(() => templates.readAll()).thenAnswer((_) async => const []);
+
+    await service.accept(
+      _recipeEstimatePlan(),
+      items: const [],
+      meals: const [],
+    );
+
+    final entry = saved.single;
+    expect(entry.totalKcal, 450);
+    expect(entry.nutritionEstimated, isTrue);
+  });
+
+  test('an estimated plan of a recipe with nothing to eat keeps its own '
+      'values', () async {
+    when(() => templates.readAll()).thenAnswer(
+      (_) async => [
+        _recipe().copyWith(ignoredRecipeIngredients: const ['200 g Oats']),
+      ],
+    );
+
+    await service.accept(
+      _recipeEstimatePlan(),
+      items: const [],
+      meals: const [],
+    );
+
+    final entry = saved.single;
+    expect(entry.totalKcal, 450);
+    expect(entry.nutritionEstimated, isTrue);
+  });
+
+  test('a reminder of a recipe with nothing to eat cannot be eaten', () async {
+    when(() => templates.readAll()).thenAnswer(
+      (_) async => [
+        _recipe().copyWith(ignoredRecipeIngredients: const ['200 g Oats']),
+      ],
+    );
+
+    await expectLater(
+      service.accept(_recipeReminder(), items: const [], meals: const []),
+      throwsA(isA<PlanAcceptFailedException>()),
+    );
+    expect(saved, isEmpty);
   });
 
   test('a reminder of a removed recipe cannot be eaten', () async {

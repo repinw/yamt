@@ -828,6 +828,74 @@ void main() {
     expect(pick.result.item.id, isNot('stock-quark'));
   });
 
+  group('meal food without a recipe ingredient', () {
+    // A pack of six counts in pieces, as "6 Stück" sets it.
+    InventoryItem eggs({double? pieceWeight}) => InventoryItem.create(
+      id: 'stock-eggs',
+      name: 'Eggs',
+      entryDate: DateTime.utc(2026),
+      storeName: 'Store',
+      quantity: 1,
+      weight: '6 Stück',
+      initialAmount: 6000,
+      currentAmount: 6000,
+      amountScale: inventoryPieceAmountScale,
+      origin: InventoryItemOrigin.manualAdd,
+      amountUnit: InventoryAmountUnit.piece,
+      servingQuantity: pieceWeight,
+      servingQuantityUnit: pieceWeight == null ? null : 'g',
+      nutrition: const GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 140,
+        per100Carbs: 1,
+        per100Protein: 12,
+        per100Fat: 10,
+      ),
+    );
+
+    Future<Object?> pickEggs(
+      WidgetTester tester, {
+      required ProductSearchHubRouteArgs args,
+      InventoryItem? item,
+    }) async {
+      Object? poppedResult;
+      await _pumpRouteHarness(
+        tester,
+        args: args,
+        recentItems: [item ?? eggs()],
+        onPagePopped: (result) => poppedResult = result,
+      );
+      await tester.tap(
+        find.byKey(
+          const Key('product_search_hub_recently_selected_item_stock-eggs'),
+        ),
+      );
+      // The count wheel of the page never settles.
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      return () => poppedResult;
+    }
+
+    String pieceWeightText(WidgetTester tester) => tester
+        .widget<TextField>(find.byKey(const Key('eat_page_amount_field')))
+        .controller!
+        .text;
+
+    testWidgets('a meal food without an ingredient has no prefill and asks '
+        'what is eaten', (tester) async {
+      await pickEggs(
+        tester,
+        args: const ProductSearchHubRouteArgs(
+          mode: ProductSearchHubMode.mealFood,
+          pieceWeight: 60,
+        ),
+      );
+
+      expect(find.text('How much of it do you have at home?'), findsNothing);
+      expect(pieceWeightText(tester), isNot('60'));
+    });
+  });
+
   testWidgets('meal food eat page edits the food and comes back', (
     tester,
   ) async {

@@ -31,8 +31,9 @@ PreparedMealReminderPlanService preparedMealReminderPlanService(Ref ref) {
 
 /// Keeps the plans of a cooked meal in step with its rows: a reminder
 /// without kcal while a row is open, a plan with the meal's values once
-/// none is. A reminder of a Kochbuch recipe gets the recipe's values once
-/// each ingredient has a Vorrat item or is ignored.
+/// none is. A reminder of a Kochbuch recipe gets the recipe's AI estimate
+/// once it has one, and the values of its Vorrat items once each
+/// ingredient has an item or is ignored.
 ///
 /// shortcut: only the device that changes the rows rewrites its own plans;
 /// a plan of a meal changed elsewhere keeps its kind until it is accepted,
@@ -80,12 +81,14 @@ class PreparedMealReminderPlanService {
     );
   }
 
-  /// Gives each reminder of a recipe in [templates] the recipe's values,
-  /// cooked on paper from the Vorrat [items], once none of its ingredients
-  /// lacks an item. Throws when a read or write fails.
+  /// Gives each reminder or estimated plan of a recipe in [templates] the
+  /// recipe's values, cooked on paper from the Vorrat [items], once none
+  /// of its ingredients lacks an item, else the recipe's estimate when it
+  /// fits ([buildTemplatePlanEntry]). Throws when a read or write fails.
   ///
   /// shortcut: a recipe plan with kcal stays one when an ingredient loses
-  /// its item; it is planned anew from the recipe page then.
+  /// its item or the estimate stops fitting; it is planned anew from its
+  /// Kochbuch card then.
   Future<void> refreshRecipes(
     List<PreparedMeal> templates,
     List<InventoryItem> items,
@@ -93,7 +96,8 @@ class PreparedMealReminderPlanService {
     final byId = {for (final template in templates) template.id: template};
     return _rewrite((plan) {
       final template = byId[plan.bundleSourceTemplateId];
-      if (!plan.nutritionPending || template == null) {
+      if (!(plan.nutritionPending || plan.nutritionEstimated) ||
+          template == null) {
         return null;
       }
       final counted = replanTemplatePlan(
@@ -102,7 +106,16 @@ class PreparedMealReminderPlanService {
         items: items,
         parser: _parser,
       );
-      return counted == null || counted.nutritionPending ? null : counted;
+      // An estimate that did not change is no reason to save.
+      return counted == null ||
+              counted.nutritionPending ||
+              (counted.nutritionEstimated == plan.nutritionEstimated &&
+                  counted.totalKcal == plan.totalKcal &&
+                  counted.totalProtein == plan.totalProtein &&
+                  counted.totalCarbs == plan.totalCarbs &&
+                  counted.totalFat == plan.totalFat)
+          ? null
+          : counted;
     });
   }
 

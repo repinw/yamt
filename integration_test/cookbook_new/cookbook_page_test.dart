@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
@@ -19,13 +20,18 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_recipe_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cookbook_recipe_grid.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cookbook_running_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_template_strip.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_template_tile.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'new_recipe_sheet.dart';
 import 'package:yamt/features/home/home_page.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -35,10 +41,17 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_template_name_sheet.dart';
+import 'package:yamt/features/recipes/data/cook_run_repository.dart';
+import 'package:yamt/features/recipes/domain/cook_line_settlement.dart';
+import 'package:yamt/features/recipes/domain/cook_run.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/features/recipes/cook_run_fixtures.dart';
+import '../../test/helpers/fake_cook_run_repository.dart';
+import '../../test/helpers/fake_prepared_meal_repository.dart';
 import '../../test/helpers/fake_prepared_meal_template_repository.dart';
+import '../../test/helpers/fake_signed_in_user.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 import '../../test/support/prepared_meal_test_data.dart';
@@ -58,6 +71,7 @@ Widget _app({
   required List<PreparedMeal> meals,
   FakePlannedEntryRepository? plans,
   _Inventory? inventory,
+  List<CookRun> runs = const [],
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -87,6 +101,8 @@ Widget _app({
       ),
       _placeholder(AppRoutes.homeRecipe, 'Recipe page'),
       _placeholder(AppRoutes.homeCookedMeal, 'Cooked page'),
+      _placeholder(AppRoutes.homeCook, 'Cook page'),
+      _placeholder(AppRoutes.homeCookRun, 'Cook run page'),
     ],
   );
   addTearDown(router.dispose);
@@ -94,6 +110,12 @@ Widget _app({
   final container = ProviderContainer(
     overrides: [
       clockProvider.overrideWithValue(() => DateTime(2026, 10, 2, 20)),
+      authStateChangesProvider.overrideWith(
+        (ref) => Stream.value(FakeSignedInUser('uid-1')),
+      ),
+      cookRunRepositoryProvider.overrideWithValue(
+        FakeCookRunRepository(runs: runs),
+      ),
       preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
       plannedEntryRepositoryProvider.overrideWithValue(
         plans ?? FakePlannedEntryRepository(),
@@ -102,22 +124,10 @@ Widget _app({
         ClosedDayRepository(MemoryAppPreferences(), 'user-1'),
       ),
       inventoryItemRepositoryProvider.overrideWithValue(
-        inventory ?? _Inventory(const []),
+        inventory ?? _Inventory([_pasta]),
       ),
-      inventoryQuickEatMealsProvider.overrideWith((ref) => Stream.value(meals)),
-      inventoryQuickEatItemsProvider.overrideWith(
-        (ref) => Stream.value([
-          InventoryItem.create(
-            id: 'pasta',
-            name: 'Pasta',
-            entryDate: DateTime.utc(2026, 9, 29),
-            storeName: 'Store',
-            quantity: 1,
-            initialAmount: 500,
-            currentAmount: 500,
-            amountUnit: InventoryAmountUnit.gram,
-          ),
-        ]),
+      preparedMealRepositoryProvider.overrideWithValue(
+        FakePreparedMealRepository(meals: meals),
       ),
     ],
   );
@@ -133,6 +143,17 @@ Widget _app({
     ),
   );
 }
+
+final _pasta = InventoryItem.create(
+  id: 'pasta',
+  name: 'Pasta',
+  entryDate: DateTime.utc(2026, 9, 29),
+  storeName: 'Store',
+  quantity: 1,
+  initialAmount: 500,
+  currentAmount: 500,
+  amountUnit: InventoryAmountUnit.gram,
+);
 
 /// The stored Vorrat; counts its writes.
 class _Inventory with InventoryItemWholeListWrites {
@@ -184,13 +205,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('1 RECIPE'), findsOneWidget);
-    expect(find.text('OPEN'), findsOneWidget);
+    expect(find.text('IN PROGRESS'), findsOneWidget);
+    expect(find.text('FROM THE OLD VERSION · 1 OPEN'), findsOneWidget);
     expect(find.text('Chicken with rice'), findsOneWidget);
     expect(find.text('In stock · 2 rows open'), findsOneWidget);
     expect(find.text('Rice bowl'), findsOneWidget);
     expect(find.text('One-pan pasta'), findsOneWidget);
-    // The pasta recipe lacks tomato sauce; the rice bowl lacks rice.
-    expect(find.text('1 missing'), findsNWidgets(2));
+    // Only the rice bowl is matched against the Vorrat; a recipe shows no
+    // stock line without a cook run that assigned a line.
+    expect(find.text('1 missing'), findsOneWidget);
 
     // Center the card, so the dock does not cover it.
     await Scrollable.ensureVisible(
@@ -360,6 +383,39 @@ void main() {
     expect(find.text('Template saved.'), findsOneWidget);
   });
 
+  testWidgets('an empty Kochbuch offers a first recipe; with one the button '
+      'is gone', (tester) async {
+    await tester.pumpWidget(
+      _app(templates: FakePreparedMealTemplateRepository(), meals: const []),
+    );
+    await tester.pumpAndSettle();
+
+    final add = find.byKey(CookbookRecipeGrid.addKey);
+    await Scrollable.ensureVisible(tester.element(add), alignment: 0.3);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: add, matching: find.text('Add a recipe')),
+      findsOneWidget,
+    );
+
+    await tester.tap(add);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NewRecipeSheet), findsOneWidget);
+    for (final choice in NewRecipeChoice.values) {
+      expect(find.byKey(NewRecipeSheet.entryKey(choice)), findsOneWidget);
+    }
+
+    await tester.pumpWidget(
+      _app(
+        templates: FakePreparedMealTemplateRepository(templates: [recipe]),
+        meals: const [],
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(CookbookRecipeGrid.addKey), findsNothing);
+  });
+
   testWidgets('without a fitting food the Vorrat says so', (tester) async {
     await tester.pumpWidget(
       _app(templates: FakePreparedMealTemplateRepository(), meals: [openMeal]),
@@ -428,6 +484,71 @@ void main() {
 
     expect(
       find.byKey(const ValueKey<String>(AppRoutes.homeCookedMeal)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('estimate lines of two recipes in one row line up, whatever the '
+      'length of the names', (tester) async {
+    final short = preparedMealTestData(
+      id: 'short',
+      name: 'Pasta',
+    ).copyWith(recipeIngredients: const ['200 g Pasta']);
+    final long = preparedMealTestData(
+      id: 'long',
+      name: 'One-pan pasta with roasted tomatoes and plenty of fresh basil',
+    ).copyWith(recipeIngredients: const ['200 g Pasta']);
+    await tester.pumpWidget(
+      _app(
+        templates: FakePreparedMealTemplateRepository(templates: [short, long]),
+        meals: const [],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final shortButton = find.byKey(CookbookRecipeCard.estimateKey('short'));
+    final longButton = find.byKey(CookbookRecipeCard.estimateKey('long'));
+    await Scrollable.ensureVisible(tester.element(shortButton), alignment: 0.3);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(tester.getTopLeft(shortButton).dy, tester.getTopLeft(longButton).dy);
+    expect(
+      tester.getTopLeft(shortButton).dx,
+      isNot(tester.getTopLeft(longButton).dx),
+    );
+  });
+
+  testWidgets('lists a running cook run and goes on with it', (tester) async {
+    // Nothing is left to assign, so "Weiter" opens the cooking page.
+    final run = buildCookRun(
+      id: 'recipe-pasta',
+      recipeId: 'pasta',
+      lines: [cookLine('line-0', settlement: const LineIgnored())],
+    );
+    await tester.pumpWidget(
+      _app(
+        templates: FakePreparedMealTemplateRepository(templates: [recipe]),
+        meals: [openMeal],
+        runs: [run],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // The old open meal sits below the run, not instead of it.
+    expect(find.byType(CookbookOpenMealCard), findsOneWidget);
+    final continueRun = find.byKey(
+      CookbookRunningSection.continueKey('recipe-pasta'),
+    );
+    expect(continueRun, findsOneWidget);
+
+    await Scrollable.ensureVisible(tester.element(continueRun), alignment: 0.3);
+    await tester.pumpAndSettle();
+    await tester.tap(continueRun);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>(AppRoutes.homeCookRun)),
       findsOneWidget,
     );
   });

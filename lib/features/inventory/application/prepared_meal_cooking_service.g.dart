@@ -8,13 +8,15 @@ part of 'prepared_meal_cooking_service.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The service that turns cooked ingredient rows into a Vorrat meal.
+/// The service that puts a Vorlage in the pot and finishes or discards a
+/// meal in the pot.
 
 @ProviderFor(preparedMealCookingService)
 final preparedMealCookingServiceProvider =
     PreparedMealCookingServiceProvider._();
 
-/// The service that turns cooked ingredient rows into a Vorrat meal.
+/// The service that puts a Vorlage in the pot and finishes or discards a
+/// meal in the pot.
 
 final class PreparedMealCookingServiceProvider
     extends
@@ -24,7 +26,8 @@ final class PreparedMealCookingServiceProvider
           PreparedMealCookingService
         >
     with $Provider<PreparedMealCookingService> {
-  /// The service that turns cooked ingredient rows into a Vorrat meal.
+  /// The service that puts a Vorlage in the pot and finishes or discards a
+  /// meal in the pot.
   PreparedMealCookingServiceProvider._()
     : super(
         from: null,
@@ -60,4 +63,4 @@ final class PreparedMealCookingServiceProvider
 }
 
 String _$preparedMealCookingServiceHash() =>
-    r'f36eb9ed6867441c47935bc0f52277f5330f98b1';
+    r'16b5cef5ceed35855b18e9207864aea0ea0d23ac';

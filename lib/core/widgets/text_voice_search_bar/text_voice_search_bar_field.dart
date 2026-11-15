@@ -280,7 +280,7 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
             tooltip:
                 clearTooltip ??
                 AppLocalizations.of(context)!.inventorySearchClearAction,
-            icon: const Icon(Icons.cleaning_services_outlined),
+            icon: const Icon(Icons.close_rounded),
           ),
         voiceButton,
       ],

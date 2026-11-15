@@ -21,5 +21,16 @@ recipe before it is saved as a prepared-meal template.
 
 - `MealTemplateImportReviewPage`: review of an imported recipe.
 - `presentation/meal_template_recipe_import_flow.dart`:
-  `startRecipeTemplateImport` asks for a recipe link, imports it, and opens
-  the review.
+  - `startRecipeTemplateImport` asks for a recipe link, imports it, and opens
+    the review. It returns a `RecipeLinkImport`, or `null` when the cook
+    closes the sheet or the review.
+  - `importRecipeTemplate` imports a given link without asking.
+  - `RecipeLinkImport`: `RecipeLinkSaved` (the template id) or
+    `RecipeLinkUnreadable` (the link).
+  - `recipeLinkReadingKey`: the key of the dialog that shows while the page
+    is read.
+
+## Rules
+
+- The review page pops with the id of the saved template; it shows no
+  snackbar and no undo.

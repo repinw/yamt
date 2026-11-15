@@ -9,7 +9,9 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Nutrition table drawn like a food label: a framed box, a heavy rule
-/// under the header and under the energy row.
+/// under the header and under the energy row. Without a per-100 column the
+/// eaten column takes its width too, so a header such as "1 Portion ·
+/// geschätzt" breaks between its words at a large text size.
 class EatLabelTable extends StatelessWidget {
   /// Creates the label table.
   const new({
@@ -60,7 +62,7 @@ class EatLabelTable extends StatelessWidget {
                 const SizedBox(width: AppFoodLabel.labelColumnGap),
               ],
               SizedBox(
-                width: AppFoodLabel.eatenColumn,
+                width: _eatenWidth(showPer100: per100 != null),
                 child: Text(
                   eatenHeader,
                   textAlign: TextAlign.end,
@@ -93,6 +95,14 @@ class EatLabelTable extends StatelessWidget {
     return BorderSide(color: colors.ink);
   }
 }
+
+// The width of the eaten column: its own, plus the per-100 column's and
+// the gap when that column is hidden.
+double _eatenWidth({required bool showPer100}) => showPer100
+    ? AppFoodLabel.eatenColumn
+    : AppFoodLabel.per100Column +
+          AppFoodLabel.labelColumnGap +
+          AppFoodLabel.eatenColumn;
 
 class _LabelRow extends StatelessWidget {
   const new({
@@ -155,7 +165,7 @@ class _LabelRow extends StatelessWidget {
               const SizedBox(width: AppFoodLabel.labelColumnGap),
             ],
             SizedBox(
-              width: AppFoodLabel.eatenColumn,
+              width: _eatenWidth(showPer100: showPer100),
               child: Text(
                 row.eaten,
                 textAlign: TextAlign.end,

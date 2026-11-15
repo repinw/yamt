@@ -51,9 +51,12 @@ class InventorySameFoodService {
   }
 
   /// The packs with stock left that [entry]'s food can be eaten again from:
-  /// its own pack or another pack of the same food, in eating order.
+  /// its own pack or another pack of the same food, in eating order. A quick
+  /// entry, a bundle, and a Kochbuch recipe come from no pack.
   Future<List<InventoryPack>> loadPacksToRepeat(CalorieEntry entry) async {
-    if (entry.isQuickEntry || entry.isBundle) {
+    if (entry.isQuickEntry ||
+        entry.isBundle ||
+        entry.bundleSourceTemplateId != null) {
       return const [];
     }
     final packs = inventoryPacksForPlan(entry, await _items.readAllForChange());

@@ -20,8 +20,8 @@ class IngredientStockText extends StatelessWidget {
     final stock = this.stock;
     return Text(
       stock == null
-          ? l10n.freeCookingMissing
-          : l10n.freeCookingStockLeft(
+          ? l10n.cookingMissing
+          : l10n.cookingStockLeft(
               ingredientStockLabel(l10n, stock.amount, stock.unit),
             ),
       style: Theme.of(context).textTheme.labelMedium?.copyWith(

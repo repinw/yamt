@@ -34,18 +34,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeMenuTool => 'Menü';
 
   @override
-  String get aiChefIdeaDescription =>
-      'Die KI schlägt dir ein zufälliges Rezept vor';
+  String get aiChefIdeaTitle => 'Rezeptidee';
 
   @override
-  String get aiChefIdeaTitle => 'KI-Rezeptidee';
-
-  @override
-  String get aiChefSetupTitle => 'Was soll die KI kochen?';
-
-  @override
-  String get aiChefSetupSubtitle =>
-      'Wähle, ob dein Vorrat beachtet wird, und ergänze Wünsche.';
+  String get aiChefSetupTitle => 'Worauf hast du Lust?';
 
   @override
   String get aiChefUseInventoryTitle => 'Vorrat beachten';
@@ -62,29 +54,19 @@ class AppLocalizationsDe extends AppLocalizations {
       'z. B. vegetarisch, schnell, proteinreich, ohne Reis';
 
   @override
-  String get aiChefGenerateAction => 'Rezept generieren';
+  String get aiChefGenerateAction => 'Rezept vorschlagen';
 
   @override
-  String get aiChefGeneratingTitle => 'Rezept wird kreiert...';
-
-  @override
-  String get aiChefGeneratingSubtitle =>
-      'Deine persönliche KI stellt ein leckeres Rezept zusammen...';
+  String get aiChefGeneratingTitle => 'Wir stellen ein Rezept zusammen …';
 
   @override
   String get aiChefSaveAction => 'Im Kochbuch speichern';
 
   @override
-  String get aiChefCloseAction => 'Schließen';
-
-  @override
-  String get aiChefSaveSuccess => 'Rezept erfolgreich im Kochbuch gespeichert!';
+  String get aiChefSaveSuccess => 'Im Kochbuch gespeichert.';
 
   @override
   String get aiChefSaveError => 'Rezept konnte nicht gespeichert werden.';
-
-  @override
-  String get aiChefFromInventory => 'Aus deinem Vorrat';
 
   @override
   String get aiChefQuoteLoveGarlic =>
@@ -100,41 +82,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get aiChefQuoteKitchenTalks =>
       'Die besten Gespräche finden immer in der Küche statt.';
-
-  @override
-  String get aiChefQuoteVirtualOven =>
-      'Die KI heizt schon mal den virtuellen Ofen vor...';
-
-  @override
-  String aiChefPortionsLabel(int portions) {
-    String _temp0 = intl.Intl.pluralLogic(
-      portions,
-      locale: localeName,
-      other: '$portions Portionen',
-      one: '1 Portion',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String aiChefCaloriesLabel(int kcal) {
-    return '$kcal kcal';
-  }
-
-  @override
-  String aiChefProteinLabel(int grams) {
-    return 'Eiweiß: $grams g';
-  }
-
-  @override
-  String aiChefCarbsLabel(int grams) {
-    return 'Kohlenhydrate: $grams g';
-  }
-
-  @override
-  String aiChefFatLabel(int grams) {
-    return 'Fett: $grams g';
-  }
 
   @override
   String get homeQuickActionTooltip => 'Schnellaktion';
@@ -381,6 +328,56 @@ class AppLocalizationsDe extends AppLocalizations {
   String inventoryRowOfAmount(String amount) {
     return 'von $amount';
   }
+
+  @override
+  String stockAmountKilograms(String amount) {
+    return '$amount kg';
+  }
+
+  @override
+  String stockAmountLiters(String amount) {
+    return '$amount l';
+  }
+
+  @override
+  String get stockAmountCountQuestion => 'Wie viele hast du?';
+
+  @override
+  String stockAmountPack(String size) {
+    return 'Packung $size';
+  }
+
+  @override
+  String stockAmountNeedRest(String need, String rest) {
+    return 'Das Rezept braucht $need. Der Rest, $rest, bleibt im Vorrat.';
+  }
+
+  @override
+  String stockAmountNeedAll(String need) {
+    return 'Das Rezept braucht alles: $need.';
+  }
+
+  @override
+  String stockAmountMissing(String need, String missing) {
+    return 'Das Rezept braucht $need. Es fehlen $missing.';
+  }
+
+  @override
+  String stockAmountNutrition(String kcal, String unit) {
+    return 'Nährwerte · $kcal kcal je 100 $unit';
+  }
+
+  @override
+  String get stockAmountEnterValue => 'Gib ein, wie viel du hast.';
+
+  @override
+  String get stockAmountLess => 'Eins weniger';
+
+  @override
+  String get stockAmountMore => 'Eins mehr';
+
+  @override
+  String get stockAmountPieceWeightHint => 'Gewicht, falls du es weißt';
 
   @override
   String inventoryRowPlanMissing(String amount) {
@@ -1069,6 +1066,20 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get eatPageStockQuestion => 'Wie viel hast du davon zu Hause?';
+
+  @override
+  String eatPageStockPerPiece(String unit) {
+    return '$unit pro Stück';
+  }
+
+  @override
+  String get eatPageStockPackWeightMissing => 'Wie schwer ist eine Packung?';
+
+  @override
+  String get eatPageStockApply => 'Übernehmen';
+
+  @override
   String get eatPagePortionsUnit => 'Port.';
 
   @override
@@ -1531,18 +1542,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateSavedMessage => 'Rezept gespeichert.';
 
   @override
-  String get preparedMealTemplatesLoadFailed =>
-      'Rezepte konnten nicht geladen werden.';
-
-  @override
   String get preparedMealTemplateDeletedMessage => 'Rezept gelöscht.';
-
-  @override
-  String get preparedMealTemplateAddRecipeAction => 'Rezept hinzufügen';
-
-  @override
-  String get preparedMealTemplateAddRecipeDescription =>
-      'Ein Rezept von einer Webseite übernehmen';
 
   @override
   String get preparedMealTemplateCreateFromRecipeAction => 'Aus Rezept anlegen';
@@ -1615,7 +1615,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get kitchenUtensilsPageTitle => 'Küchenutensilien';
 
   @override
-  String get kitchenUtensilsToolLabel => 'Geräte';
+  String get kitchenUtensilsToolLabel => 'Töpfe';
 
   @override
   String get kitchenUtensilsEmptyState =>
@@ -5799,9 +5799,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get cookbookOpenMealsTitle => 'Offen';
-
-  @override
   String cookbookOpenMealRows(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -5830,7 +5827,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookbookTemplatesTitle => 'Vorlagen';
 
   @override
-  String get cookbookTemplatesCaption => 'Aus dem Vorrat kombiniert';
+  String get cookbookTemplatesCaption => 'Aus dem Vorrat';
 
   @override
   String get cookbookNewTemplateTitle => 'Neue Vorlage';
@@ -5843,7 +5840,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cookbookRecipesEmpty =>
-      'Noch keine Rezepte. Füge eins per Link hinzu oder hol dir eine KI-Idee.';
+      'Noch keine Rezepte. Fotografier eins ab, füg es ein, tipp es oder nimm einen Link.';
+
+  @override
+  String get cookbookRecipesAdd => 'Rezept hinzufügen';
 
   @override
   String get cookbookStockComplete => 'Alles da';
@@ -5900,93 +5900,58 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zutaten beim Kochen sagen oder schreiben';
 
   @override
-  String get freeCookingNameHint => 'Wie heißt das Gericht?';
+  String get cookingIngredientsTitle => 'Zutaten';
 
   @override
-  String get freeCookingDefaultName => 'Frei gekocht';
-
-  @override
-  String get freeCookingIngredientsTitle => 'Zutaten';
-
-  @override
-  String freeCookingStockCount(int inStock, int total) {
-    return '$inStock von $total da';
-  }
-
-  @override
-  String freeCookingStockLeft(String amount) {
+  String cookingStockLeft(String amount) {
     return '$amount da';
   }
 
   @override
-  String freeCookingAmountWithUnit(int amount, String unit) {
+  String cookingAmountWithUnit(int amount, String unit) {
     return '$amount $unit';
   }
 
   @override
-  String freeCookingPieces(int count) {
+  String cookingPieces(int count) {
     return '$count Stk.';
   }
 
   @override
-  String get freeCookingMissing => 'fehlt';
+  String get cookingMissing => 'fehlt';
 
   @override
-  String get freeCookingPickStock => 'Wählen';
+  String get cookingTypeAction => 'Schreiben';
 
   @override
-  String get freeCookingListenTitle => 'Ich höre zu';
+  String get cookingTypeHint => 'z. B. 200 g Reis';
 
   @override
-  String get freeCookingListenHint =>
-      'Menge und Zutat sagen. Eine Pause trennt die Zeilen. Irgendwo tippen beendet.';
+  String get cookingAddAction => 'Hinzufügen';
 
   @override
-  String get freeCookingIdleTitle => 'Tippen und sprechen';
+  String get cookingCookAction => 'Kochen';
 
   @override
-  String get freeCookingIdleHint => 'Zum Beispiel: 500 g Hähnchen, 40 g Butter';
-
-  @override
-  String get freeCookingTypeAction => 'Schreiben';
-
-  @override
-  String get freeCookingTypeHint => 'z. B. 200 g Reis';
-
-  @override
-  String get freeCookingAddAction => 'Hinzufügen';
-
-  @override
-  String get freeCookingCookAction => 'Kochen';
-
-  @override
-  String get freeCookingStockLoadFailed =>
-      'Der Vorrat konnte nicht geladen werden.';
-
-  @override
-  String get freeCookingSaveFailed =>
+  String get cookingSaveFailed =>
       'Die Mahlzeit konnte nicht gespeichert werden.';
 
   @override
-  String get freeCookingDiscardTitle => 'Mahlzeit verwerfen?';
+  String get cookingDiscardTitle => 'Mahlzeit verwerfen?';
 
   @override
-  String get freeCookingDiscardBody => 'Die Zutaten gehen verloren.';
+  String get cookingDiscardAction => 'Verwerfen';
 
   @override
-  String get freeCookingDiscardAction => 'Verwerfen';
-
-  @override
-  String get freeCookingVoiceUnavailable =>
+  String get cookingVoiceUnavailable =>
       'Spracheingabe geht auf diesem Gerät nicht.';
 
   @override
-  String get freeCookingVoicePermissionDenied =>
+  String get cookingVoicePermissionDenied =>
       'Erlaube das Mikrofon, um Zutaten zu sagen.';
 
   @override
-  String get freeCookingVoiceFailed =>
-      'Die Spracheingabe konnte nicht starten.';
+  String get cookingVoiceFailed => 'Die Spracheingabe konnte nicht starten.';
 
   @override
   String get preparedMealFillTitle => 'Zeile füllen';
@@ -6202,97 +6167,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get recipeStepsTitle => 'Zubereitung';
 
   @override
-  String recipeStepCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Schritte',
-      one: '1 Schritt',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get recipeWithGuide => 'Mit Anleitung kochen';
-
-  @override
-  String get recipeWithGuideHint => 'Öffnet Satz für Satz; danach „Gekocht“';
-
-  @override
-  String get cookingGuideTitle => 'Kochhelfer';
-
-  @override
-  String cookingGuideKicker(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Portionen',
-      one: '1 Portion',
-    );
-    return 'Anleitung · $_temp0';
-  }
-
-  @override
-  String cookingGuideSentenceNote(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Sätze',
-      one: '1 Satz',
-    );
-    return '$_temp0. Danach kommt ein Satz pro Bildschirm, und der Bildschirm bleibt an.';
-  }
-
-  @override
-  String get cookingGuideStart => 'Los geht\'s · Satz für Satz';
-
-  @override
   String get cookingGuideKeepsScreenOn => 'Bildschirm bleibt an';
-
-  @override
-  String cookingGuideProgress(int sentence, int count, int step) {
-    return 'Satz $sentence von $count · Schritt $step';
-  }
-
-  @override
-  String get cookingGuideInPot => 'Im Topf';
-
-  @override
-  String cookingGuideLineCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Zeilen',
-      one: '1 Zeile',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String recipeGuideAdded(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Zusätze aus dem Kochhelfer',
-      one: '1 Zusatz aus dem Kochhelfer',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get cookingGuideJustAdded => 'Gerade dazu';
-
-  @override
-  String get cookingGuideVoiceHint => '„50 g Sahne“ · „nein“ macht rückgängig';
-
-  @override
-  String get cookingGuideJumpTitle => 'Springen zu';
-
-  @override
-  String get cookingGuideNext => 'Nächster Satz';
-
-  @override
-  String get cookingGuideDone => 'Fertig gekocht';
 
   @override
   String get recipeNotFound => 'Das Rezept gibt es nicht mehr.';
@@ -6300,231 +6175,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get recipeLoadFailed =>
       'Das Rezept oder der Vorrat konnte nicht geladen werden.';
-
-  @override
-  String recipeCheckChangeKicker(String name, int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Portionen',
-      one: '1 Portion',
-    );
-    return '$name · $_temp0';
-  }
-
-  @override
-  String get recipeCheckChangeTitle => 'Diesmal etwas ändern?';
-
-  @override
-  String get recipeCheckChangeHint =>
-      'Zum Beispiel „mehr Fleisch“ oder „ohne Tomaten“. Gilt nur für dieses Mal.';
-
-  @override
-  String get recipeCheckChangeYes => 'Ja';
-
-  @override
-  String get recipeCheckChangeNo => 'Nein, weiter';
-
-  @override
-  String get recipeCheckEditKicker => 'Diesmal anders';
-
-  @override
-  String get recipeCheckEditTitle => 'Was änderst du?';
-
-  @override
-  String recipeCheckEditAmount(String food) {
-    return 'Menge von $food';
-  }
-
-  @override
-  String recipeCheckEditRemove(String food) {
-    return '$food weglassen';
-  }
-
-  @override
-  String get recipeCheckEditAdd => '+ Zutat';
-
-  @override
-  String get recipeCheckEditAddHint => 'z. B. 200 g Paprika';
-
-  @override
-  String get recipeCheckChanged => 'Geändert';
-
-  @override
-  String recipeCheckChangeAmount(String food, String from, String to) {
-    return '$food $from → $to';
-  }
-
-  @override
-  String recipeCheckChangeRemoved(String food) {
-    return 'ohne $food';
-  }
-
-  @override
-  String recipeCheckChangeOther(String food) {
-    return '$food: andere Menge';
-  }
-
-  @override
-  String recipeCheckChangeAdded(String food) {
-    return '+ $food';
-  }
-
-  @override
-  String recipeCheckChangeAddedAmount(String amount, String food) {
-    return '+ $amount $food';
-  }
-
-  @override
-  String get recipeCheckSaveEdits => 'Änderungen ins Rezept übernehmen';
-
-  @override
-  String get recipeCheckSaveEditsHint => 'Sonst gelten sie nur heute';
-
-  @override
-  String get recipeCheckTitle => 'Zutaten prüfen';
-
-  @override
-  String recipeCheckMissingCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count fehlen',
-      one: '1 fehlt',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String recipeCheckPartialCount(int count) {
-    return '$count nur teilweise da';
-  }
-
-  @override
-  String recipeCheckOpenBoth(int missing, int partial) {
-    String _temp0 = intl.Intl.pluralLogic(
-      missing,
-      locale: localeName,
-      other: '$missing fehlen',
-      one: '1 fehlt',
-    );
-    return '$_temp0, $partial nur teilweise da';
-  }
-
-  @override
-  String recipeCheckStep(int step, int total) {
-    return '$step/$total';
-  }
-
-  @override
-  String get recipeCheckSettled => 'Alles geklärt';
-
-  @override
-  String recipeCheckFoundKicker(int count) {
-    return 'Im Vorrat gefunden · $count';
-  }
-
-  @override
-  String get recipeCheckFoundTitle => 'Passt das?';
-
-  @override
-  String get recipeCheckFoundHint =>
-      'Tippe auf eine Zutat, um einen anderen Artikel zu wählen.';
-
-  @override
-  String recipeCheckNextMissing(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count fehlen',
-      one: '1 fehlt',
-    );
-    return 'Weiter · $_temp0';
-  }
-
-  @override
-  String recipeCheckMissingKicker(int count) {
-    return 'Fehlt · $count';
-  }
-
-  @override
-  String get recipeCheckMissingTitle => 'Auf die Einkaufsliste?';
-
-  @override
-  String get recipeCheckMissingHint =>
-      '„Hab ich“ trägt es in den Vorrat ein und nimmt es gleich.';
-
-  @override
-  String get recipeCheckHave => 'Hab ich';
-
-  @override
-  String recipeCheckRest(String amount) {
-    return 'Rest · $amount sind da';
-  }
-
-  @override
-  String recipeCheckPartialNote(String stocked, String missing) {
-    return '$stocked da · $missing fehlen';
-  }
-
-  @override
-  String get recipeCheckUse => 'Aus dem Vorrat';
-
-  @override
-  String get recipeCheckCart => 'Auf die Einkaufsliste';
-
-  @override
-  String get recipeCheckIgnore => 'Ignorieren';
-
-  @override
-  String get recipeCheckSummaryKicker => 'Fertig geprüft';
-
-  @override
-  String get recipeCheckSummaryTitle => 'So kochst du heute';
-
-  @override
-  String recipeCheckFromStock(int count) {
-    return 'Aus dem Vorrat · $count';
-  }
-
-  @override
-  String recipeCheckOnList(int count) {
-    return 'Auf die Einkaufsliste · $count';
-  }
-
-  @override
-  String recipeCheckIgnored(int count) {
-    return 'Ignoriert · $count';
-  }
-
-  @override
-  String get recipeCheckNothing => 'Nichts';
-
-  @override
-  String get recipeCheckNext => 'Weiter';
-
-  @override
-  String get recipeCheckFinish => 'Fertig';
-
-  @override
-  String get recipeCheckSaveFailed =>
-      'Die Auswahl konnte nicht gespeichert werden.';
-
-  @override
-  String get recipeCheckListFailed =>
-      'Die Einkaufsliste konnte nicht ergänzt werden.';
-
-  @override
-  String get recipeCheckHaveFailed =>
-      'Das Lebensmittel konnte nicht in den Vorrat eingetragen werden.';
-
-  @override
-  String recipePickTitle(String food) {
-    return '$food: woraus nehmen?';
-  }
-
-  @override
-  String get recipeNotFromStock => 'Nicht aus dem Vorrat';
 
   @override
   String get cookedDoneElsewhere =>
@@ -6540,6 +6190,70 @@ class AppLocalizationsDe extends AppLocalizations {
   String cookbookInPotSince(String time) {
     return 'Im Topf seit $time';
   }
+
+  @override
+  String get cookbookRunningTitle => 'Läuft';
+
+  @override
+  String cookbookRunningCount(int count) {
+    return '$count im Haushalt';
+  }
+
+  @override
+  String cookbookOldMealsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Aus der alten Version · $count offen',
+      one: 'Aus der alten Version · 1 offen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookRunFreeName => 'Frei kochen';
+
+  @override
+  String get cookbookRunStatusPots => 'Töpfe wählen';
+
+  @override
+  String cookbookRunStatusPausedShopping(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Pausiert bis eingekauft · $count im Einkauf',
+      one: 'Pausiert bis eingekauft · 1 im Einkauf',
+      zero: 'Pausiert bis eingekauft',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookRunStatusCook => 'Kochen';
+
+  @override
+  String cookbookRunStatusCookTimer(String time) {
+    return 'Kochen · Timer bis $time';
+  }
+
+  @override
+  String cookbookRunStatusCookStep(int step) {
+    return 'Kochen · Schritt $step';
+  }
+
+  @override
+  String get cookbookRunStatusPortion => 'Portionieren';
+
+  @override
+  String cookbookRunStartedBy(String who, String since) {
+    return '$who · seit $since';
+  }
+
+  @override
+  String get cookbookRunStartedByYou => 'du';
+
+  @override
+  String get cookbookRunStartedBySomeone => 'Jemand';
 
   @override
   String get appUpdateRequiredTitle => 'yamt aktualisieren';
@@ -7662,6 +7376,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String dataExportFoodEstimated(String name) {
+    return '$name · Nährwerte geschätzt';
+  }
+
+  @override
   String get dataExportListSeparator => ', ';
 
   @override
@@ -7686,16 +7405,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dataExportKcalUnit => 'kcal';
 
   @override
-  String get cookStepRecipe => 'Rezept';
-
-  @override
-  String get cookStepShopping => 'Einkauf';
-
-  @override
   String get cookStepCooking => 'Kochen';
-
-  @override
-  String get cookStepPortion => 'Portionieren';
 
   @override
   String cookPortionsLabel(int count) {
@@ -7718,111 +7428,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookIngredients => 'Zutaten';
 
   @override
-  String get cookAssignAction => 'Zutaten zuordnen';
-
-  @override
-  String cookFoundKicker(int done, int count) {
-    return '$done von $count Zutaten';
-  }
-
-  @override
-  String get cookFoundTitle => 'Im Vorrat gefunden';
-
-  @override
-  String get cookFoundHint =>
-      'Passt der Vorschlag? Tippe den Artikel für einen anderen.';
-
-  @override
-  String get cookFits => 'Passt';
-
-  @override
-  String get cookFitsNot => 'Passt nicht';
-
-  @override
-  String cookMissingAmount(String amount) {
-    return 'Es fehlen $amount';
-  }
-
-  @override
-  String cookCheckRest(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Noch $count prüfen',
-      one: 'Noch 1 prüfen',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get cookNext => 'Weiter';
-
-  @override
-  String cookOpenKicker(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Zutaten',
-      one: '1 Zutat',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get cookOpenTitle => 'Noch zu klären';
-
-  @override
-  String get cookOpenHint => 'Aus dem Vorrat zuordnen oder weglassen.';
-
-  @override
-  String get cookOpenNoItem => 'Kein Artikel im Vorrat';
-
-  @override
-  String get cookOpenRejected => 'Vorschlag abgelehnt';
-
-  @override
-  String get cookOpenOmitted => 'Weggelassen';
-
-  @override
   String get cookAssign => 'Zuordnen';
 
   @override
-  String get cookOmit => 'Weglassen';
-
-  @override
-  String cookStockLeft(String amount) {
-    return '$amount da';
-  }
-
-  @override
-  String get cookPotTitle => 'Worin kochst du?';
-
-  @override
-  String get cookPotHint =>
-      'Am Ende wiegst du den vollen Topf; sein Leergewicht ist bekannt.';
-
-  @override
-  String cookPotEmptyWeight(int grams) {
-    return 'leer $grams g';
-  }
-
-  @override
-  String get cookPotUnnamed => 'Topf';
-
-  @override
-  String get cookPotNone => 'Ohne Topf · nach Anzahl';
-
-  @override
-  String get cookDoneCooking => 'Fertig gekocht';
-
-  @override
-  String get cookPortionTitle => 'In den Vorrat';
+  String get cookPortionTitle => 'Fertig gekocht';
 
   @override
   String get cookMealName => 'Name';
-
-  @override
-  String get cookGrossWeight => 'Topf mit Essen (g)';
 
   @override
   String cookNetWeight(int grams) {
@@ -7841,52 +7453,247 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookCountPieces => 'Stück';
 
   @override
-  String get cookToStock => 'In Vorrat';
+  String get cookToStock => 'In den Vorrat legen';
 
   @override
-  String cookSaved(String name) {
-    return '$name ist im Vorrat';
-  }
+  String get cookPickerHint => 'Aus deinem Vorrat';
 
   @override
-  String get cookFinishFailed =>
-      'Konnte die Mahlzeit nicht in den Vorrat legen.';
-
-  @override
-  String get cookFinishMissingNutrition => 'Einer Zutat fehlen Nährwerte.';
-
-  @override
-  String get cookFinishTooLittle =>
-      'Der Vorrat hat sich geändert: ein Artikel reicht nicht mehr.';
-
-  @override
-  String get cookFinishItemGone => 'Ein Artikel ist nicht mehr im Vorrat.';
-
-  @override
-  String get cookPickerKicker => 'Zeile füllen';
-
-  @override
-  String get cookPickerHint => 'Passend im Vorrat · antippen in Reihenfolge';
-
-  @override
-  String cookPickerSum(String have, String need) {
-    return 'Zusammen: $have von $need';
-  }
-
-  @override
-  String get cookPickerEmpty => 'Nichts Passendes im Vorrat.';
+  String get cookPickerOrder =>
+      'Wir nehmen sie in der Reihenfolge der Nummern.';
 
   @override
   String get cookPickerApply => 'Übernehmen';
 
   @override
-  String get cookRecipeGone => 'Das Rezept ist nicht mehr im Kochbuch.';
+  String kochmodusPickerStillMissing(String amount) {
+    return 'Es fehlen noch $amount.';
+  }
 
   @override
-  String get cookLoadFailed => 'Konnte das Rezept nicht laden.';
+  String get kochmodusPickerKeep => 'So lassen';
 
   @override
-  String get cookPickerShowAll => 'Alle Vorrat-Artikel zeigen';
+  String kochmodusEnteredPack(String pack, String need, String rest) {
+    return '$pack eingetragen. Wir nehmen $need davon, $rest bleiben.';
+  }
+
+  @override
+  String kochmodusEnteredPackAll(String pack) {
+    return '$pack eingetragen. Wir nehmen alles.';
+  }
+
+  @override
+  String kochmodusEnteredEstimated(String need) {
+    return 'Werte geschätzt. Wir nehmen $need.';
+  }
+
+  @override
+  String kochmodusEnteredFromStock(String amount) {
+    return 'Aus dem Vorrat. $amount da.';
+  }
+
+  @override
+  String get kochmodusEnteredChange => 'Ändern';
+
+  @override
+  String macroGramsSemanticLabel(int protein, int carbs, int fat) {
+    return 'Eiweiß $protein Gramm, Kohlenhydrate $carbs Gramm, Fett $fat Gramm';
+  }
+
+  @override
+  String get macroGramsCarbsShort => 'KH';
+
+  @override
+  String kochmodusDoneKcalPerPortion(int kcal) {
+    return '$kcal kcal pro Portion';
+  }
+
+  @override
+  String kochmodusDoneKcalPerPiece(int kcal) {
+    return '$kcal kcal pro Stück';
+  }
+
+  @override
+  String kochmodusDoneKcalPerCan(int kcal) {
+    return '$kcal kcal pro Dose';
+  }
+
+  @override
+  String get recipeLineNotCounted => 'zählt nicht mit';
+
+  @override
+  String get kochmodusPickerHeld => 'verplant';
+
+  @override
+  String kochmodusPickerHeldFor(String name) {
+    return 'für $name verplant';
+  }
+
+  @override
+  String get recipeFoodGuessWorking => 'Wir schätzen die Werte …';
+
+  @override
+  String get recipeLineNutritionTitle => 'Nährwerte je Zutat';
+
+  @override
+  String get aiChefIdeaFailed =>
+      'Wir konnten gerade kein Rezept zusammenstellen.';
+
+  @override
+  String get kochmodusEnteredNothing =>
+      'Eingetragen. Die Menge fehlt uns noch.';
+
+  @override
+  String recipeLineNutritionPortions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Für $count Portionen',
+      one: 'Für 1 Portion',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kochmodusWeightEstimated(String amount) {
+    return '≈ $amount geschätzt';
+  }
+
+  @override
+  String get recipeEstimating => 'Wir schätzen die Nährwerte …';
+
+  @override
+  String get recipeNutritionPortionEstimated => '1 Portion · geschätzt';
+
+  @override
+  String kochmodusWeighPotsAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Töpfe wiegen',
+      one: 'Topf wiegen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kitchenUtensilWeightHelper =>
+      'Leer, ohne Deckel. Einmal kurz auf die Waage stellen.';
+
+  @override
+  String get kitchenUtensilAddShort => 'Hinzufügen';
+
+  @override
+  String get kochmodusTakeAskTitle => 'Wie viel nimmst du?';
+
+  @override
+  String kochmodusTakeAskRecipe(String amount) {
+    return '$amount · wie im Rezept';
+  }
+
+  @override
+  String kochmodusTakeAskAll(String amount) {
+    return 'Alles · $amount';
+  }
+
+  @override
+  String get kochmodusTakeAskOther => 'Andere Menge';
+
+  @override
+  String kochmodusEnteredFromStockTake(String take, String there) {
+    return 'Aus dem Vorrat. Wir nehmen $take von $there.';
+  }
+
+  @override
+  String kochmodusEnteredFromStockWeigh(String amount) {
+    return 'Aus dem Vorrat. $amount da. Gewogen wird beim Kochen.';
+  }
+
+  @override
+  String get kochmodusPickerSuggested => 'Passt vielleicht';
+
+  @override
+  String get kochmodusPickerAll => 'Alles im Vorrat';
+
+  @override
+  String kochmodusAssignKcalPerPortionEstimated(int kcal) {
+    return 'Pro Portion · ≈ $kcal kcal';
+  }
+
+  @override
+  String get kochmodusNutritionPortionEstimated => 'Portion · geschätzt';
+
+  @override
+  String get kochmodusCardWeighWhileCooking =>
+      'Gewicht fehlt: beim Kochen wiegen';
+
+  @override
+  String get kochmodusGuideAddedSettled => 'Gerade dazu';
+
+  @override
+  String get kochmodusBlockNoFood => 'Noch keine Zutat aus dem Vorrat';
+
+  @override
+  String get kochmodusEstimatesMustWeigh =>
+      'Zeilen ohne Gewicht musst du wiegen. Bei den anderen ist Wiegen freiwillig.';
+
+  @override
+  String kochmodusEnteredPackWeigh(String pack) {
+    return '$pack eingetragen. Gewogen wird beim Kochen.';
+  }
+
+  @override
+  String kochmodusPotGrossOptional(String pot) {
+    return '$pot mit Essen (g) · freiwillig';
+  }
+
+  @override
+  String get kochmodusToWeighNote => 'Diese Zutaten musst du noch wiegen.';
+
+  @override
+  String get recipeIdeaPictureComing => 'Bild wird generiert …';
+
+  @override
+  String kochmodusVoiceTyped(String text) {
+    return 'Geschrieben: $text';
+  }
+
+  @override
+  String kochmodusMealPerCount(String kind, int grams) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'can': 'Pro Dose',
+      'other': 'Pro Portion',
+    });
+    return '$_temp0: $grams g';
+  }
+
+  @override
+  String kochmodusMealPerCountEstimated(String kind, int grams) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'can': 'Pro Dose',
+      'other': 'Pro Portion',
+    });
+    return '$_temp0: ≈ $grams g';
+  }
+
+  @override
+  String get kochmodusTimerCountdownChannelName => 'Laufende Koch-Timer';
+
+  @override
+  String recipePlannedKcal(int kcal) {
+    return '$kcal kcal pro Portion';
+  }
+
+  @override
+  String kochmodusTimerCountdownTitle(String label) {
+    return '$label läuft';
+  }
+
+  @override
+  String cookbookCardKcal(int kcal) {
+    return '$kcal kcal';
+  }
 
   @override
   String cookAmountGrams(String amount) {
@@ -7900,7 +7707,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String cookAmountPieces(String amount) {
-    return '$amount Stk';
+    return '$amount Stk.';
   }
 
   @override
@@ -7909,14 +7716,1083 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String cookStockAfterTake(String amount) {
-    return '· $amount da';
+  String get kochmodusStepPots => 'Töpfe';
+
+  @override
+  String get kochmodusStepPortion => 'Portion';
+
+  @override
+  String get kochmodusAmountKicker => 'Menge für dieses Kochen';
+
+  @override
+  String kochmodusAmountRecipe(String amount, int portions) {
+    return 'Rezept: $amount für $portions';
   }
 
   @override
-  String get cookFinishNothingTaken =>
-      'Noch nichts aus dem Vorrat in diesem Gericht.';
+  String get kochmodusAmountNote =>
+      'Gilt für dieses Kochen. Das Rezept bleibt, wie es ist.';
 
   @override
-  String get cookPotLoadFailed => 'Konnte deine Töpfe nicht laden.';
+  String kochmodusAmountPresetAvailable(String amount) {
+    return 'Vorhandenes · $amount';
+  }
+
+  @override
+  String kochmodusAmountPresetRecipe(String amount) {
+    return 'Rezept · $amount';
+  }
+
+  @override
+  String get kochmodusEstimateKicker => 'Schätzung ändern';
+
+  @override
+  String get kochmodusWeigh => 'Wiegen';
+
+  @override
+  String kochmodusWeighRecipeEstimate(int grams) {
+    return 'Etwa $grams g';
+  }
+
+  @override
+  String kochmodusWeighConfirm(int grams) {
+    return 'Gewogen: $grams g';
+  }
+
+  @override
+  String kochmodusEstimateConfirm(int grams) {
+    return 'Übernehmen: $grams g';
+  }
+
+  @override
+  String get kochmodusSaveFailed => 'Wir konnten das Kochen nicht speichern.';
+
+  @override
+  String get kochmodusDiscardFailed =>
+      'Wir konnten das Kochen nicht verwerfen.';
+
+  @override
+  String get kochmodusFinishFailed =>
+      'Wir konnten die Mahlzeit nicht in den Vorrat legen. Prüfe die Zeilen und versuch es noch einmal.';
+
+  @override
+  String get kochmodusDiscarded => 'Kochen verworfen';
+
+  @override
+  String get kochmodusLoadFailed => 'Wir konnten das Kochen nicht laden.';
+
+  @override
+  String get kochmodusGone => 'Dieses Kochen gibt es nicht mehr.';
+
+  @override
+  String get kochmodusBackToCookbook => 'Zum Kochbuch';
+
+  @override
+  String kochmodusRunKicker(String name, int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions Portionen',
+      one: '1 Portion',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get kochmodusPotsTitle => 'Worin kochst du?';
+
+  @override
+  String get kochmodusPotsLead =>
+      'Wir ziehen das Gewicht vom Topf später ab, damit deine Portionen stimmen.';
+
+  @override
+  String get kochmodusPotsAdd => 'Topf oder Pfanne hinzufügen';
+
+  @override
+  String kochmodusPotEmptyWeight(int grams) {
+    final intl.NumberFormat gramsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String gramsString = gramsNumberFormat.format(grams);
+
+    return 'leer $gramsString g';
+  }
+
+  @override
+  String get kochmodusPotsOr => 'oder';
+
+  @override
+  String get kochmodusPotsCountedTitle => 'Ohne Topf';
+
+  @override
+  String get kochmodusPotsCountedHint =>
+      'Wir zählen fertige Stücke, z. B. Pfannkuchen oder Frikadellen';
+
+  @override
+  String get kochmodusPotsCansTitle => 'Danach in Dosen';
+
+  @override
+  String get kochmodusPotsCansHint =>
+      'Du füllst alles in Dosen um, jede Dose wird eine Portion.';
+
+  @override
+  String get kochmodusPotsResultLabel => 'Ergibt:';
+
+  @override
+  String get kochmodusPotsResultCounted => 'Fertige Stücke, wird gezählt';
+
+  @override
+  String kochmodusPotsResultTogether(String pot) {
+    return 'alles zusammen in $pot';
+  }
+
+  @override
+  String get kochmodusPotsResultTogetherCans => 'alles zusammen, dann in Dosen';
+
+  @override
+  String kochmodusPotsResultSeparate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Töpfe, getrennt',
+      one: '1 Topf, getrennt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kochmodusPotsResultSeparateCans(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Töpfe getrennt, dann in Dosen',
+      one: '1 Topf, dann in Dosen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kochmodusPotsNextCook => 'Weiter · Kochen';
+
+  @override
+  String get kochmodusPotsChooseHint => 'Wähl einen Topf oder „Ohne Topf“.';
+
+  @override
+  String get kochmodusAssignTitle => 'Was hast du da?';
+
+  @override
+  String kochmodusAssignProgress(int settled, int total) {
+    return '$settled von $total geklärt';
+  }
+
+  @override
+  String get kochmodusAssignSettledTitle => 'Alles bereit';
+
+  @override
+  String kochmodusAssignToBuy(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zutaten kommen auf die Einkaufsliste.',
+      one: 'Eine Zutat kommt auf die Einkaufsliste.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kochmodusAssignAlmostTitle => 'Fast alles da';
+
+  @override
+  String kochmodusAssignKcalPerPortion(int kcal) {
+    return 'Pro Portion · $kcal kcal';
+  }
+
+  @override
+  String get kochmodusAssignAll => 'Alle Zutaten';
+
+  @override
+  String kochmodusAssignReadyText(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Portionen. Du kannst loslegen.',
+      one: 'Eine Portion. Du kannst loslegen.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kochmodusCardAsk => 'Hast du das da?';
+
+  @override
+  String get kochmodusCardReady => 'Bereit';
+
+  @override
+  String get kochmodusCardNotCounted => 'Zählt bei den Nährwerten nicht mit.';
+
+  @override
+  String get kochmodusCardChangeAmount => 'Menge ändern';
+
+  @override
+  String kochmodusRowThere(String amount) {
+    return '$amount da';
+  }
+
+  @override
+  String get kochmodusRowReady => 'da';
+
+  @override
+  String get kochmodusRowShopping => 'im Einkauf';
+
+  @override
+  String get kochmodusRowIgnored => 'weggelassen';
+
+  @override
+  String get kochmodusRowNotCounted => 'zählt nicht mit';
+
+  @override
+  String get kochmodusRowNow => 'jetzt';
+
+  @override
+  String get kochmodusRowOpen => 'offen';
+
+  @override
+  String get kochmodusRowShort => 'zu wenig da';
+
+  @override
+  String get kochmodusRowUnclear => 'Menge unklar';
+
+  @override
+  String get kochmodusAssignReopenedHint =>
+      'Zurück vom Einkauf: Was auf der Einkaufsliste stand, ist wieder offen.';
+
+  @override
+  String get kochmodusAssignShop => 'Kaufen';
+
+  @override
+  String get kochmodusAssignIgnore => 'Weglassen';
+
+  @override
+  String get kochmodusAssignHave => 'Hab ich';
+
+  @override
+  String get kochmodusAssignPendingShopping => 'Kommt auf die Einkaufsliste';
+
+  @override
+  String get kochmodusChange => 'Ändern';
+
+  @override
+  String get kochmodusChangeTitle => 'Zutat ändern';
+
+  @override
+  String get kochmodusChangeHaveSub => 'Aus dem Vorrat oder neu eintragen';
+
+  @override
+  String get kochmodusChangeIgnoreSub => 'Wir kochen ohne diese Zutat';
+
+  @override
+  String get kochmodusAssignSetAmount => 'Menge eintragen';
+
+  @override
+  String kochmodusAssignItems(String name, int more) {
+    String _temp0 = intl.Intl.pluralLogic(
+      more,
+      locale: localeName,
+      other: ' + $more weitere',
+      zero: '',
+    );
+    return '$name$_temp0';
+  }
+
+  @override
+  String kochmodusAssignItemThere(String items, String amount) {
+    return '$items · $amount da';
+  }
+
+  @override
+  String kochmodusAmountMissing(String amount) {
+    return 'Es fehlen $amount';
+  }
+
+  @override
+  String kochmodusAmountBuyRest(String amount) {
+    return '$amount kaufen';
+  }
+
+  @override
+  String get kochmodusAmountSecondPack => 'Zweite Packung';
+
+  @override
+  String kochmodusAmountTakeOnly(String amount) {
+    return 'Nur $amount nehmen';
+  }
+
+  @override
+  String kochmodusReadyOnly(String amount) {
+    return 'Nur $amount';
+  }
+
+  @override
+  String get kochmodusReadyRestOnList => 'Rest kommt auf die Einkaufsliste';
+
+  @override
+  String kochmodusOnlyAvailable(String amount) {
+    return 'nur $amount da';
+  }
+
+  @override
+  String get kochmodusEntryMissing => 'Eintrag fehlt';
+
+  @override
+  String get kochmodusNutritionMissing => 'Nährwerte fehlen';
+
+  @override
+  String get kochmodusToWeigh => 'Noch zu wiegen';
+
+  @override
+  String get kochmodusWeightMissing => 'Gewicht fehlt';
+
+  @override
+  String get kochmodusAssignAddLine => 'Weitere Zutat';
+
+  @override
+  String get kochmodusAssignWithGuide => 'Mit Anleitung';
+
+  @override
+  String get kochmodusAssignWithGuideSub =>
+      'Schritt für Schritt durch die Zubereitung';
+
+  @override
+  String get kochmodusAssignLaterDone =>
+      'Pausiert. Der Vorrat bleibt verplant.';
+
+  @override
+  String get kochmodusAssignLater => 'Später';
+
+  @override
+  String get kochmodusAssignCook => 'Kochen';
+
+  @override
+  String get kochmodusAssignPause => 'Erst einkaufen';
+
+  @override
+  String get kochmodusPausedForShopping =>
+      'Steht auf der Einkaufsliste. Nach dem Einkauf: Weiter.';
+
+  @override
+  String get kochmodusShoppingListAction => 'Einkaufsliste';
+
+  @override
+  String get kochmodusPauseFailed =>
+      'Wir konnten die Zutaten nicht auf die Einkaufsliste setzen.';
+
+  @override
+  String get kochmodusFoodAddFailed =>
+      'Wir konnten das Lebensmittel nicht in den Vorrat legen.';
+
+  @override
+  String get kochmodusToPortion => 'Fertig · Portionieren';
+
+  @override
+  String kochmodusTimerName(int number) {
+    return 'Timer $number';
+  }
+
+  @override
+  String get kochmodusShowGuide => 'Mit Anleitung kochen';
+
+  @override
+  String get kochmodusTimerAction => 'Timer';
+
+  @override
+  String kochmodusCookCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zutaten',
+      one: '1 Zutat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kochmodusCookCountAdded(int count, int added) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zutaten',
+      one: '1 Zutat',
+    );
+    return '$_temp0 · $added gerade dazu';
+  }
+
+  @override
+  String get kochmodusCookEmptyTitle => 'Noch nichts im Topf';
+
+  @override
+  String get kochmodusCookEmptyHint =>
+      'Sag einfach, was du hineingibst: „200 g Reis“.';
+
+  @override
+  String get kochmodusCookNewOpen => 'Neu · wird beim Portionieren geklärt';
+
+  @override
+  String kochmodusWeightWeighed(int grams) {
+    return '$grams g gewogen';
+  }
+
+  @override
+  String kochmodusCookLineSub(String food, String weight) {
+    return '$food · $weight';
+  }
+
+  @override
+  String get kochmodusRemoveLine => 'Entfernen';
+
+  @override
+  String kochmodusLineRemoved(String line) {
+    return '$line entfernt';
+  }
+
+  @override
+  String kochmodusGuideTimerLabel(int step) {
+    return 'Schritt $step';
+  }
+
+  @override
+  String kochmodusGuideTimerLabelNumbered(int step, int number) {
+    return 'Schritt $step · $number';
+  }
+
+  @override
+  String kochmodusGuideProgress(int step, int count) {
+    return 'Schritt $step von $count';
+  }
+
+  @override
+  String get kochmodusShowList => 'Alle Zutaten zeigen';
+
+  @override
+  String get kochmodusGuideTimerHint =>
+      'Tipp auf die Zeit startet einen Timer.';
+
+  @override
+  String get kochmodusGuideAdded =>
+      'Gerade dazu · wird beim Portionieren geklärt';
+
+  @override
+  String get kochmodusGuideBack => 'Zurück';
+
+  @override
+  String get kochmodusGuideNext => 'Nächster Schritt';
+
+  @override
+  String get kochmodusTimerDone => 'fertig';
+
+  @override
+  String kochmodusTimerLeft(int minutes, String seconds) {
+    return '$minutes:$seconds';
+  }
+
+  @override
+  String get kochmodusTimerExtend => '+1 Min';
+
+  @override
+  String get kochmodusTimerStop => 'Stopp';
+
+  @override
+  String kochmodusTimerMinutes(int minutes) {
+    return '$minutes Min';
+  }
+
+  @override
+  String kochmodusTimerMinutesSeconds(int minutes, int seconds) {
+    return '$minutes Min $seconds Sek';
+  }
+
+  @override
+  String kochmodusTimerSeconds(int seconds) {
+    return '$seconds Sek';
+  }
+
+  @override
+  String kochmodusTimerMinuteRange(int from, int to) {
+    return '$from–$to Min';
+  }
+
+  @override
+  String get kochmodusTimerSheetHint => 'Ein Tipp startet.';
+
+  @override
+  String get kochmodusPickerTitle => 'Welches nimmst du?';
+
+  @override
+  String get kochmodusPickerSearchOther => 'Etwas anderes suchen';
+
+  @override
+  String get kochmodusTypeTitle => 'Was kommt dazu?';
+
+  @override
+  String kochmodusVoiceHeard(String text) {
+    return 'Gehört: $text';
+  }
+
+  @override
+  String get kochmodusVoiceListening => 'Wir hören zu …';
+
+  @override
+  String get kochmodusVoiceSpeak => 'Sprechen';
+
+  @override
+  String get kochmodusVoiceHintList =>
+      '„200 g Reis“ · „nein“ nimmt die letzte Zeile zurück';
+
+  @override
+  String get kochmodusVoiceHintGuide =>
+      '„weiter“ · „zurück“ · „Timer 5 Minuten“ · „200 g Reis“';
+
+  @override
+  String kochmodusMealNameInPot(String recipe, String pot) {
+    return '$recipe · $pot';
+  }
+
+  @override
+  String kochmodusMealNameWith(String first, String second) {
+    return '$first mit $second';
+  }
+
+  @override
+  String get kochmodusMealNameFree => 'Frei gekocht';
+
+  @override
+  String kochmodusPotNumbered(int number) {
+    return 'Topf $number';
+  }
+
+  @override
+  String kochmodusPotGross(String pot) {
+    return '$pot mit Essen (g) · Pflicht';
+  }
+
+  @override
+  String get kochmodusPotWeighHint => 'Tippen zum Wiegen';
+
+  @override
+  String kochmodusPotWeighSub(int grams) {
+    return 'Leer $grams g · Topf samt Essen auf die Waage';
+  }
+
+  @override
+  String get kochmodusMealCans => 'Dosen';
+
+  @override
+  String kochmodusMealCountQuestion(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'piece': 'Wie viele Stück sind es?',
+      'can': 'Wie viele Dosen sind es?',
+      'other': 'Wie viele Portionen sind es?',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get kochmodusPortionLinesSwitch => 'Zutaten · Topf antippen wechselt';
+
+  @override
+  String kochmodusNewLines(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count neue Zeilen',
+      one: '1 neue Zeile',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kochmodusLineNotAssigned => 'noch nicht zugewiesen';
+
+  @override
+  String kochmodusJoined(String first, String second) {
+    return '$first · $second';
+  }
+
+  @override
+  String get kochmodusReview => 'Ansehen';
+
+  @override
+  String kochmodusEstimatedIngredients(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bei $count Zutaten haben wir das Gewicht geschätzt',
+      one: 'Bei einer Zutat haben wir das Gewicht geschätzt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kochmodusEstimatesNote =>
+      'Wiegen ist freiwillig. Die Nährwerte rechnen mit dem, was aus dem Vorrat entnommen wird.';
+
+  @override
+  String kochmodusEstimateRow(int grams) {
+    return 'nicht gewogen · ungefähr $grams g';
+  }
+
+  @override
+  String get kochmodusEstimateSub => 'Schon verkocht · nur ungefähr';
+
+  @override
+  String get kochmodusEstimatesDone => 'Passt so';
+
+  @override
+  String get kochmodusToCookbookNote => 'als Rezept merken';
+
+  @override
+  String kochmodusBlockShort(String line, String amount) {
+    return '$line: nur $amount da';
+  }
+
+  @override
+  String kochmodusBlockEntryMissing(String line) {
+    return '$line: Eintrag fehlt';
+  }
+
+  @override
+  String kochmodusBlockNutritionMissing(String line) {
+    return '$line: Nährwerte fehlen';
+  }
+
+  @override
+  String kochmodusBlockWeighPots(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Erst die Töpfe wiegen',
+      one: 'Erst den Topf wiegen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kochmodusBlockPotEmpty => 'Topf ohne Zutaten';
+
+  @override
+  String kochmodusBlockWithoutTake(String line) {
+    return '$line: erst wiegen oder entfernen';
+  }
+
+  @override
+  String kochmodusBlockOtherFood(String line) {
+    return '$line: anderes Lebensmittel wählen oder entfernen';
+  }
+
+  @override
+  String kochmodusBlockPotEmptyNamed(String pot) {
+    return '$pot: ohne Zutaten';
+  }
+
+  @override
+  String get kochmodusTakesNothing =>
+      'Wir wissen nicht, wie viel davon in den Topf kommt.';
+
+  @override
+  String get kochmodusTakeOther => 'Anderes nehmen';
+
+  @override
+  String kochmodusUncounted(String food) {
+    return '$food zählt noch nicht mit: Gewicht fehlt';
+  }
+
+  @override
+  String get kochmodusPickerNoHits => 'Nichts gefunden';
+
+  @override
+  String get kochmodusBlockLinesOpen => 'Erst neue Zeilen klären';
+
+  @override
+  String kochmodusNutritionPer(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'piece': 'Stück',
+      'can': 'Dose',
+      'other': 'Portion',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String kochmodusNutritionPerWeight(String kind, int grams) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'piece': 'Stück',
+      'can': 'Dose',
+      'other': 'Portion',
+    });
+    return '$_temp0 · $grams g';
+  }
+
+  @override
+  String get kochmodusDoneTitle => 'Guten Appetit!';
+
+  @override
+  String kochmodusDonePortions(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Portionen $name liegen jetzt im Vorrat.',
+      one: 'Eine Portion $name liegt jetzt im Vorrat.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kochmodusDonePieces(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Stück $name liegen jetzt im Vorrat.',
+      one: 'Ein Stück $name liegt jetzt im Vorrat.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kochmodusDoneCans(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dosen $name stehen jetzt im Vorrat.',
+      one: 'Eine Dose $name steht jetzt im Vorrat.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kochmodusDoneEat => 'Jetzt essen';
+
+  @override
+  String get kochmodusDoneInCookbook =>
+      'Das Rezept steht jetzt auch im Kochbuch.';
+
+  @override
+  String get kochmodusTimerInexactHint =>
+      'Ohne Erlaubnis für genaue Wecker kann der Timer ein paar Minuten später klingeln.';
+
+  @override
+  String get kochmodusTimerAllowExact => 'Erlauben';
+
+  @override
+  String get kochmodusTimerNotificationsOffHint =>
+      'Benachrichtigungen sind aus: Der Timer klingelt nicht.';
+
+  @override
+  String get kochmodusTimerChannelName => 'Koch-Timer';
+
+  @override
+  String kochmodusTimerAlarmTitle(String label) {
+    return '$label ist abgelaufen';
+  }
+
+  @override
+  String kochmodusTimerAlarmBody(String runName) {
+    return '$runName · Tippe, um weiterzukochen';
+  }
+
+  @override
+  String get kochmodusTimerAlarmBodyFree =>
+      'Freies Kochen · Tippe, um weiterzukochen';
+
+  @override
+  String diaryEntryKcalEstimated(String kcal) {
+    return '≈ $kcal kcal';
+  }
+
+  @override
+  String get diaryEntryNutritionEstimated => '≈ Nährwerte geschätzt';
+
+  @override
+  String get cookbookNewTool => 'Neu';
+
+  @override
+  String get cookbookNewRecipeTitle => 'Neues Rezept';
+
+  @override
+  String get cookbookNewRecipeScan => 'Scannen';
+
+  @override
+  String get cookbookNewRecipeScanDescription =>
+      'Kochbuch- oder Zettelseite, bis zu 3 Seiten';
+
+  @override
+  String get cookbookNewRecipePaste => 'Liste einfügen';
+
+  @override
+  String get cookbookNewRecipePasteDescription =>
+      'Kopierten Text einfügen, z. B. aus einer Nachricht';
+
+  @override
+  String get cookbookNewRecipeType => 'Selbst tippen';
+
+  @override
+  String get cookbookNewRecipeTypeDescription =>
+      'Leer anfangen, Zeile für Zeile';
+
+  @override
+  String get cookbookNewRecipeLink => 'Aus Link';
+
+  @override
+  String get cookbookNewRecipeLinkDescription =>
+      'Wir lesen das Rezept von einer Webseite';
+
+  @override
+  String get cookbookNewRecipeAiDescription =>
+      'Wir schlagen dir ein Rezept vor';
+
+  @override
+  String get recipeEditorEditTitle => 'Rezept bearbeiten';
+
+  @override
+  String get recipeEditorPhoto => 'Foto';
+
+  @override
+  String recipeEditorIngredientsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zeilen',
+      one: '1 Zeile',
+    );
+    return 'Zutaten · $_temp0';
+  }
+
+  @override
+  String recipeEditorStepsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Schritte',
+      one: '1 Schritt',
+    );
+    return 'Zubereitung · $_temp0';
+  }
+
+  @override
+  String get recipeEditorEdit => 'Bearbeiten';
+
+  @override
+  String recipeEditorMissing(String missing) {
+    String _temp0 = intl.Intl.selectLogic(missing, {
+      'both': 'Noch nötig: Name und eine Zutat',
+      'name': 'Noch nötig: Name',
+      'other': 'Noch nötig: eine Zutat',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get recipeEditorAddIngredient => '+ Zutat';
+
+  @override
+  String get recipeEditorAddStep => '+ Schritt';
+
+  @override
+  String get recipeEditorPaste => 'Einfügen';
+
+  @override
+  String get recipeEditorPasteEmpty => 'In der Zwischenablage ist kein Text.';
+
+  @override
+  String get recipeEditorPasteTooLong =>
+      'Der Text ist zu lang. Füg nur das Rezept ein.';
+
+  @override
+  String get recipeEditorDiscardTitle => 'Rezept verwerfen?';
+
+  @override
+  String get recipeEditorDiscardBody =>
+      'Deine Änderungen werden nicht gespeichert.';
+
+  @override
+  String get recipeLinkFailedTitle =>
+      'Von dieser Seite konnten wir nichts lesen';
+
+  @override
+  String get recipeLinkFailedHint =>
+      'Manche Seiten verstecken ihr Rezept. Kopier den Text von der Seite und füg ihn ein – oder scanne oder tipp ihn.';
+
+  @override
+  String get recipeLinkRetry => 'Nochmal versuchen';
+
+  @override
+  String get recipeLinkReading => 'Rezept wird gelesen …';
+
+  @override
+  String recipeEstimateKcal(int kcal) {
+    return '≈ $kcal kcal pro Portion · geschätzt';
+  }
+
+  @override
+  String get recipeEditorSharedKicker => 'Geteilt';
+
+  @override
+  String get recipeShareUnreadable => 'Das konnten wir nicht lesen.';
+
+  @override
+  String recipeEditorEditLine(String line) {
+    return 'Zeile bearbeiten: $line';
+  }
+
+  @override
+  String recipeEditorEditStep(String step) {
+    return 'Schritt bearbeiten: $step';
+  }
+
+  @override
+  String get recipeEditorRemoveLine => 'Zeile entfernen';
+
+  @override
+  String get recipeEditorRemoveStep => 'Schritt entfernen';
+
+  @override
+  String get recipeEditorLineRemoved => 'Zeile entfernt';
+
+  @override
+  String get recipeEditorStepRemoved => 'Schritt entfernt';
+
+  @override
+  String recipeLinesOpenTitle(int count) {
+    return 'Noch $count offen';
+  }
+
+  @override
+  String get recipeLinesReadyTitle => 'Alles bereit';
+
+  @override
+  String recipeLinesReady(int count) {
+    return '$count bereit';
+  }
+
+  @override
+  String recipeLinesShopping(int count) {
+    return '$count im Einkauf';
+  }
+
+  @override
+  String recipeLinesIgnored(int count) {
+    return '$count weggelassen';
+  }
+
+  @override
+  String recipeLinesOpen(int count) {
+    return '$count offen';
+  }
+
+  @override
+  String recipeLinesJoined(String first, String second) {
+    return '$first · $second';
+  }
+
+  @override
+  String get recipeLineOpen => 'offen';
+
+  @override
+  String get recipeLineShopping => 'im Einkauf';
+
+  @override
+  String recipeLineStockAndRest(String stock, String rest) {
+    return '$stock da · $rest im Einkauf';
+  }
+
+  @override
+  String get recipeLineIgnored => 'weggelassen';
+
+  @override
+  String get recipeCookNeedsAllLines =>
+      'Kochen startet, wenn jede Zutat bereit oder weggelassen ist.';
+
+  @override
+  String get recipeFromListName => 'Name';
+
+  @override
+  String get recipeFromListPortions => 'Portionen';
+
+  @override
+  String get recipeFromListScan => 'Scannen';
+
+  @override
+  String get recipeFromListScanning => 'Liste wird gelesen …';
+
+  @override
+  String get recipeFromListScanFailed => 'Liste konnte nicht gelesen werden.';
+
+  @override
+  String get recipeFromListSave => 'Rezept speichern';
+
+  @override
+  String get recipeFromListSaveFailed =>
+      'Rezept konnte nicht gespeichert werden.';
+
+  @override
+  String cookbookCardEstimate(int kcal) {
+    return '≈ $kcal kcal';
+  }
+
+  @override
+  String get recipePrepareAction => 'Vorbereiten';
+
+  @override
+  String recipeFoodFor(String ingredient) {
+    return 'Für $ingredient';
+  }
+
+  @override
+  String recipeFoodTitle(String food) {
+    return 'Was für $food hast du?';
+  }
+
+  @override
+  String get recipeFoodTitleFallback => 'Was nimmst du dafür?';
+
+  @override
+  String get recipeFoodScanTitle => 'Packung scannen';
+
+  @override
+  String get recipeFoodScanLine =>
+      'Strichcode vor die Kamera halten. Liegt es schon im Vorrat, nehmen wir es von dort.';
+
+  @override
+  String get recipeFoodOrPick => 'oder aussuchen';
+
+  @override
+  String get recipeFoodFromStock => 'Aus dem Vorrat nehmen';
+
+  @override
+  String get recipeFoodFromStockLine => 'Etwas anderes, das du schon hast';
+
+  @override
+  String recipeFoodInStock(String amount) {
+    return '$amount da';
+  }
+
+  @override
+  String recipeFoodBrandAndSize(String brand, String size) {
+    return '$brand · $size';
+  }
+
+  @override
+  String get recipeFoodOwnEntry => 'Selbst eintragen';
+
+  @override
+  String get recipeFoodGuess => 'Egal, irgendeins';
+
+  @override
+  String get recipeFoodGuessLine => 'Wir schätzen die Werte für dich.';
+
+  @override
+  String get recipeFoodStockSheetTitle => 'Was nimmst du aus dem Vorrat?';
+
+  @override
+  String get recipeFoodStockEmpty => 'Im Vorrat ist gerade nichts.';
+
+  @override
+  String get recipeFoodStockLoadFailed => 'Den Vorrat konnten wir nicht laden.';
 }

@@ -1011,6 +1011,12 @@ service cloud.firestore {
           && isEncryptedDocument(request.resource.data, []);
       }
 
+      match /cook_runs/{runId} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, []);
+      }
+
       match /inventory_discard_events/{eventId} {
         allow read, delete: if isHouseholdMember(householdId);
         allow create, update: if isHouseholdMember(householdId)

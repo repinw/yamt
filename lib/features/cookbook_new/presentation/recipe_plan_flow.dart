@@ -8,7 +8,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_
 import 'package:yamt/features/shoppinglist/presentation/shopping_plan_needs_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Plans a Kochbuch recipe or Vorlage from the Kochbuch or its recipe page.
+/// Plans a Kochbuch recipe or Vorlage from the long press on its Kochbuch
+/// card.
 abstract final class RecipePlanFlow {
   /// Key of the snack bar that says the plan is saved.
   static const snackBarKey = ValueKey<String>('recipe-planned');

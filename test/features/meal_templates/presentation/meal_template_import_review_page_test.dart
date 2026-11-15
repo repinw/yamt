@@ -47,6 +47,12 @@ class _FakePreparedMealTemplateRepository
   ]);
 
   @override
+  Future<bool> update(
+    String id,
+    PreparedMeal? Function(PreparedMeal current) change,
+  ) async => false;
+
+  @override
   Future<bool> delete(String templateId) => _replaceAll([
     for (final stored in _templates)
       if (stored.id != templateId) stored,
@@ -68,6 +74,7 @@ class _FakePreparedMealTemplateRepository
 Widget _buildHarness({
   required PreparedMealTemplateRepository repository,
   required MealTemplateImportReviewArgs args,
+  List<String?>? popped,
 }) {
   final router = GoRouter(
     initialLocation: '/',
@@ -78,7 +85,10 @@ Widget _buildHarness({
           return Scaffold(
             body: Center(
               child: FilledButton(
-                onPressed: () => context.push('/review'),
+                onPressed: () async {
+                  final id = await context.push<String>('/review');
+                  popped?.add(id);
+                },
                 child: const Text('open'),
               ),
             ),
@@ -110,9 +120,12 @@ Widget _buildHarness({
 }
 
 void main() {
-  testWidgets('saves imported recipe template and pops back', (tester) async {
+  testWidgets('saves imported recipe template and pops back with its id', (
+    tester,
+  ) async {
     final repository = _FakePreparedMealTemplateRepository();
     addTearDown(repository.dispose);
+    final popped = <String?>[];
     const args = MealTemplateImportReviewArgs(
       importedRecipe: PreparedMealRecipeImport(
         recipeUrl: 'https://chefkoch.de/rezepte/42/kartoffelsuppe.html',
@@ -125,7 +138,9 @@ void main() {
       preferredPortions: null,
     );
 
-    await tester.pumpWidget(_buildHarness(repository: repository, args: args));
+    await tester.pumpWidget(
+      _buildHarness(repository: repository, args: args, popped: popped),
+    );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
@@ -138,7 +153,8 @@ void main() {
     expect(repository.savedTemplates, hasLength(1));
     expect(repository.savedTemplates.single.name, 'Kartoffelsuppe');
     expect(repository.savedTemplates.single.totalPortions, 4);
-    expect(find.text('Rezept gespeichert.'), findsOneWidget);
+    // The page pops with the saved recipe's id, so the flow can open it.
+    expect(popped, [repository.savedTemplates.single.id]);
     expect(find.text('open'), findsOneWidget);
   });
 
@@ -165,5 +181,7 @@ void main() {
 
     expect(find.text('Rezept konnte nicht erstellt werden.'), findsOneWidget);
     expect(repository.savedTemplates, isEmpty);
+    // A failed save keeps the review open.
+    expect(find.text('Rezept prüfen'), findsOneWidget);
   });
 }

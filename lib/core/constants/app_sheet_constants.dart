@@ -1,5 +1,10 @@
-/// Layout and motion tokens for bottom sheets that open with a hero image.
+/// Layout and motion tokens for bottom sheets, such as those that open with a
+/// hero image.
 abstract final class AppSheetTokens {
+  /// Share of the screen height that a tall sheet takes, such as a recipe
+  /// idea.
+  static const double tallSheetHeightFactor = 0.94;
+
   /// Duration of the sheet entrance and the hero flight into it.
   static const Duration heroSheetTransition = Duration(milliseconds: 380);
 

@@ -18,6 +18,7 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
+import 'package:yamt/features/inventory/presentation/models/food_pick_route_args.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
@@ -201,8 +202,11 @@ void main() {
     InventoryMealFoodPick? searched;
     await tester.pumpWidget(
       _buildHarness(
-        open: (context) async => searched = await context
-            .push<InventoryMealFoodPick>(AppRoutes.homeFoodPick),
+        open: (context) async =>
+            searched = await context.push<InventoryMealFoodPick>(
+              AppRoutes.homeFoodPick,
+              extra: const FoodPickRouteArgs(),
+            ),
       ),
     );
     await _pumpVisibleStep(tester);
@@ -232,7 +236,10 @@ void main() {
           args: const ProductSearchHubRouteArgs.diary(
             initialIntent: ProductSearchHubInitialIntent.search,
           ),
-          open: (context) => context.push<void>(AppRoutes.homeFoodPick),
+          open: (context) => context.push<void>(
+            AppRoutes.homeFoodPick,
+            extra: const FoodPickRouteArgs(),
+          ),
         ),
       );
       await _pumpVisibleStep(tester);
@@ -258,7 +265,10 @@ void main() {
           preselectedMealType: MealType.lunch,
           preselectedLoggedAt: DateTime(2026, 5, 14, 12),
         ),
-        open: (context) => context.push<void>(AppRoutes.homeFoodPick),
+        open: (context) => context.push<void>(
+          AppRoutes.homeFoodPick,
+          extra: const FoodPickRouteArgs(),
+        ),
         overrides: [
           firebaseAuthProvider.overrideWithValue(auth),
           plannedEntryRepositoryProvider.overrideWithValue(plans),
@@ -303,7 +313,10 @@ void main() {
           preselectedMealType: MealType.lunch,
           preselectedLoggedAt: DateTime(2026, 5, 13, 12),
         ),
-        open: (context) => context.push<void>(AppRoutes.homeFoodPick),
+        open: (context) => context.push<void>(
+          AppRoutes.homeFoodPick,
+          extra: const FoodPickRouteArgs(),
+        ),
         overrides: [
           firebaseAuthProvider.overrideWithValue(auth),
           plannedEntryRepositoryProvider.overrideWithValue(plans),

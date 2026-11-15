@@ -9,18 +9,20 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
-import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
-import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 /// A plan of [portions] portions of the Kochbuch [template] on [loggedDay],
 /// or null when it has nothing to plan.
 ///
 /// A recipe is cooked on paper for [cookedPortions] portions from the
-/// Vorrat items in [assignments]; an ingredient without an item leaves the
-/// plan a reminder without kcal ([CalorieEntry.nutritionPending]). A Vorlage
-/// keeps its own values.
+/// Vorrat items in [assignments]. When an ingredient has no item, or the
+/// items give no kcal, the plan is a portion of the recipe that counts its
+/// AI estimate ([CalorieEntry.nutritionEstimated]) and lists no foods, if
+/// the estimate fits the recipe's lines and portions. Else an ingredient
+/// without an item makes it a reminder without kcal
+/// ([CalorieEntry.nutritionPending]), and items that give no kcal make it a
+/// plan of 0 kcal. A Vorlage keeps its own values.
 ///
 /// shortcut: a plan takes no stock, so each assigned item counts as a full
 /// pack; an ingredient that needs more than that stays open. Give the
@@ -50,45 +52,73 @@ CalorieEntry? buildTemplatePlanEntry({
   if (meal == null) {
     return null;
   }
-  return buildConsumedPreparedMealCalorieEntry(
-    meal: meal,
-    consumedPortions: portions,
-    mealType: mealType,
-    now: now,
-    nextEntryId: nextEntryId,
-    loggedDay: loggedDay,
-  )?.copyWith(
-    bundleSourcePreparedMealId: null,
-    bundleSourceTemplateId: template.id,
+  final plan =
+      buildConsumedPreparedMealCalorieEntry(
+        meal: meal,
+        consumedPortions: portions,
+        mealType: mealType,
+        now: now,
+        nextEntryId: nextEntryId,
+        loggedDay: loggedDay,
+      )?.copyWith(
+        bundleSourcePreparedMealId: null,
+        bundleSourceTemplateId: template.id,
+      );
+  final estimate = template.recipeEstimate;
+  if (plan == null ||
+      !(plan.nutritionPending || plan.totalKcal <= 0) ||
+      estimate == null ||
+      !estimate.isFor(template.recipeIngredients, template.totalPortions)) {
+    return plan;
+  }
+  // A meal plan counts as 100 g, so its values per 100 are its totals.
+  return plan.copyWith(
+    per100Kcal: estimate.kcal * portions,
+    per100Protein: estimate.protein * portions,
+    per100Carbs: estimate.carbs * portions,
+    per100Fat: estimate.fat * portions,
+    totalKcal: estimate.kcal * portions,
+    totalProtein: estimate.protein * portions,
+    totalCarbs: estimate.carbs * portions,
+    totalFat: estimate.fat * portions,
+    nutritionPending: false,
+    nutritionEstimated: true,
+    bundleComponents: const [],
   );
 }
 
 /// [plan] of the Kochbuch [template] planned again from the Vorrat [items]
 /// now ([templatePlanAssignments]), for the plan's cooked and eaten
 /// portions. It keeps the plan's id, user, day, meal, and times; null when
-/// the recipe has nothing to eat.
+/// the recipe has nothing to eat, or gives an estimated plan no kcal.
 CalorieEntry? replanTemplatePlan(
   CalorieEntry plan,
   PreparedMeal template, {
   required List<InventoryItem> items,
   required TemplateIngredientParser parser,
-}) =>
-    buildTemplatePlanEntry(
-      template: template,
-      cookedPortions: plan.bundleTotalPortions ?? template.totalPortions,
-      assignments: templatePlanAssignments(template, items, parser: parser),
-      items: items,
-      parser: parser,
-      mealType: plan.mealType,
-      loggedDay: plan.loggedAt,
-      now: () => plan.updatedAt,
-      nextEntryId: () => plan.id,
-      portions: plan.bundleConsumedPortions ?? 1,
-    )?.copyWith(
-      userId: plan.userId,
-      loggedAt: plan.loggedAt,
-      createdAt: plan.createdAt,
-    );
+}) {
+  final counted =
+      buildTemplatePlanEntry(
+        template: template,
+        cookedPortions: plan.bundleTotalPortions ?? template.totalPortions,
+        assignments: templatePlanAssignments(template, items, parser: parser),
+        items: items,
+        parser: parser,
+        mealType: plan.mealType,
+        loggedDay: plan.loggedAt,
+        now: () => plan.updatedAt,
+        nextEntryId: () => plan.id,
+        portions: plan.bundleConsumedPortions ?? 1,
+      )?.copyWith(
+        userId: plan.userId,
+        loggedAt: plan.loggedAt,
+        createdAt: plan.createdAt,
+      );
+  // An estimated plan keeps its values while the recipe gives no kcal.
+  return plan.nutritionEstimated && (counted?.totalKcal ?? 0) <= 0
+      ? null
+      : counted;
+}
 
 /// The Vorrat items in [items] that supply each ingredient of [recipe], as
 /// the recipe page picks them ([ingredientStockPick]). A plan cooks from
@@ -188,52 +218,6 @@ Map<String, int> templatePlanIngredientNeeds({
       if ((amount * share).ceil() case final needed when needed > 0) id: needed,
   };
 }
-
-/// The ingredients of the recipe [template] in [plan] that no Vorrat item in
-/// [items] stands for, with their share of the recipe amount in grams or
-/// milliliters when the line gives one. Ignored lines and Vorlagen have
-/// none.
-List<PlanUnstockedIngredient> templatePlanUnstockedIngredients({
-  required CalorieEntry plan,
-  required PreparedMeal template,
-  required List<InventoryItem> items,
-  required TemplateIngredientParser parser,
-}) {
-  final cookedPortions = plan.bundleTotalPortions ?? template.totalPortions;
-  final share = (plan.bundleConsumedPortions ?? 1) / max(1, cookedPortions);
-  final assignments = templatePlanAssignments(template, items, parser: parser);
-  return [
-    for (final ingredient in template.recipeIngredients)
-      if (!template.ignoredRecipeIngredients.contains(ingredient) &&
-          (assignments[ingredient]?.isEmpty ?? true))
-        _unstocked(
-          ingredient,
-          parser.parseRequirement(
-            ingredient: ingredient,
-            selectedPortions: max(1, cookedPortions),
-            basePortions: max(1, template.totalPortions),
-          ),
-          share,
-        ),
-  ];
-}
-
-PlanUnstockedIngredient _unstocked(
-  String ingredient,
-  TemplateIngredientRequirement? requirement,
-  double share,
-) => switch (requirement?.unit) {
-  TemplateIngredientUnit.gram || TemplateIngredientUnit.milliliter => (
-    name: requirement!.name,
-    amount: requirement.amount * share,
-    inMilliliters: requirement.unit == TemplateIngredientUnit.milliliter,
-  ),
-  _ => (
-    name: requirement?.name ?? ingredient.trim(),
-    amount: null,
-    inMilliliters: false,
-  ),
-};
 
 // A plan takes no stock, so each item counts as a full pack.
 List<InventoryItem> _fullPacks(List<InventoryItem> items) => [

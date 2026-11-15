@@ -65,6 +65,7 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   portionAmount: (json['portion_amount'] as num?)?.toDouble(),
   portionLabel: json['portion_label'] as String?,
   pendingNutrition: json['nutrition_pending'] as bool?,
+  estimatedNutrition: json['nutrition_estimated'] as bool?,
 );
 
 Map<String, dynamic> _$CalorieEntryToJson(
@@ -112,6 +113,7 @@ Map<String, dynamic> _$CalorieEntryToJson(
   'portion_amount': instance.portionAmount,
   'portion_label': instance.portionLabel,
   'nutrition_pending': ?instance.pendingNutrition,
+  'nutrition_estimated': ?instance.estimatedNutrition,
 };
 
 const _$MealTypeEnumMap = {

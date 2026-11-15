@@ -66,6 +66,8 @@ class _FailingNotifications extends FakeLocalNotifications {
     required String title,
     required String body,
     required String payload,
+    bool exact = false,
+    AlarmStyle? alarm,
   }) async {
     if (id == failScheduleFor) throw StateError('no alarm');
     await super.schedule(

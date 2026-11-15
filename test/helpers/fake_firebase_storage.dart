@@ -75,6 +75,14 @@ class _FakeReference extends Fake implements Reference {
   }
 
   @override
+  Future<String> getDownloadURL() async {
+    if (!_storage.files.contains(fullPath)) {
+      throw FirebaseException(plugin: 'storage', code: 'object-not-found');
+    }
+    return 'https://example.test/$fullPath';
+  }
+
+  @override
   Future<FullMetadata> getMetadata() async {
     if (!_storage.files.contains(fullPath)) {
       throw FirebaseException(plugin: 'storage', code: 'object-not-found');

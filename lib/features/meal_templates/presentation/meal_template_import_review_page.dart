@@ -10,7 +10,8 @@ import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines meal template import review page.
+/// Shows an imported recipe before it is saved as a template. Saving pops
+/// the page with the saved template's id.
 class MealTemplateImportReviewPage extends ConsumerStatefulWidget {
   /// The meal template import review page.
   const new({required this.args, super.key});
@@ -157,22 +158,15 @@ class _MealTemplateImportReviewPageState
       _isSaving = false;
     });
 
-    final l10n = AppLocalizations.of(context)!;
     final templateId = result.templateId;
     if (result.isSuccess && templateId != null) {
-      final container = ProviderScope.containerOf(context, listen: false);
-      _showSnackBar(
-        l10n.preparedMealTemplateSavedMessage,
-        onUndo: () => container
-            .read(preparedMealTemplatesControllerProvider.notifier)
-            .deleteTemplate(templateId),
-      );
-      context.pop();
+      // The import flow goes on to the saved recipe.
+      context.pop(templateId);
       return;
     }
 
-    _showSnackBar(
-      _saveFailureMessage(l10n, result),
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      _saveFailureMessage(AppLocalizations.of(context)!, result),
       tone: AppSnackBarTone.error,
     );
   }
@@ -188,14 +182,5 @@ class _MealTemplateImportReviewPageState
       PreparedMealTemplateSaveFailureReason.saveFailed ||
       null => l10n.preparedMealTemplateCreateFailedMessage,
     };
-  }
-
-  void _showSnackBar(
-    String message, {
-    AppSnackBarTone tone = AppSnackBarTone.success,
-    Future<bool> Function()? onUndo,
-  }) {
-    ScaffoldMessenger.of(context)
-        .showAppSnackBar(message, tone: tone, onUndo: onUndo);
   }
 }

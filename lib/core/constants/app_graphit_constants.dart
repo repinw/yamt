@@ -82,6 +82,21 @@ abstract final class AppGraphit {
   /// Height of the picture on a recipe card.
   static const double recipeCardPicture = 116;
 
+  /// Blur of the light shadow under a recipe card.
+  static const double recipeCardShadowBlur = 8;
+
+  /// Downward offset of the light shadow under a recipe card.
+  static const double recipeCardShadowOffset = 2;
+
+  /// Size of the spinner where a recipe card's estimate will stand.
+  static const double recipeCardSpinner = 12;
+
+  /// Stroke of the spinner on a recipe card.
+  static const double recipeCardSpinnerStroke = 1.5;
+
+  /// Opacity of the light shadow under a recipe card.
+  static const double recipeCardShadowAlpha = 0.18;
+
   /// Smallest height of a Vorlage tile.
   static const double stripTileMinHeight = 150;
 
@@ -100,14 +115,8 @@ abstract final class AppGraphit {
   /// Line height of a large display number or name.
   static const double displayLineHeight = 1;
 
-  /// Thickness of the underline that marks an amount in an instruction.
+  /// Thickness of the underline under a text action, such as "Bearbeiten".
   static const double highlightUnderline = 2;
-
-  /// Icon in the round button of the voice zone.
-  static const double voiceZoneIcon = 40;
-
-  /// Smallest height of the voice zone, so it stays easy to hit.
-  static const double voiceZoneMinHeight = 220;
 
   /// Opacity of a row that is not real yet: one that speech recognition is
   /// still writing, or a plan.
@@ -122,19 +131,35 @@ abstract final class AppGraphit {
   /// Height of the recipe photo at the top of the recipe page.
   static const double recipeHeroHeight = 280;
 
+  /// Width to height of the picture at the top of a recipe idea.
+  static const double recipeIdeaPictureAspectRatio = 16 / 9;
+
+  /// Edge length of the photo button of the recipe editor.
+  static const double editorPhoto = 72;
+
   /// Opacity of the dark scrim at the lower edge of a photo with text on it.
   static const double photoScrimOpacity = 0.92;
 
   /// Opacity of the background of a button on a photo.
   static const double photoButtonOpacity = 0.5;
 
-  /// Share of the stock square that the missing part of an ingredient
-  /// fills.
-  static const double restSquareFill = 0.5;
-
-  /// Largest share of the screen height that a picker sheet takes.
-  static const double pickerSheetHeightFactor = 0.7;
-
   /// Duration of a state change, such as a progress segment filling.
   static const Duration stateChange = Duration(milliseconds: 240);
+
+  /// Smallest height of the large button that a page offers first, such as
+  /// "Packung scannen".
+  static const double leadButtonMinHeight = 112;
+
+  /// Icon in the large button that a page offers first.
+  static const double leadButtonIcon = 48;
+
+  /// Smallest height of a row that picks one food.
+  static const double foodRowMinHeight = 64;
+
+  /// Opacity of the accent behind a line that confirms what the app did,
+  /// such as "1 kg eingetragen".
+  static const double confirmTintOpacity = 0.16;
+
+  /// Diameter of the check mark circle of such a line.
+  static const double confirmCheck = 28;
 }

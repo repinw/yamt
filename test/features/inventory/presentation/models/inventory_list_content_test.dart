@@ -221,4 +221,52 @@ void main() {
     expect(entry.isOpen, isTrue);
     expect(entry.isLow, isFalse);
   });
+
+  group('compareInventoryEntries', () {
+    final entries = [
+      _food('b', left: 100, day: 3, eatenAt: DateTime(2026, 9, 6)),
+      _food('a', left: 400, day: 5),
+      _food('c', left: 250, day: 4, eatenAt: DateTime(2026, 9, 8)),
+      _food('d', left: 250, day: 4, eatenAt: DateTime(2026, 9, 8)),
+    ];
+
+    for (final mode in InventoryItemSortMode.values) {
+      test('orders the Vorrat list the same way under ${mode.name}', () {
+        final sorted = [for (final item in entries) InventoryFoodEntry(item)]
+          ..sort((a, b) => compareInventoryEntries(a, b, mode));
+
+        expect(
+          _ids(
+            _build(
+              items: entries,
+              preferences: InventoryListViewPreferences(sortMode: mode),
+            ),
+          ),
+          [for (final entry in sorted) entry.id],
+        );
+      });
+    }
+
+    test('entries that tie follow their name, then their id', () {
+      final first = InventoryFoodEntry(_food('c', left: 250));
+      final second = InventoryFoodEntry(_food('d', left: 250));
+
+      expect(
+        compareInventoryEntries(
+          first,
+          second,
+          InventoryItemSortMode.availableAmountAscending,
+        ),
+        isNegative,
+      );
+      expect(
+        compareInventoryEntries(
+          second,
+          first,
+          InventoryItemSortMode.availableAmountAscending,
+        ),
+        isPositive,
+      );
+    });
+  });
 }

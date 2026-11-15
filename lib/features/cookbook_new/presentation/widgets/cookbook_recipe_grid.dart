@@ -6,19 +6,31 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_recipe_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Recipes in two columns; each row is as tall as its taller card.
+/// Recipes in two columns; each row is as tall as its taller card. Without
+/// recipes, the ways to add one and "Rezept hinzufügen".
 class CookbookRecipeGrid extends StatelessWidget {
   /// Creates the grid of [recipes].
   const new({
     required this.recipes,
+    required this.onAdd,
     required this.onOpen,
     required this.onRemove,
     required this.onPlan,
+    this.estimating = const {},
     super.key,
   });
 
   /// The recipes with their stock flags.
   final List<CookbookEntry> recipes;
+
+  /// Key of "Rezept hinzufügen" while there is no recipe.
+  static const addKey = ValueKey<String>('cookbook-recipes-add');
+
+  /// Ids of the recipes whose estimate is running or waiting for its turn.
+  final Set<String> estimating;
+
+  /// Opens "Neues Rezept".
+  final VoidCallback onAdd;
 
   /// Opens a recipe.
   final ValueChanged<CookbookEntry> onOpen;
@@ -32,10 +44,23 @@ class CookbookRecipeGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (recipes.isEmpty) {
-      return Text(
-        AppLocalizations.of(context)!.cookbookRecipesEmpty,
-        style: Theme.of(context).textTheme.bodyMedium
-            ?.copyWith(color: FoodLabelColors.of(context).muted),
+      final l10n = AppLocalizations.of(context)!;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.md,
+        children: [
+          Text(
+            l10n.cookbookRecipesEmpty,
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: FoodLabelColors.of(context).muted),
+          ),
+          FilledButton.icon(
+            key: addKey,
+            onPressed: onAdd,
+            icon: const Icon(Icons.add_rounded),
+            label: Text(l10n.cookbookRecipesAdd),
+          ),
+        ],
       );
     }
     return Column(
@@ -62,6 +87,7 @@ class CookbookRecipeGrid extends StatelessWidget {
     return CookbookRecipeCard(
       key: CookbookRecipeCard.cardKey(entry.meal.id),
       entry: entry,
+      isEstimating: estimating.contains(entry.meal.id),
       onOpen: () => onOpen(entry),
       onRemove: () => onRemove(entry),
       onPlan: () => onPlan(entry),

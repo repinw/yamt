@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/firestore_prepared_meal_template_repository.dart';
@@ -34,6 +35,17 @@ class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
     required Map<String, dynamic> data,
   }) async {
     writes.add('save $householdId/$id');
+    return true;
+  }
+
+  @override
+  Future<bool> update({
+    required String householdId,
+    required String id,
+    required Map<String, dynamic>? Function(Map<String, dynamic> current)
+    change,
+  }) async {
+    writes.add('update $householdId/$id');
     return true;
   }
 
@@ -125,6 +137,79 @@ void main() {
       templates.map((template) => template.id),
       unorderedEquals(['from-first', 'from-second']),
     );
+  });
+
+  group('update', () {
+    late FakeFirebaseFirestore firestore;
+    late FirestorePreparedMealTemplateRepository repository;
+
+    Future<Object?> storedPayload(String id) async =>
+        (await firestore
+                .doc('households/household-1/prepared_meal_templates/$id')
+                .get())
+            .data()?[encryptedPayloadField];
+
+    setUp(() async {
+      firestore = FakeFirebaseFirestore();
+      repository = FirestorePreparedMealTemplateRepository(
+        household: (
+          householdId: 'household-1',
+          store: FirestorePreparedMealTemplateStore(
+            firestore: firestore,
+            cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+          ),
+        ),
+        sessionShutdownSignal: SessionShutdownSignal(),
+      );
+    });
+
+    test('writes what the change makes of the stored template', () async {
+      await repository.save(
+        preparedMealTestData(id: 'soup').copyWith(name: 'Stored'),
+      );
+
+      final written = await repository.update(
+        'soup',
+        (current) => current.copyWith(name: '${current.name} and changed'),
+      );
+
+      expect(written, isTrue);
+      final stored = await repository.readAll();
+      expect(stored.single.name, 'Stored and changed');
+    });
+
+    test('leaves a template that is gone gone', () async {
+      var asked = false;
+
+      final written = await repository.update('soup', (current) {
+        asked = true;
+        return current;
+      });
+
+      expect(written, isFalse);
+      expect(asked, isFalse);
+      expect(await repository.readAll(), isEmpty);
+    });
+
+    test('writes nothing when the change drops it', () async {
+      await repository.save(preparedMealTestData(id: 'soup'));
+      final before = await storedPayload('soup');
+
+      final written = await repository.update('soup', (_) => null);
+
+      expect(written, isFalse);
+      // A new write would seal the document with another nonce.
+      expect(await storedPayload('soup'), before);
+    });
+
+    test('writes nothing without a household', () async {
+      final signedOut = FirestorePreparedMealTemplateRepository(
+        household: null,
+        sessionShutdownSignal: SessionShutdownSignal(),
+      );
+
+      expect(await signedOut.update('soup', (current) => current), isFalse);
+    });
   });
 
   test('watchAll rethrows firestore permission denied errors', () async {

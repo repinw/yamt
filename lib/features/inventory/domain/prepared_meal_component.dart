@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_json.dart';
 import 'package:yamt/features/inventory/domain/product_missing_values.dart';
 
@@ -235,7 +236,8 @@ class PreparedMealComponent {
 }
 
 /// The factor that turns the per-100 values of [item] into the nutrients of
-/// [amount] of it in [unit]: a hundredth of grams or milliliters, or the
+/// [amount] of it in [unit]: a hundredth of grams or milliliters, also of
+/// pieces with a piece weight (`inventoryStockInConsumedUnit`), else the
 /// count of pieces.
 double preparedMealNutritionFactor({
   required InventoryItem item,
@@ -243,6 +245,10 @@ double preparedMealNutritionFactor({
   required InventoryAmountUnit unit,
 }) {
   if (unit == InventoryAmountUnit.piece) {
+    if (inventoryStockInConsumedUnit(item, amount)
+        case (amount: final grams, unit: _)?) {
+      return grams / 100;
+    }
     return inventoryAmountToDisplayValue(
       amount: amount,
       unit: unit,

@@ -3,49 +3,28 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 
-/// The top row of a page that leads through a recipe step by step: a back
-/// or close button, an optional [title] in the middle, and a [caption] at
-/// the end, both in small capitals.
+/// The top row of the recipe editor: a close button and a [caption] at the
+/// end, in small capitals.
 class RecipeFlowTopBar extends StatelessWidget {
   /// Creates the row.
   const new({
-    required this.onBack,
+    required this.onClose,
     required this.caption,
-    this.title,
-    this.captionIcon,
-    this.closes = false,
-    this.backKey,
+    required this.closeKey,
     super.key,
   });
 
-  /// Goes back; `null` turns the button off.
-  final VoidCallback? onBack;
+  /// Closes the page; `null` turns the button off.
+  final VoidCallback? onClose;
 
   /// The caption at the end.
   final String caption;
 
-  /// The caption in the middle.
-  final String? title;
-
-  /// An icon before [caption], on a row without [title].
-  final IconData? captionIcon;
-
-  /// Whether the button closes the page instead of going one step back.
-  final bool closes;
-
-  /// Key of the back button.
-  final Key? backKey;
+  /// Key of the close button.
+  final Key closeKey;
 
   @override
   Widget build(BuildContext context) {
-    final colors = FoodLabelColors.of(context);
-    final materialL10n = MaterialLocalizations.of(context);
-    final style = Theme.of(context).textTheme.labelMedium?.copyWith(
-      color: colors.muted,
-      letterSpacing: AppGraphit.kickerTracking,
-    );
-    final title = this.title;
-    final captionIcon = this.captionIcon;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.sm,
@@ -56,49 +35,22 @@ class RecipeFlowTopBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            key: backKey,
-            tooltip: closes
-                ? materialL10n.closeButtonTooltip
-                : materialL10n.backButtonTooltip,
-            onPressed: onBack,
-            icon: closes
-                ? const Icon(Icons.close_rounded)
-                : const BackButtonIcon(),
+            key: closeKey,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: onClose,
+            icon: const Icon(Icons.close_rounded),
           ),
-          if (title != null) ...[
-            Expanded(
-              child: Text(
-                title.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: style,
+          // A long caption wraps instead of running out of the row.
+          Expanded(
+            child: Text(
+              caption.toUpperCase(),
+              textAlign: TextAlign.end,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: FoodLabelColors.of(context).muted,
+                letterSpacing: AppGraphit.kickerTracking,
               ),
             ),
-            Text(caption.toUpperCase(), style: style),
-          ] else
-            // A long caption wraps instead of running out of the row.
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (captionIcon != null)
-                    Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.sm),
-                      child: Icon(
-                        captionIcon,
-                        size: AppGraphit.chipIcon,
-                        color: colors.muted,
-                      ),
-                    ),
-                  Flexible(
-                    child: Text(
-                      caption.toUpperCase(),
-                      textAlign: TextAlign.end,
-                      style: style,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          ),
         ],
       ),
     );

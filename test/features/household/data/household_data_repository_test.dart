@@ -16,6 +16,7 @@ void main() {
       'kitchen_utensils',
       'inventory_discard_events',
       'inventory_activity_events',
+      'cook_runs',
     ]);
   });
 

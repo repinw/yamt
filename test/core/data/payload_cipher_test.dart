@@ -96,10 +96,10 @@ void main() {
   test('keyedId keeps the ids it had without a salt', () async {
     final dataKey = SecretKey(List<int>.generate(32, (i) => i));
     // The derivation before the salt: HKDF with an empty salt.
-    final macKey = await Hkdf(hmac: Hmac.sha256(), outputLength: 32).deriveKey(
-      secretKey: dataKey,
-      info: utf8.encode('yamt keyed id'),
-    );
+    final macKey = await Hkdf(
+      hmac: Hmac.sha256(),
+      outputLength: 32,
+    ).deriveKey(secretKey: dataKey, info: utf8.encode('yamt keyed id'));
     final mac = await Hmac.sha256().calculateMac(
       utf8.encode('health-weight-sample:a:80.00'),
       secretKey: macKey,

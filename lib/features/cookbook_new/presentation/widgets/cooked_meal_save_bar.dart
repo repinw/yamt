@@ -38,7 +38,7 @@ class CookedMealSaveBar extends StatelessWidget {
               foregroundColor: colors.ink,
               minimumSize: const Size(0, AppGraphit.buttonHeight),
             ),
-            child: Text(l10n.freeCookingDiscardAction),
+            child: Text(l10n.cookingDiscardAction),
           ),
           Expanded(
             child: FilledButton(

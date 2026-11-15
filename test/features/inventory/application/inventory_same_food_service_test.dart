@@ -152,6 +152,19 @@ void main() {
     verifyNever(() => items.readAllForChange());
   });
 
+  test('a recipe entry without Vorrat foods has no packs', () async {
+    when(() => items.readAllForChange())
+        .thenAnswer((_) async => [_oats('oats-2')]);
+    final recipe = _entry().copyWith(
+      bundleSourceTemplateId: 'recipe-1',
+      sourceInventoryItemId: null,
+      sourceInventoryAmountToRestore: null,
+    );
+
+    expect(await service().loadPacksToRepeat(recipe), isEmpty);
+    verifyNever(() => items.readAllForChange());
+  });
+
   test('eats an entry again from a pack with its stock in one write', () async {
     final pack = _oats('oats-2');
     const pending = PendingInventoryConsumption(

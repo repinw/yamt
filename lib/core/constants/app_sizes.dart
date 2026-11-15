@@ -228,4 +228,7 @@ abstract final class AppSizes {
 
   /// Diameter of a color dot in the sample of a design.
   static const double customColorDot = 14;
+
+  /// Largest width of the pot chip of a line on "Portion".
+  static const double kochmodusPotChipMaxWidth = 200;
 }

@@ -12,6 +12,17 @@ abstract interface class PreparedMealTemplateRepository {
   /// Writes [template] alone; the other templates stay untouched.
   Future<bool> save(PreparedMeal template);
 
+  /// Changes the template [id] in a transaction, so that nothing written
+  /// since [change] looked at it gets lost: [change] gets the template as it
+  /// is on the server and returns what to write, or `null` to write nothing.
+  /// It can run several times. Returns whether the template was written;
+  /// one that is gone stays gone. Throws when the transaction fails, as it
+  /// does offline.
+  Future<bool> update(
+    String id,
+    PreparedMeal? Function(PreparedMeal current) change,
+  );
+
   /// Deletes the template [templateId] alone.
   Future<bool> delete(String templateId);
 }

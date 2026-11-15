@@ -10,10 +10,13 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_meal_food_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_recipe_food_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_stock_review_flow.dart';
 
 /// Completes a food picked in the product search hub for the route mode:
-/// a picker returns it, a meal asks its amount on the eat page, the Vorrat
+/// a picker returns it, a recipe line takes it from the Vorrat or as a full
+/// pack, a meal asks its amount on the eat page, the Vorrat
 /// and the diary show their page before they save it. [setSaving] tells the
 /// hub page while the food is saved, and [close] closes the hub with its
 /// result.
@@ -31,6 +34,16 @@ Future<InventoryReceiptManualProductResult?> completeProductSearchHubPick({
   if (args.mode == ProductSearchHubMode.selection) {
     close(result);
     return null;
+  }
+  if (args.isRecipe) {
+    final picked = await pickProductSearchHubRecipeFood(
+      context: context,
+      args: args,
+      result: result,
+    );
+    final pick = picked.pick;
+    if (pick != null && context.mounted) close(pick);
+    return pick == null ? picked.result : null;
   }
   if (args.mode == ProductSearchHubMode.mealFood) {
     final picked = await pickProductSearchHubMealFood(

@@ -62,7 +62,11 @@ double? _parseSingleSeparatorNumber(
   final separatorIndex = value.indexOf(separator);
   final integerPart = value.substring(0, separatorIndex);
   final fractionalPart = value.substring(separatorIndex + 1);
-  if (!forceDecimal && fractionalPart.length == 3 && integerPart.length <= 3) {
+  // A thousands group never starts with 0: "0,250" is a decimal.
+  if (!forceDecimal &&
+      fractionalPart.length == 3 &&
+      integerPart.length <= 3 &&
+      !integerPart.startsWith('0')) {
     return double.tryParse(value.replaceAll(separator, ''));
   }
   return double.tryParse(value.replaceAll(separator, '.'));

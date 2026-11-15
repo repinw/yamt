@@ -76,13 +76,16 @@ class DiaryEntryLabelSection extends ConsumerWidget {
     );
   }
 
-  /// The first brand, or what kind of bundle the entry is. Product
-  /// databases often list the retailer, the maker, and the label in one
-  /// comma-separated field.
+  /// The first brand, that the values are estimated, or what kind of
+  /// bundle the entry is. Product databases often list the retailer, the
+  /// maker, and the label in one comma-separated field.
   static String? _brandLine(AppLocalizations l10n, CalorieEntry entry) {
     final brand = entry.brand?.split(',').first.trim();
     if (brand != null && brand.isNotEmpty) {
       return brand;
+    }
+    if (entry.nutritionEstimated) {
+      return l10n.diaryEntryNutritionEstimated;
     }
     if (entry.isCombined) {
       return l10n.caloriesCombinedEntryLabel;
@@ -99,7 +102,8 @@ class DiaryEntryLabelSection extends ConsumerWidget {
     if (entry.isCombined) {
       return l10n.caloriesCombinedFoodCount(entry.bundleComponents.length);
     }
-    if (entry.isBundle) {
+    // A recipe without a Vorrat food is portions too.
+    if (entry.isBundle || entry.bundleSourceTemplateId != null) {
       return l10n.caloriesBundlePortions(
         number.format(entry.bundleConsumedPortions ?? 0),
         entry.bundleTotalPortions ?? 0,

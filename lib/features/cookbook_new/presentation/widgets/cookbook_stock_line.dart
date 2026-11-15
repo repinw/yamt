@@ -5,8 +5,9 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cookbook_new/domain/cookbook_overview.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// One square per food, filled in ink when the Vorrat holds it and in the low
-/// color when it is missing, followed by "Alles da" or the missing count.
+/// One square per food of a Vorlage, in ink when the Vorrat holds it, or per
+/// line of a recipe's run, in ink when assigned, otherwise in the low color;
+/// followed by "Alles da" or the missing count.
 class CookbookStockLine extends StatelessWidget {
   /// Creates the line for the foods of [entry].
   const new({required this.entry, super.key});

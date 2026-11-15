@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -93,7 +94,7 @@ class InventoryEntriesSliver extends ConsumerWidget {
 
     final demand = ref.watch(openPlanDemandProvider).value;
     num planned(InventoryListEntry entry) => switch (entry) {
-      InventoryFoodEntry() => demand?.plannedByItemId[entry.id] ?? 0,
+      InventoryFoodEntry() => demand?.plannedOrReservedOf(entry.id) ?? 0,
       InventoryMealEntry() => demand?.plannedPortionsByMealId[entry.id] ?? 0,
     };
     if (viewMode == InventoryListViewMode.tiles) {

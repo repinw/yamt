@@ -259,6 +259,99 @@ void main() {
       expect(egg.nutritionFacts.salt, 0.5);
     });
 
+    group('preparedMealNutritionFactor', () {
+      InventoryItem pieces({
+        double? pieceWeight,
+        String pieceUnit = 'g',
+        bool progress = false,
+      }) => InventoryItem.create(
+        id: 'buns',
+        name: 'Brötchen',
+        entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+        storeName: 'Store',
+        quantity: 6,
+        initialAmount: progress ? 6000 : 0,
+        currentAmount: progress ? 6000 : 0,
+        amountScale: progress ? 1000 : 1,
+        amountUnit: InventoryAmountUnit.piece,
+        servingQuantity: pieceWeight,
+        servingQuantityUnit: pieceWeight == null ? null : pieceUnit,
+      );
+
+      test('counts 3 pieces of 60 g as 180 g, not as 300 g', () {
+        expect(
+          preparedMealNutritionFactor(
+            item: pieces(pieceWeight: 60),
+            amount: 3,
+            unit: InventoryAmountUnit.piece,
+          ),
+          closeTo(1.8, 1e-9),
+        );
+      });
+
+      test('uses the piece weight of an item with a piece scale', () {
+        expect(
+          preparedMealNutritionFactor(
+            item: pieces(pieceWeight: 60, progress: true),
+            amount: 3000,
+            unit: InventoryAmountUnit.piece,
+          ),
+          closeTo(1.8, 1e-9),
+        );
+      });
+
+      test('counts the label once per piece without a piece weight', () {
+        expect(
+          preparedMealNutritionFactor(
+            item: pieces(),
+            amount: 3,
+            unit: InventoryAmountUnit.piece,
+          ),
+          3,
+        );
+        expect(
+          preparedMealNutritionFactor(
+            item: pieces(progress: true),
+            amount: 3000,
+            unit: InventoryAmountUnit.piece,
+          ),
+          3,
+        );
+      });
+
+      test('ignores a piece weight of 0 as no piece weight', () {
+        expect(
+          preparedMealNutritionFactor(
+            item: pieces(pieceWeight: 0),
+            amount: 2,
+            unit: InventoryAmountUnit.piece,
+          ),
+          2,
+        );
+      });
+
+      test('stays a hundredth of the amount for grams and milliliters', () {
+        final rice = _sourceItem(amountUnit: InventoryAmountUnit.gram);
+        expect(
+          preparedMealNutritionFactor(
+            item: rice,
+            amount: 250,
+            unit: InventoryAmountUnit.gram,
+          ),
+          2.5,
+        );
+        // Even a piece weight does not change a food counted in ml.
+        expect(
+          preparedMealNutritionFactor(
+            item: pieces(pieceWeight: 60),
+            amount: 150,
+            unit: InventoryAmountUnit.milliliter,
+          ),
+          1.5,
+        );
+      });
+    });
+
     test('has only the counted energy and macros without a label', () {
       final facts = _component(
         sourceItem: _sourceItem(amountUnit: InventoryAmountUnit.gram),

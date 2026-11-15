@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -37,6 +38,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/models/food_pick_route_args.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_edit_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
@@ -486,14 +488,21 @@ Future<void> _pumpTestApp(
   InventoryDiscardEventRepository? discardEventRepository,
   bool includeHomeShellChrome = false,
   Widget Function(Widget child)? shellBuilder,
+  ValueListenable<String?>? openMealId,
 }) async {
   final routes = <RouteBase>[
     GoRoute(
       path: AppRoutes.root,
       builder: (context, state) {
-        final page = InventoryPage(
-          includeHomeShellChrome: includeHomeShellChrome,
-        );
+        final page = openMealId == null
+            ? InventoryPage(includeHomeShellChrome: includeHomeShellChrome)
+            : ValueListenableBuilder<String?>(
+                valueListenable: openMealId,
+                builder: (context, id, _) => InventoryPage(
+                  includeHomeShellChrome: includeHomeShellChrome,
+                  openMealId: id,
+                ),
+              );
         if (shellBuilder == null) {
           return Scaffold(body: page);
         }
@@ -653,6 +662,79 @@ Future<_RecordingPreparedMealRepository> _openMealEditor(
 }
 
 void main() {
+  group('InventoryPage openMealId', () {
+    const detailKey = Key('eat_meal_action_edit');
+
+    Future<void> pump(
+      WidgetTester tester,
+      ValueNotifier<String?> openMealId,
+      List<PreparedMeal> meals,
+    ) async {
+      final repository = _FakeFridgeItemRepository(
+        onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
+      );
+      addTearDown(repository.dispose);
+      final mealRepository = _RecordingPreparedMealRepository()..saved = meals;
+      await _pumpTestApp(
+        tester,
+        repository,
+        openMealId: openMealId,
+        overrides: <Override>[
+          preparedMealRepositoryProvider.overrideWithValue(mealRepository),
+        ],
+      );
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> closeDetail(WidgetTester tester) async {
+      Navigator.of(tester.element(find.byKey(detailKey))).pop();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('opens the page of the meal once, not again on a rebuild', (
+      tester,
+    ) async {
+      final id = ValueNotifier<String?>('bowl');
+      addTearDown(id.dispose);
+      await pump(tester, id, [_bowl()]);
+
+      expect(find.byKey(detailKey), findsOneWidget);
+
+      await closeDetail(tester);
+      expect(find.byKey(detailKey), findsNothing);
+
+      // A rebuild of the page with the same id does not open it again.
+      id.value = 'bowl';
+      await tester.pumpAndSettle();
+      tester.element(find.byType(InventoryPage)).markNeedsBuild();
+      await tester.pumpAndSettle();
+      expect(find.byKey(detailKey), findsNothing);
+    });
+
+    testWidgets('opens nothing for an unknown meal id', (tester) async {
+      final id = ValueNotifier<String?>('gone');
+      addTearDown(id.dispose);
+      await pump(tester, id, [_bowl()]);
+
+      expect(find.byKey(detailKey), findsNothing);
+      expect(find.text('Milk bowl'), findsOneWidget);
+    });
+
+    testWidgets('opens nothing without an id, and a new id opens its meal', (
+      tester,
+    ) async {
+      final id = ValueNotifier<String?>(null);
+      addTearDown(id.dispose);
+      await pump(tester, id, [_bowl()]);
+      expect(find.byKey(detailKey), findsNothing);
+
+      id.value = 'bowl';
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(detailKey), findsOneWidget);
+    });
+  });
+
   testWidgets('shows empty state when repository has no items', (tester) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => const <InventoryItem>[],
@@ -1713,7 +1795,7 @@ void main() {
             ),
             child: Text(
               'pick '
-              '${state.uri.queryParameters[AppRoutes.homeFoodPickQueryParam]}',
+              '${(state.extra! as FoodPickRouteArgs).query}',
             ),
           ),
         ),

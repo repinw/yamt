@@ -16,7 +16,10 @@ import '../../../../../helpers/memory_app_preferences.dart';
 void main() {
   late ProviderContainer container;
 
-  Future<void> pumpSheet(WidgetTester tester) async {
+  Future<void> pumpSheet(
+    WidgetTester tester, {
+    bool showHideConsumed = true,
+  }) async {
     container = ProviderContainer(
       overrides: [
         appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
@@ -26,15 +29,50 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const MaterialApp(
-          locale: Locale('de'),
+        child: MaterialApp(
+          locale: const Locale('de'),
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: InventorySortSheet()),
+          home: Scaffold(
+            body: InventorySortSheet(showHideConsumed: showHideConsumed),
+          ),
         ),
       ),
     );
   }
+
+  testWidgets('the Vorrat shows "Verbrauchte ausblenden" by default', (
+    tester,
+  ) async {
+    await pumpSheet(tester);
+
+    expect(find.byKey(InventorySortSheet.hideConsumedKey), findsOneWidget);
+    expect(find.byKey(InventorySortSheet.groupByReceiptKey), findsOneWidget);
+  });
+
+  testWidgets('without showHideConsumed that row is gone, the rest stays', (
+    tester,
+  ) async {
+    await pumpSheet(tester, showHideConsumed: false);
+
+    expect(find.byKey(InventorySortSheet.hideConsumedKey), findsNothing);
+    expect(find.byKey(InventorySortSheet.groupByReceiptKey), findsOneWidget);
+    for (final criterion in InventorySortCriterion.values) {
+      expect(
+        find.byKey(InventorySortSheet.criterionKey(criterion)),
+        findsOneWidget,
+      );
+    }
+    await tester.tap(find.byKey(InventorySortSheet.groupByReceiptKey));
+    await tester.pump();
+    expect(
+      container
+          .read(inventoryListViewControllerProvider)
+          .preferences
+          .groupByReceipt,
+      isTrue,
+    );
+  });
 
   InventoryItemSortMode sortMode() =>
       container.read(inventoryListViewControllerProvider).preferences.sortMode;

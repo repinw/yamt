@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
@@ -24,8 +26,10 @@ import 'package:yamt/features/kitchen_utensils/presentation/'
     'kitchen_utensils_page.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_sheet.dart';
+import 'package:yamt/features/recipes/data/cook_run_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/fake_cook_run_repository.dart';
 import '../../../helpers/root_navigator_test_utils.dart';
 import '../../../support/fake_prepared_meal_image_picker.dart';
 
@@ -122,6 +126,12 @@ class _FakePreparedMealTemplateRepository
   ]);
 
   @override
+  Future<bool> update(
+    String id,
+    PreparedMeal? Function(PreparedMeal current) change,
+  ) async => false;
+
+  @override
   Future<bool> delete(String templateId) => _replaceAll([
     for (final stored in const <PreparedMeal>[])
       if (stored.id != templateId) stored,
@@ -199,6 +209,8 @@ Widget _buildCookbookHarness({
     overrides: [
       householdDataOwnerUserIdProvider.overrideWith((ref) => 'owner-1'),
       kitchenUtensilRepositoryProvider.overrideWithValue(kitchenRepository),
+      authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(null)),
+      cookRunRepositoryProvider.overrideWithValue(FakeCookRunRepository()),
       preparedMealTemplateRepositoryProvider.overrideWithValue(
         const _FakePreparedMealTemplateRepository(),
       ),
@@ -290,7 +302,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Pot');
     await tester.enterText(find.widgetWithText(TextField, 'Weight (g)'), '420');
-    await tester.tap(find.widgetWithText(FilledButton, 'Add utensil'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Add'));
     await tester.pumpAndSettle();
 
     expect(find.text('Pot'), findsOneWidget);
@@ -321,6 +333,49 @@ void main() {
     expect(find.text('430 g'), findsOneWidget);
   });
 
+  testWidgets('the add sheet is titled "Add utensil", with a hint for the '
+      'weight, and the edit sheet has the hint and keeps its button', (
+    tester,
+  ) async {
+    final repository = _FakeKitchenUtensilRepository(
+      initialUtensils: [
+        KitchenUtensil(
+          id: 'pot',
+          name: 'Pot',
+          weightGrams: 420,
+          createdAt: DateTime.utc(2026, 11),
+          updatedAt: DateTime.utc(2026, 11),
+        ),
+      ],
+    );
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(_buildKitchenHarness(repository: repository));
+    await tester.pumpAndSettle();
+    const helper = 'Empty, without the lid. Put it on the scale once.';
+
+    await tester.tap(find.byTooltip('Add utensil'));
+    await tester.pumpAndSettle();
+
+    Finder inSheet(String text) => find.descendant(
+      of: find.byType(KitchenUtensilSheet),
+      matching: find.text(text),
+    );
+    expect(inSheet('Add utensil'), findsOneWidget);
+    expect(inSheet(helper), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Add'), findsOneWidget);
+
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Show menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+
+    expect(inSheet(helper), findsOneWidget);
+    expect(inSheet('Add utensil'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Edit'), findsOneWidget);
+  });
+
   testWidgets('validates name or photo and weight', (tester) async {
     final repository = _FakeKitchenUtensilRepository();
     addTearDown(repository.dispose);
@@ -330,13 +385,13 @@ void main() {
 
     await tester.tap(find.byTooltip('Add utensil'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Add utensil'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Add'));
     await tester.pumpAndSettle();
 
     expect(find.text('Please enter a weight greater than 0.'), findsOneWidget);
 
     await tester.enterText(find.widgetWithText(TextField, 'Weight (g)'), '100');
-    await tester.tap(find.widgetWithText(FilledButton, 'Add utensil'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Add'));
     await tester.pumpAndSettle();
 
     expect(find.text('Add a name or photo.'), findsOneWidget);
@@ -353,7 +408,7 @@ void main() {
 
     expect(find.text('Cookbook'), findsOneWidget);
 
-    await tester.tap(find.text('TOOLS'));
+    await tester.tap(find.text('POTS'));
     await tester.pumpAndSettle();
 
     expect(find.text('Kitchen utensils'), findsOneWidget);

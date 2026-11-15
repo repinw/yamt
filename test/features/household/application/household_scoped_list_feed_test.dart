@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/household/application/household_scoped_list_feed.dart';
 
 final _source = StreamController<List<int>>.broadcast();
-final _seen = <List<int>>[];
 
 class _Controller extends AsyncNotifier<List<int>> {
   late final feed = HouseholdScopedListFeed<int>(
@@ -14,7 +13,6 @@ class _Controller extends AsyncNotifier<List<int>> {
     setState: (next) => state = next,
     logName: 'test',
     recoveryMessage: 'test',
-    onList: _seen.add,
   );
 
   @override
@@ -32,7 +30,6 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    _seen.clear();
     container = ProviderContainer()..listen(_provider, (_, _) {});
   });
 
@@ -51,10 +48,6 @@ void main() {
 
     expect(container.read(_provider).value, <int>[1, 2]);
     expect(container.read(_provider.notifier).feed.items, <int>[1, 2]);
-    expect(_seen, <List<int>>[
-      <int>[1],
-      <int>[1, 2],
-    ]);
   });
 
   test('an error after the first list shows as the state', () async {

@@ -8,8 +8,6 @@
 const architectureBaseline = <String, Map<String, int>>{
   'feature-order': {},
   'foreign-presentation': {
-    'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_dialog.dart':
-        1,
     'lib/features/auth/presentation/welcome_page.dart': 1,
     'lib/features/auth/presentation/widgets/auth_action_button/auth_action_button.dart':
         1,
@@ -193,7 +191,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/domain/inventory_item.dart': 1,
     'lib/features/inventory/domain/prepared_meal.dart': 1,
     'lib/features/inventory/presentation/controllers/prepared_meal_templates_controller.dart':
-        2,
+        1,
     'lib/features/kitchen_utensils/application/kitchen_utensil_mutation_service.dart':
         2,
     'lib/features/kitchen_utensils/domain/kitchen_utensil.dart': 1,
@@ -207,14 +205,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/data/global_food_receipt_alias_repository.dart': 1,
   },
   'theme-values': {
-    'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_action_buttons_row.dart':
-        1,
-    'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_loading_view.dart':
-        1,
-    'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_recipe_ingredients_card.dart':
-        5,
-    'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_recipe_stats_row.dart':
-        6,
     'lib/features/calories/presentation/widgets/calorie_goal_training_days_card.dart':
         2,
     'lib/features/inventory/presentation/widgets/inventory_action_picker_sheet.dart':

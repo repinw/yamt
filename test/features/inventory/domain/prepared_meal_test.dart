@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_portions.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
+import 'package:yamt/features/inventory/domain/recipe_estimate.dart';
 
 InventoryItem _sourceItem({
   String id = 'item-1',
@@ -96,6 +97,27 @@ void main() {
       imageUrl: 'https://images.example.com/rice-bowl.jpg',
       recipeUrl: 'https://www.chefkoch.de/rezepte/123/rice-bowl.html',
       recipeInstructions: const <String>['Reis waschen.', 'Reis kochen.'],
+      recipeEstimate: RecipeEstimate(
+        kcal: 412.5,
+        protein: 10,
+        carbs: 60,
+        fat: 12,
+        portions: 4,
+        linesKey: recipeLinesKey(const ['1 Zwiebel', '200 g Reis']),
+        createdAt: DateTime.utc(2026, 3, 27),
+      ),
+      recipeLineWeights: const {
+        '1 Zwiebel': RecipeLineWeight(
+          amount: 150,
+          unit: RecipeLineWeightUnit.gram,
+          source: RecipeLineWeightSource.ai,
+        ),
+        '1 Tasse Milch': RecipeLineWeight(
+          amount: 200,
+          unit: RecipeLineWeightUnit.milliliter,
+          source: RecipeLineWeightSource.user,
+        ),
+      },
       totalPortions: 4,
       remainingPortions: 2.5,
       totalKcal: 720,
@@ -121,9 +143,19 @@ void main() {
       ],
     );
 
-    final roundtrip = PreparedMeal.fromJson(meal.toJson());
+    final json = meal.toJson();
+    final roundtrip = PreparedMeal.fromJson(json);
 
     expect(roundtrip, meal);
+    // The stored keys: a rename would lose what old documents hold.
+    expect(
+      (json['recipe_estimate'] as Map<String, dynamic>)['lines_key'],
+      '1 Zwiebel\n200 g Reis',
+    );
+    expect((json['recipe_line_weights'] as Map<String, dynamic>).keys, [
+      '1 Zwiebel',
+      '1 Tasse Milch',
+    ]);
     expect(roundtrip.imageAssetId, meal.imageAssetId);
     expect(roundtrip.imageUrl, meal.imageUrl);
     expect(roundtrip.recipeUrl, meal.recipeUrl);

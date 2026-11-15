@@ -56,17 +56,23 @@ final class FileShareIntentProvider
 String _$fileShareIntentHash() => r'877187683456d9af03382b9e455b4597e4390f94';
 
 /// Service that monitors platform file share intents and pushes valid paths
-/// to [PendingSharedReceiptPaths].
+/// to [PendingSharedReceiptPaths]. Shared text and links go to
+/// [PendingSharedText], and a share we cannot read raises
+/// [PendingUnreadableShare].
 
 @ProviderFor(SharedReceiptService)
 final sharedReceiptServiceProvider = SharedReceiptServiceProvider._();
 
 /// Service that monitors platform file share intents and pushes valid paths
-/// to [PendingSharedReceiptPaths].
+/// to [PendingSharedReceiptPaths]. Shared text and links go to
+/// [PendingSharedText], and a share we cannot read raises
+/// [PendingUnreadableShare].
 final class SharedReceiptServiceProvider
     extends $AsyncNotifierProvider<SharedReceiptService, void> {
   /// Service that monitors platform file share intents and pushes valid paths
-  /// to [PendingSharedReceiptPaths].
+  /// to [PendingSharedReceiptPaths]. Shared text and links go to
+  /// [PendingSharedText], and a share we cannot read raises
+  /// [PendingUnreadableShare].
   SharedReceiptServiceProvider._()
     : super(
         from: null,
@@ -87,10 +93,12 @@ final class SharedReceiptServiceProvider
 }
 
 String _$sharedReceiptServiceHash() =>
-    r'f5539e02c4109773550274017570c008b92ffaf9';
+    r'589929979d8b0d57915c6336d5e0663090b432f4';
 
 /// Service that monitors platform file share intents and pushes valid paths
-/// to [PendingSharedReceiptPaths].
+/// to [PendingSharedReceiptPaths]. Shared text and links go to
+/// [PendingSharedText], and a share we cannot read raises
+/// [PendingUnreadableShare].
 
 abstract class _$SharedReceiptService extends $AsyncNotifier<void> {
   FutureOr<void> build();

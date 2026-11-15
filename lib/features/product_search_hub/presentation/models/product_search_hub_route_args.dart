@@ -3,6 +3,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_search_request.dart';
+import 'package:yamt/features/inventory/presentation/models/recipe_food_pick.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -39,6 +40,12 @@ class ProductSearchHubRouteArgs {
     this.autofocusSearchField = true,
     this.offersEatInstead = false,
     this.reestimates = false,
+    this.ingredient,
+    this.pieceWeight,
+    this.ingredientUnit,
+    this.ingredientNeed,
+    this.takesFromStock = false,
+    this.heldItemIds = const {},
   });
 
   /// Inventory add route args.
@@ -141,6 +148,36 @@ class ProductSearchHubRouteArgs {
   /// Whether the AI page estimates [item], an AI food, again: it starts
   /// from its photos and description and takes over the result (#763).
   final bool reestimates;
+
+  /// The recipe ingredient a meal food is for, such as "250 g Mehl": the hub
+  /// then asks which food it is ([isRecipe]).
+  final String? ingredient;
+
+  /// The grams or ml of one piece of [ingredient]; a food in pieces without a
+  /// piece weight starts with it.
+  final int? pieceWeight;
+
+  /// The unit [ingredient] is measured in; null for a line without one,
+  /// such as "Salz".
+  final InventoryAmountUnit? ingredientUnit;
+
+  /// What [ingredient] needs, in [ingredientUnit], when the caller knows it.
+  final int? ingredientNeed;
+
+  /// Whether the caller also takes a food that is already in the Vorrat:
+  /// the search then finds the Vorrat's foods too and offers the whole
+  /// Vorrat.
+  final bool takesFromStock;
+
+  /// The Vorrat items that have nothing left for [ingredient]: other cook
+  /// runs or other lines hold all their stock. The pick neither offers them
+  /// nor takes a scanned pack of them; such a product goes in as a new pack.
+  final Set<String> heldItemIds;
+
+  /// Whether the hub finds a food for the recipe line [ingredient]: it asks
+  /// which food it is, scanning first, and returns a [RecipeFoodPick].
+  bool get isRecipe =>
+      mode == ProductSearchHubMode.mealFood && ingredient != null;
 
   /// Whether the hub is running in diary mode.
   bool get isDiary => mode == ProductSearchHubMode.diary;

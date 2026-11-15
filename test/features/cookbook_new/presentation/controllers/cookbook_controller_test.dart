@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/cookbook_new/domain/cookbook_overview.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cookbook_controller.dart';
@@ -13,10 +14,16 @@ import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/data/cook_run_repository.dart';
+import 'package:yamt/features/recipes/domain/cook_line_settlement.dart';
+import 'package:yamt/features/recipes/domain/cook_run.dart';
 
+import '../../../../helpers/fake_cook_run_repository.dart';
 import '../../../../helpers/fake_prepared_meal_repository.dart';
 import '../../../../helpers/fake_prepared_meal_template_repository.dart';
+import '../../../../helpers/fake_signed_in_user.dart';
 import '../../../../support/prepared_meal_test_data.dart';
+import '../../../recipes/cook_run_fixtures.dart';
 
 InventoryItem _item(String name) {
   return InventoryItem.create(
@@ -35,9 +42,16 @@ ProviderContainer _container({
   required List<PreparedMeal> templates,
   required List<PreparedMeal> meals,
   required List<InventoryItem> items,
+  List<CookRun> runs = const [],
 }) {
   final container = ProviderContainer(
     overrides: [
+      authStateChangesProvider.overrideWith(
+        (ref) => Stream.value(FakeSignedInUser('uid-1')),
+      ),
+      cookRunRepositoryProvider.overrideWithValue(
+        FakeCookRunRepository(runs: runs),
+      ),
       cookbookTemplatesProvider.overrideWith((ref) => Stream.value(templates)),
       inventoryQuickEatMealsProvider.overrideWith((ref) => Stream.value(meals)),
       inventoryQuickEatItemsProvider.overrideWith((ref) => Stream.value(items)),
@@ -55,6 +69,10 @@ ProviderContainer _repositoryContainer({
 }) {
   final container = ProviderContainer(
     overrides: [
+      authStateChangesProvider.overrideWith(
+        (ref) => Stream.value(FakeSignedInUser('uid-1')),
+      ),
+      cookRunRepositoryProvider.overrideWithValue(FakeCookRunRepository()),
       preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
       preparedMealRepositoryProvider.overrideWithValue(meals),
       inventoryQuickEatItemsProvider.overrideWith(
@@ -109,14 +127,12 @@ PreparedMeal _fullRecipe() =>
     );
 
 void main() {
-  test('marks recipe ingredients that the Vorrat holds', () async {
+  test('never matches recipe ingredients against the Vorrat', () async {
     final recipe = preparedMealTestData(id: 'pasta').copyWith(
-      recipeIngredients: const [
-        '200 g Pasta',
-        '150 g Tomato sauce',
-        'Salt',
-        'Pepper',
-      ],
+      recipeIngredients: const ['200 g Pasta', 'Salt'],
+      recipeIngredientAssignments: const {
+        '200 g Pasta': ['Pasta'],
+      },
     );
     final container = _container(
       templates: [recipe],
@@ -126,72 +142,49 @@ void main() {
 
     final overview = await _overview(container);
 
-    // A food that names no amount is there when an item has its name.
-    expect(overview.recipes.single.inStock, [true, false, true, false]);
+    expect(overview.recipes.single.inStock, isEmpty);
   });
 
-  test('a food kept in another unit does not count as in stock', () async {
-    final recipe = preparedMealTestData(id: 'pancakes')
-        .copyWith(recipeIngredients: const ['300 ml Milk', '200 g Flour']);
+  test('shows the lines that the cook run of a recipe assigned', () async {
+    final recipe = preparedMealTestData(id: 't1')
+        .copyWith(recipeIngredients: const ['500 g Beans', '1 Onion']);
     final container = _container(
       templates: [recipe],
       meals: const [],
-      // The milk is kept in grams, so it cannot give 300 ml.
-      items: [_item('Milk'), _item('Flour')],
-    );
-
-    final overview = await _overview(container);
-
-    expect(overview.recipes.single.inStock, [false, true]);
-  });
-
-  test('a saved item counts as in stock without a name match', () async {
-    final recipe = preparedMealTestData(id: 'chili').copyWith(
-      recipeIngredients: const ['500 g Minced beef'],
-      recipeIngredientAssignments: const {
-        '500 g Minced beef': ['Organic chuck'],
-      },
-    );
-    final container = _container(
-      templates: [recipe],
-      meals: const [],
-      items: [_item('Organic chuck')],
-    );
-
-    final overview = await _overview(container);
-
-    expect(overview.recipes.single.inStock, [true]);
-  });
-
-  test('a saved unit conversion counts only for its own recipe', () async {
-    final converted = preparedMealTestData(id: 'soup').copyWith(
-      name: 'Soup',
-      recipeIngredients: const ['2 Onions'],
-      recipeIngredientAmountConversions: const {
-        '2 Onions': RecipeIngredientAmountConversion(
-          amountPerPiece: 80,
-          unit: InventoryAmountUnit.gram,
+      items: [_item('Beans')],
+      runs: [
+        buildCookRun(
+          lines: [
+            cookLine(
+              'line-0',
+              settlement: LineAssigned(const [
+                ItemTake(itemId: 'Beans', amount: 500),
+              ]),
+            ),
+            cookLine('line-1'),
+          ],
         ),
-      },
-    );
-    final plain = preparedMealTestData(id: 'stew')
-        .copyWith(name: 'Stew', recipeIngredients: const ['2 Onions']);
-    final container = _container(
-      templates: [converted, plain],
-      meals: const [],
-      // The onions are kept in grams.
-      items: [_item('Onions')],
+      ],
     );
 
     final overview = await _overview(container);
 
-    expect(
-      {for (final recipe in overview.recipes) recipe.meal.name: recipe.inStock},
-      {
-        'Soup': [true],
-        'Stew': [false],
-      },
+    expect(overview.recipes.single.inStock, [true, false]);
+  });
+
+  test('lists the household runs', () async {
+    final container = _container(
+      templates: const [],
+      meals: const [],
+      items: const [],
+      runs: [buildCookRun()],
     );
+
+    final overview = await _overview(container);
+
+    expect(overview.runs.single.run.id, 'recipe-t1');
+    // The signed-in member started the fixture's run.
+    expect(overview.runs.single.startedByMe, isTrue);
   });
 
   test('shows meals with open rows in the pot', () async {

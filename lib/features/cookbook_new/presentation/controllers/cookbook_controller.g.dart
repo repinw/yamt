@@ -54,18 +54,18 @@ final class CookbookTemplatesProvider
 
 String _$cookbookTemplatesHash() => r'9131567c0eb8f95744d4c5ff50bc7a814f636e24';
 
-/// Holds the Kochbuch overview and rebuilds it when templates, meals, or the
-/// Vorrat change.
+/// Holds the Kochbuch overview and rebuilds it when cook runs, templates,
+/// meals, or the Vorrat change.
 
 @ProviderFor(CookbookController)
 final cookbookControllerProvider = CookbookControllerFamily._();
 
-/// Holds the Kochbuch overview and rebuilds it when templates, meals, or the
-/// Vorrat change.
+/// Holds the Kochbuch overview and rebuilds it when cook runs, templates,
+/// meals, or the Vorrat change.
 final class CookbookControllerProvider
     extends $AsyncNotifierProvider<CookbookController, CookbookOverview> {
-  /// Holds the Kochbuch overview and rebuilds it when templates, meals, or the
-  /// Vorrat change.
+  /// Holds the Kochbuch overview and rebuilds it when cook runs, templates,
+  /// meals, or the Vorrat change.
   CookbookControllerProvider._({
     required CookbookControllerFamily super.from,
     required String super.argument,
@@ -103,10 +103,10 @@ final class CookbookControllerProvider
 }
 
 String _$cookbookControllerHash() =>
-    r'97e2e349f8954b9a18b658a1fc6ca251c031d0db';
+    r'3671ce5a4c54c6fbc43aa7315fce9dd04f82ea52';
 
-/// Holds the Kochbuch overview and rebuilds it when templates, meals, or the
-/// Vorrat change.
+/// Holds the Kochbuch overview and rebuilds it when cook runs, templates,
+/// meals, or the Vorrat change.
 
 final class CookbookControllerFamily extends $Family
     with
@@ -126,8 +126,8 @@ final class CookbookControllerFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Holds the Kochbuch overview and rebuilds it when templates, meals, or the
-  /// Vorrat change.
+  /// Holds the Kochbuch overview and rebuilds it when cook runs, templates,
+  /// meals, or the Vorrat change.
 
   CookbookControllerProvider call(String localeCode) =>
       CookbookControllerProvider._(argument: localeCode, from: this);
@@ -136,8 +136,8 @@ final class CookbookControllerFamily extends $Family
   String toString() => r'cookbookControllerProvider';
 }
 
-/// Holds the Kochbuch overview and rebuilds it when templates, meals, or the
-/// Vorrat change.
+/// Holds the Kochbuch overview and rebuilds it when cook runs, templates,
+/// meals, or the Vorrat change.
 
 abstract class _$CookbookController extends $AsyncNotifier<CookbookOverview> {
   late final _$args = ref.$arg as String;

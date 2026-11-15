@@ -114,6 +114,10 @@ class DiaryMealEntryTile extends StatelessWidget {
                     Text(
                       entry.nutritionPending
                           ? l10n.diaryPlanNutritionPending
+                          : entry.nutritionEstimated
+                          ? l10n.diaryEntryKcalEstimated(
+                              numberFormat.format(entry.totalKcal.round()),
+                            )
                           : '${numberFormat.format(entry.totalKcal.round())} '
                                 '${l10n.caloriesUnitKcal}',
                       style: theme.textTheme.bodyMedium?.copyWith(

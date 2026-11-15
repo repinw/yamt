@@ -25,6 +25,7 @@ class InventoryEntryRow extends StatelessWidget {
     this.isSelected = false,
     this.planned = 0,
     this.missing = 0,
+    this.status,
     super.key,
   });
 
@@ -52,6 +53,10 @@ class InventoryEntryRow extends StatelessWidget {
 
   /// Stock of the food that its open plans lack, in its stored unit.
   final int missing;
+
+  /// A plain word in place of the full amount, such as "für Pfannkuchen
+  /// verplant"; `null` for the amount texts.
+  final String? status;
 
   @override
   Widget build(BuildContext context) {
@@ -149,8 +154,8 @@ class InventoryEntryRow extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            texts.ofFull,
-                            style: texts.ofFullIsWarning
+                            status ?? texts.ofFull,
+                            style: status == null && texts.ofFullIsWarning
                                 ? small?.copyWith(
                                     color: colors.low,
                                     fontWeight: FontWeight.w700,

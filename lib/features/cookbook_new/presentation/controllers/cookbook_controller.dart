@@ -1,13 +1,14 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/cookbook_new/domain/cookbook_overview.dart';
 import 'package:yamt/features/inventory/application/ingredient_inventory_matcher.dart';
-import 'package:yamt/features/inventory/application/ingredient_stock_match.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/recipes/application/cook_run_providers.dart';
 
 part 'cookbook_controller.g.dart';
 
@@ -17,26 +18,32 @@ Stream<List<PreparedMeal>> cookbookTemplates(Ref ref) {
   return ref.watch(preparedMealTemplateRepositoryProvider).watchAll();
 }
 
-/// Holds the Kochbuch overview and rebuilds it when templates, meals, or the
-/// Vorrat change.
+/// Holds the Kochbuch overview and rebuilds it when cook runs, templates,
+/// meals, or the Vorrat change.
 @riverpod
 class CookbookController extends _$CookbookController {
   @override
   Future<CookbookOverview> build(String localeCode) async {
-    // Start all three loads before awaiting one, so they run side by side.
+    // Start all loads before awaiting one, so they run side by side.
+    final runsFuture = ref.watch(cookRunsProvider.future)..ignore();
     final templatesFuture = ref.watch(cookbookTemplatesProvider.future)
       ..ignore();
     final mealsFuture = ref.watch(inventoryQuickEatMealsProvider.future)
       ..ignore();
     final itemsFuture = ref.watch(inventoryQuickEatItemsProvider.future)
       ..ignore();
-    final parser = ref.watch(templateIngredientParserProvider);
+    final userId = ref.watch(authStateChangesProvider).asData?.value?.uid;
+    final now = ref.watch(clockProvider)();
+    final runs = await runsFuture;
     final templates = await templatesFuture;
     final meals = await mealsFuture;
     final items = await itemsFuture;
-    // Many recipes share foods; each food is matched against the Vorrat once.
+    // Many Vorlagen share foods; each food is matched against the Vorrat once.
     final inStockByFood = <String, bool>{};
     return CookbookOverview.fromMeals(
+      runs: runs,
+      userId: userId,
+      now: now,
       savedTemplates: templates,
       meals: meals,
       isInStock: (food) => inStockByFood.putIfAbsent(
@@ -47,40 +54,14 @@ class CookbookController extends _$CookbookController {
           localeCode: localeCode,
         ),
       ),
-      // The recipe page's rule: a saved item that fits, else a match. Saved
-      // items and conversions belong to their recipe, so only lines without
-      // them share the cache.
-      canSupply: (recipe, ingredient) {
-        final conversion =
-            recipe.recipeIngredientAmountConversions[ingredient.trim()];
-        final saved =
-            recipe.recipeIngredientAssignments[ingredient] ?? const <String>[];
-        bool supply() => ingredientStockPick(
-          recipe: recipe,
-          text: ingredient,
-          candidates: ingredientStockCandidates(
-            text: ingredient,
-            requirement: parser.parseRequirement(
-              ingredient: ingredient,
-              selectedPortions: 1,
-              basePortions: 1,
-            ),
-            items: items,
-            localeCode: localeCode,
-            amountConversion: conversion,
-          ),
-        ).isNotEmpty;
-
-        return conversion == null && saved.isEmpty
-            ? inStockByFood.putIfAbsent('line:$ingredient', supply)
-            : supply();
-      },
     );
   }
 
-  /// Loads the templates, meals, and Vorrat again after a failure.
+  /// Loads the cook runs, templates, meals, and Vorrat again after a
+  /// failure.
   void retry() {
     ref
+      ..invalidate(cookRunsProvider)
       ..invalidate(cookbookTemplatesProvider)
       ..invalidate(inventoryQuickEatMealsProvider)
       ..invalidate(inventoryQuickEatItemsProvider);

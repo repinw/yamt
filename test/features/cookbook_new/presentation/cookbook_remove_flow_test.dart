@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/'
     'cookbook_remove_flow.dart';
+import 'package:yamt/features/cookbook_new/presentation/recipe_editor_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_entry_ink_well.dart';
@@ -16,6 +18,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_template_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'new_recipe_sheet.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'recipe_hero.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -23,12 +27,15 @@ import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/data/cook_run_repository.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/fake_cook_run_repository.dart';
 import '../../../helpers/fake_prepared_meal_repository.dart';
 import '../../../helpers/fake_prepared_meal_template_repository.dart';
+import '../../../helpers/fake_signed_in_user.dart';
 import '../../../support/prepared_meal_test_data.dart';
 
 final PreparedMeal _recipe =
@@ -60,6 +67,10 @@ Widget _app({
         builder: (context, state) => const CookbookPage(),
       ),
       GoRoute(
+        path: AppRoutes.homeRecipeNew,
+        builder: (context, state) => const RecipeEditorPage(),
+      ),
+      GoRoute(
         path: AppRoutes.homeRecipe,
         builder: (context, state) =>
             RecipePage(recipeId: state.pathParameters['recipeId']!),
@@ -73,6 +84,10 @@ Widget _app({
       preparedMealRepositoryProvider.overrideWithValue(
         meals ?? FakePreparedMealRepository(),
       ),
+      authStateChangesProvider.overrideWith(
+        (ref) => Stream.value(FakeSignedInUser('uid-1')),
+      ),
+      cookRunRepositoryProvider.overrideWithValue(FakeCookRunRepository()),
       inventoryItemRepositoryProvider.overrideWithValue(_EmptyVorrat()),
       shoppingListRepositoryProvider.overrideWithValue(_EmptyShoppingList()),
     ],
@@ -163,7 +178,10 @@ void main() {
         hasTapAction: true,
         hasLongPressAction: true,
         onLongPressHint: 'Show actions',
-        customActions: const [CustomSemanticsAction(label: 'Plan'), remove],
+        customActions: const [
+          CustomSemanticsAction(label: 'Plan'),
+          remove,
+        ],
       ),
     );
     node.owner!.performAction(
@@ -253,6 +271,23 @@ void main() {
 
     expect(templates.templates, [_recipe]);
     expect(_recipeCard, findsOneWidget);
+  });
+
+  testWidgets('the header tool opens the new recipe menu, and typing it '
+      'opens the recipe editor', (tester) async {
+    await tester.pumpWidget(
+      _app(templates: FakePreparedMealTemplateRepository()),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CookbookPage.newRecipeKey));
+    await tester.pumpAndSettle();
+    expect(find.byType(NewRecipeSheet), findsOneWidget);
+
+    await tester.tap(find.byKey(NewRecipeSheet.entryKey(NewRecipeChoice.type)));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RecipeEditorPage), findsOneWidget);
   });
 }
 

@@ -31,6 +31,8 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_label_table.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_pack_choice_sheet.dart';
@@ -151,6 +153,33 @@ CalorieEntry _entry({String? sourceItemId}) {
     loggedAt: loggedAt,
     createdAt: loggedAt,
     updatedAt: loggedAt,
+  );
+}
+
+/// One of four portions of the Kochbuch recipe "Skyr" at its AI estimate,
+/// without a Vorrat food.
+CalorieEntry _estimatedRecipe() {
+  final loggedAt = DateTime(2026, 5, 13, 8);
+  return CalorieEntry.bundle(
+    id: 'entry-1',
+    userId: 'user-1',
+    name: 'Skyr',
+    mealType: MealType.breakfast,
+    totalKcal: 620,
+    totalProtein: 30,
+    totalCarbs: 40,
+    totalFat: 12,
+    bundleSourcePreparedMealId: 'recipe-1',
+    bundleConsumedPortions: 1,
+    bundleTotalPortions: 4,
+    bundleComponents: const [],
+    loggedAt: loggedAt,
+    createdAt: loggedAt,
+    updatedAt: loggedAt,
+  ).copyWith(
+    bundleSourcePreparedMealId: null,
+    bundleSourceTemplateId: 'recipe-1',
+    nutritionEstimated: true,
   );
 }
 
@@ -317,6 +346,38 @@ void main() {
     expect(logRepository.entries, hasLength(2));
     expect(logRepository.entries.last.sourceInventoryItemId, 'skyr');
     expect(itemStore.taken, {'skyr': 200});
+  });
+
+  testWidgets('an estimated recipe shows portions and repeats without a pack '
+      'of its name', (tester) async {
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: [_estimatedRecipe()],
+    );
+    addTearDown(logRepository.dispose);
+    final itemStore = _ItemStore(logRepository);
+    await _openDetails(
+      tester,
+      logRepository,
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(const _Items()),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(itemStore),
+      ],
+    );
+
+    final label = tester.widget<EatLabelTable>(
+      find.byKey(DiaryEntryLabelSection.labelKey),
+    );
+    expect(label.per100Header, isNull);
+    expect(label.eatenHeader, '1/4 Portionen');
+
+    await tester.tap(find.byKey(DiaryEntryDetailsPage.saveButtonKey));
+    await _pumpUntilClosed(tester);
+
+    expect(find.byKey(inventoryPackChoiceSkipKey), findsNothing);
+    expect(logRepository.entries, hasLength(2));
+    expect(logRepository.entries.last.totalKcal, 620);
+    expect(logRepository.entries.last.sourceInventoryItemId, isNull);
+    expect(itemStore.taken, isEmpty);
   });
 
   testWidgets('the plan icon plans the food again for a picked day', (

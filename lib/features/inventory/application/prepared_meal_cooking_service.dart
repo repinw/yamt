@@ -16,14 +16,13 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
-import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 part 'prepared_meal_cooking_service.g.dart';
 
 const _logName = 'PreparedMealCookingService';
 
-/// The service that turns cooked ingredient rows into a Vorrat meal.
+/// The service that puts a Vorlage in the pot and finishes or discards a
+/// meal in the pot.
 @riverpod
 PreparedMealCookingService preparedMealCookingService(Ref ref) {
   return PreparedMealCookingService(
@@ -31,16 +30,14 @@ PreparedMealCookingService preparedMealCookingService(Ref ref) {
     inventoryRepository: ref.watch(inventoryItemRepositoryProvider),
     activityRepository: ref.watch(inventoryActivityEventRepositoryProvider),
     actor: ref.watch(inventoryActivityActorProvider),
-    ingredientParser: ref.watch(templateIngredientParserProvider),
     clock: ref.watch(clockProvider),
   );
 }
 
-/// Creates a Vorrat meal from ingredient rows without a saved recipe and
-/// marks it as cooked later.
+/// Puts a Vorlage in the pot as a Vorrat meal and marks it as cooked later.
 ///
-/// Rows with a Vorrat item take their amount from it; the other rows stay
-/// open on the meal until the user fills them. The meal stays in the pot
+/// Foods with a Vorrat item take their amount from it; the others stay open
+/// on the meal until the user fills them. The meal stays in the pot
 /// until [PreparedMealCookingService.finishCooking].
 class PreparedMealCookingService {
   /// Creates the service.
@@ -49,7 +46,6 @@ class PreparedMealCookingService {
     required this._inventoryRepository,
     required this._activityRepository,
     required this._actor,
-    required this._ingredientParser,
     required this._clock,
   });
 
@@ -57,63 +53,7 @@ class PreparedMealCookingService {
   final InventoryItemRepository _inventoryRepository;
   final InventoryActivityEventRepository _activityRepository;
   final InventoryActivityActor? _actor;
-  final TemplateIngredientParser _ingredientParser;
   final DateTime Function() _clock;
-
-  /// Creates one meal named [name] from [ingredients] such as "500 g Reis".
-  ///
-  /// [assignments] maps an ingredient to the Vorrat item ids that supply it.
-  /// A repository failure is rethrown after the Vorrat is restored.
-  Future<PreparedMealCreationResult> cook({
-    required String name,
-    required List<String> ingredients,
-    required Map<String, List<String>> assignments,
-  }) {
-    final now = _clock();
-    final recipe = PreparedMeal(
-      id: '',
-      name: name,
-      totalPortions: 1,
-      remainingPortions: 1,
-      totalKcal: 0,
-      totalProtein: 0,
-      totalCarbs: 0,
-      totalFat: 0,
-      createdAt: now,
-      updatedAt: now,
-      components: const <PreparedMealComponent>[],
-      recipeIngredients: ingredients,
-    );
-    return cookRecipe(recipe: recipe, portions: 1, assignments: assignments);
-  }
-
-  /// Puts a meal from the saved [recipe] for [portions] portions in the pot.
-  ///
-  /// [assignments] maps a recipe ingredient to the Vorrat item ids that
-  /// supply it; those are used up, and the other ingredients stay open on the
-  /// meal. Ignored ingredients of the recipe are left out, and its saved
-  /// amount conversions apply. A repository failure is rethrown after the
-  /// Vorrat is restored.
-  Future<PreparedMealCreationResult> cookRecipe({
-    required PreparedMeal recipe,
-    required int portions,
-    required Map<String, List<String>> assignments,
-  }) => _writer.trackStock(
-    inventory: _inventoryRepository,
-    activity: _activityRepository,
-    actor: _actor,
-    operation: (inventory) =>
-        PreparedMealCreation(writer: _writer).createPreparedMealFromTemplate(
-          template: recipe,
-          totalPortions: portions,
-          recipeIngredientAssignments: assignments,
-          recipeIngredientAmountConversions:
-              recipe.recipeIngredientAmountConversions,
-          inventoryRepository: inventory,
-          ingredientParser: _ingredientParser,
-        ),
-    succeeded: (result) => result.isSuccess,
-  );
 
   /// Puts a meal from the Vorlage [vorlage] for [portions] portions in the
   /// pot, with the amounts of [foods] taken from their Vorrat items; what

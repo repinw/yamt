@@ -8,15 +8,18 @@ part of 'recipe_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
+/// Holds the portions of the recipe [recipeId], cooks a Vorlage, and plans
+/// it.
 
 @ProviderFor(RecipeController)
 final recipeControllerProvider = RecipeControllerFamily._();
 
-/// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
+/// Holds the portions of the recipe [recipeId], cooks a Vorlage, and plans
+/// it.
 final class RecipeControllerProvider
     extends $NotifierProvider<RecipeController, RecipeDraft> {
-  /// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
+  /// Holds the portions of the recipe [recipeId], cooks a Vorlage, and plans
+  /// it.
   RecipeControllerProvider._({
     required RecipeControllerFamily super.from,
     required String super.argument,
@@ -61,9 +64,10 @@ final class RecipeControllerProvider
   }
 }
 
-String _$recipeControllerHash() => r'8a5ded2e140c020a13006400dd172860f0ee9e2c';
+String _$recipeControllerHash() => r'ee9616eaccebaf2c9f7e9c4c8fba5453d660f708';
 
-/// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
+/// Holds the portions of the recipe [recipeId], cooks a Vorlage, and plans
+/// it.
 
 final class RecipeControllerFamily extends $Family
     with
@@ -83,7 +87,8 @@ final class RecipeControllerFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
+  /// Holds the portions of the recipe [recipeId], cooks a Vorlage, and plans
+  /// it.
 
   RecipeControllerProvider call(String recipeId) =>
       RecipeControllerProvider._(argument: recipeId, from: this);
@@ -92,7 +97,8 @@ final class RecipeControllerFamily extends $Family
   String toString() => r'recipeControllerProvider';
 }
 
-/// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
+/// Holds the portions of the recipe [recipeId], cooks a Vorlage, and plans
+/// it.
 
 abstract class _$RecipeController extends $Notifier<RecipeDraft> {
   late final _$args = ref.$arg as String;
@@ -189,7 +195,7 @@ final class RecipeViewProvider
   }
 }
 
-String _$recipeViewHash() => r'4368e02388c6b209c1a4d2795a5730a50320a198';
+String _$recipeViewHash() => r'6f28fe289aef7d0a744f7fc29e24ee91e299da07';
 
 /// The recipe [recipeId] with its ingredients for the chosen portions and
 /// their Vorrat items, or `null` when the recipe is gone; see

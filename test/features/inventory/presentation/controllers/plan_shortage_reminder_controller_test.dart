@@ -185,6 +185,7 @@ void main() {
       notifications.scheduled.keys,
       unorderedEquals([7, planShortageNotificationId(tomorrow)]),
     );
+    expect(notifications.alarmIds, isEmpty);
     expect(notifications.scheduled[planShortageNotificationId(tomorrow)], (
       at: DateTime(2026, 10, 18, 17),
       title: '2 fehlen',

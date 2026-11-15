@@ -8,18 +8,47 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_list_view_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_view_preferences.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shows the Sortieren sheet of the Vorrat list. Every change applies at
-/// once.
-Future<void> showInventorySortSheet(BuildContext context) {
+/// once. With [showHideConsumed] false it leaves out "Verbrauchte
+/// ausblenden", for a list that never shows used-up foods.
+Future<void> showInventorySortSheet(
+  BuildContext context, {
+  bool showHideConsumed = true,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: true,
-    builder: (context) => const InventorySortSheet(),
+    builder: (context) =>
+        InventorySortSheet(showHideConsumed: showHideConsumed),
+  );
+}
+
+/// Gives another feature's surface the saved settings of the Vorrat list
+/// without reaching into its controller, and rebuilds when they change.
+class InventoryListPreferencesBuilder extends ConsumerWidget {
+  /// Creates the builder.
+  const new({required this.builder, super.key});
+
+  /// Builds from the settings.
+  final Widget Function(
+    BuildContext context,
+    InventoryListViewPreferences preferences,
+  )
+  builder;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => builder(
+    context,
+    ref.watch(
+      inventoryListViewControllerProvider.select((state) => state.preferences),
+    ),
   );
 }
 
@@ -27,7 +56,7 @@ Future<void> showInventorySortSheet(BuildContext context) {
 /// Tapping the selected field again flips its direction.
 class InventorySortSheet extends ConsumerWidget {
   /// Creates the sheet content.
-  const new({super.key});
+  const new({this.showHideConsumed = true, super.key});
 
   /// Key of the row for [criterion].
   static Key criterionKey(InventorySortCriterion criterion) =>
@@ -38,6 +67,9 @@ class InventorySortSheet extends ConsumerWidget {
 
   /// Key of the "Nach Beleg" switch.
   static const groupByReceiptKey = Key('inventory_sort_group_by_receipt');
+
+  /// Whether the sheet offers "Verbrauchte ausblenden".
+  final bool showHideConsumed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -83,14 +115,15 @@ class InventorySortSheet extends ConsumerWidget {
               ),
             ),
           const Divider(height: AppSpacing.xxl),
-          AppSwitchListTile(
-            key: hideConsumedKey,
-            contentPadding: EdgeInsets.zero,
-            title: Text(l10n.inventoryHideConsumedFilterTitle),
-            value: preferences.hideConsumed,
-            onChanged: (value) =>
-                controller.setHideConsumed(hideConsumed: value),
-          ),
+          if (showHideConsumed)
+            AppSwitchListTile(
+              key: hideConsumedKey,
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.inventoryHideConsumedFilterTitle),
+              value: preferences.hideConsumed,
+              onChanged: (value) =>
+                  controller.setHideConsumed(hideConsumed: value),
+            ),
           AppSwitchListTile(
             key: groupByReceiptKey,
             contentPadding: EdgeInsets.zero,

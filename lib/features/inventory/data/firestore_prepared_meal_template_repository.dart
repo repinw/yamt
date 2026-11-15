@@ -56,6 +56,24 @@ class FirestorePreparedMealTemplateRepository
     );
   }
 
+  // Not behind the write barrier: the transaction waits for the server, which
+  // a local save must not do. A save that gets there first makes it read again.
+  @override
+  Future<bool> update(
+    String id,
+    PreparedMeal? Function(PreparedMeal current) change,
+  ) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
+      return Future<bool>.value(false);
+    }
+    return _store.update(
+      householdId: householdId,
+      id: id,
+      change: (data) => change(_decode(id, data))?.toJson(),
+    );
+  }
+
   @override
   Future<bool> delete(String templateId) {
     final householdId = _currentHouseholdId();

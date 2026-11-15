@@ -1,44 +1,38 @@
-# AI Chef Feature
+# AI Chef
 
-The `ai_chef` feature owns Firebase AI recipe generation from the cookbook
-toolbar. Users can optionally include active pantry inventory, add free-form
-wishes, generate a recipe, and save it as a prepared meal template.
+## Purpose
+
+Asks for a recipe idea and loads it: the setup sheet, the wait, and the idea
+with its picture. It saves nothing; the cookbook shows and saves the idea.
 
 ## Owns
 
-- `openAiChef`, which opens the AI recipe generator.
-- Modal setup/result dialog (`AiChefDialog`).
-- Loading screen with culinary quotes and rotating star icon (`AiChefLoadingView`).
-- Recipe result view (`AiChefResultView`).
-- Inventory prompt input formatting and UI match names
+- The sheet that asks for an idea (`AiChefSheet`): "Worauf hast du Lust?",
+  the Vorrat switch, and the wishes. While the idea loads it shows a calm
+  wait. A failed idea says so and offers "Erneut versuchen". Closing the sheet
+  drops the idea.
+- The idea (`AiChefRecipeIdea`, a `PreparedMeal` and the prompt for its
+  picture) and the call that makes it (`aiChefRepositoryProvider`,
+  `loadRecipeIdea`). It reads the server template `recipe-idea-template`: the
+  values of each ingredient (text, amount, unit, kcal, protein, carbs, fat).
+  The recipe's totals are the sums of its ingredients; one portion is that
+  sum divided by the portions. The answer is read strictly
+  (`AiChefRecipeResponseParser`); a broken answer is a failed idea. The
+  template for released app versions stays on the server; this code does not
+  use it.
+- The Vorrat foods that the prompt names, if the cook wants them
   (`AiChefInventoryInputBuilder`).
-- AI template response parsing (`AiChefRecipeResponseParser`).
-- Generated cover image upload (`AiChefImageGenerator`).
-- `aiChefControllerProvider`, which manages generation state.
-- `aiChefRepositoryProvider`, which calls Firebase AI Logic and image
-  generation.
+- The picture of an idea (`aiChefImageGeneratorProvider`, one call per idea,
+  no retry) and its upload (`saveCover` of the repository).
+- `aiChefControllerProvider`, the state of one idea request.
 
 ## Does Not Own
 
-- Recipe template persistence (owned by `inventory` repositories via
-  `PreparedMealTemplatesController`).
-- Inventory item lifecycle, unit conversion, or shopping list integration.
-- Standard cooking flow controls.
+- Showing the idea as a recipe, saving it, and putting the picture on the
+  saved recipe (`cookbook_new`).
+- Recipe persistence and the estimate type (`inventory`).
 
-## Public Edge
+## Public UI
 
-Other features may consume these public entry points:
-
-- `openAiChef`, which opens the generator from the Kochbuch actions.
-
-## Providers
-
-- `aiChefControllerProvider` lives in `presentation/controllers/ai_chef_controller.dart`.
-- `aiChefRepositoryProvider` lives in `data/ai_chef_repository.dart`.
-
-## Accepted Dependencies
-
-- `core` for layout tokens, typography, and styling.
-- `inventory` for `PreparedMeal`, `InventoryItem`, inventory loading at the
-  button boundary via `InventoryItemsController`, and saving via
-  `PreparedMealTemplatesController`.
+- `AiChefSheet.show(context)`: returns the idea, or `null` when the cook
+  closes the sheet first. `cookbook_new` opens it from "Neues Rezept".

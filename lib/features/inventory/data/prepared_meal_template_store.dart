@@ -38,6 +38,16 @@ abstract interface class PreparedMealTemplateStore {
     required Map<String, dynamic> data,
   });
 
+  /// Changes the template [id] in a transaction: [change] gets its data and
+  /// returns what to write, or `null` to write nothing. Returns whether the
+  /// template was written; one that is gone stays gone.
+  Future<bool> update({
+    required String householdId,
+    required String id,
+    required Map<String, dynamic>? Function(Map<String, dynamic> current)
+    change,
+  });
+
   /// Deletes the template [id] alone.
   Future<bool> delete({required String householdId, required String id});
 }
@@ -70,6 +80,27 @@ class FirestorePreparedMealTemplateStore
     return collection.reference.snapshots().asyncMap(
       (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
     );
+  }
+
+  @override
+  Future<bool> update({
+    required String householdId,
+    required String id,
+    required Map<String, dynamic>? Function(Map<String, dynamic> current)
+    change,
+  }) {
+    final collection = householdCollection(householdId);
+    final document = collection.reference.doc(id);
+    return _firestore.runTransaction((transaction) async {
+      final current = await collection.open(await transaction.get(document));
+      final next = current == null ? null : change(current);
+      if (next == null) {
+        return false;
+      }
+      // Not a set, which would bring back a template deleted meanwhile.
+      transaction.update(document, await collection.seal(id, next));
+      return true;
+    });
   }
 
   @override

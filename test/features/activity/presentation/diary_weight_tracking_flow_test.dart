@@ -64,9 +64,7 @@ void main() {
     expect(recorder.refreshedDay, isNull);
   });
 
-  testWidgets('flow fills the field with the newest weighing', (
-    tester,
-  ) async {
+  testWidgets('flow fills the field with the newest weighing', (tester) async {
     final day = DateTime(2026, 4, 15);
     await _pumpFlowHarness(
       tester,

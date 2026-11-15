@@ -1,12 +1,10 @@
 import 'dart:developer' show log;
+import 'dart:typed_data';
 
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
-import 'package:yamt/features/ai_chef/data/ai_chef_image_generator.dart';
-import 'package:yamt/features/ai_chef/data/ai_chef_recipe_draft.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_recipe_response_parser.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -14,14 +12,20 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 part 'ai_chef_repository.g.dart';
 
 const _logName = 'AiChefRepository';
-const _templateId = 'ai-chef-recipe-template';
-const _timeout = Duration(seconds: 30);
+const _templateId = 'recipe-idea-template';
+// The template runs on a medium-thinking model: about 19 s, up to 27 s seen.
+const _timeout = Duration(seconds: 60);
 
 /// Calls the Firebase AI Chef template model.
 typedef AiChefTemplateModelClient = Future<String?> Function({
   required String templateId,
   required Map<String, Object?> inputs,
 });
+
+/// A recipe idea: the unsaved recipe with its estimate and line weights,
+/// and the prompt for its picture, which comes later
+/// (`aiChefImageGeneratorProvider`).
+typedef AiChefRecipeIdea = ({PreparedMeal recipe, String imagePrompt});
 
 /// Firebase AI Chef repository provider.
 @riverpod
@@ -36,97 +40,70 @@ FirebaseAiChefRepository aiChefRepository(Ref ref) {
 class FirebaseAiChefRepository {
   /// Creates an instance.
   new({
-    FirebaseStorage? storage,
-    String? householdId,
+    this._storage,
+    this._householdId,
     this._parser = const AiChefRecipeResponseParser(),
-    AiChefImageGenerator? imageGenerator,
     AiChefTemplateModelClient? templateModelClient,
-  }) : _imageGenerator =
-           imageGenerator ??
-           AiChefImageGenerator(storage: storage, householdId: householdId),
-       _templateModelClient =
+  }) : _templateModelClient =
            templateModelClient ?? _firebaseAiChefTemplateClient;
 
+  final FirebaseStorage? _storage;
+  final String? _householdId;
   final AiChefRecipeResponseParser _parser;
-  final AiChefImageGenerator _imageGenerator;
   final AiChefTemplateModelClient _templateModelClient;
-  static const _uuid = Uuid();
 
-  /// Generates a recipe using the configured Firebase AI template.
-  /// Returns null if generation, parsing, or server connection fails.
-  Future<PreparedMeal?> generateAiRecipe({
+  /// Asks the template `recipe-idea-template` for a recipe in
+  /// [languageCode] with the topic and wishes [seed], from the formatted
+  /// Vorrat [inventoryIngredients], made at [now]. The picture is not
+  /// waited for: the image generator makes it from the idea's prompt.
+  /// Throws when the request fails or takes longer than 60 seconds; a
+  /// [FormatException] says the answer cannot be used.
+  Future<AiChefRecipeIdea> loadRecipeIdea({
     required String languageCode,
     required String seed,
+    required DateTime now,
     List<String> inventoryIngredients = const [],
   }) async {
-    try {
-      final inventoryString = inventoryIngredients.join('\n');
-
-      log(
-        'Requesting recipe from Firebase AI '
-        'with lang: $languageCode, seed: $seed, '
-        'inventoryItems: ${inventoryIngredients.length}...',
-        name: _logName,
-      );
-
-      final rawText = await _templateModelClient(
-        templateId: _templateId,
-        inputs: <String, Object?>{
-          'language': languageCode,
-          'seed': seed,
-          'inventory': inventoryString,
-        },
-      ).timeout(_timeout);
-      log('Raw AI Response received: $rawText', name: _logName);
-
-      if (rawText == null || rawText.trim().isEmpty) {
-        return null;
-      }
-
-      final draft = _parser.parse(rawText);
-      if (draft == null) {
-        log('Failed to parse generated recipe JSON.', name: _logName);
-        return null;
-      }
-
-      return await _buildMeal(draft);
-    } on Object catch (error, stackTrace) {
-      log(
-        'Firebase AI recipe generation failed.',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
+    log(
+      'Requesting recipe from Firebase AI '
+      'with lang: $languageCode, seed: $seed, '
+      'inventoryItems: ${inventoryIngredients.length}...',
+      name: _logName,
+    );
+    final rawText = await _templateModelClient(
+      templateId: _templateId,
+      inputs: <String, Object?>{
+        'language': languageCode,
+        'seed': seed,
+        'inventory': inventoryIngredients.join('\n'),
+      },
+    ).timeout(_timeout);
+    log('Raw AI Response received: $rawText', name: _logName);
+    if (rawText == null || rawText.trim().isEmpty) {
+      throw const FormatException('Empty recipe idea response');
     }
+    return _parser.parse(rawText, now: now);
   }
 
-  Future<PreparedMeal> _buildMeal(AiChefRecipeDraft draft) async {
-    final mealId = _uuid.v4();
-    final imagePrompt = draft.imagePrompt;
-    final imageUrl = imagePrompt == null
-        ? null
-        : await _imageGenerator.generateCoverImageUrl(
-            mealId: mealId,
-            imagePrompt: imagePrompt,
-          );
-    final now = DateTime.now();
-    return PreparedMeal(
-      id: mealId,
-      name: draft.name,
-      totalPortions: draft.portions,
-      remainingPortions: draft.portions,
-      totalKcal: draft.kcal,
-      totalProtein: draft.protein,
-      totalCarbs: draft.carbs,
-      totalFat: draft.fat,
-      createdAt: now,
-      updatedAt: now,
-      components: const [],
-      recipeIngredients: draft.ingredients,
-      recipeInstructions: draft.instructions,
-      imageUrl: imageUrl,
+  /// Stores the picture [bytes] as the cover of the saved recipe [recipeId]
+  /// and returns its link. Throws a [StateError] when signed out or without
+  /// a household key, and the upload's error when it fails.
+  Future<String> saveCover({
+    required String recipeId,
+    required Uint8List bytes,
+  }) async {
+    final storage = _storage;
+    final householdId = _householdId;
+    if (storage == null || householdId == null) {
+      throw StateError('No household key or storage for the cover image.');
+    }
+    final cover = storage.ref(
+      'households/$householdId/recipes/$recipeId/images/cover.jpg',
     );
+    await cover.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+    final url = await cover.getDownloadURL();
+    log('Cover of $recipeId uploaded: $url', name: _logName);
+    return url;
   }
 }
 

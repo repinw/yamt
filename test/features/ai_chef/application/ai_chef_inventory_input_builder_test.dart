@@ -34,7 +34,6 @@ void main() {
       'Milk (available: 750 ml)',
       'Carrot (available: 3 x)',
     ]);
-    expect(builder.buildNames(items), <String>['Tomato', 'Milk', 'Carrot']);
   });
 
   test('build skips empty consumed and review-only items', () {

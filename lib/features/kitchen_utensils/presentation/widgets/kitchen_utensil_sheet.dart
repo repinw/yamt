@@ -38,10 +38,12 @@ class KitchenUtensilSheetResult {
   final int weightGrams;
 }
 
-/// Shows kitchen utensil sheet.
+/// Shows kitchen utensil sheet: [initialUtensil] to edit, else a new one
+/// under [title], or "Utensil hinzufügen" without one.
 Future<KitchenUtensilSheetResult?> showKitchenUtensilSheet({
   required BuildContext context,
   KitchenUtensil? initialUtensil,
+  String? title,
 }) {
   return showModalBottomSheet<KitchenUtensilSheetResult>(
     context: context,
@@ -49,7 +51,7 @@ Future<KitchenUtensilSheetResult?> showKitchenUtensilSheet({
     useRootNavigator: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
-      return KitchenUtensilSheet(initialUtensil: initialUtensil);
+      return KitchenUtensilSheet(initialUtensil: initialUtensil, title: title);
     },
   );
 }
@@ -57,10 +59,14 @@ Future<KitchenUtensilSheetResult?> showKitchenUtensilSheet({
 /// Kitchen utensil add/edit sheet.
 class KitchenUtensilSheet extends ConsumerStatefulWidget {
   /// Creates sheet.
-  const new({super.key, this.initialUtensil});
+  const new({super.key, this.initialUtensil, this.title});
 
   /// Initial utensil for edit.
   final KitchenUtensil? initialUtensil;
+
+  /// The title of a new utensil, such as "Topf oder Pfanne hinzufügen";
+  /// "Utensil hinzufügen" without one.
+  final String? title;
 
   @override
   ConsumerState<KitchenUtensilSheet> createState() =>
@@ -110,7 +116,7 @@ class _KitchenUtensilSheetState extends ConsumerState<KitchenUtensilSheet> {
       children: [
         Text(
           initialUtensil == null
-              ? l10n.kitchenUtensilAddTitle
+              ? widget.title ?? l10n.kitchenUtensilAddTitle
               : l10n.kitchenUtensilEditTitle,
           style: Theme.of(context).textTheme.titleLarge
               ?.copyWith(fontWeight: FontWeight.w800),
@@ -127,6 +133,8 @@ class _KitchenUtensilSheetState extends ConsumerState<KitchenUtensilSheet> {
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
             labelText: l10n.kitchenUtensilWeightLabel,
+            helperText: l10n.kitchenUtensilWeightHelper,
+            helperMaxLines: 2,
           ),
           validator: _validateWeight,
         ),
@@ -143,7 +151,7 @@ class _KitchenUtensilSheetState extends ConsumerState<KitchenUtensilSheet> {
         const SizedBox(height: AppSpacing.lg),
         PreparedMealSheetActions(
           primaryLabel: initialUtensil == null
-              ? l10n.kitchenUtensilAddAction
+              ? l10n.kitchenUtensilAddShort
               : l10n.inventoryReceiptReviewEditAction,
           onPrimaryPressed: _submit,
         ),
