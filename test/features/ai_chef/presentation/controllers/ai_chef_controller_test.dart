@@ -122,6 +122,37 @@ void main() {
     expect(h.asked!['inventory'], 'Tomato (available: 1 x)');
   });
 
+  test(
+    'generateRecipe sends Bloß nicht and the picks still in the Vorrat',
+    () async {
+      final h = _Harness(stock: [_item('Spinat'), _item('Quark')]);
+      addTearDown(h.container.dispose);
+
+      await h.controller.generateRecipe(
+        isGerman: true,
+        includeInventory: true,
+        excludedIngredients: const ['Koriander'],
+        mustUseIds: const {'Quark', 'eaten'},
+      );
+
+      expect(h.asked!['excluded_ingredients'], 'Koriander');
+      expect(h.asked!['must_use_ingredients'], 'Quark (available: 1 x)');
+    },
+  );
+
+  test('generateRecipe sends no picks with the Vorrat off', () async {
+    final h = _Harness(stock: [_item('Quark')]);
+    addTearDown(h.container.dispose);
+
+    await h.controller.generateRecipe(
+      isGerman: true,
+      includeInventory: false,
+      mustUseIds: const {'Quark'},
+    );
+
+    expect(h.asked!.containsKey('must_use_ingredients'), isFalse);
+  });
+
   test('generateRecipe asks in German with German wishes', () async {
     final h = _Harness();
     addTearDown(h.container.dispose);
@@ -210,6 +241,46 @@ void main() {
       answer.complete(jsonEncode(_answer));
 
       await done;
+    },
+  );
+
+  test(
+    'generateRecipe fails when picks meet a Vorrat that cannot be read',
+    () async {
+      final h = _Harness(inventory: _ThrowingInventory());
+      addTearDown(h.container.dispose);
+
+      await h.controller.generateRecipe(
+        isGerman: true,
+        includeInventory: true,
+        mustUseIds: const {'Quark'},
+      );
+
+      expect(h.asked, isNull);
+      expect(h.container.read(aiChefControllerProvider).hasError, isTrue);
+    },
+  );
+
+  test(
+    'loadPickableItems gives the Vorrat the longest in stock first',
+    () async {
+      final h = _Harness(
+        stock: [
+          InventoryItem.create(
+            id: 'new',
+            name: 'Quark',
+            entryDate: DateTime.utc(2026, 11, 10),
+            storeName: 'Store',
+            quantity: 1,
+          ),
+          _item('Tomato'),
+        ],
+      );
+      addTearDown(h.container.dispose);
+
+      final items = await h.controller.loadPickableItems();
+
+      expect(items.map((item) => item.id), ['Tomato', 'new']);
     },
   );
 }
