@@ -28,6 +28,8 @@ composition.
   merged into one row (`domain/diary_meal_entry_group.dart`) that expands to
   its single entries. Rows that open one entry tag their image with
   `HeroTags.loggedEntryImage`, so it flies into the entry details page.
+  An entry with `nutritionEstimated` (a plan counted from a recipe's AI
+  estimate) shows "≈ … kcal"; a group is estimated when any entry is.
 - `presentation/diary_entry_details_page.dart` (`DiaryEntryDetailsPage`,
   routed at `AppRoutes.homeCaloriesEntryDetailsPath`) shows one logged entry
   in the food label look of the Inventory eat page: header, nutrition label

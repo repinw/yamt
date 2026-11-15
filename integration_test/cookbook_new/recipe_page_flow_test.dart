@@ -6,35 +6,38 @@ import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/device/screen_wake_lock.dart';
-import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
+import 'package:yamt/features/cookbook_new/data/recipe_estimate_repository.dart';
+import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/'
     'cookbook_remove_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
-import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/recipe_editor_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_plan_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'cooking_guide_body.dart';
+    'cookbook_entry_ink_well.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'cooking_guide_just_added.dart';
+    'cookbook_recipe_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'cooking_guide_sentence_section.dart';
+    'cookbook_template_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'cooking_guide_step_sheet.dart';
+    'ingredient_stock_text.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'free_cooking_text_sheet.dart';
-import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_check_card.dart';
-import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_guide_added_hint.dart';
+    'recipe_estimate_line.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'recipe_hero.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'recipe_ingredient_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'recipe_stock_picker_sheet.dart';
+    'recipe_line_nutrition_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'recipe_line_status_card.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'recipe_nutrition_section.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -45,85 +48,268 @@ import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/recipe_estimate.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository_contract.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
+import 'package:yamt/features/recipes/data/cook_run_repository.dart';
+import 'package:yamt/features/recipes/domain/cook_line_settlement.dart';
+import 'package:yamt/features/recipes/domain/cook_run.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_plan_needs_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/features/kochmodus/kochmodus_fixtures.dart';
+import '../../test/features/recipes/cook_run_fixtures.dart';
 import '../../test/features/shoppinglist/support/fake_shopping_list_repository.dart';
+import '../../test/helpers/fake_cook_run_repository.dart';
 import '../../test/helpers/fake_prepared_meal_template_repository.dart';
+import '../../test/helpers/fake_recipe_estimate_client.dart';
+import '../../test/helpers/fake_signed_in_user.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/helpers/memory_app_preferences.dart';
-import '../../test/helpers/soft_keyboard_test_utils.dart';
 
-const _startKey = ValueKey<String>('open-recipe');
+const _cookPageKey = ValueKey<String>('cook-page');
+const _runPageKey = ValueKey<String>('run-page');
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('cooks a recipe for more portions with a picked Vorrat item', (
+  testWidgets('"Vorbereiten" opens "Zuweisen" with the chosen portions', (
     tester,
   ) async {
     final meals = _FakeMealRepository();
-    final inventory = _FakeInventoryRepository([
-      _item('mince', 'Hackfleisch'),
-      _item('carrots', 'Karotten'),
-    ]);
-    await tester.pumpWidget(_app(meals: meals, inventory: inventory));
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        inventory: _FakeInventoryRepository([
+          _item('mince', 'Hackfleisch'),
+          _item('carrots', 'Karotten'),
+        ]),
+      ),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
+    await _openRecipe(tester);
 
     expect(find.byType(RecipePage), findsOneWidget);
 
-    // Two portions in the recipe, three in the pot.
+    // Two portions in the recipe, three to cook.
     await tester.tap(find.byKey(RecipePage.morePortionsKey));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.byKey(RecipePage.portionsKey)).data, '3');
 
-    // The carrots stay in the Vorrat this time.
-    final carrots = find.byKey(RecipeIngredientTile.tileKey(1));
-    await tester.scrollUntilVisible(carrots, 100);
-    await tester.ensureVisible(carrots);
-    await tester.pumpAndSettle();
-    await tester.tap(carrots);
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(RecipeStockPickerSheet.optionKey('carrots')),
-      findsOneWidget,
-    );
-    await tester.tap(find.byKey(RecipeStockPickerSheet.noneKey));
-    await tester.pumpAndSettle();
-
-    // Straight to "Gekocht", without the Kochhelfer.
-    await tester.tap(find.byKey(RecipePage.withGuideKey));
-    await tester.pumpAndSettle();
     await tester.tap(find.byKey(RecipePage.cookKey));
     await tester.pumpAndSettle();
 
-    expect(find.byType(CookedMealPage), findsOneWidget);
-    final meal = meals.saved.single;
-    expect(meal.name, 'Bauerntopf');
-    expect(meal.isInPot, isTrue);
-    expect(meal.totalPortions, 3);
-    expect(meal.components.single.inventoryItemId, 'mince');
-    expect(meal.components.single.usedAmount, 750);
-    expect(meal.pendingRecipeIngredients.single, contains('Karotten'));
     expect(
-      inventory.items.firstWhere((item) => item.id == 'carrots').currentAmount,
-      2000,
+      tester.widget<Text>(find.byKey(_cookPageKey)).data,
+      AppRoutes.homeCookPath('stew', portions: 3),
+    );
+    expect(find.byKey(_runPageKey), findsNothing);
+    // Nothing goes into the pot from the recipe page.
+    expect(meals.saved, isEmpty);
+  });
+
+  testWidgets('"Weiter" opens "Zuweisen" while a line of the run is open', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        runs: [buildCookRun(id: 'recipe-stew', recipeId: 'stew')],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+
+    await tester.tap(find.byKey(RecipePage.cookKey));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<Text>(find.byKey(_cookPageKey)).data,
+      startsWith(AppRoutes.homeCookPath('stew')),
+    );
+    expect(find.byKey(_runPageKey), findsNothing);
+    expect(meals.saved, isEmpty);
+  });
+
+  testWidgets('"Kochen" opens the cook run once nothing is left to assign', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        runs: [
+          buildCookRun(
+            id: 'recipe-stew',
+            recipeId: 'stew',
+            lines: [
+              textLine('line-0', 'Salz', settlement: const LineIgnored()),
+            ],
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+
+    await tester.tap(find.byKey(RecipePage.cookKey));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<Text>(find.byKey(_runPageKey)).data,
+      AppRoutes.homeCookRunPath('recipe-stew'),
+    );
+    expect(find.byKey(_cookPageKey), findsNothing);
+    expect(meals.saved, isEmpty);
+  });
+
+  testWidgets('shows where each ingredient stands in the cook run', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        runs: [
+          buildCookRun(
+            id: 'recipe-stew',
+            recipeId: 'stew',
+            portions: 3,
+            lines: [
+              textLine(
+                'line-0',
+                '500 g Hackfleisch',
+                settlement: LineAssigned(const [
+                  ItemTake(itemId: 'mince', amount: 750),
+                ]),
+              ),
+              textLine(
+                'line-1',
+                '200 g Karotten',
+                settlement: const LineIgnored(),
+              ),
+              textLine('line-2', 'Salz'),
+            ],
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+
+    // One open line of three.
+    expect(find.byKey(RecipeLineStatusCard.cardKey), findsOneWidget);
+    expect(find.text('1 still open'), findsOneWidget);
+    expect(
+      find.textContaining('1 ready · 1 left out · 1 open'),
+      findsOneWidget,
+    );
+    expect(find.byKey(RecipePage.openHintKey), findsOneWidget);
+
+    // The portions are the run's and cannot be changed.
+    expect(tester.widget<Text>(find.byKey(RecipePage.portionsKey)).data, '3');
+    await tester.tap(find.byKey(RecipePage.morePortionsKey));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(RecipePage.portionsKey)).data, '3');
+
+    // Ready: what the Vorrat food holds; left out; open.
+    await tester.scrollUntilVisible(
+      find.byKey(RecipeIngredientTile.tileKey(2)),
+      100,
+    );
+    Finder inTile(int index, String text) => find.descendant(
+      of: find.byKey(RecipeIngredientTile.tileKey(index)),
+      matching: find.text(text),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(RecipeIngredientTile.tileKey(0)),
+        matching: find.byType(IngredientStockText),
+      ),
+      findsOneWidget,
+    );
+    expect(inTile(1, 'left out'), findsOneWidget);
+    expect(inTile(2, 'open'), findsOneWidget);
+
+    // A run goes on instead of starting over.
+    expect(
+      find.descendant(
+        of: find.byKey(RecipePage.cookKey),
+        matching: find.text('Continue'),
+      ),
+      findsOneWidget,
     );
   });
 
-  testWidgets('cooks a Vorlage from its foods without the ingredient check', (
+  testWidgets('a cook run sizes the recipe page for its portions', (
     tester,
   ) async {
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        runs: [buildCookRun(id: 'recipe-stew', recipeId: 'stew', portions: 6)],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+
+    // Two portions in the recipe, six in the run: 500 g become 1500 g.
+    expect(tester.widget<Text>(find.byKey(RecipePage.portionsKey)).data, '6');
+    await tester.scrollUntilVisible(
+      find.byKey(RecipeIngredientTile.tileKey(0)),
+      100,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(RecipeIngredientTile.tileKey(0)),
+        matching: find.textContaining('1500 g'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('reads the lines like the Kochmodus: a half, a number in words '
+      'and a scale reading', (tester) async {
+    final recipe = _recipe.copyWith(
+      recipeIngredients: const [
+        '½ Zitrone',
+        'eine halbe Zitrone',
+        'zwei Zwiebeln',
+        '1,250 kg Mehl',
+      ],
+      ignoredRecipeIngredients: const <String>[],
+    );
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository(const []),
+        templates: FakePreparedMealTemplateRepository(templates: [recipe]),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+
+    Finder inTile(int index, String text) => find.descendant(
+      of: find.byKey(RecipeIngredientTile.tileKey(index)),
+      matching: find.text(text, findRichText: true),
+    );
+    expect(inTile(0, '1/2 Zitrone'), findsOneWidget);
+    expect(inTile(1, '1/2 Zitrone'), findsOneWidget);
+    expect(inTile(2, '2 Zwiebeln'), findsOneWidget);
+    expect(inTile(3, '1250 g Mehl'), findsOneWidget);
+  });
+
+  testWidgets('cooks a Vorlage from its foods', (tester) async {
     final meals = _FakeMealRepository();
     final mince = _item('mince', 'Hackfleisch');
     final vorlage = _recipe.copyWith(
@@ -155,11 +341,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
+    await _openRecipe(tester, vorlage: true);
 
-    expect(find.byKey(RecipeCheckCard.cardKey), findsNothing);
     expect(find.byKey(RecipeIngredientTile.tileKey(0)), findsOneWidget);
+    // A Vorlage is combined from Vorrat foods, so the editor has no entry.
+    expect(find.byKey(RecipePage.editKey), findsNothing);
     await tester.tap(find.byKey(RecipePage.cookKey));
     await tester.pumpAndSettle();
 
@@ -170,160 +356,23 @@ void main() {
     expect(meal.components.single.usedAmount, 300);
   });
 
-  testWidgets('cooks with the Kochhelfer, one sentence at a time', (
+  testWidgets('"Bearbeiten" opens the recipe editor with the saved lines', (
     tester,
   ) async {
-    final meals = _FakeMealRepository();
-    final screenOn = <bool>[];
     await tester.pumpWidget(
       _app(
-        meals: meals,
-        inventory: _FakeInventoryRepository([
-          _item('mince', 'Hackfleisch'),
-          _item('carrots', 'Karotten'),
-        ]),
-        screenOn: screenOn,
-        voice: _FakeVoiceService([
-          '200 ml Sahne',
-          '1 Bund Schnittlauch',
-          'nein',
-          '100 ml Brühe',
-        ]),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
-
-    // Two taps in one frame open the Kochhelfer once, and back from its
-    // first screen cooks nothing.
-    await tester.tap(find.byKey(RecipePage.cookKey));
-    await tester.tap(find.byKey(RecipePage.cookKey));
-    await tester.pumpAndSettle();
-    expect(find.byType(CookingGuidePage, skipOffstage: false), findsOneWidget);
-    expect(screenOn, [true]);
-    await tester.tap(find.byKey(CookingGuideBody.backKey));
-    await tester.pumpAndSettle();
-    expect(find.byType(RecipePage), findsOneWidget);
-    expect(meals.saved, isEmpty);
-
-    await tester.tap(find.byKey(RecipePage.cookKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuideBody.startKey));
-    await tester.pumpAndSettle();
-    // Back from the first sentence shows everything again.
-    await tester.tap(find.byKey(CookingGuideBody.backKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuideBody.startKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuideBody.nextKey));
-    await tester.pumpAndSettle();
-    // A tap on where the cook is offers every step to jump to.
-    await tester.tap(find.byKey(CookingGuideSentenceSection.jumpKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuideStepSheet.stepKey(1)));
-    await tester.pumpAndSettle();
-    expect(find.text('Anbraten.'), findsOneWidget);
-    // Back after a jump goes once to where the cook jumped from, not to
-    // the first screen.
-    await tester.tap(find.byKey(CookingGuideBody.backKey));
-    await tester.pumpAndSettle();
-    expect(find.text('Köcheln lassen.'), findsOneWidget);
-    expect(find.byKey(CookingGuideBody.nextKey), findsNothing);
-    // The system back goes one sentence back, not out of the Kochhelfer.
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.byKey(CookingGuideBody.nextKey), findsOneWidget);
-    await tester.tap(find.byKey(CookingGuideBody.nextKey));
-    await tester.pumpAndSettle();
-
-    // Feta goes in by typing; "Rückgängig" takes it out again.
-    await _typeInKochhelfer(tester, '50 g Feta');
-    await tester.tap(find.byKey(CookingGuideJustAdded.undoKey));
-    await tester.pumpAndSettle();
-    expect(find.byKey(CookingGuideJustAdded.undoKey), findsNothing);
-
-    // Said: cream stays, the chives go again with "nein", and the broth
-    // still being said goes in with "Fertig gekocht". Each tap starts or
-    // stops listening, and the fake hears one thing per start.
-    final voice = find.byKey(CookingGuideBody.voiceKey);
-    for (var tap = 0; tap < 7; tap++) {
-      await tester.tap(voice);
-      await tester.pumpAndSettle();
-      if (tap == 1 || tap == 3) {
-        expect(find.byKey(CookingGuideJustAdded.undoKey), findsOneWidget);
-      }
-      if (tap == 5) {
-        expect(find.byKey(CookingGuideJustAdded.undoKey), findsNothing);
-      }
-    }
-
-    // The last sentence only finishes.
-    expect(find.byKey(CookingGuideBody.nextKey), findsNothing);
-    await tester.tap(find.byKey(CookingGuideBody.doneKey));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(CookedMealPage), findsOneWidget);
-    expect(meals.saved.single.name, 'Bauerntopf');
-    // Each said ingredient goes in once, though stopping sends it again.
-    expect(meals.saved.single.pendingRecipeIngredients, [
-      '200 ml Sahne',
-      '100 ml Brühe',
-    ]);
-    // Closing "Gekocht" goes back to where the recipe was opened.
-    expect(find.byType(RecipePage, skipOffstage: false), findsNothing);
-    expect(find.byType(CookingGuidePage, skipOffstage: false), findsNothing);
-  });
-
-  testWidgets('keeps what the Kochhelfer added until it is taken back', (
-    tester,
-  ) async {
-    final meals = _FakeMealRepository();
-    await tester.pumpWidget(
-      _app(
-        meals: meals,
+        meals: _FakeMealRepository(),
         inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
-    expect(find.byKey(RecipeGuideAddedHint.textKey), findsNothing);
+    await _openRecipe(tester);
 
-    await tester.tap(find.byKey(RecipePage.cookKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuideBody.startKey));
-    await tester.pumpAndSettle();
-    await _typeInKochhelfer(tester, '50 g Feta');
-    // Back to the overview, then out to the recipe without cooking.
-    await tester.tap(find.byKey(CookingGuideBody.backKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuideBody.backKey));
+    await tester.scrollUntilVisible(find.byKey(RecipePage.editKey), 100);
+    await tester.tap(find.byKey(RecipePage.editKey));
     await tester.pumpAndSettle();
 
-    expect(find.byType(RecipePage), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.byKey(RecipeGuideAddedHint.undoKey),
-      100,
-      scrollable: find
-          .descendant(
-            of: find.byType(RecipePage),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
-    expect(find.byKey(RecipeGuideAddedHint.textKey), findsOneWidget);
-    // Feta follows the recipe's three ingredients.
-    final feta = find.byKey(
-      RecipeIngredientTile.tileKey(3),
-      skipOffstage: false,
-    );
-    expect(feta, findsOneWidget);
-    await tester.tap(find.byKey(RecipeGuideAddedHint.undoKey));
-    await tester.pumpAndSettle();
-    expect(find.byKey(RecipeGuideAddedHint.textKey), findsNothing);
-    expect(feta, findsNothing);
-    expect(meals.saved, isEmpty);
+    expect(find.byType(RecipeEditorPage), findsOneWidget);
   });
 
   testWidgets('removes the recipe from its page and brings it back', (
@@ -339,15 +388,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
+    await _openRecipe(tester);
 
     await tester.tap(find.byKey(RecipeHero.removeKey));
     await tester.pumpAndSettle();
 
     // The page closes; the snack bar shows where the recipe was opened.
     expect(find.byType(RecipePage), findsNothing);
-    expect(find.byKey(_startKey), findsOneWidget);
+    expect(find.byType(CookbookPage), findsOneWidget);
     expect(templates.templates, isEmpty);
     final snackBar = find.byKey(CookbookRemoveFlow.snackBarKey);
     expect(snackBar, findsOneWidget);
@@ -359,14 +407,12 @@ void main() {
 
     expect(templates.templates, [_recipe]);
     expect(meals.saved, isEmpty);
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
+    await _openRecipe(tester);
     expect(find.byKey(RecipePage.cookKey), findsOneWidget);
   });
 
-  testWidgets('plans a portion of the recipe and takes it back', (
-    tester,
-  ) async {
+  testWidgets('plans a portion of the recipe from the Kochbuch and takes it '
+      'back', (tester) async {
     final plans = FakePlannedEntryRepository();
     final meals = _FakeMealRepository();
     await tester.pumpWidget(
@@ -380,21 +426,16 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(RecipeHero.planKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
+    await _planFromCookbook(tester);
 
     // Planned for today with the Vorrat values; nothing is cooked.
     final plan = plans.plans.single;
     expect(plan.bundleSourceTemplateId, 'stew');
     expect(plan.nutritionPending, isFalse);
+    expect(plan.nutritionEstimated, isFalse);
     expect(plan.bundleConsumedPortions, 1);
     expect(meals.saved, isEmpty);
-    expect(find.byType(RecipePage), findsOneWidget);
 
     await tester.tap(
       find.descendant(
@@ -404,6 +445,44 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(plans.plans, isEmpty);
+  });
+
+  testWidgets('plans a recipe with its estimate while an ingredient has no '
+      'Vorrat item', (tester) async {
+    final plans = FakePlannedEntryRepository();
+    final lines = _recipe.recipeIngredients;
+    final estimated = _recipe.copyWith(
+      recipeEstimate: RecipeEstimate(
+        kcal: 450,
+        protein: 30,
+        carbs: 40,
+        fat: 12,
+        portions: _recipe.totalPortions,
+        linesKey: recipeLinesKey(lines),
+        createdAt: DateTime.utc(2026, 10, 9),
+      ),
+    );
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        // No carrots in the Vorrat at all.
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        templates: FakePreparedMealTemplateRepository(templates: [estimated]),
+        plans: plans,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _planFromCookbook(tester);
+
+    final plan = plans.plans.single;
+    expect(plan.bundleSourceTemplateId, 'stew');
+    expect(plan.nutritionEstimated, isTrue);
+    expect(plan.nutritionPending, isFalse);
+    expect(plan.totalKcal, 450);
+    // The mince has an item, but the estimate is the plan's only values.
+    expect(plan.isCombined, isFalse);
+    expect(plan.bundleComponents, isEmpty);
   });
 
   testWidgets('offers the ingredients the Vorrat lacks for the list', (
@@ -422,13 +501,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(RecipeHero.planKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
+    await _planFromCookbook(tester);
 
     // Only the carrots are short.
     expect(find.byKey(ShoppingPlanNeedsDialog.needKey(0)), findsOneWidget);
@@ -452,13 +526,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(RecipeHero.planKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
+    await _planFromCookbook(tester);
 
     expect(find.byKey(ShoppingPlanNeedsDialog.needKey(0)), findsOneWidget);
     expect(find.byKey(ShoppingPlanNeedsDialog.needKey(1)), findsNothing);
@@ -494,17 +563,263 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(RecipeHero.planKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
+    await _planFromCookbook(tester);
 
     // The carrots are on the list already, so nothing is asked.
     expect(find.byType(ShoppingPlanNeedsDialog), findsNothing);
     expect(shopping.savedItems, isEmpty);
+  });
+
+  testWidgets('"Bearbeiten" is gone while the recipe has a cook run', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        runs: [buildCookRun(id: 'recipe-stew', recipeId: 'stew')],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+
+    expect(find.byType(RecipePage), findsOneWidget);
+    // The ingredients are on screen, but not their "Bearbeiten".
+    await tester.scrollUntilVisible(
+      find.byKey(RecipeIngredientTile.tileKey(0)),
+      100,
+    );
+    expect(find.byKey(RecipePage.editKey), findsNothing);
+  });
+
+  testWidgets('a recipe without a fitting estimate costs one AI call across '
+      'the Kochbuch and its page, not another when the Kochbuch changes', (
+    tester,
+  ) async {
+    final client = FakeRecipeEstimateClient()..hold();
+    final templates = FakePreparedMealTemplateRepository(templates: [_recipe]);
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        templates: templates,
+        estimates: client,
+      ),
+    );
+    await _pumpWhileEstimating(tester);
+
+    // The Kochbuch estimates the recipe and shows that its value is coming.
+    expect(client.calls, 1);
+    expect(
+      find.byKey(CookbookRecipeCard.estimatingKey('stew')),
+      findsOneWidget,
+    );
+
+    // The page finds the recipe still without an estimate and joins the call.
+    await _openRecipe(tester, estimating: true);
+    expect(find.byType(RecipePage), findsOneWidget);
+    expect(client.calls, 1);
+
+    client.release();
+    await _pumpWhileEstimating(tester);
+    await tester.pumpAndSettle();
+    expect(client.calls, 1);
+    expect(templates.templates.single.recipeEstimate?.kcal, 420);
+
+    // A later change of the recipe, such as the estimate's own save,
+    // leaves it at that.
+    await templates.save(
+      templates.templates.single.copyWith(name: 'Bauerntopf II'),
+    );
+    await tester.pumpAndSettle();
+    expect(client.calls, 1);
+  });
+
+  testWidgets('the page alone estimates a recipe when the Kochbuch was never '
+      'open', (tester) async {
+    final client = FakeRecipeEstimateClient()..hold();
+    final templates = FakePreparedMealTemplateRepository(templates: [_recipe]);
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        templates: templates,
+        openRecipeId: 'stew',
+        estimates: client,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RecipePage), findsOneWidget);
+    expect(client.calls, 1);
+    // The header keeps the place of the values while the AI works.
+    expect(find.byKey(RecipeEstimateLine.waitKey), findsOneWidget);
+    expect(find.byKey(RecipeEstimateLine.lineKey), findsNothing);
+
+    client.release();
+    await _pumpWhileEstimating(tester);
+    await tester.pumpAndSettle();
+    expect(client.calls, 1);
+    expect(templates.templates.single.recipeEstimate?.kcal, 420);
+    // The values replace the place, and the food label comes with them.
+    expect(find.byKey(RecipeEstimateLine.waitKey), findsNothing);
+    expect(find.byKey(RecipeEstimateLine.lineKey), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(RecipeNutritionSection.labelKey),
+      200,
+    );
+    expect(find.byKey(RecipeNutritionSection.labelKey), findsOneWidget);
+  });
+
+  testWidgets('opening a recipe whose estimate fits, or a Vorlage, starts no '
+      'estimate', (tester) async {
+    final fitting = _recipe.copyWith(
+      recipeEstimate: RecipeEstimate(
+        kcal: 450,
+        protein: 30,
+        carbs: 40,
+        fat: 12,
+        portions: _recipe.totalPortions,
+        linesKey: recipeLinesKey(_recipe.recipeIngredients),
+        createdAt: DateTime.utc(2026, 10, 9),
+      ),
+    );
+    final client = FakeRecipeEstimateClient();
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        templates: FakePreparedMealTemplateRepository(templates: [fitting]),
+        estimates: client,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+    expect(find.byType(RecipePage), findsOneWidget);
+    expect(client.calls, 0);
+
+    final mince = _item('mince', 'Hackfleisch');
+    final vorlage = _recipe.copyWith(
+      totalPortions: 1,
+      recipeIngredients: const <String>[],
+      ignoredRecipeIngredients: const <String>[],
+      recipeInstructions: const <String>[],
+      components: [
+        PreparedMealComponent(
+          inventoryItemId: mince.id,
+          name: mince.name,
+          brand: null,
+          imageUrl: null,
+          usedAmount: 300,
+          usedUnit: InventoryAmountUnit.gram,
+          totalKcal: 0,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+          sourceItemSnapshot: mince,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([mince]),
+        templates: FakePreparedMealTemplateRepository(templates: [vorlage]),
+        estimates: client,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester, vorlage: true);
+    expect(find.byType(RecipePage), findsOneWidget);
+    expect(client.calls, 0);
+  });
+
+  testWidgets('shows the nutrition per ingredient folded when the estimate '
+      'has values per line, and none without them', (tester) async {
+    RecipeEstimate estimate({List<RecipeLineNutrition>? lines}) =>
+        RecipeEstimate(
+          kcal: 450,
+          protein: 30,
+          carbs: 40,
+          fat: 12,
+          portions: _recipe.totalPortions,
+          linesKey: recipeLinesKey(_recipe.recipeIngredients),
+          createdAt: DateTime.utc(2026, 10, 9),
+          lines: lines,
+        );
+    final withLines = _recipe.copyWith(
+      recipeEstimate: estimate(
+        lines: const [
+          RecipeLineNutrition(kcal: 800, protein: 60, carbs: 0, fat: 50),
+          RecipeLineNutrition(kcal: 80, protein: 2, carbs: 16, fat: 0),
+          RecipeLineNutrition(kcal: 0, protein: 0, carbs: 0, fat: 0),
+        ],
+      ),
+    );
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        templates: FakePreparedMealTemplateRepository(templates: [withLines]),
+        estimates: FakeRecipeEstimateClient(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+
+    // The food label of one portion stands above the nutrition per
+    // ingredient.
+    final label = find.byKey(RecipeNutritionSection.labelKey);
+    await tester.scrollUntilVisible(label, 200);
+    expect(label, findsOneWidget);
+    final toggle = find.byKey(RecipeLineNutritionSection.toggleKey);
+    await tester.scrollUntilVisible(toggle, 200);
+    // Clear of the lower edge, so the tap hits it.
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -150));
+    await tester.pumpAndSettle();
+    expect(toggle, findsOneWidget);
+    expect(find.byKey(RecipeLineNutritionSection.tableKey), findsNothing);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+
+    final table = find.byKey(RecipeLineNutritionSection.tableKey);
+    await tester.scrollUntilVisible(table, 200);
+    expect(table, findsOneWidget);
+    // The head names the portions of the recipe, and the stepper moves it.
+    expect(
+      find.descendant(of: table, matching: find.text('For 2 portions')),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(RecipePage.morePortionsKey),
+      -200,
+    );
+    await tester.tap(find.byKey(RecipePage.morePortionsKey));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: table, matching: find.text('For 3 portions')),
+      findsOneWidget,
+    );
+
+    final plain = _recipe.copyWith(recipeEstimate: estimate());
+    await tester.pumpWidget(
+      _app(
+        meals: _FakeMealRepository(),
+        inventory: _FakeInventoryRepository([_item('mince', 'Hackfleisch')]),
+        templates: FakePreparedMealTemplateRepository(templates: [plain]),
+        estimates: FakeRecipeEstimateClient(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openRecipe(tester);
+
+    expect(find.byType(RecipePage), findsOneWidget);
+    expect(find.byKey(RecipeLineNutritionSection.toggleKey), findsNothing);
+    // The label stands alone then.
+    await tester.scrollUntilVisible(label, 200);
+    expect(label, findsOneWidget);
   });
 
   testWidgets('a recipe that is gone says so', (tester) async {
@@ -513,10 +828,9 @@ void main() {
         meals: _FakeMealRepository(),
         inventory: _FakeInventoryRepository(const []),
         templates: FakePreparedMealTemplateRepository(),
+        openRecipeId: 'stew',
       ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
     await tester.pumpAndSettle();
 
     expect(find.byKey(RecipePage.cookKey), findsNothing);
@@ -524,21 +838,46 @@ void main() {
   });
 }
 
-/// Adds [text] through the Kochhelfer's typing sheet.
-///
-/// The emulator keyboard of the sheet can show up after the sheet closed. It
-/// shrinks the screen and moves what the next tap aims at, so this waits until
-/// it is gone.
-Future<void> _typeInKochhelfer(WidgetTester tester, String text) async {
-  // The step bar pushes the tools below the test screen's fold.
-  await tester.ensureVisible(find.byKey(CookingGuideBody.typeKey));
+/// Pumps for a second, while the AI has not answered: pumpAndSettle would
+/// not end while the spinner of a Kochbuch card turns.
+Future<void> _pumpWhileEstimating(WidgetTester tester) async {
+  for (var i = 0; i < 20; i += 1) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
+/// Opens the recipe `stew` from its card in the Kochbuch, or from its tile
+/// when it is a [vorlage]. While [estimating], its card holds a spinner.
+Future<void> _openRecipe(
+  WidgetTester tester, {
+  bool vorlage = false,
+  bool estimating = false,
+}) async {
+  Future<void> settle() async => estimating
+      ? await _pumpWhileEstimating(tester)
+      : await tester.pumpAndSettle();
+  final entry = find.byKey(
+    vorlage
+        ? CookbookTemplateTile.tileKey('stew')
+        : CookbookRecipeCard.cardKey('stew'),
+  );
+  // Center the entry, so the dock does not cover it.
+  await Scrollable.ensureVisible(tester.element(entry), alignment: 0.3);
+  await settle();
+  await tester.tap(entry);
+  await settle();
+}
+
+/// Plans one portion of the recipe `stew` for today from its Kochbuch card.
+Future<void> _planFromCookbook(WidgetTester tester) async {
+  final card = find.byKey(CookbookRecipeCard.cardKey('stew'));
+  await Scrollable.ensureVisible(tester.element(card), alignment: 0.3);
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(CookingGuideBody.typeKey));
+  await tester.longPress(card);
   await tester.pumpAndSettle();
-  await tester.enterText(find.byKey(FreeCookingTextSheet.fieldKey), text);
-  await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
+  await tester.tap(find.byKey(CookbookEntryInkWell.planKey));
   await tester.pumpAndSettle();
-  await waitForKeyboardClosed(tester);
+  await tester.tap(find.text('OK'));
   await tester.pumpAndSettle();
 }
 
@@ -577,23 +916,18 @@ Widget _app({
   FakePreparedMealTemplateRepository? templates,
   FakePlannedEntryRepository? plans,
   ShoppingListRepository? shopping,
-  List<bool>? screenOn,
-  VoiceSearchService? voice,
+  String? openRecipeId,
+  FakeRecipeEstimateClient? estimates,
+  List<CookRun> runs = const [],
 }) {
   final router = GoRouter(
-    initialLocation: AppRoutes.homeInventoryTemplates,
+    initialLocation: openRecipeId == null
+        ? AppRoutes.homeInventoryTemplates
+        : AppRoutes.homeRecipePath(openRecipeId),
     routes: [
       GoRoute(
         path: AppRoutes.homeInventoryTemplates,
-        builder: (context, state) => Scaffold(
-          body: Center(
-            child: TextButton(
-              key: _startKey,
-              onPressed: () => context.push(AppRoutes.homeRecipePath('stew')),
-              child: const Text('Start'),
-            ),
-          ),
-        ),
+        builder: (context, state) => const CookbookPage(),
       ),
       GoRoute(
         path: AppRoutes.homeRecipe,
@@ -601,9 +935,19 @@ Widget _app({
             RecipePage(recipeId: state.pathParameters['recipeId']!),
       ),
       GoRoute(
-        path: AppRoutes.homeRecipeGuide,
+        path: AppRoutes.homeRecipeEdit,
         builder: (context, state) =>
-            CookingGuidePage(recipeId: state.pathParameters['recipeId']!),
+            RecipeEditorPage(recipeId: state.pathParameters['recipeId']),
+      ),
+      GoRoute(
+        path: AppRoutes.homeCook,
+        builder: (context, state) =>
+            Text(state.uri.toString(), key: _cookPageKey),
+      ),
+      GoRoute(
+        path: AppRoutes.homeCookRun,
+        builder: (context, state) =>
+            Text(state.uri.toString(), key: _runPageKey),
       ),
       GoRoute(
         path: AppRoutes.homeCookedMeal,
@@ -616,7 +960,18 @@ Widget _app({
 
   final container = ProviderContainer(
     overrides: [
+      authStateChangesProvider.overrideWith(
+        (ref) => Stream.value(FakeSignedInUser('uid-1')),
+      ),
+      cookRunRepositoryProvider.overrideWithValue(
+        FakeCookRunRepository(runs: runs),
+      ),
       preparedMealRepositoryProvider.overrideWithValue(meals),
+      // Without an answer the estimate fails quietly, so the recipe stays as
+      // the test wrote it.
+      recipeEstimateTemplateClientProvider.overrideWithValue(
+        (estimates ?? FakeRecipeEstimateClient(noAnswer: true)).request,
+      ),
       preparedMealTemplateRepositoryProvider.overrideWithValue(
         templates ?? FakePreparedMealTemplateRepository(templates: [_recipe]),
       ),
@@ -627,12 +982,6 @@ Widget _app({
       inventoryActivityActorProvider.overrideWithValue(null),
       shoppingListRepositoryProvider.overrideWithValue(
         shopping ?? _FakeShoppingListRepository(),
-      ),
-      voiceSearchServiceProvider.overrideWithValue(
-        voice ?? _FakeVoiceService(const []),
-      ),
-      screenWakeLockProvider.overrideWithValue(
-        ScreenWakeLock(toggle: ({required on}) async => screenOn?.add(on)),
       ),
       kitchenUtensilRepositoryProvider.overrideWithValue(
         _FakeUtensilRepository(),
@@ -749,55 +1098,4 @@ class _FakeShoppingListRepository implements ShoppingListRepository {
 
   @override
   Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-/// Hears the next of the given transcripts each time it starts listening,
-/// first as a partial result. Like the plugin, it sends it as final when it
-/// stops.
-class _FakeVoiceService implements VoiceSearchService {
-  new(List<String> transcripts) : _transcripts = [...transcripts];
-
-  final List<String> _transcripts;
-  ValueChanged<VoiceSearchRecognition>? _onResult;
-  ValueChanged<bool>? _onListening;
-  String? _heard;
-
-  @override
-  bool isListening = false;
-
-  @override
-  Future<VoiceSearchFailure?> startListening({
-    required ValueChanged<VoiceSearchRecognition> onResult,
-    required ValueChanged<bool> onListeningStateChanged,
-    required ValueChanged<VoiceSearchFailure> onError,
-    Duration? pauseFor,
-  }) async {
-    isListening = true;
-    _onResult = onResult;
-    _onListening = onListeningStateChanged;
-    onListeningStateChanged(true);
-    if (_transcripts.isNotEmpty) {
-      final heard = _heard = _transcripts.removeAt(0);
-      scheduleMicrotask(
-        () =>
-            onResult(VoiceSearchRecognition(transcript: heard, isFinal: false)),
-      );
-    }
-    return null;
-  }
-
-  @override
-  Future<void> stopListening() async {
-    if (_heard case final heard?) {
-      _onResult?.call(VoiceSearchRecognition(transcript: heard, isFinal: true));
-    }
-    await cancelListening();
-  }
-
-  @override
-  Future<void> cancelListening() async {
-    _heard = null;
-    isListening = false;
-    _onListening?.call(false);
-  }
 }

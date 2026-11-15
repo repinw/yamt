@@ -28,38 +28,22 @@ abstract final class AppRoutes {
   /// Inventory home route.
   static const homeInventory = '/home/inventory';
 
+  /// Query parameter of [homeInventory] with the id of the Vorrat meal whose
+  /// page opens over it.
+  static const homeInventoryMealParam = 'meal';
+
+  /// Builds the Vorrat path that opens the page of the meal [mealId].
+  static String homeInventoryMealPath(String mealId) => Uri(
+    path: homeInventory,
+    queryParameters: {homeInventoryMealParam: mealId},
+  ).toString();
+
   /// Product search hub route.
   static const homeProductSearchHub = '/home/product-search-hub';
 
-  /// Product search that returns the picked food without saving it.
+  /// Product search that returns the picked food without saving it; it takes
+  /// a `FoodPickRouteArgs` in `extra`.
   static const homeFoodPick = '/home/food-pick';
-
-  /// Query parameter of [homeFoodPick] that opens the barcode scanner or the
-  /// AI instead of the search.
-  static const homeFoodPickStartParam = 'start';
-
-  /// [homeFoodPickStartParam] value that opens the barcode scanner.
-  static const homeFoodPickStartBarcode = 'barcode';
-
-  /// [homeFoodPickStartParam] value that opens the AI.
-  static const homeFoodPickStartAi = 'ai';
-
-  /// Query parameter of [homeFoodPick] with the text the search starts with.
-  static const homeFoodPickQueryParam = 'q';
-
-  /// Builds the food pick path that starts with [start], one of the
-  /// `homeFoodPickStart*` values, or with the search for [query] when it is
-  /// null.
-  static String homeFoodPickPath({String? start, String? query}) {
-    final parameters = <String, String>{
-      homeFoodPickStartParam: ?start,
-      homeFoodPickQueryParam: ?query,
-    };
-    return Uri(
-      path: homeFoodPick,
-      queryParameters: parameters.isEmpty ? null : parameters,
-    ).toString();
-  }
 
   /// Product-search child flow route.
   static const productSearchChildFlow = '/product-search/child-flow/:flow';
@@ -74,20 +58,27 @@ abstract final class AppRoutes {
   /// A saved recipe from the Kochbuch, with recipe id parameter.
   static const homeRecipe = '/home/recipe/:recipeId';
 
-  /// Ingredient check of one recipe, with recipe id parameter.
-  static const homeRecipeCheck = '/home/recipe/:recipeId/check';
-
-  /// Kochhelfer of one recipe, with recipe id parameter.
-  static const homeRecipeGuide = '/home/recipe/:recipeId/guide';
-
   /// Editor of one Vorrat item, with item id parameter.
   static const homeInventoryItemEdit = '/home/inventory/items/:itemId/edit';
 
-  /// The new cooking flow of one recipe, with recipe id parameter.
+  /// "Zuweisen" of one recipe before its cooking, with recipe id parameter
+  /// and the optional [homeCookPortionsParam].
   static const homeCook = '/home/cook/:recipeId';
 
-  /// Free cooking: a meal without a recipe, filled by voice or typing.
+  /// Query parameter of [homeCook] with the portions to cook.
+  static const homeCookPortionsParam = 'portions';
+
+  /// A cook run of the household, with run id parameter.
+  static const homeCookRun = '/home/cook-run/:runId';
+
+  /// Free cooking: a cook run without a recipe.
   static const homeFreeCooking = '/home/free-cooking';
+
+  /// The editor of a new recipe; extra: `RecipeEditorRouteArgs`.
+  static const homeRecipeNew = '/home/recipe-new';
+
+  /// The editor of a saved recipe, with recipe id parameter.
+  static const homeRecipeEdit = '/home/recipe/:recipeId/edit';
 
   /// The "Gekocht" step of a meal in the pot, with meal id parameter.
   static const homeCookedMeal = '/home/cooked/:mealId';
@@ -198,16 +189,32 @@ abstract final class AppRoutes {
   /// Builds the path of the recipe page for [recipeId].
   static String homeRecipePath(String recipeId) => '/home/recipe/$recipeId';
 
-  /// Builds the path of the new cooking flow for the recipe [recipeId].
-  static String homeCookPath(String recipeId) => '/home/cook/$recipeId';
+  /// Builds the path of "Zuweisen" of the recipe [recipeId] for [portions]
+  /// portions, the recipe's own when `null`.
+  static String homeCookPath(String recipeId, {int? portions}) => Uri(
+    path: '/home/cook/$recipeId',
+    queryParameters: portions == null
+        ? null
+        : {homeCookPortionsParam: '$portions'},
+  ).toString();
 
-  /// Builds the ingredient check path for the recipe [recipeId].
-  static String homeRecipeCheckPath(String recipeId) =>
-      '/home/recipe/$recipeId/check';
+  /// Builds the path of the cook run [runId].
+  static String homeCookRunPath(String runId) => '/home/cook-run/$runId';
 
-  /// Builds the Kochhelfer path for the recipe [recipeId].
-  static String homeRecipeGuidePath(String recipeId) =>
-      '/home/recipe/$recipeId/guide';
+  /// Builds the path that the recipe page of [recipeId] opens: its cook run
+  /// [runId] when one runs and is assigned, else "Zuweisen" for [portions]
+  /// portions.
+  static String homeCookRecipePath(
+    String recipeId, {
+    required String? runId,
+    int? portions,
+  }) => runId == null
+      ? homeCookPath(recipeId, portions: portions)
+      : homeCookRunPath(runId);
+
+  /// Builds the editor path for the saved recipe [recipeId].
+  static String homeRecipeEditPath(String recipeId) =>
+      '/home/recipe/$recipeId/edit';
 
   /// Builds the editor path for the Vorrat item with [itemId].
   static String homeInventoryItemEditPath(String itemId) {

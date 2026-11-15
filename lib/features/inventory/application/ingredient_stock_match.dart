@@ -3,7 +3,6 @@ import 'package:yamt/features/inventory/application/ingredient_inventory_matcher
 import 'package:yamt/features/inventory/application/recipe_ingredient_assignment_support.dart';
 import 'package:yamt/features/inventory/domain/ingredient_compound_head.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
@@ -60,8 +59,8 @@ ingredientStockCandidates({
 
 /// The items that supply the ingredient [text] of [recipe] when nobody picks
 /// one: its saved items among [candidates] ([ingredientStockCandidates]), in
-/// saved order, else the best match. The recipe page, the Kochbuch cards and
-/// plans all pick this way.
+/// saved order, else the best match. The recipe page and plans both pick this
+/// way.
 List<InventoryItem> ingredientStockPick({
   required PreparedMeal recipe,
   required String text,
@@ -79,43 +78,6 @@ List<InventoryItem> ingredientStockPick({
   ];
   return saved.isNotEmpty ? saved : [?matches.firstOrNull];
 }
-
-/// How much of [requirement] the [items] cannot supply, in the unit the
-/// Vorrat counts it in, or `null` when they supply all of it or the
-/// ingredient has no amount. [amountConversion] works as in
-/// [ingredientStockCandidates].
-({int amount, InventoryAmountUnit unit})? ingredientShortfall({
-  required TemplateIngredientRequirement? requirement,
-  required List<InventoryItem> items,
-  RecipeIngredientAmountConversion? amountConversion,
-}) {
-  if (requirement == null) {
-    return null;
-  }
-  final effective = resolveEffectiveRequirementForItems(
-    requirement: requirement,
-    assignedItems: items,
-    amountConversion: amountConversion,
-  );
-  // ponytail: pieces count as supplied; add per-piece math when recipes
-  // need more pieces than the Vorrat holds.
-  if (effective == null || effective.unit == InventoryAmountUnit.piece) {
-    return null;
-  }
-  final missing =
-      effective.amount - ingredientStockedAmount(items, effective.unit);
-  return missing > 0 ? (amount: missing, unit: effective.unit) : null;
-}
-
-/// What [items] hold in [unit], or 0 without a unit.
-int ingredientStockedAmount(
-  List<InventoryItem> items,
-  InventoryAmountUnit? unit,
-) => unit == null
-    ? 0
-    : items
-          .where((item) => item.amountUnit == unit)
-          .fold(0, (sum, item) => sum + item.availableAmount);
 
 /// Whether the recipe line [text] names no amount at all, like "Salz". A
 /// Vorrat item of its name stands for it and gives nothing. "1 cup Milch",

@@ -61,10 +61,6 @@ class PreparedMealTemplatesController
   static const _uuid = Uuid();
 
   final _mutationQueue = SerializedMutationQueue();
-  final Set<(String, String)> _recipeInstructionBackfillsInProgress =
-      <(String, String)>{};
-  final Set<(String, String)> _recipeInstructionBackfillsAttempted =
-      <(String, String)>{};
   late final _feed = HouseholdScopedListFeed<PreparedMeal>(
     ref: () => ref,
     watch: () => ref
@@ -76,7 +72,6 @@ class PreparedMealTemplatesController
     recoveryMessage:
         'Rebuilding prepared meal template stream after household access '
         'changed.',
-    onList: _scheduleRecipeInstructionBackfill,
   );
 
   @override
@@ -142,57 +137,6 @@ class PreparedMealTemplatesController
         .whenComplete(keepAliveLink.close);
   }
 
-  /// Save recipe template.
-  Future<PreparedMealTemplateSaveResult> saveRecipeTemplate(
-    PreparedMeal template,
-  ) {
-    if (template.name.trim().isEmpty || template.totalPortions < 1) {
-      return Future<PreparedMealTemplateSaveResult>.value(
-        const PreparedMealTemplateSaveResult.failure(
-          PreparedMealTemplateSaveFailureReason.invalidInput,
-        ),
-      );
-    }
-
-    final keepAliveLink = ref.keepAlive();
-    return _mutationQueue
-        .run<PreparedMealTemplateSaveResult>(
-          operation: () async {
-            final currentTemplates = await _currentTemplates();
-            final now = DateTime.now();
-            final newTemplate = template.copyWith(
-              id: _uuid.v4(),
-              createdAt: now,
-              updatedAt: now,
-            );
-            final nextTemplates = List<PreparedMeal>.from(currentTemplates)
-              ..add(newTemplate);
-            final saved = await _saveTemplates(
-              previousTemplates: currentTemplates,
-              nextTemplates: nextTemplates,
-            );
-            if (!saved) {
-              return const PreparedMealTemplateSaveResult.failure(
-                PreparedMealTemplateSaveFailureReason.saveFailed,
-              );
-            }
-            return PreparedMealTemplateSaveResult.success(newTemplate.id);
-          },
-          fallbackValue: const PreparedMealTemplateSaveResult.failure(
-            PreparedMealTemplateSaveFailureReason.saveFailed,
-          ),
-          onError: (error, stackTrace) {
-            log(
-              'Unexpected recipe template save error.',
-              name: _preparedMealTemplatesControllerLogName,
-              error: error,
-              stackTrace: stackTrace,
-            );
-          },
-        )
-        .whenComplete(keepAliveLink.close);
-  }
-
   /// Save imported recipe template.
   Future<PreparedMealTemplateSaveResult> saveImportedRecipeTemplate({
     required PreparedMealRecipeImport importedRecipe,
@@ -246,145 +190,6 @@ class PreparedMealTemplatesController
         nextTemplates: nextTemplates,
       );
     }).whenComplete(keepAliveLink.close);
-  }
-
-  void _scheduleRecipeInstructionBackfill(List<PreparedMeal> templates) {
-    final candidates = templates
-        .where(_needsRecipeInstructionBackfill)
-        .where((template) {
-          final backfillKey = _recipeInstructionBackfillKey(template);
-          if (backfillKey == null) {
-            return false;
-          }
-          return !_recipeInstructionBackfillsInProgress.contains(backfillKey) &&
-              !_recipeInstructionBackfillsAttempted.contains(backfillKey);
-        })
-        .toList(growable: false);
-    if (candidates.isEmpty) {
-      return;
-    }
-
-    for (final candidate in candidates) {
-      final backfillKey = _recipeInstructionBackfillKey(candidate);
-      if (backfillKey == null) {
-        continue;
-      }
-      _recipeInstructionBackfillsInProgress.add(backfillKey);
-      _recipeInstructionBackfillsAttempted.add(backfillKey);
-    }
-    unawaited(_backfillMissingRecipeInstructions(candidates));
-  }
-
-  Future<void> _backfillMissingRecipeInstructions(
-    List<PreparedMeal> templates,
-  ) async {
-    final backfillKeys = templates
-        .map(_recipeInstructionBackfillKey)
-        .whereType<(String, String)>()
-        .toList(growable: false);
-    try {
-      final importer = ref.read(preparedMealRecipeImporterProvider);
-      final fetchedInstructions =
-          <
-            ({String templateId, String recipeUrl, List<String> instructions})
-          >[];
-
-      for (final template in templates) {
-        final recipeUrl = template.recipeUrl;
-        if (recipeUrl == null || recipeUrl.isEmpty) {
-          continue;
-        }
-
-        try {
-          final importedRecipe = await importer.importRecipe(recipeUrl);
-          if (!ref.mounted) {
-            return;
-          }
-          final normalizedInstructions =
-              (importedRecipe?.instructions ?? const <String>[])
-                  .map((line) => line.trim())
-                  .where((line) => line.isNotEmpty)
-                  .toList(growable: false);
-          if (normalizedInstructions.isEmpty) {
-            continue;
-          }
-          fetchedInstructions.add((
-            templateId: template.id,
-            recipeUrl: recipeUrl,
-            instructions: normalizedInstructions,
-          ));
-        } on Object catch (error, stackTrace) {
-          log(
-            'Failed to backfill recipe instructions for template '
-            '${template.id}.',
-            name: _preparedMealTemplatesControllerLogName,
-            error: error,
-            stackTrace: stackTrace,
-          );
-        }
-      }
-
-      if (fetchedInstructions.isEmpty || !ref.mounted) {
-        return;
-      }
-
-      await _mutationQueue.run<bool>(
-        operation: () async {
-          final currentTemplates = await _currentTemplates();
-          if (!ref.mounted) {
-            return false;
-          }
-
-          final fetchedByTemplateId =
-              <
-                String,
-                ({
-                  String templateId,
-                  String recipeUrl,
-                  List<String> instructions,
-                })
-              >{
-                for (final entry in fetchedInstructions)
-                  entry.templateId: entry,
-              };
-          final nextTemplates = List<PreparedMeal>.from(currentTemplates);
-          var hasChanges = false;
-
-          for (var index = 0; index < currentTemplates.length; index++) {
-            final template = currentTemplates[index];
-            final fetchedTemplate = fetchedByTemplateId[template.id];
-            if (fetchedTemplate == null ||
-                !_needsRecipeInstructionBackfill(template) ||
-                template.recipeUrl != fetchedTemplate.recipeUrl) {
-              continue;
-            }
-            nextTemplates[index] = template.copyWith(
-              recipeInstructions: fetchedTemplate.instructions,
-            );
-            hasChanges = true;
-          }
-
-          if (!hasChanges) {
-            return true;
-          }
-          return await _saveTemplates(
-            previousTemplates: currentTemplates,
-            nextTemplates: nextTemplates,
-          );
-        },
-        fallbackValue: false,
-        onError: (error, stackTrace) {
-          log(
-            'Unexpected recipe instruction backfill error.',
-            name: _preparedMealTemplatesControllerLogName,
-            error: error,
-            stackTrace: stackTrace,
-          );
-        },
-      );
-    } finally {
-      backfillKeys.forEach(_recipeInstructionBackfillsInProgress.remove);
-    }
   }
 
   Future<List<PreparedMeal>> _currentTemplates() async {
@@ -602,17 +407,4 @@ List<PreparedMeal> _sortTemplates(List<PreparedMeal> templates) {
       return right.createdAt.compareTo(left.createdAt);
     });
   return List<PreparedMeal>.unmodifiable(sortedTemplates);
-}
-
-bool _needsRecipeInstructionBackfill(PreparedMeal template) {
-  return (template.recipeUrl?.isNotEmpty ?? false) &&
-      template.recipeInstructions.isEmpty;
-}
-
-(String, String)? _recipeInstructionBackfillKey(PreparedMeal template) {
-  final recipeUrl = template.recipeUrl;
-  if (recipeUrl == null || recipeUrl.isEmpty) {
-    return null;
-  }
-  return (template.id, recipeUrl);
 }

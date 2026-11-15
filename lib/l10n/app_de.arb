@@ -8,67 +8,21 @@
   "homeProfile": "Profil",
   "homeProgress": "Fortschritt",
   "homeMenuTool": "Menü",
-  "aiChefIdeaDescription": "Die KI schlägt dir ein zufälliges Rezept vor",
-  "aiChefIdeaTitle": "KI-Rezeptidee",
-  "aiChefSetupTitle": "Was soll die KI kochen?",
-  "aiChefSetupSubtitle": "Wähle, ob dein Vorrat beachtet wird, und ergänze Wünsche.",
+  "aiChefIdeaTitle": "Rezeptidee",
+  "aiChefSetupTitle": "Worauf hast du Lust?",
   "aiChefUseInventoryTitle": "Vorrat beachten",
   "aiChefUseInventorySubtitle": "Zutaten aus deinem Vorrat bevorzugen.",
   "aiChefWishesLabel": "Wünsche",
   "aiChefWishesHint": "z. B. vegetarisch, schnell, proteinreich, ohne Reis",
-  "aiChefGenerateAction": "Rezept generieren",
-  "aiChefGeneratingTitle": "Rezept wird kreiert...",
-  "aiChefGeneratingSubtitle": "Deine persönliche KI stellt ein leckeres Rezept zusammen...",
+  "aiChefGenerateAction": "Rezept vorschlagen",
+  "aiChefGeneratingTitle": "Wir stellen ein Rezept zusammen …",
   "aiChefSaveAction": "Im Kochbuch speichern",
-  "aiChefCloseAction": "Schließen",
-  "aiChefSaveSuccess": "Rezept erfolgreich im Kochbuch gespeichert!",
+  "aiChefSaveSuccess": "Im Kochbuch gespeichert.",
   "aiChefSaveError": "Rezept konnte nicht gespeichert werden.",
-  "aiChefFromInventory": "Aus deinem Vorrat",
   "aiChefQuoteLoveGarlic": "Die Geheimzutat ist immer Liebe. Und Knoblauch.",
   "aiChefQuoteCookingMagic": "Kochen ist wie Zaubern, nur dass man das Ergebnis essen kann.",
   "aiChefQuoteGoodFood": "Gutes Essen bringt gute Laune.",
   "aiChefQuoteKitchenTalks": "Die besten Gespräche finden immer in der Küche statt.",
-  "aiChefQuoteVirtualOven": "Die KI heizt schon mal den virtuellen Ofen vor...",
-  "aiChefPortionsLabel": "{portions, plural, =1{1 Portion} other{{portions} Portionen}}",
-  "@aiChefPortionsLabel": {
-    "placeholders": {
-      "portions": {
-        "type": "int"
-      }
-    }
-  },
-  "aiChefCaloriesLabel": "{kcal} kcal",
-  "@aiChefCaloriesLabel": {
-    "placeholders": {
-      "kcal": {
-        "type": "int"
-      }
-    }
-  },
-  "aiChefProteinLabel": "Eiweiß: {grams} g",
-  "@aiChefProteinLabel": {
-    "placeholders": {
-      "grams": {
-        "type": "int"
-      }
-    }
-  },
-  "aiChefCarbsLabel": "Kohlenhydrate: {grams} g",
-  "@aiChefCarbsLabel": {
-    "placeholders": {
-      "grams": {
-        "type": "int"
-      }
-    }
-  },
-  "aiChefFatLabel": "Fett: {grams} g",
-  "@aiChefFatLabel": {
-    "placeholders": {
-      "grams": {
-        "type": "int"
-      }
-    }
-  },
   "homeQuickActionTooltip": "Schnellaktion",
   "productSearchHubTitle": "Produkt hinzufügen",
   "productSearchHubInventoryTitle": "Zum Vorrat hinzufügen",
@@ -151,6 +105,83 @@
       }
     }
   },
+  "stockAmountKilograms": "{amount} kg",
+  "@stockAmountKilograms": {
+    "description": "Amount in kilograms, used for 1000 g and more on several cooking pages, e.g. '1.5 kg'.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "stockAmountLiters": "{amount} l",
+  "@stockAmountLiters": {
+    "description": "Amount in liters, used for 1000 ml and more on several cooking pages.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "stockAmountCountQuestion": "Wie viele hast du?",
+  "@stockAmountCountQuestion": {},
+  "stockAmountPack": "Packung {size}",
+  "@stockAmountPack": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "stockAmountNeedRest": "Das Rezept braucht {need}. Der Rest, {rest}, bleibt im Vorrat.",
+  "@stockAmountNeedRest": {
+    "placeholders": {
+      "need": {
+        "type": "String"
+      },
+      "rest": {
+        "type": "String"
+      }
+    }
+  },
+  "stockAmountNeedAll": "Das Rezept braucht alles: {need}.",
+  "@stockAmountNeedAll": {
+    "placeholders": {
+      "need": {
+        "type": "String"
+      }
+    }
+  },
+  "stockAmountMissing": "Das Rezept braucht {need}. Es fehlen {missing}.",
+  "@stockAmountMissing": {
+    "placeholders": {
+      "need": {
+        "type": "String"
+      },
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "stockAmountNutrition": "Nährwerte · {kcal} kcal je 100 {unit}",
+  "@stockAmountNutrition": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "stockAmountEnterValue": "Gib ein, wie viel du hast.",
+  "@stockAmountEnterValue": {},
+  "stockAmountLess": "Eins weniger",
+  "@stockAmountLess": {},
+  "stockAmountMore": "Eins mehr",
+  "@stockAmountMore": {},
+  "stockAmountPieceWeightHint": "Gewicht, falls du es weißt",
+  "@stockAmountPieceWeightHint": {},
   "inventoryRowPlanMissing": "{amount} fehlen",
   "@inventoryRowPlanMissing": {
     "placeholders": {
@@ -594,6 +625,17 @@
       }
     }
   },
+  "eatPageStockQuestion": "Wie viel hast du davon zu Hause?",
+  "eatPageStockPerPiece": "{unit} pro Stück",
+  "@eatPageStockPerPiece": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageStockPackWeightMissing": "Wie schwer ist eine Packung?",
+  "eatPageStockApply": "Übernehmen",
   "eatPagePortionsUnit": "Port.",
   "inventoryEatSheetPortionsHeader": "{count, plural, =1{{amount} Portion} other{{amount} Portionen}}",
   "@inventoryEatSheetPortionsHeader": {
@@ -795,10 +837,7 @@
   "preparedMealTemplateNoFoods": "Kein Lebensmittel im Vorrat hat Bestand und vollständige Nährwerte.",
   "preparedMealTemplateCreateFailed": "Das Rezept konnte nicht gespeichert werden.",
   "preparedMealTemplateSavedMessage": "Rezept gespeichert.",
-  "preparedMealTemplatesLoadFailed": "Rezepte konnten nicht geladen werden.",
   "preparedMealTemplateDeletedMessage": "Rezept gelöscht.",
-  "preparedMealTemplateAddRecipeAction": "Rezept hinzufügen",
-  "preparedMealTemplateAddRecipeDescription": "Ein Rezept von einer Webseite übernehmen",
   "preparedMealTemplateCreateFromRecipeAction": "Aus Rezept anlegen",
   "preparedMealTemplateCreateFailedMessage": "Rezept konnte nicht erstellt werden.",
   "preparedMealTemplateRecipeImportFailedMessage": "Rezeptdaten konnten nicht importiert werden.",
@@ -835,7 +874,7 @@
   "preparedMealTemplatePortionsLabel": "Portionen",
   "preparedMealTemplatePortionsHelper": "Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.",
   "kitchenUtensilsPageTitle": "Küchenutensilien",
-  "kitchenUtensilsToolLabel": "Geräte",
+  "kitchenUtensilsToolLabel": "Töpfe",
   "kitchenUtensilsEmptyState": "Noch keine Küchenutensilien gespeichert.",
   "kitchenUtensilsLoadFailed": "Küchenutensilien konnten nicht geladen werden.",
   "kitchenUtensilAddAction": "Utensil hinzufügen",
@@ -2866,16 +2905,16 @@
   "homeMenuDebugSection": "Debug",
   "diaryCheckInFixedDaysHint": "Vergangene Tage und Pausentage bleiben, wie sie sind.",
   "cookbookRecipeCount": "{count, plural, =1{1 Rezept} other{{count} Rezepte}}",
-  "cookbookOpenMealsTitle": "Offen",
   "cookbookOpenMealRows": "Im Vorrat · {count, plural, =1{1 Zeile offen} other{{count} Zeilen offen}}",
   "cookbookContinueAction": "Weiter",
   "cookbookInPotOpenRows": "Im Topf seit {time} · {count, plural, =1{1 Zeile offen} other{{count} Zeilen offen}}",
   "cookbookTemplatesTitle": "Vorlagen",
-  "cookbookTemplatesCaption": "Aus dem Vorrat kombiniert",
+  "cookbookTemplatesCaption": "Aus dem Vorrat",
   "cookbookNewTemplateTitle": "Neue Vorlage",
   "cookbookNewTemplateCaption": "aus dem Vorrat kombinieren",
   "cookbookRecipesTitle": "Rezepte",
-  "cookbookRecipesEmpty": "Noch keine Rezepte. Füge eins per Link hinzu oder hol dir eine KI-Idee.",
+  "cookbookRecipesEmpty": "Noch keine Rezepte. Fotografier eins ab, füg es ein, tipp es oder nimm einen Link.",
+  "cookbookRecipesAdd": "Rezept hinzufügen",
   "cookbookStockComplete": "Alles da",
   "cookbookStockMissing": "{count, plural, =1{1 fehlt} other{{count} fehlen}}",
   "cookbookKcal": "{kcal} kcal",
@@ -2889,31 +2928,21 @@
   "homeActionProgress": "Erfassen",
   "cookbookFreeCookingAction": "Frei kochen",
   "cookbookFreeCookingDescription": "Zutaten beim Kochen sagen oder schreiben",
-  "freeCookingNameHint": "Wie heißt das Gericht?",
-  "freeCookingDefaultName": "Frei gekocht",
-  "freeCookingIngredientsTitle": "Zutaten",
-  "freeCookingStockCount": "{inStock} von {total} da",
-  "freeCookingStockLeft": "{amount} da",
-  "freeCookingAmountWithUnit": "{amount} {unit}",
-  "freeCookingPieces": "{count} Stk.",
-  "freeCookingMissing": "fehlt",
-  "freeCookingPickStock": "Wählen",
-  "freeCookingListenTitle": "Ich höre zu",
-  "freeCookingListenHint": "Menge und Zutat sagen. Eine Pause trennt die Zeilen. Irgendwo tippen beendet.",
-  "freeCookingIdleTitle": "Tippen und sprechen",
-  "freeCookingIdleHint": "Zum Beispiel: 500 g Hähnchen, 40 g Butter",
-  "freeCookingTypeAction": "Schreiben",
-  "freeCookingTypeHint": "z. B. 200 g Reis",
-  "freeCookingAddAction": "Hinzufügen",
-  "freeCookingCookAction": "Kochen",
-  "freeCookingStockLoadFailed": "Der Vorrat konnte nicht geladen werden.",
-  "freeCookingSaveFailed": "Die Mahlzeit konnte nicht gespeichert werden.",
-  "freeCookingDiscardTitle": "Mahlzeit verwerfen?",
-  "freeCookingDiscardBody": "Die Zutaten gehen verloren.",
-  "freeCookingDiscardAction": "Verwerfen",
-  "freeCookingVoiceUnavailable": "Spracheingabe geht auf diesem Gerät nicht.",
-  "freeCookingVoicePermissionDenied": "Erlaube das Mikrofon, um Zutaten zu sagen.",
-  "freeCookingVoiceFailed": "Die Spracheingabe konnte nicht starten.",
+  "cookingIngredientsTitle": "Zutaten",
+  "cookingStockLeft": "{amount} da",
+  "cookingAmountWithUnit": "{amount} {unit}",
+  "cookingPieces": "{count} Stk.",
+  "cookingMissing": "fehlt",
+  "cookingTypeAction": "Schreiben",
+  "cookingTypeHint": "z. B. 200 g Reis",
+  "cookingAddAction": "Hinzufügen",
+  "cookingCookAction": "Kochen",
+  "cookingSaveFailed": "Die Mahlzeit konnte nicht gespeichert werden.",
+  "cookingDiscardTitle": "Mahlzeit verwerfen?",
+  "cookingDiscardAction": "Verwerfen",
+  "cookingVoiceUnavailable": "Spracheingabe geht auf diesem Gerät nicht.",
+  "cookingVoicePermissionDenied": "Erlaube das Mikrofon, um Zutaten zu sagen.",
+  "cookingVoiceFailed": "Die Spracheingabe konnte nicht starten.",
   "preparedMealFillTitle": "Zeile füllen",
   "preparedMealFillStockMatch": "Im Vorrat gefunden",
   "preparedMealFillTake": "Übernehmen",
@@ -2985,297 +3014,71 @@
     }
   },
   "recipeStepsTitle": "Zubereitung",
-  "recipeStepCount": "{count, plural, =1{1 Schritt} other{{count} Schritte}}",
-  "@recipeStepCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeWithGuide": "Mit Anleitung kochen",
-  "recipeWithGuideHint": "Öffnet Satz für Satz; danach „Gekocht“",
-  "cookingGuideTitle": "Kochhelfer",
-  "cookingGuideKicker": "Anleitung · {count, plural, =1{1 Portion} other{{count} Portionen}}",
-  "@cookingGuideKicker": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cookingGuideSentenceNote": "{count, plural, =1{1 Satz} other{{count} Sätze}}. Danach kommt ein Satz pro Bildschirm, und der Bildschirm bleibt an.",
-  "@cookingGuideSentenceNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cookingGuideStart": "Los geht's · Satz für Satz",
   "cookingGuideKeepsScreenOn": "Bildschirm bleibt an",
-  "cookingGuideProgress": "Satz {sentence} von {count} · Schritt {step}",
-  "@cookingGuideProgress": {
-    "placeholders": {
-      "sentence": {
-        "type": "int"
-      },
-      "count": {
-        "type": "int"
-      },
-      "step": {
-        "type": "int"
-      }
-    }
-  },
-  "cookingGuideInPot": "Im Topf",
-  "cookingGuideLineCount": "{count, plural, =1{1 Zeile} other{{count} Zeilen}}",
-  "@cookingGuideLineCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeGuideAdded": "{count, plural, =1{1 Zusatz aus dem Kochhelfer} other{{count} Zusätze aus dem Kochhelfer}}",
-  "@recipeGuideAdded": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cookingGuideJustAdded": "Gerade dazu",
-  "cookingGuideVoiceHint": "„50 g Sahne“ · „nein“ macht rückgängig",
-  "cookingGuideJumpTitle": "Springen zu",
-  "cookingGuideNext": "Nächster Satz",
-  "cookingGuideDone": "Fertig gekocht",
   "recipeNotFound": "Das Rezept gibt es nicht mehr.",
   "recipeLoadFailed": "Das Rezept oder der Vorrat konnte nicht geladen werden.",
-  "recipeCheckChangeKicker": "{name} · {count, plural, =1{1 Portion} other{{count} Portionen}}",
-  "@recipeCheckChangeKicker": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckChangeTitle": "Diesmal etwas ändern?",
-  "recipeCheckChangeHint": "Zum Beispiel „mehr Fleisch“ oder „ohne Tomaten“. Gilt nur für dieses Mal.",
-  "recipeCheckChangeYes": "Ja",
-  "recipeCheckChangeNo": "Nein, weiter",
-  "recipeCheckEditKicker": "Diesmal anders",
-  "recipeCheckEditTitle": "Was änderst du?",
-  "recipeCheckEditAmount": "Menge von {food}",
-  "@recipeCheckEditAmount": {
-    "placeholders": {
-      "food": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckEditRemove": "{food} weglassen",
-  "@recipeCheckEditRemove": {
-    "placeholders": {
-      "food": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckEditAdd": "+ Zutat",
-  "recipeCheckEditAddHint": "z. B. 200 g Paprika",
-  "recipeCheckChanged": "Geändert",
-  "recipeCheckChangeAmount": "{food} {from} → {to}",
-  "@recipeCheckChangeAmount": {
-    "placeholders": {
-      "food": {
-        "type": "String"
-      },
-      "from": {
-        "type": "String"
-      },
-      "to": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckChangeRemoved": "ohne {food}",
-  "@recipeCheckChangeRemoved": {
-    "placeholders": {
-      "food": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckChangeOther": "{food}: andere Menge",
-  "@recipeCheckChangeOther": {
-    "description": "Ingredient check summary: a changed ingredient whose amount has no label for the chosen portions.",
-    "placeholders": {
-      "food": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckChangeAdded": "+ {food}",
-  "@recipeCheckChangeAdded": {
-    "placeholders": {
-      "food": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckChangeAddedAmount": "+ {amount} {food}",
-  "@recipeCheckChangeAddedAmount": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      },
-      "food": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckSaveEdits": "Änderungen ins Rezept übernehmen",
-  "recipeCheckSaveEditsHint": "Sonst gelten sie nur heute",
-  "recipeCheckTitle": "Zutaten prüfen",
-  "recipeCheckMissingCount": "{count, plural, =1{1 fehlt} other{{count} fehlen}}",
-  "@recipeCheckMissingCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckPartialCount": "{count} nur teilweise da",
-  "@recipeCheckPartialCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckOpenBoth": "{missing, plural, =1{1 fehlt} other{{missing} fehlen}}, {partial} nur teilweise da",
-  "@recipeCheckOpenBoth": {
-    "placeholders": {
-      "missing": {
-        "type": "int"
-      },
-      "partial": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckStep": "{step}/{total}",
-  "@recipeCheckStep": {
-    "placeholders": {
-      "step": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckSettled": "Alles geklärt",
-  "recipeCheckFoundKicker": "Im Vorrat gefunden · {count}",
-  "@recipeCheckFoundKicker": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckFoundTitle": "Passt das?",
-  "recipeCheckFoundHint": "Tippe auf eine Zutat, um einen anderen Artikel zu wählen.",
-  "recipeCheckNextMissing": "Weiter · {count, plural, =1{1 fehlt} other{{count} fehlen}}",
-  "@recipeCheckNextMissing": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckMissingKicker": "Fehlt · {count}",
-  "@recipeCheckMissingKicker": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckMissingTitle": "Auf die Einkaufsliste?",
-  "recipeCheckMissingHint": "„Hab ich“ trägt es in den Vorrat ein und nimmt es gleich.",
-  "recipeCheckHave": "Hab ich",
-  "recipeCheckRest": "Rest · {amount} sind da",
-  "@recipeCheckRest": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckPartialNote": "{stocked} da · {missing} fehlen",
-  "@recipeCheckPartialNote": {
-    "placeholders": {
-      "stocked": {
-        "type": "String"
-      },
-      "missing": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeCheckUse": "Aus dem Vorrat",
-  "recipeCheckCart": "Auf die Einkaufsliste",
-  "recipeCheckIgnore": "Ignorieren",
-  "recipeCheckSummaryKicker": "Fertig geprüft",
-  "recipeCheckSummaryTitle": "So kochst du heute",
-  "recipeCheckFromStock": "Aus dem Vorrat · {count}",
-  "@recipeCheckFromStock": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckOnList": "Auf die Einkaufsliste · {count}",
-  "@recipeCheckOnList": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckIgnored": "Ignoriert · {count}",
-  "@recipeCheckIgnored": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "recipeCheckNothing": "Nichts",
-  "recipeCheckNext": "Weiter",
-  "recipeCheckFinish": "Fertig",
-  "recipeCheckSaveFailed": "Die Auswahl konnte nicht gespeichert werden.",
-  "recipeCheckListFailed": "Die Einkaufsliste konnte nicht ergänzt werden.",
-  "recipeCheckHaveFailed": "Das Lebensmittel konnte nicht in den Vorrat eingetragen werden.",
-  "recipePickTitle": "{food}: woraus nehmen?",
-  "@recipePickTitle": {
-    "placeholders": {
-      "food": {
-        "type": "String"
-      }
-    }
-  },
-  "recipeNotFromStock": "Nicht aus dem Vorrat",
   "cookedDoneElsewhere": "Diese Mahlzeit ist schon gekocht und im Vorrat.",
   "cookedLoadFailed": "Die Mahlzeit konnte nicht geladen werden.",
   "preparedMealGone": "Mahlzeit nicht mehr im Vorrat",
   "cookbookInPotSince": "Im Topf seit {time}",
+  "cookbookRunningTitle": "Läuft",
+  "cookbookRunningCount": "{count} im Haushalt",
+  "@cookbookRunningCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookOldMealsTitle": "{count, plural, =1{Aus der alten Version · 1 offen} other{Aus der alten Version · {count} offen}}",
+  "@cookbookOldMealsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookRunFreeName": "Frei kochen",
+  "cookbookRunStatusPots": "Töpfe wählen",
+  "cookbookRunStatusPausedShopping": "{count, plural, =0{Pausiert bis eingekauft} =1{Pausiert bis eingekauft · 1 im Einkauf} other{Pausiert bis eingekauft · {count} im Einkauf}}",
+  "@cookbookRunStatusPausedShopping": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookRunStatusCook": "Kochen",
+  "cookbookRunStatusCookTimer": "Kochen · Timer bis {time}",
+  "@cookbookRunStatusCookTimer": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cookbookRunStatusCookStep": "Kochen · Schritt {step}",
+  "@cookbookRunStatusCookStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookRunStatusPortion": "Portionieren",
+  "cookbookRunStartedBy": "{who} · seit {since}",
+  "@cookbookRunStartedBy": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "since": {
+        "type": "String"
+      }
+    }
+  },
+  "cookbookRunStartedByYou": "du",
+  "cookbookRunStartedBySomeone": "Jemand",
   "appUpdateRequiredTitle": "yamt aktualisieren",
   "appUpdateRequiredBody": "Diese Version von yamt ist zu alt für deine Daten. Aktualisiere die App, um weiterzumachen.",
   "appUpdateAction": "Aktualisieren",
@@ -3617,70 +3420,1184 @@
   "dataExportRangeGoals": "Ziele",
   "dataExportRangeGoalSpan": "Ziele {first}–{last}",
   "dataExportFoodPending": "{name} · Nährwerte noch offen",
+  "dataExportFoodEstimated": "{name} · Nährwerte geschätzt",
   "dataExportListSeparator": ", ",
   "dataExportPartsSeparator": " · ",
   "dataExportWeightValue": "{weight} kg",
   "dataExportValueOfGoal": "{value} / {goal}",
   "dataExportTrainingPauseCount": "{training} / {pause}",
   "dataExportKcalUnit": "kcal",
-  "cookStepRecipe": "Rezept",
-  "cookStepShopping": "Einkauf",
   "cookStepCooking": "Kochen",
-  "cookStepPortion": "Portionieren",
   "cookPortionsLabel": "{count, plural, =1{1 Portion} other{{count} Portionen}}",
   "cookFewer": "Weniger",
   "cookMore": "Mehr",
   "cookIngredients": "Zutaten",
-  "cookAssignAction": "Zutaten zuordnen",
-  "cookFoundKicker": "{done} von {count} Zutaten",
-  "cookFoundTitle": "Im Vorrat gefunden",
-  "cookFoundHint": "Passt der Vorschlag? Tippe den Artikel für einen anderen.",
-  "cookFits": "Passt",
-  "cookFitsNot": "Passt nicht",
-  "cookMissingAmount": "Es fehlen {amount}",
-  "cookCheckRest": "{count, plural, =1{Noch 1 prüfen} other{Noch {count} prüfen}}",
-  "cookNext": "Weiter",
-  "cookOpenKicker": "{count, plural, =1{1 Zutat} other{{count} Zutaten}}",
-  "cookOpenTitle": "Noch zu klären",
-  "cookOpenHint": "Aus dem Vorrat zuordnen oder weglassen.",
-  "cookOpenNoItem": "Kein Artikel im Vorrat",
-  "cookOpenRejected": "Vorschlag abgelehnt",
-  "cookOpenOmitted": "Weggelassen",
   "cookAssign": "Zuordnen",
-  "cookOmit": "Weglassen",
-  "cookStockLeft": "{amount} da",
-  "cookPotTitle": "Worin kochst du?",
-  "cookPotHint": "Am Ende wiegst du den vollen Topf; sein Leergewicht ist bekannt.",
-  "cookPotEmptyWeight": "leer {grams} g",
-  "cookPotUnnamed": "Topf",
-  "cookPotNone": "Ohne Topf · nach Anzahl",
-  "cookDoneCooking": "Fertig gekocht",
-  "cookPortionTitle": "In den Vorrat",
+  "cookPortionTitle": "Fertig gekocht",
   "cookMealName": "Name",
-  "cookGrossWeight": "Topf mit Essen (g)",
   "cookNetWeight": "Essen: {grams} g",
   "cookWeightTooLow": "Schwerer als der leere Topf ({grams} g)",
   "cookCountPortions": "Portionen",
   "cookCountPieces": "Stück",
-  "cookToStock": "In Vorrat",
-  "cookSaved": "{name} ist im Vorrat",
-  "cookFinishFailed": "Konnte die Mahlzeit nicht in den Vorrat legen.",
-  "cookFinishMissingNutrition": "Einer Zutat fehlen Nährwerte.",
-  "cookFinishTooLittle": "Der Vorrat hat sich geändert: ein Artikel reicht nicht mehr.",
-  "cookFinishItemGone": "Ein Artikel ist nicht mehr im Vorrat.",
-  "cookPickerKicker": "Zeile füllen",
-  "cookPickerHint": "Passend im Vorrat · antippen in Reihenfolge",
-  "cookPickerSum": "Zusammen: {have} von {need}",
-  "cookPickerEmpty": "Nichts Passendes im Vorrat.",
+  "cookToStock": "In den Vorrat legen",
+  "cookPickerHint": "Aus deinem Vorrat",
+  "cookPickerOrder": "Wir nehmen sie in der Reihenfolge der Nummern.",
   "cookPickerApply": "Übernehmen",
-  "cookRecipeGone": "Das Rezept ist nicht mehr im Kochbuch.",
-  "cookLoadFailed": "Konnte das Rezept nicht laden.",
-  "cookPickerShowAll": "Alle Vorrat-Artikel zeigen",
+  "kochmodusPickerStillMissing": "Es fehlen noch {amount}.",
+  "@kochmodusPickerStillMissing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusPickerKeep": "So lassen",
+  "kochmodusEnteredPack": "{pack} eingetragen. Wir nehmen {need} davon, {rest} bleiben.",
+  "@kochmodusEnteredPack": {
+    "placeholders": {
+      "pack": {
+        "type": "String"
+      },
+      "need": {
+        "type": "String"
+      },
+      "rest": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusEnteredPackAll": "{pack} eingetragen. Wir nehmen alles.",
+  "@kochmodusEnteredPackAll": {
+    "placeholders": {
+      "pack": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusEnteredEstimated": "Werte geschätzt. Wir nehmen {need}.",
+  "@kochmodusEnteredEstimated": {
+    "placeholders": {
+      "need": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusEnteredFromStock": "Aus dem Vorrat. {amount} da.",
+  "@kochmodusEnteredFromStock": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusEnteredChange": "Ändern",
+  "macroGramsSemanticLabel": "Eiweiß {protein} Gramm, Kohlenhydrate {carbs} Gramm, Fett {fat} Gramm",
+  "@macroGramsSemanticLabel": {
+    "placeholders": {
+      "protein": {
+        "type": "int"
+      },
+      "carbs": {
+        "type": "int"
+      },
+      "fat": {
+        "type": "int"
+      }
+    }
+  },
+  "macroGramsCarbsShort": "KH",
+  "kochmodusDoneKcalPerPortion": "{kcal} kcal pro Portion",
+  "@kochmodusDoneKcalPerPortion": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusDoneKcalPerPiece": "{kcal} kcal pro Stück",
+  "@kochmodusDoneKcalPerPiece": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusDoneKcalPerCan": "{kcal} kcal pro Dose",
+  "@kochmodusDoneKcalPerCan": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeLineNotCounted": "zählt nicht mit",
+  "kochmodusPickerHeld": "verplant",
+  "kochmodusPickerHeldFor": "für {name} verplant",
+  "@kochmodusPickerHeldFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeFoodGuessWorking": "Wir schätzen die Werte …",
+  "recipeLineNutritionTitle": "Nährwerte je Zutat",
+  "aiChefIdeaFailed": "Wir konnten gerade kein Rezept zusammenstellen.",
+  "kochmodusEnteredNothing": "Eingetragen. Die Menge fehlt uns noch.",
+  "recipeLineNutritionPortions": "{count, plural, =1{Für 1 Portion} other{Für {count} Portionen}}",
+  "@recipeLineNutritionPortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusWeightEstimated": "≈ {amount} geschätzt",
+  "@kochmodusWeightEstimated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeEstimating": "Wir schätzen die Nährwerte …",
+  "recipeNutritionPortionEstimated": "1 Portion · geschätzt",
+  "kochmodusWeighPotsAction": "{count, plural, =1{Topf wiegen} other{Töpfe wiegen}}",
+  "@kochmodusWeighPotsAction": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kitchenUtensilWeightHelper": "Leer, ohne Deckel. Einmal kurz auf die Waage stellen.",
+  "kitchenUtensilAddShort": "Hinzufügen",
+  "kochmodusTakeAskTitle": "Wie viel nimmst du?",
+  "kochmodusTakeAskRecipe": "{amount} · wie im Rezept",
+  "@kochmodusTakeAskRecipe": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusTakeAskAll": "Alles · {amount}",
+  "@kochmodusTakeAskAll": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusTakeAskOther": "Andere Menge",
+  "kochmodusEnteredFromStockTake": "Aus dem Vorrat. Wir nehmen {take} von {there}.",
+  "@kochmodusEnteredFromStockTake": {
+    "placeholders": {
+      "take": {
+        "type": "String"
+      },
+      "there": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusEnteredFromStockWeigh": "Aus dem Vorrat. {amount} da. Gewogen wird beim Kochen.",
+  "@kochmodusEnteredFromStockWeigh": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusPickerSuggested": "Passt vielleicht",
+  "kochmodusPickerAll": "Alles im Vorrat",
+  "kochmodusAssignKcalPerPortionEstimated": "Pro Portion · ≈ {kcal} kcal",
+  "@kochmodusAssignKcalPerPortionEstimated": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusNutritionPortionEstimated": "Portion · geschätzt",
+  "kochmodusCardWeighWhileCooking": "Gewicht fehlt: beim Kochen wiegen",
+  "kochmodusGuideAddedSettled": "Gerade dazu",
+  "kochmodusBlockNoFood": "Noch keine Zutat aus dem Vorrat",
+  "kochmodusEstimatesMustWeigh": "Zeilen ohne Gewicht musst du wiegen. Bei den anderen ist Wiegen freiwillig.",
+  "kochmodusEnteredPackWeigh": "{pack} eingetragen. Gewogen wird beim Kochen.",
+  "@kochmodusEnteredPackWeigh": {
+    "placeholders": {
+      "pack": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusPotGrossOptional": "{pot} mit Essen (g) · freiwillig",
+  "@kochmodusPotGrossOptional": {
+    "placeholders": {
+      "pot": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusToWeighNote": "Diese Zutaten musst du noch wiegen.",
+  "recipeIdeaPictureComing": "Bild wird generiert …",
+  "kochmodusVoiceTyped": "Geschrieben: {text}",
+  "@kochmodusVoiceTyped": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusMealPerCount": "{kind, select, can{Pro Dose} other{Pro Portion}}: {grams} g",
+  "@kochmodusMealPerCount": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusMealPerCountEstimated": "{kind, select, can{Pro Dose} other{Pro Portion}}: ≈ {grams} g",
+  "@kochmodusMealPerCountEstimated": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusTimerCountdownChannelName": "Laufende Koch-Timer",
+  "recipePlannedKcal": "{kcal} kcal pro Portion",
+  "@recipePlannedKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusTimerCountdownTitle": "{label} läuft",
+  "@kochmodusTimerCountdownTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "cookbookCardKcal": "{kcal} kcal",
+  "@cookbookCardKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
   "cookAmountGrams": "{amount} g",
   "cookAmountMilliliters": "{amount} ml",
-  "cookAmountPieces": "{amount} Stk",
+  "cookAmountPieces": "{amount} Stk.",
   "cookAmountOf": "{amount} {food}",
-  "cookStockAfterTake": "· {amount} da",
-  "cookFinishNothingTaken": "Noch nichts aus dem Vorrat in diesem Gericht.",
-  "cookPotLoadFailed": "Konnte deine Töpfe nicht laden."
+  "kochmodusStepPots": "Töpfe",
+  "kochmodusStepPortion": "Portion",
+  "kochmodusAmountKicker": "Menge für dieses Kochen",
+  "kochmodusAmountRecipe": "Rezept: {amount} für {portions}",
+  "@kochmodusAmountRecipe": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusAmountNote": "Gilt für dieses Kochen. Das Rezept bleibt, wie es ist.",
+  "kochmodusAmountPresetAvailable": "Vorhandenes · {amount}",
+  "@kochmodusAmountPresetAvailable": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusAmountPresetRecipe": "Rezept · {amount}",
+  "@kochmodusAmountPresetRecipe": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusEstimateKicker": "Schätzung ändern",
+  "kochmodusWeigh": "Wiegen",
+  "kochmodusWeighRecipeEstimate": "Etwa {grams} g",
+  "@kochmodusWeighRecipeEstimate": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusWeighConfirm": "Gewogen: {grams} g",
+  "@kochmodusWeighConfirm": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusEstimateConfirm": "Übernehmen: {grams} g",
+  "@kochmodusEstimateConfirm": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusFinishFailed": "Wir konnten die Mahlzeit nicht in den Vorrat legen. Prüfe die Zeilen und versuch es noch einmal.",
+  "kochmodusSaveFailed": "Wir konnten das Kochen nicht speichern.",
+  "kochmodusDiscardFailed": "Wir konnten das Kochen nicht verwerfen.",
+  "kochmodusDiscarded": "Kochen verworfen",
+  "kochmodusLoadFailed": "Wir konnten das Kochen nicht laden.",
+  "kochmodusGone": "Dieses Kochen gibt es nicht mehr.",
+  "kochmodusBackToCookbook": "Zum Kochbuch",
+  "kochmodusRunKicker": "{name} · {portions, plural, =1{1 Portion} other{{portions} Portionen}}",
+  "@kochmodusRunKicker": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusPotsTitle": "Worin kochst du?",
+  "kochmodusPotsLead": "Wir ziehen das Gewicht vom Topf später ab, damit deine Portionen stimmen.",
+  "kochmodusPotsAdd": "Topf oder Pfanne hinzufügen",
+  "kochmodusPotEmptyWeight": "leer {grams} g",
+  "@kochmodusPotEmptyWeight": {
+    "placeholders": {
+      "grams": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "kochmodusPotsOr": "oder",
+  "kochmodusPotsCountedTitle": "Ohne Topf",
+  "kochmodusPotsCountedHint": "Wir zählen fertige Stücke, z. B. Pfannkuchen oder Frikadellen",
+  "kochmodusPotsCansTitle": "Danach in Dosen",
+  "kochmodusPotsCansHint": "Du füllst alles in Dosen um, jede Dose wird eine Portion.",
+  "kochmodusPotsResultLabel": "Ergibt:",
+  "kochmodusPotsResultCounted": "Fertige Stücke, wird gezählt",
+  "kochmodusPotsResultTogether": "alles zusammen in {pot}",
+  "@kochmodusPotsResultTogether": {
+    "placeholders": {
+      "pot": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusPotsResultTogetherCans": "alles zusammen, dann in Dosen",
+  "kochmodusPotsResultSeparate": "{count, plural, =1{1 Topf, getrennt} other{{count} Töpfe, getrennt}}",
+  "@kochmodusPotsResultSeparate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusPotsResultSeparateCans": "{count, plural, =1{1 Topf, dann in Dosen} other{{count} Töpfe getrennt, dann in Dosen}}",
+  "@kochmodusPotsResultSeparateCans": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusPotsNextCook": "Weiter · Kochen",
+  "kochmodusPotsChooseHint": "Wähl einen Topf oder „Ohne Topf“.",
+  "kochmodusAssignTitle": "Was hast du da?",
+  "kochmodusAssignProgress": "{settled} von {total} geklärt",
+  "@kochmodusAssignProgress": {
+    "placeholders": {
+      "settled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusAssignSettledTitle": "Alles bereit",
+  "kochmodusAssignToBuy": "{count, plural, =1{Eine Zutat kommt auf die Einkaufsliste.} other{{count} Zutaten kommen auf die Einkaufsliste.}}",
+  "@kochmodusAssignToBuy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusAssignAlmostTitle": "Fast alles da",
+  "kochmodusAssignKcalPerPortion": "Pro Portion · {kcal} kcal",
+  "@kochmodusAssignKcalPerPortion": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusAssignAll": "Alle Zutaten",
+  "kochmodusAssignReadyText": "{count, plural, =1{Eine Portion. Du kannst loslegen.} other{{count} Portionen. Du kannst loslegen.}}",
+  "@kochmodusAssignReadyText": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusCardAsk": "Hast du das da?",
+  "kochmodusCardReady": "Bereit",
+  "kochmodusCardNotCounted": "Zählt bei den Nährwerten nicht mit.",
+  "kochmodusCardChangeAmount": "Menge ändern",
+  "kochmodusRowThere": "{amount} da",
+  "@kochmodusRowThere": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusRowReady": "da",
+  "kochmodusRowShopping": "im Einkauf",
+  "kochmodusRowIgnored": "weggelassen",
+  "kochmodusRowNotCounted": "zählt nicht mit",
+  "kochmodusRowNow": "jetzt",
+  "kochmodusRowOpen": "offen",
+  "kochmodusRowShort": "zu wenig da",
+  "kochmodusRowUnclear": "Menge unklar",
+  "kochmodusAssignReopenedHint": "Zurück vom Einkauf: Was auf der Einkaufsliste stand, ist wieder offen.",
+  "kochmodusAssignShop": "Kaufen",
+  "kochmodusAssignIgnore": "Weglassen",
+  "kochmodusAssignHave": "Hab ich",
+  "kochmodusAssignPendingShopping": "Kommt auf die Einkaufsliste",
+  "kochmodusChange": "Ändern",
+  "kochmodusChangeTitle": "Zutat ändern",
+  "kochmodusChangeHaveSub": "Aus dem Vorrat oder neu eintragen",
+  "kochmodusChangeIgnoreSub": "Wir kochen ohne diese Zutat",
+  "kochmodusAssignSetAmount": "Menge eintragen",
+  "kochmodusAssignItems": "{name}{more, plural, =0{} other{ + {more} weitere}}",
+  "@kochmodusAssignItems": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "more": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusAssignItemThere": "{items} · {amount} da",
+  "@kochmodusAssignItemThere": {
+    "placeholders": {
+      "items": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusAmountMissing": "Es fehlen {amount}",
+  "@kochmodusAmountMissing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusAmountBuyRest": "{amount} kaufen",
+  "@kochmodusAmountBuyRest": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusAmountSecondPack": "Zweite Packung",
+  "kochmodusAmountTakeOnly": "Nur {amount} nehmen",
+  "@kochmodusAmountTakeOnly": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusReadyOnly": "Nur {amount}",
+  "@kochmodusReadyOnly": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusReadyRestOnList": "Rest kommt auf die Einkaufsliste",
+  "kochmodusOnlyAvailable": "nur {amount} da",
+  "@kochmodusOnlyAvailable": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusEntryMissing": "Eintrag fehlt",
+  "kochmodusNutritionMissing": "Nährwerte fehlen",
+  "kochmodusToWeigh": "Noch zu wiegen",
+  "kochmodusWeightMissing": "Gewicht fehlt",
+  "kochmodusAssignAddLine": "Weitere Zutat",
+  "kochmodusAssignWithGuide": "Mit Anleitung",
+  "kochmodusAssignWithGuideSub": "Schritt für Schritt durch die Zubereitung",
+  "kochmodusAssignLaterDone": "Pausiert. Der Vorrat bleibt verplant.",
+  "kochmodusAssignLater": "Später",
+  "kochmodusAssignCook": "Kochen",
+  "kochmodusAssignPause": "Erst einkaufen",
+  "kochmodusPausedForShopping": "Steht auf der Einkaufsliste. Nach dem Einkauf: Weiter.",
+  "kochmodusShoppingListAction": "Einkaufsliste",
+  "kochmodusPauseFailed": "Wir konnten die Zutaten nicht auf die Einkaufsliste setzen.",
+  "kochmodusFoodAddFailed": "Wir konnten das Lebensmittel nicht in den Vorrat legen.",
+  "kochmodusToPortion": "Fertig · Portionieren",
+  "kochmodusTimerName": "Timer {number}",
+  "@kochmodusTimerName": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusShowGuide": "Mit Anleitung kochen",
+  "kochmodusTimerAction": "Timer",
+  "kochmodusCookCount": "{count, plural, =1{1 Zutat} other{{count} Zutaten}}",
+  "@kochmodusCookCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusCookCountAdded": "{count, plural, =1{1 Zutat} other{{count} Zutaten}} · {added} gerade dazu",
+  "@kochmodusCookCountAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusCookEmptyTitle": "Noch nichts im Topf",
+  "kochmodusCookEmptyHint": "Sag einfach, was du hineingibst: „200 g Reis“.",
+  "kochmodusCookNewOpen": "Neu · wird beim Portionieren geklärt",
+  "kochmodusWeightWeighed": "{grams} g gewogen",
+  "@kochmodusWeightWeighed": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusCookLineSub": "{food} · {weight}",
+  "@kochmodusCookLineSub": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusRemoveLine": "Entfernen",
+  "kochmodusLineRemoved": "{line} entfernt",
+  "@kochmodusLineRemoved": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusGuideTimerLabel": "Schritt {step}",
+  "@kochmodusGuideTimerLabel": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusGuideTimerLabelNumbered": "Schritt {step} · {number}",
+  "@kochmodusGuideTimerLabelNumbered": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusGuideProgress": "Schritt {step} von {count}",
+  "@kochmodusGuideProgress": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusShowList": "Alle Zutaten zeigen",
+  "kochmodusGuideTimerHint": "Tipp auf die Zeit startet einen Timer.",
+  "kochmodusGuideAdded": "Gerade dazu · wird beim Portionieren geklärt",
+  "kochmodusGuideBack": "Zurück",
+  "kochmodusGuideNext": "Nächster Schritt",
+  "kochmodusTimerDone": "fertig",
+  "kochmodusTimerLeft": "{minutes}:{seconds}",
+  "@kochmodusTimerLeft": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusTimerExtend": "+1 Min",
+  "kochmodusTimerStop": "Stopp",
+  "kochmodusTimerMinutes": "{minutes} Min",
+  "@kochmodusTimerMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusTimerMinutesSeconds": "{minutes} Min {seconds} Sek",
+  "@kochmodusTimerMinutesSeconds": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusTimerSeconds": "{seconds} Sek",
+  "@kochmodusTimerSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusTimerMinuteRange": "{from}–{to} Min",
+  "@kochmodusTimerMinuteRange": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusTimerSheetHint": "Ein Tipp startet.",
+  "kochmodusPickerTitle": "Welches nimmst du?",
+  "kochmodusPickerSearchOther": "Etwas anderes suchen",
+  "kochmodusTypeTitle": "Was kommt dazu?",
+  "kochmodusVoiceHeard": "Gehört: {text}",
+  "@kochmodusVoiceHeard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusVoiceListening": "Wir hören zu …",
+  "kochmodusVoiceSpeak": "Sprechen",
+  "kochmodusVoiceHintList": "„200 g Reis“ · „nein“ nimmt die letzte Zeile zurück",
+  "kochmodusVoiceHintGuide": "„weiter“ · „zurück“ · „Timer 5 Minuten“ · „200 g Reis“",
+  "kochmodusMealNameInPot": "{recipe} · {pot}",
+  "@kochmodusMealNameInPot": {
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      },
+      "pot": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusMealNameWith": "{first} mit {second}",
+  "@kochmodusMealNameWith": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusMealNameFree": "Frei gekocht",
+  "kochmodusPotNumbered": "Topf {number}",
+  "@kochmodusPotNumbered": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusPotGross": "{pot} mit Essen (g) · Pflicht",
+  "@kochmodusPotGross": {
+    "placeholders": {
+      "pot": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusPotWeighHint": "Tippen zum Wiegen",
+  "kochmodusPotWeighSub": "Leer {grams} g · Topf samt Essen auf die Waage",
+  "@kochmodusPotWeighSub": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusMealCans": "Dosen",
+  "kochmodusMealCountQuestion": "{kind, select, piece{Wie viele Stück sind es?} can{Wie viele Dosen sind es?} other{Wie viele Portionen sind es?}}",
+  "@kochmodusMealCountQuestion": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusPortionLinesSwitch": "Zutaten · Topf antippen wechselt",
+  "kochmodusNewLines": "{count, plural, =1{1 neue Zeile} other{{count} neue Zeilen}}",
+  "@kochmodusNewLines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusLineNotAssigned": "noch nicht zugewiesen",
+  "kochmodusJoined": "{first} · {second}",
+  "@kochmodusJoined": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusReview": "Ansehen",
+  "kochmodusEstimatedIngredients": "{count, plural, =1{Bei einer Zutat haben wir das Gewicht geschätzt} other{Bei {count} Zutaten haben wir das Gewicht geschätzt}}",
+  "@kochmodusEstimatedIngredients": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusEstimatesNote": "Wiegen ist freiwillig. Die Nährwerte rechnen mit dem, was aus dem Vorrat entnommen wird.",
+  "kochmodusEstimateRow": "nicht gewogen · ungefähr {grams} g",
+  "@kochmodusEstimateRow": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusEstimateSub": "Schon verkocht · nur ungefähr",
+  "kochmodusEstimatesDone": "Passt so",
+  "kochmodusToCookbookNote": "als Rezept merken",
+  "kochmodusBlockShort": "{line}: nur {amount} da",
+  "@kochmodusBlockShort": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusBlockEntryMissing": "{line}: Eintrag fehlt",
+  "@kochmodusBlockEntryMissing": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusBlockNutritionMissing": "{line}: Nährwerte fehlen",
+  "@kochmodusBlockNutritionMissing": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusBlockWeighPots": "{count, plural, =1{Erst den Topf wiegen} other{Erst die Töpfe wiegen}}",
+  "@kochmodusBlockWeighPots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusBlockPotEmpty": "Topf ohne Zutaten",
+  "kochmodusBlockLinesOpen": "Erst neue Zeilen klären",
+  "kochmodusBlockWithoutTake": "{line}: erst wiegen oder entfernen",
+  "@kochmodusBlockWithoutTake": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusBlockOtherFood": "{line}: anderes Lebensmittel wählen oder entfernen",
+  "@kochmodusBlockOtherFood": {
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusBlockPotEmptyNamed": "{pot}: ohne Zutaten",
+  "@kochmodusBlockPotEmptyNamed": {
+    "placeholders": {
+      "pot": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusTakesNothing": "Wir wissen nicht, wie viel davon in den Topf kommt.",
+  "kochmodusTakeOther": "Anderes nehmen",
+  "kochmodusUncounted": "{food} zählt noch nicht mit: Gewicht fehlt",
+  "@kochmodusUncounted": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusPickerNoHits": "Nichts gefunden",
+  "kochmodusNutritionPer": "{kind, select, piece{Stück} can{Dose} other{Portion}}",
+  "@kochmodusNutritionPer": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusNutritionPerWeight": "{kind, select, piece{Stück} can{Dose} other{Portion}} · {grams} g",
+  "@kochmodusNutritionPerWeight": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "kochmodusDoneTitle": "Guten Appetit!",
+  "kochmodusDonePortions": "{count, plural, =1{Eine Portion {name} liegt jetzt im Vorrat.} other{{count} Portionen {name} liegen jetzt im Vorrat.}}",
+  "@kochmodusDonePortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusDonePieces": "{count, plural, =1{Ein Stück {name} liegt jetzt im Vorrat.} other{{count} Stück {name} liegen jetzt im Vorrat.}}",
+  "@kochmodusDonePieces": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusDoneCans": "{count, plural, =1{Eine Dose {name} steht jetzt im Vorrat.} other{{count} Dosen {name} stehen jetzt im Vorrat.}}",
+  "@kochmodusDoneCans": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusDoneEat": "Jetzt essen",
+  "kochmodusDoneInCookbook": "Das Rezept steht jetzt auch im Kochbuch.",
+  "kochmodusTimerInexactHint": "Ohne Erlaubnis für genaue Wecker kann der Timer ein paar Minuten später klingeln.",
+  "kochmodusTimerAllowExact": "Erlauben",
+  "kochmodusTimerNotificationsOffHint": "Benachrichtigungen sind aus: Der Timer klingelt nicht.",
+  "kochmodusTimerChannelName": "Koch-Timer",
+  "kochmodusTimerAlarmTitle": "{label} ist abgelaufen",
+  "@kochmodusTimerAlarmTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusTimerAlarmBody": "{runName} · Tippe, um weiterzukochen",
+  "@kochmodusTimerAlarmBody": {
+    "placeholders": {
+      "runName": {
+        "type": "String"
+      }
+    }
+  },
+  "kochmodusTimerAlarmBodyFree": "Freies Kochen · Tippe, um weiterzukochen",
+  "diaryEntryKcalEstimated": "≈ {kcal} kcal",
+  "diaryEntryNutritionEstimated": "≈ Nährwerte geschätzt",
+  "cookbookNewTool": "Neu",
+  "cookbookNewRecipeTitle": "Neues Rezept",
+  "cookbookNewRecipeScan": "Scannen",
+  "cookbookNewRecipeScanDescription": "Kochbuch- oder Zettelseite, bis zu 3 Seiten",
+  "cookbookNewRecipePaste": "Liste einfügen",
+  "cookbookNewRecipePasteDescription": "Kopierten Text einfügen, z. B. aus einer Nachricht",
+  "cookbookNewRecipeType": "Selbst tippen",
+  "cookbookNewRecipeTypeDescription": "Leer anfangen, Zeile für Zeile",
+  "cookbookNewRecipeLink": "Aus Link",
+  "cookbookNewRecipeLinkDescription": "Wir lesen das Rezept von einer Webseite",
+  "cookbookNewRecipeAiDescription": "Wir schlagen dir ein Rezept vor",
+  "recipeEditorEditTitle": "Rezept bearbeiten",
+  "recipeEditorPhoto": "Foto",
+  "recipeEditorIngredientsTitle": "Zutaten · {count, plural, =1{1 Zeile} other{{count} Zeilen}}",
+  "recipeEditorStepsTitle": "Zubereitung · {count, plural, =1{1 Schritt} other{{count} Schritte}}",
+  "recipeEditorEdit": "Bearbeiten",
+  "recipeEditorMissing": "{missing, select, both{Noch nötig: Name und eine Zutat} name{Noch nötig: Name} other{Noch nötig: eine Zutat}}",
+  "@recipeEditorMissing": {
+    "placeholders": {
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeEditorAddIngredient": "+ Zutat",
+  "recipeEditorAddStep": "+ Schritt",
+  "recipeEditorPaste": "Einfügen",
+  "recipeEditorPasteEmpty": "In der Zwischenablage ist kein Text.",
+  "recipeEditorPasteTooLong": "Der Text ist zu lang. Füg nur das Rezept ein.",
+  "recipeEditorDiscardTitle": "Rezept verwerfen?",
+  "recipeEditorDiscardBody": "Deine Änderungen werden nicht gespeichert.",
+  "recipeLinkFailedTitle": "Von dieser Seite konnten wir nichts lesen",
+  "recipeLinkFailedHint": "Manche Seiten verstecken ihr Rezept. Kopier den Text von der Seite und füg ihn ein – oder scanne oder tipp ihn.",
+  "recipeLinkRetry": "Nochmal versuchen",
+  "recipeLinkReading": "Rezept wird gelesen …",
+  "recipeEstimateKcal": "≈ {kcal} kcal pro Portion · geschätzt",
+  "recipeEditorSharedKicker": "Geteilt",
+  "recipeShareUnreadable": "Das konnten wir nicht lesen.",
+  "recipeEditorEditLine": "Zeile bearbeiten: {line}",
+  "recipeEditorEditStep": "Schritt bearbeiten: {step}",
+  "recipeEditorRemoveLine": "Zeile entfernen",
+  "recipeEditorRemoveStep": "Schritt entfernen",
+  "recipeEditorLineRemoved": "Zeile entfernt",
+  "recipeEditorStepRemoved": "Schritt entfernt",
+  "recipeLinesOpenTitle": "Noch {count} offen",
+  "@recipeLinesOpenTitle": {
+    "description": "Title of the recipe page card while ingredients still wait for an answer.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeLinesReadyTitle": "Alles bereit",
+  "recipeLinesReady": "{count} bereit",
+  "@recipeLinesReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeLinesShopping": "{count} im Einkauf",
+  "@recipeLinesShopping": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeLinesIgnored": "{count} weggelassen",
+  "@recipeLinesIgnored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeLinesOpen": "{count} offen",
+  "@recipeLinesOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeLinesJoined": "{first} · {second}",
+  "@recipeLinesJoined": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeLineOpen": "offen",
+  "@recipeLineOpen": {
+    "description": "Chip on a recipe ingredient line that is neither assigned nor ignored yet."
+  },
+  "recipeLineShopping": "im Einkauf",
+  "recipeLineStockAndRest": "{stock} da · {rest} im Einkauf",
+  "@recipeLineStockAndRest": {
+    "placeholders": {
+      "stock": {
+        "type": "String"
+      },
+      "rest": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeLineIgnored": "weggelassen",
+  "@recipeLineIgnored": {
+    "description": "Chip on a recipe ingredient line the user chose to ignore."
+  },
+  "recipeCookNeedsAllLines": "Kochen startet, wenn jede Zutat bereit oder weggelassen ist.",
+  "@recipeCookNeedsAllLines": {
+    "description": "Hint on the recipe page explaining that cooking waits until every ingredient line is assigned or ignored."
+  },
+  "recipeFromListName": "Name",
+  "recipeFromListPortions": "Portionen",
+  "recipeFromListScan": "Scannen",
+  "recipeFromListScanning": "Liste wird gelesen …",
+  "recipeFromListScanFailed": "Liste konnte nicht gelesen werden.",
+  "recipeFromListSave": "Rezept speichern",
+  "recipeFromListSaveFailed": "Rezept konnte nicht gespeichert werden.",
+  "cookbookCardEstimate": "≈ {kcal} kcal",
+  "recipePrepareAction": "Vorbereiten",
+  "recipeFoodFor": "Für {ingredient}",
+  "@recipeFoodFor": {
+    "description": "Small kicker above the title of the product search page for a recipe line in the cook flow; the ingredient is the recipe line text and is shown uppercased.",
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeFoodTitle": "Was für {food} hast du?",
+  "@recipeFoodTitle": {
+    "description": "Title of the product search page for a recipe line in the cook flow; food is the ingredient's food name. Must work for any gender and plural, so no article.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeFoodTitleFallback": "Was nimmst du dafür?",
+  "@recipeFoodTitleFallback": {
+    "description": "Title of the product search page for a recipe line in the cook flow, used when the food name is unknown."
+  },
+  "recipeFoodScanTitle": "Packung scannen",
+  "@recipeFoodScanTitle": {
+    "description": "Large button on the product search page for a recipe line in the cook flow; scans a package barcode."
+  },
+  "recipeFoodScanLine": "Strichcode vor die Kamera halten. Liegt es schon im Vorrat, nehmen wir es von dort.",
+  "@recipeFoodScanLine": {
+    "description": "Line under the scan button on the product search page for a recipe line in the cook flow; says a food already in stock is taken from stock."
+  },
+  "recipeFoodOrPick": "oder aussuchen",
+  "@recipeFoodOrPick": {
+    "description": "Divider text between the scan button and the search field on the product search page for a recipe line in the cook flow."
+  },
+  "recipeFoodFromStock": "Aus dem Vorrat nehmen",
+  "@recipeFoodFromStock": {
+    "description": "First row of the list on the product search page for a recipe line in the cook flow; opens the whole stock."
+  },
+  "recipeFoodFromStockLine": "Etwas anderes, das du schon hast",
+  "@recipeFoodFromStockLine": {
+    "description": "Grey line under the 'Take from stock' row on the product search page for a recipe line in the cook flow."
+  },
+  "recipeFoodInStock": "{amount} da",
+  "@recipeFoodInStock": {
+    "description": "Grey line of a food already in stock, in the list on the product search page for a recipe line in the cook flow; amount like '750 g'.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeFoodBrandAndSize": "{brand} · {size}",
+  "@recipeFoodBrandAndSize": {
+    "description": "Grey line of a food in the list on the product search page for a recipe line in the cook flow: brand and pack size, e.g. 'House brand · 1 kg'.",
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeFoodOwnEntry": "Selbst eintragen",
+  "@recipeFoodOwnEntry": {
+    "description": "Quiet last row of the product search page for a recipe line in the cook flow; opens the manual product editor."
+  },
+  "recipeFoodGuess": "Egal, irgendeins",
+  "@recipeFoodGuess": {
+    "description": "Button at the foot of the 'Was für Mehl hast du?' food pick for a recipe line in the cook flow; the app estimates the food by its name and takes exactly the amount the line needs."
+  },
+  "recipeFoodGuessLine": "Wir schätzen die Werte für dich.",
+  "@recipeFoodGuessLine": {
+    "description": "Small line under the recipeFoodGuess button on the food pick for a recipe line; tells the user the app estimates the values."
+  },
+  "recipeFoodStockSheetTitle": "Was nimmst du aus dem Vorrat?",
+  "@recipeFoodStockSheetTitle": {
+    "description": "Title of the sheet that lists the whole stock for a recipe line in the cook flow."
+  },
+  "recipeFoodStockEmpty": "Im Vorrat ist gerade nichts.",
+  "@recipeFoodStockEmpty": {
+    "description": "Shown in the stock sheet for a recipe line in the cook flow when the stock is empty."
+  },
+  "recipeFoodStockLoadFailed": "Den Vorrat konnten wir nicht laden.",
+  "@recipeFoodStockLoadFailed": {
+    "description": "Shown in the stock sheet for a recipe line in the cook flow when the stock failed to load."
+  }
 }

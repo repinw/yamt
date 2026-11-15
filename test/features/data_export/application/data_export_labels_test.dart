@@ -28,4 +28,10 @@ void main() {
 
     expect(labels.foodName(entry), labels.l10n.dataExportFoodPending('Oats'));
   });
+
+  test('marks a food whose nutrition is estimated', () {
+    final entry = oatEntry(brand: null).copyWith(nutritionEstimated: true);
+
+    expect(labels.foodName(entry), labels.l10n.dataExportFoodEstimated('Oats'));
+  });
 }

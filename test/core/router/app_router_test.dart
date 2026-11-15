@@ -31,13 +31,20 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/models/food_pick_route_args.dart';
+import 'package:yamt/features/inventory/presentation/models/prepared_meal_food_source.dart';
+import 'package:yamt/features/kochmodus/presentation/kochmodus_assign_page.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
+import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_ai_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -981,6 +988,92 @@ void main() {
     );
   });
 
+  testWidgets('the cooking routes are registered, the run by its id', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final router = container.read(appRouterProvider);
+    final paths = router.configuration.routes
+        .whereType<GoRoute>()
+        .map((route) => route.path)
+        .toList();
+
+    expect(
+      paths,
+      containsAll([
+        AppRoutes.homeCook,
+        AppRoutes.homeCookRun,
+        AppRoutes.homeFreeCooking,
+      ]),
+    );
+    // The paths that the Kochbuch builds fit the registered patterns.
+    expect(AppRoutes.homeCook, '/home/cook/:recipeId');
+    expect(AppRoutes.homeCookRun, '/home/cook-run/:runId');
+    expect(
+      AppRoutes.homeCookPath('stew', portions: 3),
+      '/home/cook/stew?${AppRoutes.homeCookPortionsParam}=3',
+    );
+    expect(
+      AppRoutes.homeCookRunPath('recipe-stew'),
+      '/home/cook-run/recipe-stew',
+    );
+  });
+
+  testWidgets('the cook route takes the portions of the query, else none', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+
+    final router = container.read(appRouterProvider);
+    final context = tester.element(find.byType(YAMT));
+    final route = router.configuration.routes.whereType<GoRoute>().firstWhere(
+      (route) => route.path == AppRoutes.homeCook,
+    );
+
+    // The builder is called without building the page, which would load
+    // the household's data.
+    int? portionsOf(String query) {
+      final uri = Uri.parse('/home/cook/stew$query');
+      final page = route.builder!(
+        context,
+        GoRouterState(
+          router.configuration,
+          uri: uri,
+          matchedLocation: uri.path,
+          fullPath: AppRoutes.homeCook,
+          pageKey: const ValueKey<String>('cook'),
+          pathParameters: const {'recipeId': 'stew'},
+        ),
+      ) as KochmodusAssignPage;
+      expect(page.recipeId, 'stew');
+      return page.portions;
+    }
+
+    expect(portionsOf('?${AppRoutes.homeCookPortionsParam}=3'), 3);
+    // Fewer than one portion, or no number, cooks the recipe's own.
+    expect(portionsOf('?${AppRoutes.homeCookPortionsParam}=0'), isNull);
+    expect(portionsOf('?${AppRoutes.homeCookPortionsParam}=-2'), isNull);
+    expect(portionsOf('?${AppRoutes.homeCookPortionsParam}=x'), isNull);
+    expect(portionsOf(''), isNull);
+  });
+
   testWidgets('appRouterProvider supports overrideWithValue', (tester) async {
     final stubRouter = GoRouter(
       routes: [
@@ -1052,6 +1145,179 @@ void main() {
       find.byKey(const Key('product_search_hub_recently_selected_empty_state')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the Vorrat route with a meal id builds the page for it', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    final router = container.read(appRouterProvider)
+      ..go(AppRoutes.homeInventory);
+    await _pumpRouterTransition(tester);
+    expect(
+      tester.widget<InventoryPage>(find.byType(InventoryPage)).openMealId,
+      isNull,
+    );
+
+    router.go(AppRoutes.homeInventoryMealPath('meal-7'));
+    await _pumpRouterTransition(tester);
+
+    expect(router.state.uri.path, AppRoutes.homeInventory);
+    expect(
+      tester.widget<InventoryPage>(find.byType(InventoryPage)).openMealId,
+      'meal-7',
+    );
+  });
+
+  testWidgets('the food pick route builds the hub with the ingredient, its '
+      'piece weight, unit, need and the Vorrat offer', (tester) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    final router = container.read(appRouterProvider);
+
+    unawaited(
+      router.push<void>(
+        AppRoutes.homeFoodPick,
+        extra: const FoodPickRouteArgs(
+          query: 'Eier',
+          ingredient: '3 Eier',
+          pieceWeight: 60,
+          ingredientUnit: InventoryAmountUnit.piece,
+          ingredientNeed: 3,
+          takesFromStock: true,
+        ),
+      ),
+    );
+    await _pumpRouterTransition(tester);
+
+    final args = tester
+        .widget<ProductSearchHubPage>(find.byType(ProductSearchHubPage))
+        .args;
+    expect(args.initialQuery, 'Eier');
+    expect(args.ingredient, '3 Eier');
+    expect(args.pieceWeight, 60);
+    expect(args.ingredientUnit, InventoryAmountUnit.piece);
+    expect(args.ingredientNeed, 3);
+    expect(args.takesFromStock, isTrue);
+    expect(args.heldItemIds, isEmpty);
+    expect(args.isRecipe, isTrue);
+    expect(args.mode, ProductSearchHubMode.mealFood);
+  });
+
+  testWidgets('the food pick route reads the held Vorrat items', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    final router = container.read(appRouterProvider);
+
+    unawaited(
+      router.push<void>(
+        AppRoutes.homeFoodPick,
+        extra: const FoodPickRouteArgs(
+          query: 'Reis',
+          ingredient: '500 g Reis',
+          takesFromStock: true,
+          heldItemIds: {'rice-1', 'rice-2'},
+        ),
+      ),
+    );
+    await _pumpRouterTransition(tester);
+
+    final args = tester
+        .widget<ProductSearchHubPage>(find.byType(ProductSearchHubPage))
+        .args;
+    expect(args.heldItemIds, {'rice-1', 'rice-2'});
+  });
+
+  testWidgets('the food pick route maps the barcode and AI start to the '
+      'hub intent, and opens the keyboard without an ingredient query', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    final router = container.read(appRouterProvider);
+
+    Future<ProductSearchHubRouteArgs> open(FoodPickRouteArgs extra) async {
+      unawaited(router.push<void>(AppRoutes.homeFoodPick, extra: extra));
+      await _pumpRouterTransition(tester);
+      final args = tester
+          .widget<ProductSearchHubPage>(find.byType(ProductSearchHubPage))
+          .args;
+      router.pop();
+      await _pumpRouterTransition(tester);
+      return args;
+    }
+
+    final barcode = await open(
+      const FoodPickRouteArgs(source: PreparedMealFoodSource.barcode),
+    );
+    expect(barcode.initialIntent, ProductSearchHubInitialIntent.barcode);
+    expect(barcode.autofocusSearchField, isTrue);
+    expect(barcode.isRecipe, isFalse);
+
+    final ai = await open(
+      const FoodPickRouteArgs(source: PreparedMealFoodSource.ai),
+    );
+    expect(ai.initialIntent, ProductSearchHubInitialIntent.ai);
+
+    final search = await open(const FoodPickRouteArgs(query: 'Reis'));
+    expect(search.initialIntent, ProductSearchHubInitialIntent.search);
+    expect(search.initialQuery, 'Reis');
+    expect(search.autofocusSearchField, isTrue);
+
+    final recipe = await open(
+      const FoodPickRouteArgs(query: 'Reis', ingredient: '500 g Reis'),
+    );
+    expect(recipe.autofocusSearchField, isFalse);
+    final recipeNoQuery = await open(
+      const FoodPickRouteArgs(ingredient: '500 g Reis'),
+    );
+    expect(recipeNoQuery.autofocusSearchField, isTrue);
+  });
+
+  testWidgets('the food pick route throws without FoodPickRouteArgs', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    final router = container.read(appRouterProvider);
+
+    unawaited(router.push<void>(AppRoutes.homeFoodPick));
+    await _pumpRouterTransition(tester);
+
+    expect(tester.takeException(), isA<ArgumentError>());
   });
 
   testWidgets('product search child flow route renders route args page', (

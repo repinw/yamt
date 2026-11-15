@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/flexible_decimal_parser.dart';
+import 'package:yamt/features/recipes/domain/cook_line_text.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 part 'template_ingredient_parser.g.dart';
@@ -9,17 +10,30 @@ class TemplateIngredientParser {
   /// The template ingredient parser.
   const new();
 
-  /// Parse requirement.
+  /// What the recipe line [ingredient] needs for [selectedPortions] of
+  /// [basePortions], read from its normal form ([normalizeCookLineText]).
   TemplateIngredientRequirement? parseRequirement({
     required String ingredient,
     required int selectedPortions,
     required int basePortions,
-  }) {
-    if (selectedPortions < 1 || basePortions < 1) {
-      return null;
-    }
+  }) => _parse(
+    normalizeCookLineText(ingredient).trim(),
+    selectedPortions,
+    basePortions,
+  );
 
-    final trimmed = ingredient.trim();
+  /// What the name of a food or product says, read as written: a pack size
+  /// ("Mozzarella 125 g"), but no number word ("Drei …" names no amount).
+  TemplateIngredientRequirement? parseName(String name) =>
+      _parse(name.trim(), 1, 1);
+
+  TemplateIngredientRequirement? _parse(
+    String trimmed,
+    int selectedPortions,
+    int basePortions,
+  ) {
+    if (selectedPortions < 1 || basePortions < 1) return null;
+
     final match = RegExp(r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,\s]\d+)*)\s*(.+)$')
         .firstMatch(trimmed);
     if (match == null) {
@@ -51,6 +65,7 @@ class TemplateIngredientParser {
       ingredient: trimmed,
       selectedPortions: selectedPortions,
       basePortions: basePortions,
+      packageCount: parsedQuantity,
       packageCountLabel: packageCountLabel,
     );
     if (conversion == null) {
@@ -206,12 +221,15 @@ class TemplateIngredientParser {
     required String ingredient,
     required int selectedPortions,
     required int basePortions,
+    double packageCount = 1,
     String? packageCountLabel,
   }) {
     final match = RegExp(
+      r'(?:(?<![a-zA-ZäöüÄÖÜß])(à|á|a|je)\s*)?'
       r'(?:ca\.?|circa|approx\.?)?\s*'
       r'(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)\s*'
-      '(kg|kgs|kilogramm|kilogram|g|gr|gramm|gram|mg|ml|cl|dl|l|liter)'
+      '(kg|kgs|kilogramm|kilograms|kilogram|g|gr|gramm|grams|gram|mg|ml|'
+      'milliliters|cl|dl|l|liters|litres|liter|litre)'
       '(?![a-zA-ZäöüÄÖÜß.])',
       caseSensitive: false,
     ).firstMatch(ingredient);
@@ -219,8 +237,10 @@ class TemplateIngredientParser {
       return null;
     }
 
-    final rawQuantity = match.group(1);
-    final rawUnit = match.group(2);
+    // "2 Dosen (à 400 g)" names the size of one, "2 Dosen (800 g)" a total.
+    final perPackage = match.group(1) != null;
+    final rawQuantity = match.group(2);
+    final rawUnit = match.group(3);
     if (rawQuantity == null || rawUnit == null) {
       return null;
     }
@@ -236,6 +256,7 @@ class TemplateIngredientParser {
 
     final scaledQuantity =
         parsedQuantity *
+        (perPackage ? packageCount : 1) *
         conversion.multiplier *
         selectedPortions /
         basePortions;
@@ -252,7 +273,8 @@ class TemplateIngredientParser {
       amount: roundedAmount,
       unit: conversion.unit,
       name: name.isEmpty ? ingredient.trim() : name,
-      packageCountLabel: packageCountLabel,
+      // The amount is the total already, so no count multiplies it in a label.
+      packageCountLabel: perPackage ? null : packageCountLabel,
     );
   }
 
@@ -273,7 +295,8 @@ class TemplateIngredientParser {
       }
       tokens.removeAt(0);
     }
-    return tokens.join(' ').trim();
+    // "Tomaten, je 400 g" leaves the comma behind.
+    return tokens.join(' ').replaceFirst(RegExp(r'[\s,;:]+$'), '');
   }
 
   bool _shouldPreferEmbeddedAmount(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
@@ -7,29 +8,74 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/cookbook_new/domain/free_cooking_transcript.dart';
+import 'package:yamt/features/cookbook_new/application/recipe_estimate_service.dart';
+import 'package:yamt/features/cookbook_new/domain/recipe_ingredient_lines.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_ingredient_texts.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_view_builder.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/vorlage_as_recipe.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_draft.dart';
-import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/inventory_shopping_suggestions.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_cooking_service.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_from_vorlage.dart';
 import 'package:yamt/features/inventory/application/template_plan_entry.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/cook_run_providers.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_plan_need.dart';
 
 part 'recipe_controller.g.dart';
 
-/// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
+/// Holds the portions of the recipe [recipeId], cooks a Vorlage, and plans
+/// it.
 @riverpod
 class RecipeController extends _$RecipeController {
+  /// The [RecipeIngredientLines.recipeEstimateKey]s estimated while the page
+  /// is open.
+  final Set<String> _estimated = {};
+
   @override
   RecipeDraft build(String recipeId) => const RecipeDraft();
+
+  /// Estimates the nutrition and line weights of the saved recipe in the
+  /// background, such as after a link import saved it.
+  void estimate() =>
+      ref.read(recipeEstimateServiceProvider).estimateInBackground(recipeId);
+
+  /// Estimates [recipe] in the background when it has ingredient lines that
+  /// its estimate does not fit, such as a recipe the AI chef, the editor, or
+  /// "Ins Kochbuch" saved, once for each version of its lines and portions;
+  /// an estimate that runs already is joined. One that ends without an
+  /// estimate goes into [RecipeDraft.failedEstimates], so the page stops
+  /// waiting for it; the cook is not told more.
+  void estimateIfMissing(PreparedMeal recipe) {
+    final key = recipe.recipeEstimateKey;
+    if (recipe.needsRecipeEstimate && _estimated.add(key)) {
+      unawaited(_estimate(key));
+    }
+  }
+
+  Future<void> _estimate(String key) async {
+    var fits = false;
+    try {
+      // Inside the future: the page asks while it builds, and a service that
+      // fails at once must not change the state then.
+      fits = await Future(
+        () => ref.read(recipeEstimateServiceProvider).estimate(recipeId),
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Estimating the recipe $recipeId failed.',
+        name: 'RecipeController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+    if (!fits && ref.mounted) {
+      state = state.copyWith(failedEstimates: {...state.failedEstimates, key});
+    }
+  }
 
   /// Cooks [portions] portions.
   void setPortions(int portions) {
@@ -38,101 +84,8 @@ class RecipeController extends _$RecipeController {
     }
   }
 
-  /// Takes the ingredient of the line [key] from the Vorrat item [itemId],
-  /// or not from the Vorrat when it is `null`.
-  void pick(String key, String? itemId) {
-    state = state.copyWith(picks: {...state.picks, key: itemId});
-  }
-
-  /// Adds the ingredients in [transcript], said or typed for the chosen
-  /// portions of [view], for this cooking. An undo word such as "nein" at
-  /// its start takes the ones added last out again first.
-  void addSpoken(RecipeView view, String transcript) {
-    var text = transcript;
-    if (afterUndoWords(transcript) case final rest?) {
-      undoAdded();
-      text = rest;
-    }
-    final parser = ref.read(templateIngredientParserProvider);
-    var edits = state.edits;
-    final keys = <String>[];
-    for (final row in splitFreeCookingTranscript(text)) {
-      keys.add(edits.nextKey);
-      edits = edits.withAdded(recipeAddedText(parser, view, row));
-    }
-    if (keys.isNotEmpty) {
-      state = state.copyWith(
-        edits: edits,
-        justAdded: keys,
-        fromGuide: [...state.fromGuide, ...keys],
-      );
-    }
-  }
-
-  /// Takes the ingredients added last out again.
-  void undoAdded() => _dropAdded(state.justAdded.toSet());
-
-  /// Takes every ingredient the Kochhelfer added out again.
-  void undoGuideAdded() => _dropAdded(state.fromGuide.toSet());
-
-  void _dropAdded(Set<String> remove) {
-    if (remove.isEmpty) {
-      return;
-    }
-    final edits = state.edits;
-    state = state.copyWith(
-      edits: edits.copyWith(
-        added: {
-          for (final MapEntry(:key, :value) in edits.added.entries)
-            if (!remove.contains(key)) key: value,
-        },
-      ),
-      picks: {
-        for (final MapEntry(:key, :value) in state.picks.entries)
-          if (!remove.contains(key)) key: value,
-      },
-      justAdded: const <String>[],
-      fromGuide: [
-        for (final key in state.fromGuide)
-          if (!remove.contains(key)) key,
-      ],
-    );
-  }
-
-  /// Opens the Kochhelfer before cooking when [withGuide] is set.
-  void setWithGuide({required bool withGuide}) {
-    state = state.copyWith(withGuide: withGuide);
-  }
-
-  /// Cooks the recipe with [edits] this time.
-  void setEdits(RecipeEdits edits) {
-    state = state.copyWith(
-      edits: edits,
-      justAdded: const <String>[],
-      // A line changed by hand is the cook's own now, not the Kochhelfer's.
-      fromGuide: [
-        for (final key in state.fromGuide)
-          if (edits.added[key] case final text?
-              when text == state.edits.added[key])
-            key,
-      ],
-    );
-  }
-
-  /// Drops the picks for the lines [keys], so the items the recipe saved
-  /// for them apply again.
-  void forgetPicks(Iterable<String> keys) {
-    final remove = keys.toSet();
-    state = state.copyWith(
-      picks: {
-        for (final MapEntry(:key, :value) in state.picks.entries)
-          if (!remove.contains(key)) key: value,
-      },
-    );
-  }
-
-  /// Puts the meal of [view] in the pot. Returns its id, or `null` when
-  /// saving failed.
+  /// Puts the Vorlage of [view] in the pot. Returns the meal's id, or
+  /// `null` when saving failed.
   Future<String?> cook(RecipeView view) async {
     if (state.isCooking) {
       return null;
@@ -140,22 +93,17 @@ class RecipeController extends _$RecipeController {
     final link = ref.keepAlive();
     state = state.copyWith(isCooking: true);
     try {
-      final service = ref.read(preparedMealCookingServiceProvider);
-      final result = view.isVorlage
-          ? await service.cookVorlage(
-              vorlage: view.saved,
-              portions: view.portions,
-              foods: _vorlageFoods(view),
-            )
-          : await service.cookRecipe(
-              recipe: view.recipe.copyWith(totalPortions: view.basePortions),
-              portions: view.portions,
-              assignments: view.assignments,
-            );
+      final result = await ref
+          .read(preparedMealCookingServiceProvider)
+          .cookVorlage(
+            vorlage: view.saved,
+            portions: view.portions,
+            foods: _vorlageFoods(view),
+          );
       return result.isSuccess ? result.preparedMealId : null;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to cook the recipe.',
+        'Failed to cook the Vorlage.',
         name: 'RecipeController',
         error: error,
         stackTrace: stackTrace,
@@ -274,12 +222,9 @@ AsyncValue<RecipeView?> recipeView(
   String recipeId,
   String localeCode,
 ) {
-  // Cooking and the Kochhelfer switch leave the view as it is.
-  final (:portions, :picks, :edits) = ref.watch(
-    recipeControllerProvider(recipeId).select(
-      (draft) =>
-          (portions: draft.portions, picks: draft.picks, edits: draft.edits),
-    ),
+  // Cooking leaves the view as it is.
+  final portions = ref.watch(
+    recipeControllerProvider(recipeId).select((draft) => draft.portions),
   );
   return buildRecipeView(
     recipeId: recipeId,
@@ -288,7 +233,7 @@ AsyncValue<RecipeView?> recipeView(
     parser: ref.watch(templateIngredientParserProvider),
     localeCode: localeCode,
     portions: portions,
-    picks: picks,
-    edits: edits,
+    // A running cook run keeps the portions it started with.
+    runPortions: ref.watch(recipeCookRunProvider(recipeId)).value?.portions,
   );
 }

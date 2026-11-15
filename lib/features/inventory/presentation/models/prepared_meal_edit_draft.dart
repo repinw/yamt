@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/application/prepared_meal_mutation_model
 import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 /// What the meal editor saves: the name, a changed picture, the portions,
@@ -90,15 +91,24 @@ class PreparedMealEditRow {
       amount: amount,
       maxAmount: mealFoodMaxAmount(item),
       baseFacts: EatNutrition.fromPer100(nutrition, _per100).eaten,
-      // As [preparedMealNutritionFactor] counts it: the label once per
-      // piece, else per 100 g or ml.
+      // As [preparedMealNutritionFactor] counts it: per 100 g or ml, also of
+      // pieces with a piece weight, else the label once per piece.
       baseAmount: unit == InventoryAmountUnit.piece
-          ? (item.usesAmountProgress ? item.amountScale : 1).toDouble()
+          ? _pieceBaseAmount(item)
           : _per100,
     );
   }
 
   static const _per100 = 100.0;
+
+  // The stock amount the label counts for, of an item kept in pieces.
+  static double _pieceBaseAmount(InventoryItem item) {
+    final piece = item.usesAmountProgress ? item.amountScale : 1;
+    final grams = inventoryStockInConsumedUnit(item, piece)?.amount;
+    return grams == null || grams <= 0
+        ? piece.toDouble()
+        : piece * _per100 / grams;
+  }
 
   /// Stock item the ingredient comes from.
   final String itemId;

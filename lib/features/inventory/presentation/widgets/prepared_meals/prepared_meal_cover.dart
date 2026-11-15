@@ -20,10 +20,12 @@ class PreparedMealCover extends StatelessWidget {
     this.componentImageUrls = const <String?>[],
     this.size = 64,
     this.borderRadius,
+    this.background,
   });
 
-  /// The label.
-  final String label;
+  /// The name whose first letter stands in for a missing image; `null`
+  /// leaves the plain background, as under a name written on top.
+  final String? label;
 
   /// The image bytes.
   final Uint8List? imageBytes;
@@ -40,6 +42,9 @@ class PreparedMealCover extends StatelessWidget {
   /// The border radius.
   final BorderRadius? borderRadius;
 
+  /// The plain color under the image; `null` for the theme's gradient.
+  final Color? background;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -48,14 +53,17 @@ class PreparedMealCover extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colors.primary.withValues(alpha: 0.14),
-            colors.surfaceContainerLow,
-          ],
-        ),
+        color: background,
+        gradient: background != null
+            ? null
+            : LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colors.primary.withValues(alpha: 0.14),
+                  colors.surfaceContainerLow,
+                ],
+              ),
         borderRadius: radius,
       ),
       child: SizedBox.square(
@@ -99,10 +107,12 @@ class PreparedMealCover extends StatelessWidget {
 class _PreparedMealCoverFallback extends StatelessWidget {
   const new({required this.label});
 
-  final String label;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
+    final label = this.label;
+    if (label == null) return const SizedBox.shrink();
     final trimmed = label.trim();
     final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1);
     final colors = Theme.of(context).colorScheme;

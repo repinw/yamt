@@ -17,6 +17,7 @@ import 'package:yamt/features/app_update/application/'
     'app_client_version_record.dart';
 import 'package:yamt/features/app_update/presentation/widgets/'
     'app_update_hint_listener.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/shared_recipe_listener.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_pace_notification_listener.dart';
 import 'package:yamt/features/home_widget/application/'
     'home_widget_click_action_provider.dart';
@@ -28,6 +29,8 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/plan_shortage_reminder_listener.dart';
 import 'package:yamt/features/inventory/presentation/widgets/recipe_reminder_plan_listener.dart';
+import 'package:yamt/features/kochmodus/presentation/widgets/'
+    'cook_timer_alarm_listener.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'pending_photo_upload_retry.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -114,11 +117,15 @@ class _YAMTState extends ConsumerState<YAMT> {
               child: WhatsNewListener(
                 child: PlanShortageReminderListener(
                   child: DiaryPaceNotificationListener(
-                    child: SharedReceiptListener(
-                      onReceiptSaved: () =>
-                          ref.invalidate(inventoryItemsControllerProvider),
-                      child: RecipeReminderPlanListener(
-                        child: child ?? const SizedBox.shrink(),
+                    child: CookTimerAlarmListener(
+                      child: SharedReceiptListener(
+                        onReceiptSaved: () =>
+                            ref.invalidate(inventoryItemsControllerProvider),
+                        child: SharedRecipeListener(
+                          child: RecipeReminderPlanListener(
+                            child: child ?? const SizedBox.shrink(),
+                          ),
+                        ),
                       ),
                     ),
                   ),

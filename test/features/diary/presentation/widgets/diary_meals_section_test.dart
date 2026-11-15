@@ -781,6 +781,45 @@ void main() {
     );
   });
 
+  testWidgets('a plan with the AI estimate of its recipe marks its kcal as '
+      'estimated', (tester) async {
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'stew',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Bauerntopf',
+              kcal: 450,
+              protein: 30,
+              carbs: 40,
+              fat: 12,
+              bundleConsumedPortions: 1,
+              bundleTotalPortions: 2,
+              nutritionEstimated: true,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    final row = find.byKey(DiaryMealsSectionKeys.plannedEntryTile('stew'));
+    expect(
+      find.descendant(of: row, matching: find.text('≈ 450 kcal')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: row, matching: find.text('450 kcal')),
+      findsNothing,
+    );
+  });
+
   testWidgets('a plan the Vorrat cannot cover says so', (tester) async {
     DiaryMealEntry planRow(String id) => _entry(
       id: id,
@@ -1386,6 +1425,7 @@ DiaryMealEntry _entry({
   num? bundleConsumedPortions,
   int? bundleTotalPortions,
   bool nutritionPending = false,
+  bool nutritionEstimated = false,
 }) {
   return DiaryMealEntry(
     id: id,
@@ -1400,6 +1440,7 @@ DiaryMealEntry _entry({
     bundleConsumedPortions: bundleConsumedPortions,
     bundleTotalPortions: bundleTotalPortions,
     nutritionPending: nutritionPending,
+    nutritionEstimated: nutritionEstimated,
   );
 }
 
@@ -1430,6 +1471,7 @@ Override _planDemand({Set<String> shortPlanIds = const {}}) =>
     openPlanDemandProvider.overrideWith(
       (ref) async => (
         plannedByItemId: <String, int>{},
+        runReservedByItemId: <String, int>{},
         missingByItemId: <String, int>{},
         plannedPortionsByMealId: <String, double>{},
         missingShareByPlanId: {for (final id in shortPlanIds) id: 1.0},

@@ -109,4 +109,25 @@ void main() {
     expect(calorieEntryPer100Facts(bundle), isNull);
     expect(calorieEntryEatenFacts(bundle).kcal, 420);
   });
+
+  test('a Kochbuch recipe without Vorrat foods has no values per 100', () {
+    final recipe = CalorieEntry.bundle(
+      id: 'plan-1',
+      userId: 'user-1',
+      name: 'Linsensuppe',
+      mealType: MealType.lunch,
+      totalKcal: 620,
+      totalProtein: 28,
+      totalCarbs: 35,
+      totalFat: 18,
+      bundleSourcePreparedMealId: 'prepared-1',
+      bundleConsumedPortions: 1,
+      bundleTotalPortions: 4,
+      bundleComponents: const [],
+      loggedAt: _loggedAt,
+    ).copyWith(bundleSourceTemplateId: 'recipe-1');
+
+    expect(calorieEntryPer100Facts(recipe), isNull);
+    expect(calorieEntryEatenFacts(recipe).kcal, 620);
+  });
 }

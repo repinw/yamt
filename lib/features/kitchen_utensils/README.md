@@ -21,3 +21,9 @@ empty weight and photo) and the page that manages them.
 
 - `KitchenUtensilCover`: square utensil thumbnail.
 - `KitchenUtensilsButton`: opens the utensil management page.
+- `KitchenUtensilEditFlow` (`add`): adds a utensil and returns its id, or
+  `null` when the cook cancels or the save fails. The sheet says
+  "Utensil hinzufügen" unless the caller passes a `title`; the Töpfe step of
+  Kochmodus passes "Topf oder Pfanne hinzufügen" and chooses the new pot at
+  once. The button of a new utensil says "Hinzufügen", and a helper under the
+  weight says how to find it ("Leer, ohne Deckel. …").

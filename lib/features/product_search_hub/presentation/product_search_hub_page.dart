@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
+import 'package:yamt/features/inventory/presentation/models/recipe_food_pick.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_ai_search_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -98,6 +99,8 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       onEntryResult: (entry) =>
           _runWhenIdle(() => _completeCreatedEntry(entry)),
       onInitialIntentCancelled: _closeHub,
+      onStockPicked: (items) => _closeHub(RecipeFoodInStock(items)),
+      onGuessed: _closeHub,
     );
   }
 

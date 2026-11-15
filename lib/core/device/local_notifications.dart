@@ -1,16 +1,25 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show AppLifecycleListener;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'package:yamt/core/device/plugin_local_notifications.dart';
 
 part 'local_notifications.g.dart';
 
 /// An Android notification channel. Users can mute each channel in the
 /// system settings, so every kind of reminder gets its own.
 typedef NotificationChannel = ({String id, String name});
+
+/// How long an alarm notification rings at most when nobody stops it.
+const alarmRingLimit = Duration(minutes: 10);
+
+/// What an alarm needs besides its notification: the label of the button
+/// that stops it ringing, and on Android the channel and the title of the
+/// silent notification that counts down to it.
+typedef AlarmStyle = ({
+  String stopLabel,
+  NotificationChannel countdown,
+  String countdownTitle,
+});
 
 /// Shows notifications at a set time, also while the app is closed.
 ///
@@ -30,8 +39,20 @@ abstract interface class LocalNotifications {
   /// settings screen opens.
   Future<void> openSettings();
 
-  /// Shows a notification at [at], or a few minutes later: Android may
-  /// delay it to save battery. Replaces a notification with the same [id].
+  /// Shows a notification at [at]. Android may delay it a few minutes to
+  /// save battery, unless [exact] and exact alarms are allowed. Replaces a
+  /// scheduled notification with the same [id]; one that already shows stays
+  /// until [cancel] removes it or the new one rings.
+  ///
+  /// With [alarm] it rings like an alarm clock. On Android the system's
+  /// alarm clock arms it and the app plays the device's alarm tone on the
+  /// alarm stream itself, so it also sounds on a phone set to vibrate or
+  /// silent and while a watch mutes the app's notifications; it rings until
+  /// the stop button, [cancel] or [alarmRingLimit]. Until then a silent
+  /// notification on the alarm's countdown channel counts down to it. On
+  /// iOS it sounds with the app open too, but not on a muted iPhone. Android
+  /// freezes a channel's settings when it first rings, so one [channel]
+  /// takes either alarms or other notifications, never both.
   Future<void> schedule({
     required int id,
     required DateTime at,
@@ -39,160 +60,31 @@ abstract interface class LocalNotifications {
     required String title,
     required String body,
     required String payload,
+    bool exact = false,
+    AlarmStyle? alarm,
   });
 
-  /// Removes the scheduled notification [id].
+  /// Whether [schedule] can show an exact notification on time. On Android
+  /// the user allows this as "Alarms & reminders".
+  Future<bool> canScheduleExact();
+
+  /// Opens the system screen that allows exact alarms; returns whether they
+  /// are allowed afterwards.
+  Future<bool> requestExactAlarms();
+
+  /// Removes the notification [id], scheduled or showing; one that rings
+  /// stops.
   Future<void> cancel(int id);
 
   /// Ids of the notifications that are scheduled and not shown yet.
   Future<List<int>> pendingIds();
 
-  /// Payloads of the notifications the user taps, including the one that
-  /// launched the app.
+  /// Ids of the notifications that show in the tray now.
+  Future<List<int>> activeIds();
+
+  /// Payloads of the notifications the user taps. Every listener starts
+  /// with the one that launched the app.
   Stream<String> get taps;
-}
-
-/// Android and iOS, through flutter_local_notifications.
-class PluginLocalNotifications implements LocalNotifications {
-  /// Creates the notifications; [plugin] is replaced in tests.
-  new({FlutterLocalNotificationsPlugin? plugin})
-    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
-
-  final FlutterLocalNotificationsPlugin _plugin;
-  final _taps = StreamController<String>.broadcast();
-  late final Future<void> _ready = _initialize();
-  bool _launchTapHandled = false;
-
-  Future<void> _initialize() async {
-    const darwin = DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
-    );
-    await _plugin.initialize(
-      settings: const InitializationSettings(
-        android: AndroidInitializationSettings('ic_notification'),
-        iOS: darwin,
-      ),
-      onDidReceiveNotificationResponse: (response) {
-        final payload = response.payload;
-        if (payload != null && payload.isNotEmpty) _taps.add(payload);
-      },
-    );
-  }
-
-  @override
-  Future<bool> requestPermission() async {
-    await _ready;
-    final granted = switch (defaultTargetPlatform) {
-      TargetPlatform.android =>
-        await _plugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >()
-            ?.requestNotificationsPermission(),
-      TargetPlatform.iOS =>
-        await _plugin
-            .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin
-            >()
-            ?.requestPermissions(alert: true, sound: true),
-      _ => false,
-    };
-    return granted ?? false;
-  }
-
-  @override
-  Future<bool> areAllowed(String channelId) async {
-    await _ready;
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        final android = _plugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
-        if (android == null) return true;
-        if (await android.areNotificationsEnabled() == false) return false;
-        // The channel is missing until its first notification is scheduled.
-        final channels = await android.getNotificationChannels() ?? const [];
-        return channels.every(
-          (channel) =>
-              channel.id != channelId || channel.importance != Importance.none,
-        );
-      case TargetPlatform.iOS:
-        final permissions = await _plugin
-            .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin
-            >()
-            ?.checkPermissions();
-        return permissions?.isEnabled ?? true;
-      case _:
-        return true;
-    }
-  }
-
-  @override
-  Future<void> openSettings() async {
-    await _ready;
-    if (await _plugin.openAppNotificationSettings() == false) {
-      throw StateError('No notification settings screen opened.');
-    }
-  }
-
-  @override
-  Future<void> schedule({
-    required int id,
-    required DateTime at,
-    required NotificationChannel channel,
-    required String title,
-    required String body,
-    required String payload,
-  }) async {
-    await _ready;
-    await _plugin.zonedSchedule(
-      id: id,
-      title: title,
-      body: body,
-      // A fixed instant needs no time zone database: the local DateTime
-      // already knows its offset, also across a clock change.
-      scheduledDate: tz.TZDateTime.from(at.toUtc(), tz.UTC),
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(channel.id, channel.name),
-        iOS: const DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      payload: payload,
-    );
-  }
-
-  @override
-  Future<void> cancel(int id) async {
-    await _ready;
-    await _plugin.cancel(id: id);
-  }
-
-  @override
-  Future<List<int>> pendingIds() async {
-    await _ready;
-    final pending = await _plugin.pendingNotificationRequests();
-    return [for (final request in pending) request.id];
-  }
-
-  @override
-  Stream<String> get taps async* {
-    await _ready;
-    if (!_launchTapHandled) {
-      _launchTapHandled = true;
-      final launch = await _plugin.getNotificationAppLaunchDetails();
-      final payload = launch?.notificationResponse?.payload;
-      if ((launch?.didNotificationLaunchApp ?? false) &&
-          payload != null &&
-          payload.isNotEmpty) {
-        yield payload;
-      }
-    }
-    yield* _taps.stream;
-  }
 }
 
 /// Platforms without notifications: web, desktop, and tests.
@@ -218,13 +110,24 @@ class UnavailableLocalNotifications implements LocalNotifications {
     required String title,
     required String body,
     required String payload,
+    bool exact = false,
+    AlarmStyle? alarm,
   }) async {}
+
+  @override
+  Future<bool> canScheduleExact() async => false;
+
+  @override
+  Future<bool> requestExactAlarms() async => false;
 
   @override
   Future<void> cancel(int id) async {}
 
   @override
   Future<List<int>> pendingIds() async => const [];
+
+  @override
+  Future<List<int>> activeIds() async => const [];
 
   @override
   Stream<String> get taps => const Stream.empty();

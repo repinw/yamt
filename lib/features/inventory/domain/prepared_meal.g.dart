@@ -83,6 +83,17 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
           ?.map((e) => e as String)
           .toList() ??
       [],
+  recipeEstimate: json['recipe_estimate'] == null
+      ? null
+      : RecipeEstimate.fromJson(
+          json['recipe_estimate'] as Map<String, dynamic>,
+        ),
+  recipeLineWeights:
+      (json['recipe_line_weights'] as Map<String, dynamic>?)?.map(
+        (k, e) =>
+            MapEntry(k, RecipeLineWeight.fromJson(e as Map<String, dynamic>)),
+      ) ??
+      {},
   finalNetWeight: readPreparedMealOptionalInt(json['final_net_weight']),
   inPot: json['in_pot'] as bool?,
   potTareWeight: (json['pot_tare_weight'] as num?)?.toInt(),
@@ -114,6 +125,10 @@ Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
       'pending_recipe_ingredients': instance.pendingRecipeIngredients,
       'ignored_pending_recipe_ingredients': ?_writeRowsOrNothing(
         instance.ignoredPendingRecipeIngredients,
+      ),
+      'recipe_estimate': ?instance.recipeEstimate?.toJson(),
+      'recipe_line_weights': instance.recipeLineWeights.map(
+        (k, e) => MapEntry(k, e.toJson()),
       ),
       'final_net_weight': instance.finalNetWeight,
       'in_pot': ?instance.inPot,

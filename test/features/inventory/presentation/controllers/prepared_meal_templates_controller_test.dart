@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -54,6 +53,12 @@ class _FakePreparedMealTemplateRepository
   }
 
   @override
+  Future<bool> update(
+    String id,
+    PreparedMeal? Function(PreparedMeal current) change,
+  ) async => false;
+
+  @override
   Future<bool> delete(String templateId) {
     writes.add('delete $templateId');
     return _replaceAll([
@@ -102,6 +107,12 @@ class _SilentPreparedMealTemplateRepository
   ]);
 
   @override
+  Future<bool> update(
+    String id,
+    PreparedMeal? Function(PreparedMeal current) change,
+  ) async => false;
+
+  @override
   Future<bool> delete(String templateId) => _replaceAll([
     for (final stored in _templates)
       if (stored.id != templateId) stored,
@@ -111,33 +122,6 @@ class _SilentPreparedMealTemplateRepository
     _templates = List<PreparedMeal>.from(templates);
     savedTemplates = List<PreparedMeal>.from(templates);
     return true;
-  }
-}
-
-class _FakePreparedMealRecipeImporter extends PreparedMealRecipeImporter {
-  const new(this.recipe);
-
-  final PreparedMealRecipeImport? recipe;
-
-  @override
-  Future<PreparedMealRecipeImport?> importRecipe(
-    String recipeUrl, {
-    String? localeName,
-  }) async {
-    return recipe;
-  }
-}
-
-Future<void> _waitForCondition(
-  bool Function() condition, {
-  Duration timeout = const Duration(milliseconds: 200),
-}) async {
-  final stopwatch = Stopwatch()..start();
-  while (!condition()) {
-    if (stopwatch.elapsed >= timeout) {
-      fail('Condition not reached within $timeout.');
-    }
-    await Future<void>.delayed(const Duration(milliseconds: 5));
   }
 }
 
@@ -190,25 +174,6 @@ PreparedMeal _templateMeal({required String id, required String name}) {
   );
 }
 
-PreparedMeal _recipeTemplate({required String id, required String name}) {
-  return PreparedMeal(
-    id: id,
-    name: name,
-    imageUrl: 'https://example.com/$id.jpg',
-    totalPortions: 2,
-    remainingPortions: 2,
-    totalKcal: 640,
-    totalProtein: 30,
-    totalCarbs: 80,
-    totalFat: 18,
-    createdAt: DateTime.parse('2026-04-02T12:00:00Z'),
-    updatedAt: DateTime.parse('2026-04-02T12:00:00Z'),
-    components: const <PreparedMealComponent>[],
-    recipeIngredients: const <String>['200 g pasta', '150 g tomatoes'],
-    recipeInstructions: const <String>['Cook pasta.', 'Toss with tomatoes.'],
-  );
-}
-
 ProviderSubscription<AsyncValue<List<PreparedMeal>>> _keepControllerAlive(
   ProviderContainer container,
 ) {
@@ -240,9 +205,6 @@ void main() {
           }
           return personalRepository;
         }),
-        preparedMealRecipeImporterProvider.overrideWithValue(
-          const _FakePreparedMealRecipeImporter(null),
-        ),
       ],
     );
     addTearDown(container.dispose);
@@ -277,9 +239,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-        preparedMealRecipeImporterProvider.overrideWithValue(
-          const _FakePreparedMealRecipeImporter(null),
-        ),
       ],
     );
     addTearDown(container.dispose);
@@ -300,48 +259,6 @@ void main() {
     expect(repository.savedTemplates.single.id, isNot('meal-1'));
   });
 
-  test('saveRecipeTemplate stores recipe-only generated template', () async {
-    final repository = _FakePreparedMealTemplateRepository(
-      initialTemplates: const <PreparedMeal>[],
-    );
-    addTearDown(repository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-        preparedMealRecipeImporterProvider.overrideWithValue(
-          const _FakePreparedMealRecipeImporter(null),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    final subscription = _keepControllerAlive(container);
-    addTearDown(subscription.close);
-
-    final recipe = _recipeTemplate(id: 'generated-1', name: 'Tomato Pasta');
-
-    await container.read(preparedMealTemplatesControllerProvider.future);
-    final saved = await container
-        .read(preparedMealTemplatesControllerProvider.notifier)
-        .saveRecipeTemplate(recipe);
-
-    expect(saved.isSuccess, isTrue);
-    expect(repository.savedTemplates, hasLength(1));
-    expect(repository.savedTemplates.single.id, isNot('generated-1'));
-    expect(repository.savedTemplates.single.name, 'Tomato Pasta');
-    expect(repository.savedTemplates.single.imageUrl, recipe.imageUrl);
-    expect(repository.savedTemplates.single.components, isEmpty);
-    expect(
-      repository.savedTemplates.single.recipeIngredients,
-      recipe.recipeIngredients,
-    );
-    expect(
-      repository.savedTemplates.single.recipeInstructions,
-      recipe.recipeInstructions,
-    );
-    expect(repository.savedTemplates.single.totalKcal, recipe.totalKcal);
-  });
-
   test('deleteTemplate deletes only the selected template', () async {
     final repository = _FakePreparedMealTemplateRepository(
       initialTemplates: <PreparedMeal>[
@@ -354,9 +271,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-        preparedMealRecipeImporterProvider.overrideWithValue(
-          const _FakePreparedMealRecipeImporter(null),
-        ),
       ],
     );
     addTearDown(container.dispose);
@@ -383,9 +297,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-        preparedMealRecipeImporterProvider.overrideWithValue(
-          const _FakePreparedMealRecipeImporter(null),
-        ),
       ],
     );
     addTearDown(container.dispose);
@@ -398,55 +309,5 @@ void main() {
     expect(saved.isSuccess, isTrue);
     expect(repository.savedTemplates, hasLength(1));
     expect(repository.savedTemplates.single.name, 'Lunch Box');
-  });
-
-  test('existing recipe templates backfill missing instructions', () async {
-    final repository = _FakePreparedMealTemplateRepository(
-      initialTemplates: <PreparedMeal>[
-        _templateMeal(id: 'template-1', name: 'Soup').copyWith(
-          recipeUrl: 'https://chefkoch.de/rezepte/soup.html',
-          recipeIngredients: const <String>['1 L Brühe'],
-          recipeInstructions: const <String>[],
-        ),
-      ],
-    );
-    addTearDown(repository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-        preparedMealRecipeImporterProvider.overrideWithValue(
-          const _FakePreparedMealRecipeImporter(
-            PreparedMealRecipeImport(
-              recipeUrl: 'https://chefkoch.de/rezepte/soup.html',
-              title: 'Soup',
-              servings: 4,
-              ingredients: <String>['1 L Brühe'],
-              instructions: <String>['Brühe erhitzen.', 'Suppe ziehen lassen.'],
-            ),
-          ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    final subscription = _keepControllerAlive(container);
-    addTearDown(subscription.close);
-
-    final templates = await container.read(
-      preparedMealTemplatesControllerProvider.future,
-    );
-
-    expect(templates.single.recipeInstructions, isEmpty);
-
-    await _waitForCondition(() => repository.savedTemplates.isNotEmpty);
-
-    expect(repository.savedTemplates.single.recipeInstructions, <String>[
-      'Brühe erhitzen.',
-      'Suppe ziehen lassen.',
-    ]);
-    expect(
-      repository.savedTemplates.single.updatedAt,
-      DateTime.parse('2026-03-27T12:00:00Z'),
-    );
   });
 }

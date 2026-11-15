@@ -123,6 +123,36 @@ void main() {
       expect(sections[1].totalKcal, 650);
     });
 
+    test('an entry with the AI estimate of a recipe says so', () {
+      final day = DateTime(2026, 4, 28);
+      final estimated = _entry(
+        id: 'estimated',
+        day: day,
+        mealType: MealType.dinner,
+        name: 'Bauerntopf',
+        totalKcal: 450,
+      ).copyWith(nutritionEstimated: true);
+      final counted = _entry(
+        id: 'counted',
+        day: day,
+        mealType: MealType.dinner,
+        name: 'Bauerntopf',
+        totalKcal: 500,
+      );
+
+      final dinner = buildDiaryDashboardMealSections(
+        [estimated, counted],
+        plannedEntries: [estimated],
+        countsPlans: false,
+      ).firstWhere((section) => section.mealType == MealType.dinner);
+
+      expect(dinner.entries.map((entry) => entry.nutritionEstimated), [
+        true,
+        false,
+      ]);
+      expect(dinner.plannedEntries.single.nutritionEstimated, isTrue);
+    });
+
     test('keeps plans apart from entries and counts them in the meal', () {
       final day = DateTime(2026, 4, 28);
       final eaten = _entry(

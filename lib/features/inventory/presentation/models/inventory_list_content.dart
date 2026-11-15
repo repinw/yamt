@@ -53,7 +53,7 @@ class InventoryListContent {
         visible
             .where((entry) => quickFilter.matches(entry, plannedIds))
             .toList()
-          ..sort((a, b) => _compare(a, b, preferences.sortMode));
+          ..sort((a, b) => compareInventoryEntries(a, b, preferences.sortMode));
     return InventoryListContent(
       entries: entries,
       counts: {
@@ -89,7 +89,9 @@ class InventoryListContent {
   final List<InventoryReceiptGroup>? receiptGroups;
 }
 
-int _compare(
+/// The Vorrat's order of two entries for [mode]; entries that tie follow
+/// their name, then their id.
+int compareInventoryEntries(
   InventoryListEntry a,
   InventoryListEntry b,
   InventoryItemSortMode mode,

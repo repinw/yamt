@@ -56,6 +56,8 @@ Other features may consume these scanner entry points:
 - `SharedReceiptListener` wraps the root router, listens for share intents, runs the scan coordinator, and invalidates `inventoryItemsControllerProvider` upon successful save.
 - `ReceiptBarcodeScanner` wraps `InventoryBarcodeScannerPage` for barcode matching during receipt review.
 
+- Shared text or a shared url is not a receipt: `SharedReceiptService` puts it into `PendingSharedText` (`core/device/pending_shared_text.dart`), which the Kochbuch (`cookbook_new`) takes. A receipt file stays a receipt also when the sender adds a text to it, and any other file is no text then either. A link into the app, such as a household invite, goes to the router and never counts as text, even with words around it, and a share nothing can be read from raises a signal for the Kochbuch's message. On Android, a share that arrives before the service listens waits in `MainActivity.kt` until the service says so over `de.yamt.app/share_ready`.
+
 ## Migration Notes
 
 This reworked scanner feature completely replaces the legacy scanner architecture:

@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/payload_cipher.dart';

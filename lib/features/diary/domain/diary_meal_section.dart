@@ -24,6 +24,7 @@ class DiaryMealEntry {
     this.portionAmount,
     this.portionLabel,
     this.nutritionPending = false,
+    this.nutritionEstimated = false,
   });
 
   /// Entry id.
@@ -78,6 +79,9 @@ class DiaryMealEntry {
   /// Whether the entry is a plan of a meal without known nutrition, a
   /// reminder without kcal.
   final bool nutritionPending;
+
+  /// Whether the kcal and macros are the AI's rough estimate of a recipe.
+  final bool nutritionEstimated;
 
   /// Whether the entry is portions of a prepared meal.
   bool get isPreparedMeal =>

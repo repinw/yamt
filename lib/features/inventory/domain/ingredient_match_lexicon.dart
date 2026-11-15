@@ -8,6 +8,7 @@ class IngredientMatchLexicon {
     required this.stopWords,
     required this.prefixTokens,
     required this.tokenAliases,
+    required this.kindWords,
     this.shortIngredientTokens = const <String>{},
   });
 
@@ -19,6 +20,10 @@ class IngredientMatchLexicon {
 
   /// The common word per word, such as "karotte" for "möhre".
   final Map<String, String> tokenAliases;
+
+  /// Adjectives for a colour or kind that name no food by themselves, such
+  /// as "schwarz", without an ending ("schwarzer" is the same word).
+  final Set<String> kindWords;
 
   /// Foods with names shorter than three letters, such as "ei".
   final Set<String> shortIngredientTokens;
@@ -61,6 +66,7 @@ const fallbackIngredientMatchLexicon = IngredientMatchLexicon(
     ..._germanIngredientTokenAliases,
     ..._englishIngredientTokenAliases,
   },
+  kindWords: {'mild', ..._germanKindWords, ..._englishKindWords},
   shortIngredientTokens: {
     ..._commonShortIngredientTokens,
     ..._germanShortIngredientTokens,
@@ -78,6 +84,7 @@ const _germanIngredientMatcherLexicon = IngredientMatchLexicon(
     ..._commonIngredientTokenAliases,
     ..._germanIngredientTokenAliases,
   },
+  kindWords: {'mild', ..._germanKindWords},
   shortIngredientTokens: {
     ..._commonShortIngredientTokens,
     ..._germanShortIngredientTokens,
@@ -94,6 +101,7 @@ const _englishIngredientMatcherLexicon = IngredientMatchLexicon(
     ..._commonIngredientTokenAliases,
     ..._englishIngredientTokenAliases,
   },
+  kindWords: {'mild', ..._englishKindWords},
   shortIngredientTokens: {
     ..._commonShortIngredientTokens,
     ..._englishShortIngredientTokens,
@@ -240,3 +248,47 @@ const _englishIngredientTokenAliases = <String, String>{
 const _commonShortIngredientTokens = <String>{'ei'};
 const _germanShortIngredientTokens = <String>{'öl'};
 const _englishShortIngredientTokens = <String>{};
+
+// "frisch", "bio" and "fresh" are stop words, so never a shared word.
+const _germanKindWords = <String>{
+  'braun',
+  'dunkel',
+  'fein',
+  'gelb',
+  'gemahlen',
+  'getrocknet',
+  'griechisch',
+  'grob',
+  'grün',
+  'hell',
+  'italienisch',
+  'natur',
+  'rot',
+  'sauer',
+  'scharf',
+  'schwarz',
+  'süß',
+  'weiss',
+  'weiß',
+};
+
+const _englishKindWords = <String>{
+  'black',
+  'brown',
+  'coarse',
+  'dark',
+  'dried',
+  'fine',
+  'greek',
+  'green',
+  'ground',
+  'hot',
+  'italian',
+  'light',
+  'plain',
+  'red',
+  'sour',
+  'sweet',
+  'white',
+  'yellow',
+};

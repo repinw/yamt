@@ -5,8 +5,9 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 /// foods instead of cooked from rows.
 extension CombinedMeal on PreparedMeal {
   /// Whether the meal was combined from Vorrat foods and waits for its
-  /// "Gekocht" step. Free cooking always keeps its rows; a combined meal has
-  /// none. Once cooked, on this or another device, it is a plain meal.
+  /// "Gekocht" step. A meal cooked from a Vorlage keeps its recipe
+  /// ingredients; a combined meal has none. Once cooked, on this or another
+  /// device, it is a plain meal.
   bool get isCombined => isInPot && recipeIngredients.isEmpty;
 
   /// Grams of the meal's ingredients, or `null` when one is not counted in

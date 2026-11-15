@@ -47,7 +47,7 @@ abstract final class CookedMealSaveFlow {
     }
     if (cooked == null) {
       messenger.showAppSnackBar(
-        l10n.freeCookingSaveFailed,
+        l10n.cookingSaveFailed,
         tone: AppSnackBarTone.error,
       );
       return;

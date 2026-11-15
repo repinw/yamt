@@ -13,6 +13,7 @@ DiaryMealEntry _entry(
   String? imageUrl,
   double? portionAmount,
   String? portionLabel,
+  bool nutritionEstimated = false,
 }) {
   return DiaryMealEntry(
     id: id,
@@ -27,6 +28,7 @@ DiaryMealEntry _entry(
     consumedUnit: amount == null ? null : ConsumedUnit.grams,
     portionAmount: portionAmount,
     portionLabel: portionLabel,
+    nutritionEstimated: nutritionEstimated,
   );
 }
 
@@ -42,6 +44,19 @@ void main() {
     expect(groups.first.entries.map((e) => e.id), ['oats-1', 'oats-2']);
     expect(groups.first.isMerged, isTrue);
     expect(groups.last.isMerged, isFalse);
+  });
+
+  test('a merged entry counts as estimated when any of its entries is', () {
+    final estimated = groupDiaryMealEntries([
+      _entry('oats-1'),
+      _entry('oats-2', nutritionEstimated: true),
+    ]).single.combined;
+    final counted = groupDiaryMealEntries([_entry('oats-1'), _entry('oats-2')])
+        .single
+        .combined;
+
+    expect(estimated.nutritionEstimated, isTrue);
+    expect(counted.nutritionEstimated, isFalse);
   });
 
   test('combined entry sums kcal, macros, and amount', () {

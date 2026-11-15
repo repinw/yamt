@@ -70,3 +70,15 @@ int? openStockDefaultAmount(InventoryItemEatCalculator calculator) {
   return calculator.packageAmount ??
       _weightDefaultAmount * calculator.inventoryAmountScale;
 }
+
+/// The count of pieces a page that counts the stock of [item] for a recipe
+/// starts with: the pieces of its package ("6 Eier"), else [needed], what the
+/// recipe needs when it counts pieces, else 1.
+int openStockStartCount(InventoryItem item, int? needed) {
+  final perPiece = math.max(1, item.amountScale);
+  final package =
+      item.amountUnit == InventoryAmountUnit.piece && item.usesAmountProgress
+      ? item.initialAmount ~/ perPiece
+      : 0;
+  return package > 0 ? package : math.max(1, needed ?? 1);
+}

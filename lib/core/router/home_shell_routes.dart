@@ -16,8 +16,11 @@ StatefulShellRoute buildHomeShellRoute() {
         routes: [
           GoRoute(
             path: AppRoutes.homeInventory,
-            builder: (context, state) =>
-                const InventoryPage(includeHomeShellChrome: true),
+            builder: (context, state) => InventoryPage(
+              includeHomeShellChrome: true,
+              openMealId:
+                  state.uri.queryParameters[AppRoutes.homeInventoryMealParam],
+            ),
           ),
         ],
       ),

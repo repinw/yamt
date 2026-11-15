@@ -21,6 +21,7 @@ const _privateCollectionNames = <String>[
   'kitchen_utensils',
   'inventory_discard_events',
   'inventory_activity_events',
+  'cook_runs',
 ];
 
 /// Files that encrypt what they write to the private collections.
@@ -43,6 +44,7 @@ const _allowedFiles = <String>{
   'lib/features/inventory/data/prepared_meal_store.dart',
   'lib/features/inventory/data/prepared_meal_template_store.dart',
   'lib/features/kitchen_utensils/data/kitchen_utensil_store.dart',
+  'lib/features/recipes/data/cook_run_repository.dart',
   'lib/features/shoppinglist/data/shopping_list_repository.dart',
   'lib/features/shoppinglist/data/shopping_shelf_choice_repository.dart',
   'lib/features/inventory/data/firestore_inventory_calorie_entry_commit_store.dart',

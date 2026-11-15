@@ -22,6 +22,21 @@ discard events, and inventory-backed calorie handoff context.
 - Inventory pages, widgets, controllers, and presentation-only helpers.
 - Global food item matching and serving suggestion persistence used by
   inventory flows.
+- The food a recipe line names (`domain/cook_line_food.dart`: `cookLineFood`,
+  short, and `cookLineFoodName`, whole: "Öl" for "Öl, 30 g", "Zwiebel" for
+  "Zwiebel, fein gewürfelt", "Butter" for "Butter 100 g", "Tomaten" for "eine
+  400 g Dose Tomaten"; a type number stays: "Weizenmehl Type 405").
+  `cookLineFoodPhrase` is the words as they stand, without amount, measure,
+  brackets and what follows a comma, and keeps lowercase adjectives ("rote
+  Linsen"). `cookFoodBeforePhrase` cuts a food name before the words for what
+  the food is for or how it comes ("Olivenöl" of "Olivenöl zum Braten"); "aus"
+  and "from" cut nothing ("Saft aus 1 Zitrone" stays whole). They
+  live beside the matching lexicon they need; `kochmodus` and `cookbook_new`
+  read them.
+- The match lexicon (`IngredientMatchLexicon`), with its kind words
+  (`kindWords`: colours and kinds such as "schwarz", "rot", "grün",
+  "getrocknet", "gemahlen", in every ending; English too).
+  `isIngredientKindWord` says whether a word is one; `kochmodus` reads it.
 
 ## Does Not Own
 
@@ -83,29 +98,58 @@ Other features may consume these public Inventory entry points:
   is logged without stock; its reminder takes the recipe's Vorrat items
   (the saved ones in a fitting unit, used up or not, else the best match
   that fits) and its planned portions when accepted and throws the same
-  exceptions while one is missing or the recipe is gone.
+  exceptions while one is missing or the recipe is gone. A plan counted from
+  the recipe's estimate (`CalorieEntry.nutritionEstimated`) keeps its
+  stored values when accepted and the recipe gives none.
 - `application/ingredient_stock_match.dart`: the one rule for which Vorrat
   items can supply a recipe ingredient, best first: a name match whose unit
   fits the amount, with the recipe's saved unit conversion. Only the items
   that match the name best supply a line by default; a weaker match does
   not stand in when the best one is kept in another unit. A weak match
   (`isWeakIngredientMatch` in `domain/ingredient_compound_head.dart`: the
-  food only starts a compound, as "Reiswaffeln" for "Reis") never supplies
-  a line or counts as stock; it is only among the others to pick. A
+  food only starts a compound, as "Reiswaffeln" for "Reis", also in names of
+  several words ("Fettarme H-Milch" for "Milchreis", "Tomaten stückig" for
+  "Tomatenmark") unless the two share a whole word, where the last part of a
+  hyphenated word is a word of its own ("Milch" of "H-Milch"; so "Milch" and
+  "Fettarme Milch" are no weak match), or the item spells the compound as two
+  words ("Mandel Mus" for "Mandelmus"; the next word must be the rest of the
+  compound, so "Rind Hackfleisch" for "Rinderhack" stays weak), or every word it
+  shares with the line's food (`cookLineFoodPhrase`) is a kind word and they
+  share at least one, as "Schwarzer Tee" for "Schwarzer Pfeffer") never
+  supplies a line or counts as stock; it is only among the others to pick. One
+  shared noun makes it a normal match ("Zwiebeln rot" for "2 Zwiebeln, fein
+  gewürfelt", "Eier Freiland" for "4 Eier (Größe M)"), and a spelling one
+  letter apart counts as the same word ("Rote Beete", "Rote Bete"). A
   recipe line that names no amount ("Salz") takes any item of its name and
   gives nothing when cooked. `ingredientStockPick` takes a recipe's saved items
-  among them, else the best match. The recipe page, free cooking (rows with
-  an amount), plans, open rows and the Kochbuch cards use it.
+  among them, else the best match. The recipe page, plans and open rows use it.
 - `application/template_plan_entry.dart`: `buildTemplatePlanEntry` builds
   the plan of one portion of a Kochbuch recipe (cooked on paper from its
-  assigned Vorrat items, each counted as a full pack) or Vorlage.
+  assigned Vorrat items, each counted as a full pack) or Vorlage. While
+  an ingredient has no Vorrat item, or the items give no kcal, the plan counts
+  the recipe's estimate per portion (`PreparedMeal.recipeEstimate`,
+  `domain/recipe_estimate.dart`) when it fits the recipe's lines and portions,
+  is marked `nutritionEstimated`, and lists no foods. Real values from the
+  Vorrat replace it, but items that give no kcal do not rewrite it to 0 kcal.
+  Without a fitting estimate, an ingredient without an item makes it a
+  reminder, and items that give no kcal a plan of 0 kcal.
+- `PreparedMeal.recipeEstimate` and `recipeLineWeights`
+  (`domain/prepared_meal.dart`, `domain/recipe_estimate.dart`): the AI
+  estimate of a template per portion, and the estimated weight of each
+  recipe line. The Kochbuch writes them, and a saved recipe idea brings
+  them. An estimate can carry the kcal and macros of each whole line
+  (`RecipeEstimate.lines`, a `RecipeLineNutrition` per line, in the order of
+  the lines); the estimate of the recipe estimate template has none. They are
+  stored inside the encrypted template.
 - `application/prepared_meal_reminder_plan_service.dart`: keeps a meal's
   plans in step with its rows (reminders while a row is open, the meal's values once
   none is). The meals controller runs it after every change of the rows
   (fill, ignore, unignore, take a food out, edit, undo of an edit); a
   failure there is logged and leaves the saved rows alone. It also gives
   the reminders of a Kochbuch recipe the recipe's values once each
-  ingredient has a Vorrat item (`replanTemplatePlan`); the
+  ingredient has a Vorrat item, else the recipe's estimate when it fits
+  (`replanTemplatePlan`, `refreshRecipes`, which also refreshes estimated
+  plans); the
   `RecipeReminderPlanListener` around the app runs that through
   `RecipeReminderPlanController` whenever the household's recipes change.
 - `application/inventory_quick_eat_application.dart` for eating prepared
@@ -117,9 +161,7 @@ Other features may consume these public Inventory entry points:
   new item to the eaten amount before its only write and saves the shared
   catalog product and barcode selection in the background.
 - `application/prepared_meal_cooking_service.dart`: creates a Vorrat meal from
-  ingredient rows without a saved recipe (`cook`), from a saved recipe for
-  the chosen portions (`cookRecipe`), or from a Vorlage's foods with their
-  own amounts (`cookVorlage`); rows with an assigned item use it up, the
+  a Vorlage's foods with their own amounts (`cookVorlage`); rows with an assigned item use it up, the
   others stay open on the meal. The meal stays in the pot
   (`PreparedMeal.inPot`) until `finishCooking` stores its portions (or pieces,
   `PreparedMeal.servedInPieces`), empty pot weight, food weight, and a new
@@ -130,6 +172,12 @@ Other features may consume these public Inventory entry points:
   `PreparedMealMutationService.changeWeight` stores the "Gewicht ändern" of
   the meal's detail page: the same weighing, plus the weight of the whole
   meal (`PreparedMeal.finalNetWeight`).
+- `data/cooked_meal_repository.dart`: `addCookedMeals` ends a cook run in one
+  batch: each item's stock once with the event `<cookingId>-<itemId>`, the
+  meals under the given ids, the deletion of unused added items, and the
+  deletion of the run through `CookRunRepository.stageDelete`. More than 500
+  writes throw before anything is written. Events are create-only, so the server refuses a second finish
+  of the same cooking.
 - `application/prepared_meal_template_writer.dart`: adds a cooked meal as a
   cookbook template (`PreparedMealTemplateCopy.asTemplate`) for the "Ins
   Kochbuch" switch of the "Gekocht" step; it throws when the save fails.
@@ -152,20 +200,30 @@ already documented as a reusable presentation surface.
 ## Public UI
 
 - `presentation/widgets/eat_sheet/eat_meal_table.dart` (`EatMealTable`)
-  shows the nutrition label of a Vorrat meal per portion; cooking uses it
-  on its portion step.
+  shows the nutrition label of a Vorrat meal per portion; the item hub and
+  the meal editor use it.
 - `presentation/widgets/prepared_meals/prepared_meal_pending_fill_sheet.dart`
   (`PreparedMealPendingFillSheet.show`) offers the ways to fill an open row
-  and returns a `PreparedMealPendingFillChoice`. With `inDraft`, for a draft
-  that is not cooked yet, it offers only the best Vorrat match, "Aus Vorrat
-  wählen", and "Nicht aus dem Vorrat" (`PreparedMealPendingFillIgnore`).
-  Frei kochen in cookbook_new uses it for its rows.
+  and returns a `PreparedMealPendingFillChoice`. The detail page of a meal uses
+  it for its open rows. With `canShop` false it leaves out the shopping choice;
+  with `canIgnore` it offers "Ignorieren" (`PreparedMealPendingFillIgnore`).
 - `presentation/widgets/prepared_meals/prepared_meal_pending_ingredient_sheet.dart`
   (`showPendingIngredientSelectionSheet`) lets the cook check one or more
   Vorrat items for a row from a `PendingIngredientStock`
   (`application/pending_ingredient_stock.dart`) and returns their ids in the
   order checked. The candidates among `selected` start checked and come
   first.
+- `presentation/widgets/inventory_list/inventory_entry_row.dart`
+  (`InventoryEntryRow`, shown for an `InventoryFoodEntry` from
+  `presentation/models/inventory_list_entry.dart`): one Vorrat row as the
+  list shows it. The Kochmodus picker uses it; an optional `status` text
+  replaces the amount on the right.
+- `presentation/widgets/inventory_list/inventory_sort_sheet.dart`
+  (`showInventorySortSheet`, `InventoryListPreferencesBuilder`),
+  `compareInventoryEntries` in `presentation/models/inventory_list_content.dart`,
+  and `InventoryReceiptGroup`: the Vorrat's sort sheet with its saved
+  preferences, its order, and its receipt groups. The sheet can leave out
+  "Verbrauchte ausblenden". The Kochmodus picker sorts and groups with them.
 - `presentation/widgets/plan_shortage_reminder_settings_builder.dart`
   (`PlanShortageReminderSettingsBuilder`) gives another feature's surface the
   day-before reminder's on/off and time with their setters, whether the
@@ -220,7 +278,29 @@ already documented as a reusable presentation surface.
 - `presentation/prepared_meal_pending_food_flow.dart`:
   `PreparedMealPendingFoodFlow.fill` finds a food through the food pick
   (`PreparedMealFoodSource` in `presentation/models/`), adds it to the Vorrat
-  with the entered amount, and hands its id to the caller.
+  with the entered amount, and hands it to the caller. `query` starts the
+  search. For a recipe line (`ingredient`, such as "250 g Mehl") the pick asks
+  which food it is (`product_search_hub`'s recipe view); `need` carries the
+  line's amount and unit, and a food kept in pieces without a piece weight
+  starts with `pieceWeight`. With `onTake` the pick also offers the Vorrat: a
+  food that is in the Vorrat already (a hit, "Aus dem Vorrat nehmen", a scan
+  of a pack that is there) goes to `onTake` and nothing is added or removed.
+  `heldItemIds` names Vorrat items with nothing left for the line: the pick
+  does not offer them, and their product goes in as a new pack.
+  When `onFill` fails, the added food is removed again; `remove` does the same
+  for a caller that decides later. `recount` reopens the amount page for a
+  food `fill` just added ("Ändern") and saves the new stock.
+- `presentation/inventory_stock_amount_page.dart` (`InventoryStockAmountPage`),
+  opened by `countInventoryStockForRecipe`: asks how much of a food is at home
+  for a recipe line, one big number, and returns an `InventoryStockCount`.
+  `StockAmountQuestion` says what it asks: `howMuch` (the amount in the
+  food's unit), `packWeight` (the app cannot tell the pack's weight), or
+  `howMany` (a count of pieces). Its widgets sit under `widgets/stock_amount/`.
+  `presentation/widgets/stock_amount_text.dart` (`stockAmountText`) writes an
+  amount of a food for it and for `kochmodus`.
+- `InventoryPage.openMealId`: the Vorrat meal whose page opens once the meals
+  are loaded, once per id. The route `AppRoutes.homeInventoryMealPath` sets it
+  through the query parameter `?meal=<id>`; "Jetzt essen" of the cooking uses it.
 - `presentation/prepared_meal_eat_flow.dart`: `PreparedMealEatFlow.eat` opens
   the eat sheet for a prepared meal and logs the eaten portions as one bundle
   entry.
@@ -228,7 +308,7 @@ already documented as a reusable presentation surface.
 - `presentation/widgets/eat_sheet/`: `InventoryItemEatSheetBody` (the eat
   page for one item, with header overrides, a custom second action, an
   optional trash button ("Aussortieren"), and a selection callback),
-  `EatPageScaffold`, `EatPageHeader`, `EatLabelTable`,
+  `EatPageScaffold` (the day and meal control is optional), `EatPageHeader`, `EatLabelTable`,
   `EatAmountRuler` with `EatRulerMark`, `EatSheetTextField`, `EatWhenMenu`
   with `showEatPlanDayPicker` (the plan day picker of the Planen icons),
   `EatActionCard`, `EatChip`, `EatComponentsList`, `EatCountRow`,
@@ -250,6 +330,18 @@ already documented as a reusable presentation surface.
   matters. A size in pieces counts only with grams per piece (a serving in g
   or ml). Every missing-values hint uses it, also the "Nährwerte
   unvollständig" note of a meal ingredient, and so will the search list.
+- A recipe line takes a food into the Vorrat without a question when the
+  app knows its amount: a food with a package size enters as one full pack
+  (`recipeFullPackAmount` in `product_search_hub`). The amount page opens only
+  for a food without a package size, for a food kept in pieces without a piece
+  weight on a line in g or ml, or behind "Ändern". A food without a package
+  size that gets a piece weight there is stored as a piece item
+  (`inventoryPieceAmountScale`), the weight as its serving quantity. The eat
+  page has no stock mode: it only logs what is eaten.
+- `preparedMealNutritionFactor` is the one factor from an item's per-100
+  values to a meal food's nutrients: grams or ml per 100, also for pieces with
+  a piece weight (their weight in grams per 100), else the label once per
+  piece. The meal editor's draft follows it.
 - A Vorrat meal stores only energy and the macros. Its other nutrients come
   from the label of each ingredient's source item
   (`PreparedMealComponent.nutritionFacts`), scaled like the stored totals.
@@ -283,6 +375,11 @@ already documented as a reusable presentation surface.
   manual save and the product swap only carry out its answer, and both
   share alike. A product the user typed without a search hit reaches the
   catalog only with a barcode; without one it stays the user's own.
+
+- Running cook runs count as "verplant"
+  (`InventoryPlanDemand.runReservedByItemId`, capped at the stock the plans
+  leave) and appear in the Verplant filter. They change nothing that is
+  missing: no shopping suggestion, no reminder.
 
 ## Providers
 

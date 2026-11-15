@@ -6,45 +6,50 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
+import 'package:yamt/features/recipes/domain/cook_run.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Puts a recipe in the pot from its recipe page or its Kochhelfer.
+/// Puts a Vorlage in the pot from its recipe page, or opens "Zuweisen" or
+/// the cooking page of a recipe.
 abstract final class RecipeCookFlow {
-  /// The recipe pages whose Kochhelfer is open or opening.
-  static final _openingGuide = Expando<bool>('openingGuide');
-
-  /// Opens the Kochhelfer of [recipeId] over its recipe page [context]. A tap
-  /// that reaches the page under the Kochhelfer does nothing, and so does a
-  /// second tap before the Kochhelfer is on top, which still finds the page
-  /// current. A `go` that drops the Kochhelfer drops the page too, and the
-  /// mark goes with its [context].
-  static Future<void> openGuide(BuildContext context, String recipeId) async {
-    if (!(ModalRoute.isCurrentOf(context) ?? false) ||
-        _openingGuide[context] != null) {
+  /// Opens the cooking page of the cook [run] of the recipe [recipeId]
+  /// once its lines are assigned, else "Zuweisen" for [portions] portions.
+  ///
+  /// Nothing waits for the push: its future only ends on a pop, and "Zum
+  /// Kochbuch" leaves the cooking page with a go.
+  static void open({
+    required BuildContext context,
+    required String recipeId,
+    required CookRun? run,
+    required int portions,
+  }) {
+    // A second tap finds the cooking page already over the recipe page.
+    if (!(ModalRoute.of(context)?.isCurrent ?? false)) {
       return;
     }
-    _openingGuide[context] = true;
-    try {
-      await context.push<void>(AppRoutes.homeRecipeGuidePath(recipeId));
-    } finally {
-      _openingGuide[context] = null;
-    }
+    unawaited(
+      context.push<void>(
+        AppRoutes.homeCookRecipePath(
+          recipeId,
+          runId: run == null || run.needsAssigning ? null : run.id,
+          portions: portions,
+        ),
+      ),
+    );
   }
 
-  /// Cooks the recipe [recipeId] as the recipe page shows it now and
-  /// replaces the page with the "Gekocht" step; from the Kochhelfer
-  /// ([fromGuide]) the Kochhelfer closes too. A failure says so and stays.
+  /// Cooks the Vorlage [recipeId] as the recipe page shows it now and
+  /// replaces the page with the "Gekocht" step. A failure says so and stays.
   static Future<void> cook({
     required BuildContext context,
     required WidgetRef ref,
     required String recipeId,
-    bool fromGuide = false,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final provider = recipeControllerProvider(recipeId);
     final view = ref.read(recipeViewProvider(recipeId, l10n.localeName)).value;
     // A second tap before the button turns off finds the first cook running.
-    // A recipe needs an ingredient that counts, also when it changed meanwhile.
+    // A Vorlage needs a food that counts, also when it changed meanwhile.
     if (view == null ||
         view.activeLines.isEmpty ||
         ref.read(provider).isCooking) {
@@ -53,20 +58,18 @@ abstract final class RecipeCookFlow {
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
     final mealId = await ref.read(provider.notifier).cook(view);
-    if (!context.mounted) {
-      return;
-    }
+    // The failure shows also when the page closed meanwhile.
     if (mealId == null) {
       messenger.showAppSnackBar(
-        l10n.freeCookingSaveFailed,
+        l10n.cookingSaveFailed,
         tone: AppSnackBarTone.error,
       );
       return;
     }
-    // Straight on to the "Gekocht" step; closing it leaves the meal in the pot.
-    if (fromGuide) {
-      router.pop();
+    if (!context.mounted) {
+      return;
     }
+    // Straight on to the "Gekocht" step; closing it leaves the meal in the pot.
     unawaited(router.pushReplacement(AppRoutes.homeCookedMealPath(mealId)));
   }
 }

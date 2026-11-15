@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_json.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
+import 'package:yamt/features/inventory/domain/recipe_estimate.dart';
 
 part 'prepared_meal.g.dart';
 
@@ -87,6 +88,8 @@ class PreparedMeal {
         const <String, RecipeIngredientAmountConversion>{},
     this.pendingRecipeIngredients = const <String>[],
     this.ignoredPendingRecipeIngredients = const <String>[],
+    this.recipeEstimate,
+    this.recipeLineWeights = const <String, RecipeLineWeight>{},
     this.finalNetWeight,
     this.inPot,
     this.potTareWeight,
@@ -155,13 +158,23 @@ class PreparedMeal {
   )
   final List<String> ignoredPendingRecipeIngredients;
 
+  /// The AI's rough nutrition per portion of a recipe; absent until it is
+  /// estimated. It counts only while it matches the recipe's ingredient
+  /// lines and portions ([RecipeEstimate.isFor]).
+  @JsonKey(includeIfNull: false)
+  final RecipeEstimate? recipeEstimate;
+
+  /// The rough weight of each ingredient line of a recipe, by line text.
+  @JsonKey(defaultValue: <String, RecipeLineWeight>{})
+  final Map<String, RecipeLineWeight> recipeLineWeights;
+
   /// The net weight in g/ml of the whole meal after tare: set at "Gekocht"
   /// and changed by a later "Gewicht ändern".
   @JsonKey(fromJson: readPreparedMealOptionalInt)
   final int? finalNetWeight;
 
-  /// `true` from "Kochen" on the free cooking page until the cook marks the
-  /// meal as cooked; absent on every other meal.
+  /// `true` from a Vorlage's "Kochen" or a combined meal until the cook marks
+  /// it as cooked; absent on every other meal.
   @JsonKey(includeIfNull: false)
   final bool? inPot;
 
@@ -258,6 +271,8 @@ class PreparedMeal {
     recipeIngredientAmountConversions,
     List<String>? pendingRecipeIngredients,
     List<String>? ignoredPendingRecipeIngredients,
+    Object? recipeEstimate = _keepValue,
+    Map<String, RecipeLineWeight>? recipeLineWeights,
     Object? finalNetWeight = _keepValue,
     Object? inPot = _keepValue,
     Object? potTareWeight = _keepValue,
@@ -298,6 +313,10 @@ class PreparedMeal {
       ignoredPendingRecipeIngredients:
           ignoredPendingRecipeIngredients ??
           this.ignoredPendingRecipeIngredients,
+      recipeEstimate: recipeEstimate == _keepValue
+          ? this.recipeEstimate
+          : recipeEstimate as RecipeEstimate?,
+      recipeLineWeights: recipeLineWeights ?? this.recipeLineWeights,
       finalNetWeight: finalNetWeight == _keepValue
           ? this.finalNetWeight
           : finalNetWeight as int?,
@@ -403,6 +422,8 @@ class PreparedMeal {
     recipeIngredientAmountConversions,
     pendingRecipeIngredients,
     ignoredPendingRecipeIngredients,
+    recipeEstimate,
+    recipeLineWeights,
     finalNetWeight,
     inPot,
     potTareWeight,

@@ -17,11 +17,17 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// The undo reads the controller through the root container, so it still
 /// works after the page closed.
 abstract final class KitchenUtensilEditFlow {
-  /// Asks for a new utensil and saves it.
-  static Future<bool> add(BuildContext context, WidgetRef ref) async {
-    final draft = await showKitchenUtensilSheet(context: context);
+  /// Asks for a new utensil under [title] ("Utensil hinzufügen" without one)
+  /// and saves it. Returns the new utensil's id, or `null` when the cook
+  /// closed the sheet or saving failed.
+  static Future<String?> add(
+    BuildContext context,
+    WidgetRef ref, {
+    String? title,
+  }) async {
+    final draft = await showKitchenUtensilSheet(context: context, title: title);
     if (!context.mounted || draft == null) {
-      return false;
+      return null;
     }
 
     final result = await ref
@@ -31,14 +37,14 @@ abstract final class KitchenUtensilEditFlow {
           imageBytes: draft.imageBytes,
           weightGrams: draft.weightGrams,
         );
+    final utensilId = result.isSuccess ? result.utensilId : null;
     if (!context.mounted) {
-      return result.isSuccess;
+      return utensilId;
     }
     final l10n = AppLocalizations.of(context)!;
-    final utensilId = result.utensilId;
-    if (!result.isSuccess || utensilId == null) {
+    if (utensilId == null) {
       _showSaveFailure(context, result);
-      return false;
+      return null;
     }
 
     final container = ProviderScope.containerOf(context, listen: false);
@@ -55,7 +61,7 @@ abstract final class KitchenUtensilEditFlow {
         return removed != null;
       },
     );
-    return true;
+    return utensilId;
   }
 
   /// Edits [utensil].

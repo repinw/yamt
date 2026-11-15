@@ -100,5 +100,6 @@ DiaryMealEntry _mealEntryFrom(CalorieEntry entry) {
     portionAmount: hasAmount ? entry.portionAmount : null,
     portionLabel: hasAmount ? entry.portionLabel : null,
     nutritionPending: entry.nutritionPending,
+    nutritionEstimated: entry.nutritionEstimated,
   );
 }

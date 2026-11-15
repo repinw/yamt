@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_selection_controller.dart';
+import 'package:yamt/features/inventory/presentation/models/food_pick_route_args.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -17,7 +18,8 @@ abstract final class InventorySelectionCatalogFlow {
     required String query,
   }) async {
     final pick = await context.push<InventoryMealFoodPick>(
-      AppRoutes.homeFoodPickPath(query: query.isEmpty ? null : query),
+      AppRoutes.homeFoodPick,
+      extra: FoodPickRouteArgs(query: query.isEmpty ? null : query),
     );
     if (pick == null || !context.mounted) {
       return;

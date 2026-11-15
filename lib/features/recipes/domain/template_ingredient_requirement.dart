@@ -32,6 +32,7 @@ class TemplateIngredientRequirement {
     this.countMeasureLabel,
     this.packageCountLabel,
     this.allowsDirectPieceInventoryMatch = true,
+    this.exactQuantity,
   });
 
   /// The amount.
@@ -51,4 +52,8 @@ class TemplateIngredientRequirement {
 
   /// Whether direct piece inventory match.
   final bool allowsDirectPieceInventoryMatch;
+
+  /// The quantity before [amount] was rounded, for a line in pieces or spoons
+  /// that the Kochmodus takes in parts ("1/2 Zitrone"); `null` elsewhere.
+  final double? exactQuantity;
 }

@@ -10,9 +10,11 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/template_plan_entry.dart';
+import 'package:yamt/features/inventory/application/template_plan_unstocked_ingredients.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/recipes/application/cook_run_providers.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 part 'inventory_plan_demand_provider.g.dart';
@@ -35,7 +37,8 @@ Stream<List<PreparedMeal>> planTemplates(Ref ref) =>
     ref.watch(preparedMealTemplateRepositoryProvider).watchAll();
 
 /// What the open plans take from the Vorrat, foods and cooked meals:
-/// "verplant" on Vorrat rows and "fehlt" on plan rows.
+/// "verplant" on Vorrat rows and "fehlt" on plan rows. Running cook runs
+/// add to "verplant" only.
 @riverpod
 Future<InventoryPlanDemand> openPlanDemand(Ref ref) async {
   // Start the loads before awaiting one, so they run side by side.
@@ -43,11 +46,17 @@ Future<InventoryPlanDemand> openPlanDemand(Ref ref) async {
   final meals = ref.watch(inventoryQuickEatMealsProvider.future)..ignore();
   final plans = ref.watch(openPlansProvider.future)..ignore();
   final templates = ref.watch(planTemplatesProvider.future)..ignore();
+  final reservations = ref.watch(cookRunReservationsProvider.future)..ignore();
   final parser = ref.watch(templateIngredientParserProvider);
   final now = ref.watch(clockProvider)();
   final stock = await items;
   final templatesById = {
-    for (final template in await _orNone(templates)) template.id: template,
+    for (final template in await _orEmpty(
+      templates,
+      const <PreparedMeal>[],
+      'the recipes of the plans',
+    ))
+      template.id: template,
   };
   final open = await plans;
   return inventoryPlanDemand(
@@ -75,20 +84,25 @@ Future<InventoryPlanDemand> openPlanDemand(Ref ref) async {
             parser: parser,
           ),
     },
+    runReservations: await _orEmpty(
+      reservations,
+      const <String, int>{},
+      'the cook run reservations',
+    ),
   );
 }
 
-// Without the recipes, the other plans still count.
-Future<List<PreparedMeal>> _orNone(Future<List<PreparedMeal>> templates) async {
+// Without the recipes or the cook runs, the other plans still count.
+Future<T> _orEmpty<T>(Future<T> value, T empty, String what) async {
   try {
-    return await templates;
+    return await value;
   } on Object catch (error, stackTrace) {
     log(
-      'Failed to read the recipes of the plans.',
+      'Failed to read $what.',
       name: 'openPlanDemand',
       error: error,
       stackTrace: stackTrace,
     );
-    return const [];
+    return empty;
   }
 }

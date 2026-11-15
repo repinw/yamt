@@ -32,6 +32,12 @@ class _FakeTemplateRepository implements PreparedMealTemplateRepository {
   ]);
 
   @override
+  Future<bool> update(
+    String id,
+    PreparedMeal? Function(PreparedMeal current) change,
+  ) async => false;
+
+  @override
   Future<bool> delete(String templateId) => _replaceAll([
     for (final stored in saved)
       if (stored.id != templateId) stored,

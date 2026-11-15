@@ -22,6 +22,11 @@ typedef InventoryPlanDemand = ({
   /// ("verplant").
   Map<String, int> plannedByItemId,
 
+  /// Stock each pack keeps for running cook runs, by item id, in the pack's
+  /// stored unit: at most what the plans leave of it. It only adds to
+  /// "verplant" and changes nothing that is missing.
+  Map<String, int> runReservedByItemId,
+
   /// Stock each pack lacks for the plans that take from it, by item id, in
   /// the pack's stored unit ("fehlen").
   Map<String, int> missingByItemId,
@@ -54,6 +59,9 @@ typedef InventoryPlanDemand = ({
 /// no stock and leaves the plan missing in full.
 ///
 /// A plan of a found food names no stock.
+///
+/// [runReservations] (item id to amount) are what running cook runs take;
+/// each counts up to the stock the plans leave of its item.
 InventoryPlanDemand inventoryPlanDemand(
   List<CalorieEntry> plans,
   List<InventoryItem> items,
@@ -61,6 +69,7 @@ InventoryPlanDemand inventoryPlanDemand(
   Map<String, Map<String, int>> ingredientNeedsByPlanId = const {},
   Map<String, List<PlanUnstockedIngredient>> unstockedIngredientsByPlanId =
       const {},
+  Map<String, int> runReservations = const {},
 }) {
   final left = {
     for (final item in items) item.id: consumableInventoryAmount(item) ?? 0,
@@ -161,8 +170,14 @@ InventoryPlanDemand inventoryPlanDemand(
       );
     }
   }
+  final runReserved = <String, int>{
+    for (final MapEntry(key: itemId, value: amount) in runReservations.entries)
+      if (math.min(amount, left[itemId] ?? 0) case final kept when kept > 0)
+        itemId: kept,
+  };
   return (
     plannedByItemId: planned,
+    runReservedByItemId: runReserved,
     missingByItemId: missingStock,
     plannedPortionsByMealId: plannedPortions,
     missingShareByPlanId: missing,
@@ -174,4 +189,12 @@ InventoryPlanDemand inventoryPlanDemand(
           plan.id: unstocked,
     },
   );
+}
+
+/// The "verplant" amounts of a [InventoryPlanDemand].
+extension InventoryPlanDemandShown on InventoryPlanDemand {
+  /// The stock of the item [itemId] that plans and running cook runs keep
+  /// ("verplant"), in the item's stored unit.
+  int plannedOrReservedOf(String itemId) =>
+      (plannedByItemId[itemId] ?? 0) + (runReservedByItemId[itemId] ?? 0);
 }

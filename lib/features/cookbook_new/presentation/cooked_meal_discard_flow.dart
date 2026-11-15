@@ -24,6 +24,7 @@ abstract final class CookedMealDiscardFlow {
     final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showFreeCookingDiscardDialog(
       context,
+      title: l10n.cookingDiscardTitle,
       body: l10n.cookedDiscardBody,
     );
     if (!confirmed || !context.mounted) {

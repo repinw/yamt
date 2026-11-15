@@ -116,4 +116,4 @@ final class InventoryListContentProvider
 }
 
 String _$inventoryListContentHash() =>
-    r'1133a9546bfd7e0b522169a15349f705a6b36581';
+    r'689b67c083e078b052b77f27b3fdf4e96a7af889';

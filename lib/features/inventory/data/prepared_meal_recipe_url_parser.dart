@@ -1,3 +1,5 @@
+import 'package:yamt/features/inventory/domain/wrapped_punctuation.dart';
+
 /// Normalize prepared meal recipe url.
 String? normalizePreparedMealRecipeUrl(String value) {
   final trimmedValue = value.trim();
@@ -56,24 +58,8 @@ String? _extractRecipeUrlCandidate(String value) {
         caseSensitive: false,
       ).firstMatch(trimmed)?.group(1) ??
       trimmed;
-  final normalizedCandidate = _stripWrappedPunctuation(candidate.trim());
+  final normalizedCandidate = stripWrappedPunctuation(candidate.trim());
   return normalizedCandidate.isEmpty ? null : normalizedCandidate;
-}
-
-String _stripWrappedPunctuation(String value) {
-  const leadingCharacters = '<([{"\'';
-  const trailingCharacters = '>)]}\'",.!?;:';
-  var start = 0;
-  var end = value.length;
-
-  while (start < end && leadingCharacters.contains(value[start])) {
-    start += 1;
-  }
-  while (end > start && trailingCharacters.contains(value[end - 1])) {
-    end -= 1;
-  }
-
-  return value.substring(start, end);
 }
 
 String _withoutQueryAndFragment(Uri uri) {

@@ -13,43 +13,59 @@ class RecipeStepList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = FoodLabelColors.of(context);
-    final textTheme = Theme.of(context).textTheme;
+    final style = Theme.of(context).textTheme.bodyLarge
+        ?.copyWith(color: FoodLabelColors.of(context).ink);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final (index, step) in steps.indexed)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl,
-              AppSpacing.sm,
-              AppSpacing.xl,
-              AppSpacing.sm,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: AppSpacing.md,
-              children: [
-                SizedBox(
-                  width: AppGraphit.chipHeight,
-                  child: Text(
-                    '${index + 1}',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: colors.ink,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    step,
-                    style: textTheme.bodyLarge?.copyWith(color: colors.ink),
-                  ),
-                ),
-              ],
-            ),
+          RecipeStepRow(
+            number: index + 1,
+            child: Text(step, style: style),
           ),
       ],
+    );
+  }
+}
+
+/// One step of a recipe: its [number], and [child] beside it, which shows
+/// the step.
+class RecipeStepRow extends StatelessWidget {
+  /// Creates the row of the step [number].
+  const new({required this.number, required this.child, super.key});
+
+  /// The step's place, counted from 1.
+  final int number;
+
+  /// The step's text, or the field that edits it.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.sm,
+        AppSpacing.xl,
+        AppSpacing.sm,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.md,
+        children: [
+          SizedBox(
+            width: AppGraphit.chipHeight,
+            child: Text(
+              '$number',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: FoodLabelColors.of(context).ink,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          Expanded(child: child),
+        ],
+      ),
     );
   }
 }

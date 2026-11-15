@@ -13,6 +13,7 @@ InventoryPlanDemand _demand(
       const {},
 }) => (
   plannedByItemId: const {},
+  runReservedByItemId: const {},
   missingByItemId: const {},
   plannedPortionsByMealId: const {},
   missingShareByPlanId: missingShareByPlanId,

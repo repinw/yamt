@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/utils/log_failure.dart';
 
 /// Reads [reference] from the local Firestore cache, and from the server only
 /// when the cache does not hold the document.
@@ -38,15 +38,17 @@ Future<T> readLocalFirst<T>(
 ///
 /// Firestore applies the batch to its local cache at once and sends it when
 /// a connection is available, also after an app restart. A later rejection by
-/// the server is logged with [failureMessage].
+/// the server is logged with [failureMessage] and passed to [onFailure].
 void commitBatchInBackground(
   WriteBatch batch, {
   required String failureMessage,
   required String logName,
+  void Function(Object error)? onFailure,
 }) {
   unawaited(
     batch.commit().catchError((Object error, StackTrace stackTrace) {
-      log(failureMessage, name: logName, error: error, stackTrace: stackTrace);
+      logFailure(failureMessage, logName, error, stackTrace);
+      onFailure?.call(error);
     }),
   );
 }

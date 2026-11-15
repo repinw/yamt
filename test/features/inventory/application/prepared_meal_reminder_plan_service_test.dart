@@ -14,6 +14,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/recipe_estimate.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
@@ -85,6 +86,20 @@ CalorieEntry _recipeReminder() => buildTemplatePlanEntry(
   now: () => _now,
   nextEntryId: () => 'recipe-plan',
 )!;
+
+/// [_recipe] with the AI's estimate of 450 kcal per portion for its lines
+/// and portions.
+final PreparedMeal _estimatedRecipe = _recipe.copyWith(
+  recipeEstimate: RecipeEstimate(
+    kcal: 450,
+    protein: 20,
+    carbs: 60,
+    fat: 10,
+    portions: 2,
+    linesKey: recipeLinesKey(_recipe.recipeIngredients),
+    createdAt: DateTime(2026, 10, 6),
+  ),
+);
 
 /// Holds a plan until the first read, then [changed] in its place, as if
 /// the user changed the plan while a refresh ran.
@@ -216,6 +231,120 @@ void main() {
       expect(counted.loggedAt, reminder.loggedAt);
       expect(counted.bundleSourceTemplateId, 'recipe');
       expect(container.read(calorieOverviewRevisionProvider), isNot(revision));
+    });
+
+    test(
+      'get the estimate once the recipe has one, then the Vorrat values',
+      () async {
+        final reminder = _recipeReminder();
+        plans.plans.add(reminder);
+        final revision = container.read(calorieOverviewRevisionProvider);
+        Future<void> refresh(PreparedMeal recipe, List<InventoryItem> items) =>
+            container
+                .read(preparedMealReminderPlanServiceProvider)
+                .refreshRecipes([recipe], items);
+
+        // The estimate arrives: the reminder counts it.
+        await refresh(_estimatedRecipe, const []);
+
+        final estimated = plans.plans.single;
+        expect(estimated.id, reminder.id);
+        expect(estimated.nutritionPending, isFalse);
+        expect(estimated.nutritionEstimated, isTrue);
+        expect(estimated.totalKcal, 450);
+        expect(estimated.loggedAt, reminder.loggedAt);
+        final afterEstimate = container.read(calorieOverviewRevisionProvider);
+        expect(afterEstimate, isNot(revision));
+
+        // The same estimate again is no reason to save.
+        await refresh(_estimatedRecipe, const []);
+
+        expect(plans.plans.single, estimated);
+        expect(container.read(calorieOverviewRevisionProvider), afterEstimate);
+
+        // The oats arrive: their values replace the estimate.
+        await refresh(_estimatedRecipe, [_oats]);
+
+        final counted = plans.plans.single;
+        expect(counted.nutritionEstimated, isFalse);
+        expect(counted.nutritionPending, isFalse);
+        expect(counted.totalKcal, closeTo(400, 0.01));
+        expect(
+          container.read(calorieOverviewRevisionProvider),
+          isNot(afterEstimate),
+        );
+      },
+    );
+
+    test('keep a plan with the Vorrat values, also when the recipe has an '
+        'estimate', () async {
+      plans.plans.add(_recipeReminder());
+      await container
+          .read(preparedMealReminderPlanServiceProvider)
+          .refreshRecipes([_recipe], [_oats]);
+      final counted = plans.plans.single;
+      final revision = container.read(calorieOverviewRevisionProvider);
+
+      await container
+          .read(preparedMealReminderPlanServiceProvider)
+          .refreshRecipes([_estimatedRecipe], const []);
+
+      expect(plans.plans.single, counted);
+      expect(container.read(calorieOverviewRevisionProvider), revision);
+    });
+
+    test('an estimated plan waits while the estimate stops fitting and no '
+        'item counts', () async {
+      plans.plans.add(_recipeReminder());
+      final service = container.read(preparedMealReminderPlanServiceProvider);
+      await service.refreshRecipes([_estimatedRecipe], const []);
+      final estimated = plans.plans.single;
+      expect(estimated.nutritionEstimated, isTrue);
+
+      // A line was added, so the estimate is stale.
+      final changed = _estimatedRecipe.copyWith(
+        recipeIngredients: const ['200 g Oats', 'Salz'],
+      );
+      await service.refreshRecipes([changed], const []);
+
+      expect(plans.plans.single, estimated);
+    });
+
+    test('an estimated plan waits while the estimate stops fitting and its '
+        'items give no kcal, and takes the next estimate', () async {
+      plans.plans.add(_recipeReminder());
+      final service = container.read(preparedMealReminderPlanServiceProvider);
+      await service.refreshRecipes([_estimatedRecipe], const []);
+      final estimated = plans.plans.single;
+
+      // The line names no amount, so its item takes nothing.
+      const line = 'Oats';
+      final changed = _estimatedRecipe.copyWith(
+        recipeIngredients: const [line],
+      );
+      await service.refreshRecipes([changed], [_oats]);
+
+      expect(plans.plans.single, estimated);
+
+      await service.refreshRecipes(
+        [
+          changed.copyWith(
+            recipeEstimate: RecipeEstimate(
+              kcal: 300,
+              protein: 20,
+              carbs: 60,
+              fat: 10,
+              portions: 2,
+              linesKey: recipeLinesKey(const [line]),
+              createdAt: DateTime(2026, 10, 7),
+            ),
+          ),
+        ],
+        [_oats],
+      );
+
+      expect(plans.plans.single.nutritionEstimated, isTrue);
+      expect(plans.plans.single.totalKcal, 300);
     });
 
     test('wait while an ingredient has no item', () async {

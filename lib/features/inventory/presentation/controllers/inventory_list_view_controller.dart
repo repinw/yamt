@@ -125,6 +125,7 @@ Future<InventoryListContent> inventoryListContent(Ref ref) async {
   final demand = ref.watch(openPlanDemandProvider).value;
   final planned = {
     ...?demand?.plannedByItemId.keys,
+    ...?demand?.runReservedByItemId.keys,
     ...?demand?.plannedPortionsByMealId.keys,
   };
   return InventoryListContent.build(

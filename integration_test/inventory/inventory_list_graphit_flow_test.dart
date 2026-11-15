@@ -144,6 +144,7 @@ Widget _buildHarness() {
       openPlanDemandProvider.overrideWith(
         (ref) async => (
           plannedByItemId: const {'skyr': 250},
+          runReservedByItemId: const <String, int>{},
           missingByItemId: const <String, int>{},
           plannedPortionsByMealId: const {'chili': 1.0},
           missingShareByPlanId: const <String, double>{},

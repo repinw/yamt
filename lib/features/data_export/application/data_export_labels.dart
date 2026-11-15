@@ -75,7 +75,7 @@ class DataExportLabels {
       value == value.roundToDouble() ? whole(value) : oneDecimal(value);
 
   /// Name of [entry] on one line, with its brand unless [withBrand] is
-  /// false, marked while its nutrition is still open.
+  /// false, marked while its nutrition is still open or only estimated.
   String foodName(CalorieEntry entry, {bool withBrand = true}) {
     final name = oneLine(entry.name);
     final named = switch (entry.brand) {
@@ -83,7 +83,12 @@ class DataExportLabels {
         '$name (${oneLine(brand)})',
       _ => name,
     };
-    return entry.nutritionPending ? l10n.dataExportFoodPending(named) : named;
+    if (entry.nutritionPending) {
+      return l10n.dataExportFoodPending(named);
+    }
+    return entry.nutritionEstimated
+        ? l10n.dataExportFoodEstimated(named)
+        : named;
   }
 
   /// [text] with every run of whitespace, line breaks too, as one space.

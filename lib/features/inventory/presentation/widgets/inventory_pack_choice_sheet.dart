@@ -4,6 +4,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -96,7 +97,7 @@ class _PackChoiceSheet extends ConsumerWidget {
                       key: inventoryPackChoiceRowKey(pack.id),
                       entry: InventoryFoodEntry(pack),
                       tiltLeft: index.isEven,
-                      planned: demand?.plannedByItemId[pack.id] ?? 0,
+                      planned: demand?.plannedOrReservedOf(pack.id) ?? 0,
                       missing: demand?.missingByItemId[pack.id] ?? 0,
                       onTap: () => onChoice(InventoryPackChosen(pack)),
                     ),

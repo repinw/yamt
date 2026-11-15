@@ -158,8 +158,9 @@ class InventoryPlanAcceptService {
       }
       return await _saveWithoutStock(plan);
     }
+    // A recipe's Vorrat items replace its estimate once they count.
     if (plan.bundleSourceTemplateId case final templateId?
-        when plan.nutritionPending) {
+        when plan.nutritionPending || plan.nutritionEstimated) {
       return await _saveWithoutStock(
         await _countedTemplatePlan(plan, templateId, items),
         missedStock: false,
@@ -196,9 +197,13 @@ class InventoryPlanAcceptService {
     throw PlanAcceptFailedException('The plan ${plan.id} was not eaten.');
   }
 
-  /// The reminder [plan] of the Kochbuch recipe [templateId] with the values
-  /// of the recipe's Vorrat items now. Throws while one of its ingredients
-  /// still has none, or when the recipe is gone or has nothing to eat.
+  /// The reminder or estimated [plan] of the Kochbuch recipe [templateId]
+  /// with the values of the recipe's Vorrat items now, else with its
+  /// fitting estimate ([buildTemplatePlanEntry]). An estimated plan keeps
+  /// its own values while the recipe gives none: it is gone, has nothing to
+  /// eat, gives no kcal, or one of its ingredients still has no item and no
+  /// estimate fits. A reminder throws then, unless the recipe only gives no
+  /// kcal: it counts 0 kcal.
   Future<CalorieEntry> _countedTemplatePlan(
     CalorieEntry plan,
     String templateId,
@@ -208,25 +213,26 @@ class InventoryPlanAcceptService {
     final template = templates.firstWhereOrNull(
       (template) => template.id == templateId,
     );
-    if (template == null) {
-      throw PlanSourceGoneException('The recipe $templateId is gone.');
+    final counted = template == null
+        ? null
+        : replanTemplatePlan(plan, template, items: items, parser: _parser);
+    if (counted != null && !counted.nutritionPending) {
+      return counted;
     }
-    final counted = replanTemplatePlan(
-      plan,
-      template,
-      items: items,
-      parser: _parser,
-    );
-    if (counted == null || counted.nutritionPending) {
-      throw counted == null
-          ? PlanAcceptFailedException(
-              'The recipe $templateId has nothing to eat.',
-            )
-          : PlanNutritionPendingException(
-              'The recipe $templateId has no nutrition to eat.',
-            );
+    if (plan.nutritionEstimated) {
+      return plan;
     }
-    return counted;
+    throw switch (counted) {
+      _ when template == null => PlanSourceGoneException(
+        'The recipe $templateId is gone.',
+      ),
+      null => PlanAcceptFailedException(
+        'The recipe $templateId has nothing to eat.',
+      ),
+      _ => PlanNutritionPendingException(
+        'The recipe $templateId has no nutrition to eat.',
+      ),
+    };
   }
 
   Future<InventoryPlanAcceptResult> _saveWithoutStock(

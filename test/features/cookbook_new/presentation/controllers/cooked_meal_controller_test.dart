@@ -20,20 +20,6 @@ class _FakeCookingService implements PreparedMealCookingService {
   final calls = <(String, int, bool, int?, int?)>[];
 
   @override
-  Future<PreparedMealCreationResult> cook({
-    required String name,
-    required List<String> ingredients,
-    required Map<String, List<String>> assignments,
-  }) => throw UnimplementedError();
-
-  @override
-  Future<PreparedMealCreationResult> cookRecipe({
-    required PreparedMeal recipe,
-    required int portions,
-    required Map<String, List<String>> assignments,
-  }) => throw UnimplementedError();
-
-  @override
   Future<PreparedMealCreationResult> cookVorlage({
     required PreparedMeal vorlage,
     required int portions,
@@ -91,6 +77,12 @@ class _FakeTemplateRepository implements PreparedMealTemplateRepository {
       if (stored.id != template.id) stored,
     template,
   ]);
+
+  @override
+  Future<bool> update(
+    String id,
+    PreparedMeal? Function(PreparedMeal current) change,
+  ) async => false;
 
   @override
   Future<bool> delete(String templateId) => _replaceAll([

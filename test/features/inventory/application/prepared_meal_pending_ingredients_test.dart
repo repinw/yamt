@@ -271,4 +271,48 @@ void main() {
     expect(component.usedAmount, 200);
     expect(component.pendingRecipeIngredient, '200 g Reis');
   });
+
+  group('a pending row is read like the recipe page reads it', () {
+    PreparedMealComponent filled(String row, InventoryItem item) =>
+        buildPreparedMealPendingIngredientFillResult(
+          currentItems: [item],
+          ingredient: row,
+          inventoryItemIds: [item.id],
+          ingredientParser: const TemplateIngredientParser(),
+        )!.components.single;
+
+    test('"1,250 kg Mehl" takes 1250 g', () {
+      final flour = InventoryItem.create(
+        id: 'flour',
+        name: 'Mehl',
+        entryDate: DateTime.utc(2026, 9),
+        storeName: 'Store',
+        quantity: 1,
+        initialAmount: 2000,
+        currentAmount: 2000,
+        amountUnit: InventoryAmountUnit.gram,
+      );
+
+      final component = filled('1,250 kg Mehl', flour);
+
+      expect(component.usedAmount, 1250);
+      expect(component.usedUnit, InventoryAmountUnit.gram);
+    });
+
+    test('"½ Zitrone" takes 1 piece', () {
+      final lemons = InventoryItem.create(
+        id: 'lemons',
+        name: 'Zitrone',
+        entryDate: DateTime.utc(2026, 9),
+        storeName: 'Store',
+        quantity: 3,
+        initialQuantity: 3,
+      );
+
+      final component = filled('½ Zitrone', lemons);
+
+      expect(component.usedAmount, 1);
+      expect(component.usedUnit, InventoryAmountUnit.piece);
+    });
+  });
 }

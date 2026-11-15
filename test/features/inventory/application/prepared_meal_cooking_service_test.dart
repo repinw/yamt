@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_cooking_service.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -8,25 +10,35 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 import '../../../helpers/inventory_item_whole_list_writes.dart';
 
 final _now = DateTime.utc(2026, 10, 1, 18);
 
 void main() {
-  test('takes stock rows from the Vorrat and leaves the others open', () async {
+  test('cookVorlage takes stock foods and leaves the others open', () async {
     final meals = _FakeMealRepository();
     final items = _FakeInventoryRepository([_rice()]);
     final activity = _FakeActivityRepository();
     final service = _service(meals, items, activity);
 
-    final result = await service.cook(
-      name: 'Reispfanne',
-      ingredients: const ['200 g Reis', '500 g Hähnchen'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
+    final result = await service.cookVorlage(
+      vorlage: _vorlage('Reispfanne'),
+      portions: 1,
+      foods: const [
+        (
+          name: 'Reis',
+          unit: InventoryAmountUnit.gram,
+          amount: 200,
+          itemIds: ['rice'],
+        ),
+        (
+          name: 'Hähnchen',
+          unit: InventoryAmountUnit.gram,
+          amount: 500,
+          itemIds: <String>[],
+        ),
+      ],
     );
 
     expect(result.isSuccess, isTrue);
@@ -45,101 +57,6 @@ void main() {
     );
   });
 
-  test(
-    'cookRecipe sizes the recipe for the portions and fills the pot',
-    () async {
-      final meals = _FakeMealRepository();
-      final items = _FakeInventoryRepository([_rice()]);
-      final service = _service(meals, items, _FakeActivityRepository());
-      final recipe = PreparedMeal(
-        id: 'recipe-1',
-        name: 'Reistopf',
-        totalPortions: 2,
-        remainingPortions: 2,
-        totalKcal: 0,
-        totalProtein: 0,
-        totalCarbs: 0,
-        totalFat: 0,
-        createdAt: _now,
-        updatedAt: _now,
-        components: const [],
-        recipeIngredients: const ['100 g Reis', '1 Zwiebel', 'Salz'],
-        ignoredRecipeIngredients: const ['Salz'],
-        recipeInstructions: const ['Kochen.'],
-      );
-
-      final result = await service.cookRecipe(
-        recipe: recipe,
-        portions: 4,
-        assignments: const {
-          '100 g Reis': ['rice'],
-        },
-      );
-
-      expect(result.isSuccess, isTrue);
-      final meal = meals.saved.single;
-      expect(meal.id, isNot('recipe-1'));
-      expect(meal.name, 'Reistopf');
-      expect(meal.isInPot, isTrue);
-      expect(meal.totalPortions, 4);
-      expect(meal.components.single.usedAmount, 200);
-      expect(meal.pendingRecipeIngredients.single, contains('Zwiebel'));
-      expect(meal.recipeInstructions, ['Kochen.']);
-      expect(items.items.single.currentAmount, 800);
-    },
-  );
-
-  test('cookRecipe takes pieces by the saved amount conversion', () async {
-    final meals = _FakeMealRepository();
-    final items = _FakeInventoryRepository([
-      InventoryItem.create(
-        id: 'eggs',
-        name: 'Eier',
-        entryDate: DateTime.utc(2026, 9),
-        storeName: 'Store',
-        quantity: 1,
-        initialAmount: 600,
-        currentAmount: 600,
-        amountUnit: InventoryAmountUnit.gram,
-      ),
-    ]);
-    final service = _service(meals, items, _FakeActivityRepository());
-    final recipe = PreparedMeal(
-      id: 'recipe-1',
-      name: 'Rührei',
-      totalPortions: 1,
-      remainingPortions: 1,
-      totalKcal: 0,
-      totalProtein: 0,
-      totalCarbs: 0,
-      totalFat: 0,
-      createdAt: _now,
-      updatedAt: _now,
-      components: const [],
-      recipeIngredients: const ['2 Eier'],
-      recipeIngredientAmountConversions: const {
-        '2 Eier': RecipeIngredientAmountConversion(
-          amountPerPiece: 60,
-          unit: InventoryAmountUnit.gram,
-        ),
-      },
-    );
-
-    final result = await service.cookRecipe(
-      recipe: recipe,
-      portions: 1,
-      assignments: const {
-        '2 Eier': ['eggs'],
-      },
-    );
-
-    expect(result.isSuccess, isTrue);
-    final meal = meals.saved.single;
-    expect(meal.components.single.usedAmount, 120);
-    expect(meal.pendingRecipeIngredients, isEmpty);
-    expect(items.items.single.currentAmount, 480);
-  });
-
   test('finishCooking sets portions and weights and leaves the pot', () async {
     final meals = _FakeMealRepository();
     final service = _service(
@@ -147,13 +64,7 @@ void main() {
       _FakeInventoryRepository([_rice()]),
       _FakeActivityRepository(),
     );
-    await service.cook(
-      name: 'Reis',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    await _cook(service, 'Reis');
     final mealId = meals.saved.single.id;
 
     final returned = await service.finishCooking(
@@ -184,13 +95,7 @@ void main() {
       _FakeInventoryRepository([_rice()]),
       _FakeActivityRepository(),
     );
-    await service.cook(
-      name: 'Reis',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    await _cook(service, 'Reis');
     final mealId = meals.saved.single.id;
 
     final blank = await service.finishCooking(
@@ -209,13 +114,7 @@ void main() {
       _FakeInventoryRepository([_rice()]),
       _FakeActivityRepository(),
     );
-    await renamer.cook(
-      name: 'Reis',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    await _cook(renamer, 'Reis');
     final renamed = await renamer.finishCooking(
       mealId: mealsRenamed.saved.single.id,
       totalPortions: 2,
@@ -235,13 +134,7 @@ void main() {
       _FakeInventoryRepository([_rice()]),
       _FakeActivityRepository(),
     );
-    await service.cook(
-      name: 'Wraps',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    await _cook(service, 'Wraps');
 
     await service.finishCooking(
       mealId: meals.saved.single.id,
@@ -263,13 +156,7 @@ void main() {
     final meals = _FakeMealRepository();
     final items = _FakeInventoryRepository([_rice()]);
     final service = _service(meals, items, _FakeActivityRepository());
-    await service.cook(
-      name: 'Reis',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    await _cook(service, 'Reis');
     expect(items.items.single.currentAmount, 800);
 
     await service.discard(meals.saved.single.id);
@@ -283,13 +170,7 @@ void main() {
     final meals = _FakeMealRepository();
     final items = _FakeInventoryRepository([_rice(), found]);
     final service = _service(meals, items, _FakeActivityRepository());
-    await service.cook(
-      name: 'Reis',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    await _cook(service, 'Reis');
     final meal = meals.saved.single;
     meals.saved = [
       meal.copyWith(
@@ -318,13 +199,7 @@ void main() {
       _FakeInventoryRepository([_rice()]),
       _FakeActivityRepository(),
     );
-    await service.cook(
-      name: 'Reis',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    await _cook(service, 'Reis');
     final mealId = meals.saved.single.id;
     await service.finishCooking(
       mealId: mealId,
@@ -345,13 +220,7 @@ void main() {
       _FakeInventoryRepository([_rice()]),
       _FakeActivityRepository(),
     );
-    await service.cook(
-      name: 'Reis',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    await _cook(service, 'Reis');
     final mealId = meals.saved.single.id;
     await service.finishCooking(
       mealId: mealId,
@@ -381,16 +250,7 @@ void main() {
       final items = _FakeInventoryRepository([_rice()]);
       final service = _service(meals, items, _FakeActivityRepository());
 
-      await expectLater(
-        service.cook(
-          name: 'Reis',
-          ingredients: const ['200 g Reis'],
-          assignments: const {
-            '200 g Reis': ['rice'],
-          },
-        ),
-        throwsStateError,
-      );
+      await expectLater(_cook(service, 'Reis'), throwsStateError);
 
       expect(items.items.single.currentAmount, 1000);
     },
@@ -402,13 +262,7 @@ void main() {
     final activity = _FakeActivityRepository();
     final service = _service(meals, items, activity);
 
-    final result = await service.cook(
-      name: 'Reis',
-      ingredients: const ['200 g Reis'],
-      assignments: const {
-        '200 g Reis': ['rice'],
-      },
-    );
+    final result = await _cook(service, 'Reis');
 
     expect(result.isSuccess, isFalse);
     expect(items.items.single.currentAmount, 1000);
@@ -420,16 +274,7 @@ void main() {
     final items = _FakeInventoryRepository([_rice()]);
     final service = _service(meals, items, _FakeActivityRepository());
 
-    await expectLater(
-      service.cook(
-        name: 'Reis',
-        ingredients: const ['200 g Reis'],
-        assignments: const {
-          '200 g Reis': ['rice'],
-        },
-      ),
-      throwsStateError,
-    );
+    await expectLater(_cook(service, 'Reis'), throwsStateError);
 
     // Saving only the new meal would delete every other meal.
     expect(meals.saveCount, 0);
@@ -447,10 +292,40 @@ PreparedMealCookingService _service(
     inventoryRepository: items,
     activityRepository: activity,
     actor: const InventoryActivityActor(userId: 'cook', displayName: 'Cook'),
-    ingredientParser: const TemplateIngredientParser(),
     clock: () => _now,
   );
 }
+
+PreparedMeal _vorlage(String name) => PreparedMeal(
+  id: 'vorlage-1',
+  name: name,
+  totalPortions: 1,
+  remainingPortions: 1,
+  totalKcal: 0,
+  totalProtein: 0,
+  totalCarbs: 0,
+  totalFat: 0,
+  createdAt: _now,
+  updatedAt: _now,
+  components: const [],
+);
+
+/// Cooks 200 g of the rice item as [name].
+Future<PreparedMealCreationResult> _cook(
+  PreparedMealCookingService service,
+  String name,
+) => service.cookVorlage(
+  vorlage: _vorlage(name),
+  portions: 1,
+  foods: const [
+    (
+      name: 'Reis',
+      unit: InventoryAmountUnit.gram,
+      amount: 200,
+      itemIds: ['rice'],
+    ),
+  ],
+);
 
 InventoryItem _rice() {
   return InventoryItem.create(

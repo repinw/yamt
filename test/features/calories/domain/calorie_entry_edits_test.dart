@@ -83,6 +83,24 @@ void main() {
     );
   });
 
+  test('the amount of a Kochbuch recipe plan follows its portions, also '
+      'without a Vorrat food', () {
+    // A plan from the recipe's AI estimate lists no foods, so it is no bundle.
+    final estimatedPlan = entry().copyWith(
+      bundleSourceTemplateId: 'stew',
+      nutritionEstimated: true,
+    );
+    final countedPlan = bundle().copyWith(
+      bundleSourcePreparedMealId: null,
+      bundleSourceTemplateId: 'stew',
+    );
+
+    expect(estimatedPlan.isBundle, isFalse);
+    expect(canEditCalorieEntryAmount(estimatedPlan), isFalse);
+    expect(canEditCalorieEntryAmount(countedPlan), isFalse);
+    expect(canEditCalorieEntryAmount(entry()), isTrue);
+  });
+
   test('rescale scales totals to the new amount', () {
     final now = DateTime(2026, 2, 25, 12);
 

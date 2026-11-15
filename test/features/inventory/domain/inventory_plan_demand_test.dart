@@ -271,4 +271,74 @@ void main() {
       'recipe': [eggs],
     });
   });
+
+  group('cook run reservations', () {
+    test('count up to the stock the plans leave', () {
+      final demand = inventoryPlanDemand(
+        [_plan('first', day: 8, grams: 300)],
+        [_pack('oats')],
+        const [],
+        runReservations: const {'oats': 150},
+      );
+
+      expect(demand.plannedByItemId, {'oats': 300});
+      expect(demand.runReservedByItemId, {'oats': 150});
+      expect(demand.plannedOrReservedOf('oats'), 450);
+    });
+
+    test('are capped at the stock the plans leave', () {
+      final demand = inventoryPlanDemand(
+        [_plan('first', day: 8, grams: 300)],
+        [_pack('oats')],
+        const [],
+        runReservations: const {'oats': 900},
+      );
+
+      expect(demand.runReservedByItemId, {'oats': 200});
+      expect(demand.plannedOrReservedOf('oats'), 500);
+    });
+
+    test('leave nothing once the plans took all the stock', () {
+      final demand = inventoryPlanDemand(
+        [_plan('first', day: 8, grams: 500)],
+        [_pack('oats')],
+        const [],
+        runReservations: const {'oats': 100},
+      );
+
+      expect(demand.runReservedByItemId, isEmpty);
+      expect(demand.plannedOrReservedOf('oats'), 500);
+    });
+
+    test('of an item that is gone or empty fall away', () {
+      final demand = inventoryPlanDemand(
+        const [],
+        [_pack('empty', currentAmount: 0), _pack('oats')],
+        const [],
+        runReservations: const {'ghost': 50, 'empty': 50, 'oats': 0},
+      );
+
+      expect(demand.runReservedByItemId, isEmpty);
+      expect(demand.plannedOrReservedOf('ghost'), 0);
+    });
+
+    test('change nothing that is missing', () {
+      final plans = [
+        _plan('earlier', day: 8, grams: 300),
+        _plan('later', day: 9, grams: 300),
+      ];
+      final without = inventoryPlanDemand(plans, [_pack('oats')], const []);
+      final with_ = inventoryPlanDemand(
+        plans,
+        [_pack('oats')],
+        const [],
+        runReservations: const {'oats': 400},
+      );
+
+      expect(with_.missingByItemId, without.missingByItemId);
+      expect(with_.missingShareByPlanId, without.missingShareByPlanId);
+      expect(with_.plannedByItemId, without.plannedByItemId);
+      expect(with_.runReservedByItemId, isEmpty);
+    });
+  });
 }

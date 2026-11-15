@@ -6,29 +6,21 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/provider/network_connectivity.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
-import 'package:yamt/features/inventory/data/'
-    'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/recipe_food_pick.dart';
 import 'package:yamt/features/product_search_hub/data/composite_product_search_adapter.dart';
-import 'package:yamt/features/product_search_hub/presentation/models/'
-    'product_search_hub_route_args.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_barcode_scanner.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_entry_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_config.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_context.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_coordinator.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_entry_launcher.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_lookup.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_search_hub_search_page_content/'
-    'product_search_hub_search_page_content.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_barcode_scanner.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_entry_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_recipe_food_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_search_config.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_search_context.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_search_coordinator.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_search_entry_launcher.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_search_lookup.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/product_search_hub_recipe_view/product_search_hub_recipe_view.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/product_search_hub_search_page_content/product_search_hub_search_page_content.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Search screen of the product search hub.
@@ -45,6 +37,8 @@ class ProductSearchHubSearchView extends ConsumerStatefulWidget {
     required this.onRecentItemPressed,
     required this.onEntryResult,
     required this.onInitialIntentCancelled,
+    required this.onStockPicked,
+    required this.onGuessed,
     this.lookupProducts,
     super.key,
   });
@@ -69,6 +63,12 @@ class ProductSearchHubSearchView extends ConsumerStatefulWidget {
 
   /// Called when the initial barcode scan or AI entry is cancelled.
   final VoidCallback onInitialIntentCancelled;
+
+  /// Called when the cook picks foods of the Vorrat for a recipe line.
+  final ValueChanged<List<InventoryItem>> onStockPicked;
+
+  /// Called with the food "Egal, irgendeins" estimated for a recipe line.
+  final ValueChanged<RecipeFoodPick> onGuessed;
 
   /// Optional lookup override for widget tests.
   final ProductSearchHubSearchLookup? lookupProducts;
@@ -163,6 +163,11 @@ class _ProductSearchHubSearchViewState
     unawaited(SystemChannels.textInput.invokeMethod<void>('TextInput.show'));
   }
 
+  // A canceled scan or entry brings the keyboard back, not for a recipe.
+  void _restoreSearchKeyboard() {
+    if (!widget.args.isRecipe) _requestSearchKeyboard();
+  }
+
   void _hideSearchKeyboard() {
     _searchFocusNode.unfocus();
     FocusManager.instance.primaryFocus?.unfocus();
@@ -178,8 +183,7 @@ class _ProductSearchHubSearchViewState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // Offline the search finds little or nothing, so a search that found
-    // nothing runs once more as soon as the device is online again.
+    // A search that found nothing offline runs again once the device is online.
     ref.listen(deviceOfflineProvider, (previous, next) {
       final foundNothing =
           _searchCoordinator.results.isEmpty || _searchCoordinator.hasFailed;
@@ -189,6 +193,25 @@ class _ProductSearchHubSearchViewState
     });
     final isOffline = ref.watch(deviceOfflineProvider).value ?? false;
 
+    if (widget.args.isRecipe) {
+      return ProductSearchHubRecipeView(
+        args: widget.args,
+        search: _searchCoordinator,
+        searchController: _searchController,
+        searchFocusNode: _searchFocusNode,
+        voiceSearchService: _voiceSearchService,
+        voiceSearchController: _voiceSearchController,
+        isOffline: isOffline,
+        onBackPressed: widget.onBackPressed,
+        onScanPressed: () => unawaited(_scanBarcodeIntoSearch()),
+        onSearchChanged: _searchCoordinator.handleSearchChanged,
+        onClear: _clearSearch,
+        onResultSelected: widget.onProductSelected,
+        onStockPicked: widget.onStockPicked,
+        onOwnEntryPressed: () => _openEditedEntry(_openCustomEntry),
+        onGuessed: widget.onGuessed,
+      );
+    }
     return ProductSearchHubSearchPageContent(
       title: widget.args.title(l10n),
       searchController: _searchController,
@@ -223,13 +246,20 @@ class _ProductSearchHubSearchViewState
       if (cancelClosesPage) {
         widget.onInitialIntentCancelled();
       } else {
-        _requestSearchKeyboard();
+        _restoreSearchKeyboard();
       }
       return;
     }
     final barcode = scannedBarcode.trim();
     _searchController.text = barcode;
-    _searchCoordinator.handleSearchChanged(barcode);
+    if (!widget.args.isRecipe) {
+      return _searchCoordinator.handleSearchChanged(barcode);
+    }
+    // A recipe takes a Vorrat pack, or the one catalog hit, without a tap.
+    final packs = productSearchHubStockPacks(context, widget.args, barcode);
+    if (packs.isNotEmpty) return widget.onStockPicked(packs);
+    final found = await _searchCoordinator.searchNow(barcode);
+    if (mounted && found.length == 1) widget.onProductSelected(found.single);
   }
 
   Future<ProductSearchHubEditedResult?> _openAiEntry(AppLocalizations l10n) {
@@ -260,7 +290,7 @@ class _ProductSearchHubSearchViewState
         isOpeningEntry: _isOpeningEntry,
         setOpeningEntry: (value) => setState(() => _isOpeningEntry = value),
         hideKeyboard: _hideSearchKeyboard,
-        onCancelled: _requestSearchKeyboard,
+        onCancelled: _restoreSearchKeyboard,
         onResult: widget.onEntryResult,
         openEntry: openEntry,
       ),

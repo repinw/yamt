@@ -205,11 +205,11 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
               await PreparedMealPendingFoodFlow.fill(
                 context: context,
                 source: source,
-                onFill: (itemId, amount) =>
+                onFill: (item, amount) =>
                     widget.actions.fillPendingIngredientWithItem(
                       meal.id,
                       ingredient,
-                      itemId,
+                      item.id,
                       amount,
                     ),
               ) ??

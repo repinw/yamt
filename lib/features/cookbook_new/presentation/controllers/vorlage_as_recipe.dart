@@ -19,14 +19,7 @@ List<({String line, VorlageFood food})> vorlageFoods(
     // would read as the amount ("2 Mozzarella", not "2 Mozzarella 125 g").
     final unit = component.usedUnit;
     final name = unit == InventoryAmountUnit.piece
-        ? parser
-                  .parseRequirement(
-                    ingredient: component.name,
-                    selectedPortions: 1,
-                    basePortions: 1,
-                  )
-                  ?.name ??
-              component.name
+        ? parser.parseName(component.name)?.name ?? component.name
         : component.name;
     final amount = preparedMealComponentDisplayAmount(component);
     foods.update(

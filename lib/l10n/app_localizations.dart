@@ -146,29 +146,17 @@ abstract class AppLocalizations {
   /// **'Menu'**
   String get homeMenuTool;
 
-  /// No description provided for @aiChefIdeaDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'The AI suggests a random recipe'**
-  String get aiChefIdeaDescription;
-
   /// No description provided for @aiChefIdeaTitle.
   ///
   /// In en, this message translates to:
-  /// **'AI recipe idea'**
+  /// **'Recipe idea'**
   String get aiChefIdeaTitle;
 
   /// No description provided for @aiChefSetupTitle.
   ///
   /// In en, this message translates to:
-  /// **'What should the AI cook?'**
+  /// **'What do you feel like?'**
   String get aiChefSetupTitle;
-
-  /// No description provided for @aiChefSetupSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose whether your inventory matters and add any wishes.'**
-  String get aiChefSetupSubtitle;
 
   /// No description provided for @aiChefUseInventoryTitle.
   ///
@@ -197,37 +185,25 @@ abstract class AppLocalizations {
   /// No description provided for @aiChefGenerateAction.
   ///
   /// In en, this message translates to:
-  /// **'Generate recipe'**
+  /// **'Suggest a recipe'**
   String get aiChefGenerateAction;
 
   /// No description provided for @aiChefGeneratingTitle.
   ///
   /// In en, this message translates to:
-  /// **'AI is cooking...'**
+  /// **'We\'re putting a recipe together …'**
   String get aiChefGeneratingTitle;
-
-  /// No description provided for @aiChefGeneratingSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your personal AI is assembling a delicious recipe...'**
-  String get aiChefGeneratingSubtitle;
 
   /// No description provided for @aiChefSaveAction.
   ///
   /// In en, this message translates to:
-  /// **'Save to Cookbook'**
+  /// **'Save to cookbook'**
   String get aiChefSaveAction;
-
-  /// No description provided for @aiChefCloseAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Close'**
-  String get aiChefCloseAction;
 
   /// No description provided for @aiChefSaveSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Recipe successfully saved to Cookbook!'**
+  /// **'Saved to the cookbook.'**
   String get aiChefSaveSuccess;
 
   /// No description provided for @aiChefSaveError.
@@ -235,12 +211,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to save recipe.'**
   String get aiChefSaveError;
-
-  /// No description provided for @aiChefFromInventory.
-  ///
-  /// In en, this message translates to:
-  /// **'From your stock'**
-  String get aiChefFromInventory;
 
   /// No description provided for @aiChefQuoteLoveGarlic.
   ///
@@ -265,42 +235,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The best conversations always happen in the kitchen.'**
   String get aiChefQuoteKitchenTalks;
-
-  /// No description provided for @aiChefQuoteVirtualOven.
-  ///
-  /// In en, this message translates to:
-  /// **'AI is preheating the virtual oven...'**
-  String get aiChefQuoteVirtualOven;
-
-  /// No description provided for @aiChefPortionsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{portions, plural, =1{1 portion} other{{portions} portions}}'**
-  String aiChefPortionsLabel(int portions);
-
-  /// No description provided for @aiChefCaloriesLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal'**
-  String aiChefCaloriesLabel(int kcal);
-
-  /// No description provided for @aiChefProteinLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Protein: {grams} g'**
-  String aiChefProteinLabel(int grams);
-
-  /// No description provided for @aiChefCarbsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Carbs: {grams} g'**
-  String aiChefCarbsLabel(int grams);
-
-  /// No description provided for @aiChefFatLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Fat: {grams} g'**
-  String aiChefFatLabel(int grams);
 
   /// No description provided for @homeQuickActionTooltip.
   ///
@@ -709,6 +643,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'of {amount}'**
   String inventoryRowOfAmount(String amount);
+
+  /// Amount in kilograms, used for 1000 g and more on several cooking pages, e.g. '1.5 kg'.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} kg'**
+  String stockAmountKilograms(String amount);
+
+  /// Amount in liters, used for 1000 ml and more on several cooking pages.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} l'**
+  String stockAmountLiters(String amount);
+
+  /// Big question above the stock counter on the stock amount page, asking how much of a food is at home.
+  ///
+  /// In en, this message translates to:
+  /// **'How many do you have?'**
+  String get stockAmountCountQuestion;
+
+  /// Caption under the food name on the stock amount page, showing the package size, e.g. 'Pack 500 g'.
+  ///
+  /// In en, this message translates to:
+  /// **'Pack {size}'**
+  String stockAmountPack(String size);
+
+  /// Line under the stock counter when the stock covers the recipe need; {need} and {rest} are formatted amounts.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe needs {need}. The rest, {rest}, stays in stock.'**
+  String stockAmountNeedRest(String need, String rest);
+
+  /// Line under the stock counter when the recipe uses the whole stock; {need} is a formatted amount.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe needs all of it: {need}.'**
+  String stockAmountNeedAll(String need);
+
+  /// Warning line under the stock counter when the stock is below the recipe need; both are formatted amounts.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe needs {need}. You are {missing} short.'**
+  String stockAmountMissing(String need, String missing);
+
+  /// Folded row on the stock amount page that opens the nutrition table; {kcal} is a formatted number, {unit} is g or ml.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition · {kcal} kcal per 100 {unit}'**
+  String stockAmountNutrition(String kcal, String unit);
+
+  /// Hint above the disabled apply button on the stock amount page, shown until an amount is entered.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter how much you have.'**
+  String get stockAmountEnterValue;
+
+  /// Tooltip of the minus button of the stock counter on the stock amount page.
+  ///
+  /// In en, this message translates to:
+  /// **'One less'**
+  String get stockAmountLess;
+
+  /// Tooltip of the plus button of the stock counter on the stock amount page.
+  ///
+  /// In en, this message translates to:
+  /// **'One more'**
+  String get stockAmountMore;
+
+  /// Hint of the optional grams-per-piece field on the stock amount page; the field suffix already says 'g pro Stück'.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight, if you know it'**
+  String get stockAmountPieceWeightHint;
 
   /// No description provided for @inventoryRowPlanMissing.
   ///
@@ -1834,6 +1840,30 @@ abstract class AppLocalizations {
   /// **'≈ {amount}'**
   String eatPageApprox(String amount);
 
+  /// Line at the amount of the product page when a food is put into the Vorrat for a recipe.
+  ///
+  /// In en, this message translates to:
+  /// **'How much of it do you have at home?'**
+  String get eatPageStockQuestion;
+
+  /// No description provided for @eatPageStockPerPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'{unit} per piece'**
+  String eatPageStockPerPiece(String unit);
+
+  /// No description provided for @eatPageStockPackWeightMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'How heavy is one pack?'**
+  String get eatPageStockPackWeightMissing;
+
+  /// Main button of the product page when a food is put into the Vorrat for a recipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get eatPageStockApply;
+
   /// No description provided for @eatPagePortionsUnit.
   ///
   /// In en, this message translates to:
@@ -2590,29 +2620,11 @@ abstract class AppLocalizations {
   /// **'Template saved.'**
   String get preparedMealTemplateSavedMessage;
 
-  /// No description provided for @preparedMealTemplatesLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load templates.'**
-  String get preparedMealTemplatesLoadFailed;
-
   /// No description provided for @preparedMealTemplateDeletedMessage.
   ///
   /// In en, this message translates to:
   /// **'Template deleted.'**
   String get preparedMealTemplateDeletedMessage;
-
-  /// No description provided for @preparedMealTemplateAddRecipeAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add recipe template'**
-  String get preparedMealTemplateAddRecipeAction;
-
-  /// No description provided for @preparedMealTemplateAddRecipeDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Import a recipe from a web page'**
-  String get preparedMealTemplateAddRecipeDescription;
 
   /// No description provided for @preparedMealTemplateCreateFromRecipeAction.
   ///
@@ -2731,7 +2743,7 @@ abstract class AppLocalizations {
   /// No description provided for @kitchenUtensilsToolLabel.
   ///
   /// In en, this message translates to:
-  /// **'Tools'**
+  /// **'Pots'**
   String get kitchenUtensilsToolLabel;
 
   /// No description provided for @kitchenUtensilsEmptyState.
@@ -9535,12 +9547,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 recipe} other{{count} recipes}}'**
   String cookbookRecipeCount(int count);
 
-  /// No description provided for @cookbookOpenMealsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Open'**
-  String get cookbookOpenMealsTitle;
-
   /// No description provided for @cookbookOpenMealRows.
   ///
   /// In en, this message translates to:
@@ -9568,7 +9574,7 @@ abstract class AppLocalizations {
   /// No description provided for @cookbookTemplatesCaption.
   ///
   /// In en, this message translates to:
-  /// **'Combined from stock'**
+  /// **'From stock'**
   String get cookbookTemplatesCaption;
 
   /// No description provided for @cookbookNewTemplateTitle.
@@ -9592,8 +9598,14 @@ abstract class AppLocalizations {
   /// No description provided for @cookbookRecipesEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No recipes yet. Add one from a link or get an AI idea.'**
+  /// **'No recipes yet. Take a photo of one, paste it, type it, or use a link.'**
   String get cookbookRecipesEmpty;
+
+  /// Button under the empty recipe list that opens the new recipe menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a recipe'**
+  String get cookbookRecipesAdd;
 
   /// No description provided for @cookbookStockComplete.
   ///
@@ -9673,155 +9685,95 @@ abstract class AppLocalizations {
   /// **'Say or type ingredients while you cook'**
   String get cookbookFreeCookingDescription;
 
-  /// No description provided for @freeCookingNameHint.
-  ///
-  /// In en, this message translates to:
-  /// **'What is the dish called?'**
-  String get freeCookingNameHint;
-
-  /// No description provided for @freeCookingDefaultName.
-  ///
-  /// In en, this message translates to:
-  /// **'Cooked freely'**
-  String get freeCookingDefaultName;
-
-  /// No description provided for @freeCookingIngredientsTitle.
+  /// No description provided for @cookingIngredientsTitle.
   ///
   /// In en, this message translates to:
   /// **'Ingredients'**
-  String get freeCookingIngredientsTitle;
+  String get cookingIngredientsTitle;
 
-  /// No description provided for @freeCookingStockCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{inStock} of {total} in stock'**
-  String freeCookingStockCount(int inStock, int total);
-
-  /// No description provided for @freeCookingStockLeft.
+  /// No description provided for @cookingStockLeft.
   ///
   /// In en, this message translates to:
   /// **'{amount} in stock'**
-  String freeCookingStockLeft(String amount);
+  String cookingStockLeft(String amount);
 
-  /// No description provided for @freeCookingAmountWithUnit.
+  /// No description provided for @cookingAmountWithUnit.
   ///
   /// In en, this message translates to:
   /// **'{amount} {unit}'**
-  String freeCookingAmountWithUnit(int amount, String unit);
+  String cookingAmountWithUnit(int amount, String unit);
 
-  /// No description provided for @freeCookingPieces.
+  /// No description provided for @cookingPieces.
   ///
   /// In en, this message translates to:
   /// **'{count} pcs'**
-  String freeCookingPieces(int count);
+  String cookingPieces(int count);
 
-  /// No description provided for @freeCookingMissing.
+  /// No description provided for @cookingMissing.
   ///
   /// In en, this message translates to:
   /// **'missing'**
-  String get freeCookingMissing;
+  String get cookingMissing;
 
-  /// No description provided for @freeCookingPickStock.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose'**
-  String get freeCookingPickStock;
-
-  /// No description provided for @freeCookingListenTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Listening'**
-  String get freeCookingListenTitle;
-
-  /// No description provided for @freeCookingListenHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Say the amount and the food. A pause starts a new row. Tap anywhere to stop.'**
-  String get freeCookingListenHint;
-
-  /// No description provided for @freeCookingIdleTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap and speak'**
-  String get freeCookingIdleTitle;
-
-  /// No description provided for @freeCookingIdleHint.
-  ///
-  /// In en, this message translates to:
-  /// **'For example: 500 g chicken, 40 g butter'**
-  String get freeCookingIdleHint;
-
-  /// No description provided for @freeCookingTypeAction.
+  /// No description provided for @cookingTypeAction.
   ///
   /// In en, this message translates to:
   /// **'Type'**
-  String get freeCookingTypeAction;
+  String get cookingTypeAction;
 
-  /// No description provided for @freeCookingTypeHint.
+  /// No description provided for @cookingTypeHint.
   ///
   /// In en, this message translates to:
   /// **'e.g. 200 g rice'**
-  String get freeCookingTypeHint;
+  String get cookingTypeHint;
 
-  /// No description provided for @freeCookingAddAction.
+  /// No description provided for @cookingAddAction.
   ///
   /// In en, this message translates to:
   /// **'Add'**
-  String get freeCookingAddAction;
+  String get cookingAddAction;
 
-  /// No description provided for @freeCookingCookAction.
+  /// No description provided for @cookingCookAction.
   ///
   /// In en, this message translates to:
   /// **'Cook'**
-  String get freeCookingCookAction;
+  String get cookingCookAction;
 
-  /// No description provided for @freeCookingStockLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load the stock.'**
-  String get freeCookingStockLoadFailed;
-
-  /// No description provided for @freeCookingSaveFailed.
+  /// No description provided for @cookingSaveFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not save the meal.'**
-  String get freeCookingSaveFailed;
+  String get cookingSaveFailed;
 
-  /// No description provided for @freeCookingDiscardTitle.
+  /// No description provided for @cookingDiscardTitle.
   ///
   /// In en, this message translates to:
   /// **'Discard the meal?'**
-  String get freeCookingDiscardTitle;
+  String get cookingDiscardTitle;
 
-  /// No description provided for @freeCookingDiscardBody.
-  ///
-  /// In en, this message translates to:
-  /// **'The ingredients will be lost.'**
-  String get freeCookingDiscardBody;
-
-  /// No description provided for @freeCookingDiscardAction.
+  /// No description provided for @cookingDiscardAction.
   ///
   /// In en, this message translates to:
   /// **'Discard'**
-  String get freeCookingDiscardAction;
+  String get cookingDiscardAction;
 
-  /// No description provided for @freeCookingVoiceUnavailable.
+  /// No description provided for @cookingVoiceUnavailable.
   ///
   /// In en, this message translates to:
   /// **'Voice input does not work on this device.'**
-  String get freeCookingVoiceUnavailable;
+  String get cookingVoiceUnavailable;
 
-  /// No description provided for @freeCookingVoicePermissionDenied.
+  /// No description provided for @cookingVoicePermissionDenied.
   ///
   /// In en, this message translates to:
   /// **'Allow the microphone to say ingredients.'**
-  String get freeCookingVoicePermissionDenied;
+  String get cookingVoicePermissionDenied;
 
-  /// No description provided for @freeCookingVoiceFailed.
+  /// No description provided for @cookingVoiceFailed.
   ///
   /// In en, this message translates to:
   /// **'Voice input could not start.'**
-  String get freeCookingVoiceFailed;
+  String get cookingVoiceFailed;
 
   /// No description provided for @preparedMealFillTitle.
   ///
@@ -10165,107 +10117,11 @@ abstract class AppLocalizations {
   /// **'Preparation'**
   String get recipeStepsTitle;
 
-  /// No description provided for @recipeStepCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 step} other{{count} steps}}'**
-  String recipeStepCount(int count);
-
-  /// No description provided for @recipeWithGuide.
-  ///
-  /// In en, this message translates to:
-  /// **'Cook with instructions'**
-  String get recipeWithGuide;
-
-  /// No description provided for @recipeWithGuideHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Opens sentence by sentence, then “Cooked”'**
-  String get recipeWithGuideHint;
-
-  /// No description provided for @cookingGuideTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Cooking helper'**
-  String get cookingGuideTitle;
-
-  /// No description provided for @cookingGuideKicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Instructions · {count, plural, =1{1 portion} other{{count} portions}}'**
-  String cookingGuideKicker(int count);
-
-  /// No description provided for @cookingGuideSentenceNote.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 sentence} other{{count} sentences}}. Next comes one sentence per screen, and the screen stays on.'**
-  String cookingGuideSentenceNote(int count);
-
-  /// No description provided for @cookingGuideStart.
-  ///
-  /// In en, this message translates to:
-  /// **'Start · sentence by sentence'**
-  String get cookingGuideStart;
-
   /// No description provided for @cookingGuideKeepsScreenOn.
   ///
   /// In en, this message translates to:
   /// **'Screen stays on'**
   String get cookingGuideKeepsScreenOn;
-
-  /// No description provided for @cookingGuideProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Sentence {sentence} of {count} · step {step}'**
-  String cookingGuideProgress(int sentence, int count, int step);
-
-  /// No description provided for @cookingGuideInPot.
-  ///
-  /// In en, this message translates to:
-  /// **'In the pot'**
-  String get cookingGuideInPot;
-
-  /// No description provided for @cookingGuideLineCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 line} other{{count} lines}}'**
-  String cookingGuideLineCount(int count);
-
-  /// No description provided for @recipeGuideAdded.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 addition from the cooking helper} other{{count} additions from the cooking helper}}'**
-  String recipeGuideAdded(int count);
-
-  /// No description provided for @cookingGuideJustAdded.
-  ///
-  /// In en, this message translates to:
-  /// **'Just added'**
-  String get cookingGuideJustAdded;
-
-  /// No description provided for @cookingGuideVoiceHint.
-  ///
-  /// In en, this message translates to:
-  /// **'“50 g cream” · “no” takes it back'**
-  String get cookingGuideVoiceHint;
-
-  /// No description provided for @cookingGuideJumpTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Jump to'**
-  String get cookingGuideJumpTitle;
-
-  /// No description provided for @cookingGuideNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Next sentence'**
-  String get cookingGuideNext;
-
-  /// No description provided for @cookingGuideDone.
-  ///
-  /// In en, this message translates to:
-  /// **'Done cooking'**
-  String get cookingGuideDone;
 
   /// No description provided for @recipeNotFound.
   ///
@@ -10278,312 +10134,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load the recipe or the stock.'**
   String get recipeLoadFailed;
-
-  /// No description provided for @recipeCheckChangeKicker.
-  ///
-  /// In en, this message translates to:
-  /// **'{name} · {count, plural, =1{1 portion} other{{count} portions}}'**
-  String recipeCheckChangeKicker(String name, int count);
-
-  /// No description provided for @recipeCheckChangeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Change something this time?'**
-  String get recipeCheckChangeTitle;
-
-  /// No description provided for @recipeCheckChangeHint.
-  ///
-  /// In en, this message translates to:
-  /// **'For example “more meat” or “without tomatoes”. Only for this time.'**
-  String get recipeCheckChangeHint;
-
-  /// No description provided for @recipeCheckChangeYes.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes'**
-  String get recipeCheckChangeYes;
-
-  /// No description provided for @recipeCheckChangeNo.
-  ///
-  /// In en, this message translates to:
-  /// **'No, continue'**
-  String get recipeCheckChangeNo;
-
-  /// No description provided for @recipeCheckEditKicker.
-  ///
-  /// In en, this message translates to:
-  /// **'This time only'**
-  String get recipeCheckEditKicker;
-
-  /// No description provided for @recipeCheckEditTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'What do you change?'**
-  String get recipeCheckEditTitle;
-
-  /// No description provided for @recipeCheckEditAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount of {food}'**
-  String recipeCheckEditAmount(String food);
-
-  /// No description provided for @recipeCheckEditRemove.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave out {food}'**
-  String recipeCheckEditRemove(String food);
-
-  /// No description provided for @recipeCheckEditAdd.
-  ///
-  /// In en, this message translates to:
-  /// **'+ Ingredient'**
-  String get recipeCheckEditAdd;
-
-  /// No description provided for @recipeCheckEditAddHint.
-  ///
-  /// In en, this message translates to:
-  /// **'e.g. 200 g peppers'**
-  String get recipeCheckEditAddHint;
-
-  /// No description provided for @recipeCheckChanged.
-  ///
-  /// In en, this message translates to:
-  /// **'Changed'**
-  String get recipeCheckChanged;
-
-  /// No description provided for @recipeCheckChangeAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'{food} {from} → {to}'**
-  String recipeCheckChangeAmount(String food, String from, String to);
-
-  /// No description provided for @recipeCheckChangeRemoved.
-  ///
-  /// In en, this message translates to:
-  /// **'without {food}'**
-  String recipeCheckChangeRemoved(String food);
-
-  /// Ingredient check summary: a changed ingredient whose amount has no label for the chosen portions.
-  ///
-  /// In en, this message translates to:
-  /// **'{food}: new amount'**
-  String recipeCheckChangeOther(String food);
-
-  /// No description provided for @recipeCheckChangeAdded.
-  ///
-  /// In en, this message translates to:
-  /// **'+ {food}'**
-  String recipeCheckChangeAdded(String food);
-
-  /// No description provided for @recipeCheckChangeAddedAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'+ {amount} {food}'**
-  String recipeCheckChangeAddedAmount(String amount, String food);
-
-  /// No description provided for @recipeCheckSaveEdits.
-  ///
-  /// In en, this message translates to:
-  /// **'Save the changes in the recipe'**
-  String get recipeCheckSaveEdits;
-
-  /// No description provided for @recipeCheckSaveEditsHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Otherwise they count for today only'**
-  String get recipeCheckSaveEditsHint;
-
-  /// No description provided for @recipeCheckTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Check ingredients'**
-  String get recipeCheckTitle;
-
-  /// No description provided for @recipeCheckMissingCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} missing'**
-  String recipeCheckMissingCount(int count);
-
-  /// No description provided for @recipeCheckPartialCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} only partly there'**
-  String recipeCheckPartialCount(int count);
-
-  /// No description provided for @recipeCheckOpenBoth.
-  ///
-  /// In en, this message translates to:
-  /// **'{missing} missing, {partial} only partly there'**
-  String recipeCheckOpenBoth(int missing, int partial);
-
-  /// No description provided for @recipeCheckStep.
-  ///
-  /// In en, this message translates to:
-  /// **'{step}/{total}'**
-  String recipeCheckStep(int step, int total);
-
-  /// No description provided for @recipeCheckSettled.
-  ///
-  /// In en, this message translates to:
-  /// **'All sorted'**
-  String get recipeCheckSettled;
-
-  /// No description provided for @recipeCheckFoundKicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Found in the stock · {count}'**
-  String recipeCheckFoundKicker(int count);
-
-  /// No description provided for @recipeCheckFoundTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Does this fit?'**
-  String get recipeCheckFoundTitle;
-
-  /// No description provided for @recipeCheckFoundHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap an ingredient to pick another item.'**
-  String get recipeCheckFoundHint;
-
-  /// No description provided for @recipeCheckNextMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Next · {count} missing'**
-  String recipeCheckNextMissing(int count);
-
-  /// No description provided for @recipeCheckMissingKicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Missing · {count}'**
-  String recipeCheckMissingKicker(int count);
-
-  /// No description provided for @recipeCheckMissingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to the shopping list?'**
-  String get recipeCheckMissingTitle;
-
-  /// No description provided for @recipeCheckMissingHint.
-  ///
-  /// In en, this message translates to:
-  /// **'“Got it” adds it to the stock and uses it right away.'**
-  String get recipeCheckMissingHint;
-
-  /// No description provided for @recipeCheckHave.
-  ///
-  /// In en, this message translates to:
-  /// **'Got it'**
-  String get recipeCheckHave;
-
-  /// No description provided for @recipeCheckRest.
-  ///
-  /// In en, this message translates to:
-  /// **'Rest · {amount} in stock'**
-  String recipeCheckRest(String amount);
-
-  /// No description provided for @recipeCheckPartialNote.
-  ///
-  /// In en, this message translates to:
-  /// **'{stocked} in stock · {missing} missing'**
-  String recipeCheckPartialNote(String stocked, String missing);
-
-  /// No description provided for @recipeCheckUse.
-  ///
-  /// In en, this message translates to:
-  /// **'From the stock'**
-  String get recipeCheckUse;
-
-  /// No description provided for @recipeCheckCart.
-  ///
-  /// In en, this message translates to:
-  /// **'On the shopping list'**
-  String get recipeCheckCart;
-
-  /// No description provided for @recipeCheckIgnore.
-  ///
-  /// In en, this message translates to:
-  /// **'Ignore'**
-  String get recipeCheckIgnore;
-
-  /// No description provided for @recipeCheckSummaryKicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Checked'**
-  String get recipeCheckSummaryKicker;
-
-  /// No description provided for @recipeCheckSummaryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'This is how you cook today'**
-  String get recipeCheckSummaryTitle;
-
-  /// No description provided for @recipeCheckFromStock.
-  ///
-  /// In en, this message translates to:
-  /// **'From the stock · {count}'**
-  String recipeCheckFromStock(int count);
-
-  /// No description provided for @recipeCheckOnList.
-  ///
-  /// In en, this message translates to:
-  /// **'On the shopping list · {count}'**
-  String recipeCheckOnList(int count);
-
-  /// No description provided for @recipeCheckIgnored.
-  ///
-  /// In en, this message translates to:
-  /// **'Ignored · {count}'**
-  String recipeCheckIgnored(int count);
-
-  /// No description provided for @recipeCheckNothing.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing'**
-  String get recipeCheckNothing;
-
-  /// No description provided for @recipeCheckNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Next'**
-  String get recipeCheckNext;
-
-  /// No description provided for @recipeCheckFinish.
-  ///
-  /// In en, this message translates to:
-  /// **'Done'**
-  String get recipeCheckFinish;
-
-  /// No description provided for @recipeCheckSaveFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not save the choices.'**
-  String get recipeCheckSaveFailed;
-
-  /// No description provided for @recipeCheckListFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not add to the shopping list.'**
-  String get recipeCheckListFailed;
-
-  /// No description provided for @recipeCheckHaveFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not add the food to the stock.'**
-  String get recipeCheckHaveFailed;
-
-  /// No description provided for @recipePickTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'{food}: take it from'**
-  String recipePickTitle(String food);
-
-  /// No description provided for @recipeNotFromStock.
-  ///
-  /// In en, this message translates to:
-  /// **'Not from stock'**
-  String get recipeNotFromStock;
 
   /// No description provided for @cookedDoneElsewhere.
   ///
@@ -10608,6 +10158,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In the pot since {time}'**
   String cookbookInPotSince(String time);
+
+  /// Kochbuch: title of the section with running cook runs and old open meals (replaces 'Offen').
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get cookbookRunningTitle;
+
+  /// Kochbuch 'Läuft' section caption: number of running cook runs in the household.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in the household'**
+  String cookbookRunningCount(int count);
+
+  /// Kochbuch 'Läuft' section: sub-title above meals of the old cooking flow that are still in the pot or have open rows.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{From the old version · 1 open} other{From the old version · {count} open}}'**
+  String cookbookOldMealsTitle(int count);
+
+  /// Kochbuch 'Läuft' card: title and initial letter of a free cooking run (no recipe).
+  ///
+  /// In en, this message translates to:
+  /// **'Free cooking'**
+  String get cookbookRunFreeName;
+
+  /// Kochbuch 'Läuft' row status: the cook run is on the pots step.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose pots'**
+  String get cookbookRunStatusPots;
+
+  /// Kochbuch 'Läuft' row status (attention color): the cook run waits for the shopping; count of items to buy.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Paused until shopped} =1{Paused until shopped · 1 to buy} other{Paused until shopped · {count} to buy}}'**
+  String cookbookRunStatusPausedShopping(int count);
+
+  /// Kochbuch 'Läuft' row status: the cook run is cooking and has no timer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking'**
+  String get cookbookRunStatusCook;
+
+  /// Kochbuch 'Läuft' row status: the cook run is cooking; time (or date) when its first timer rings.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking · timer until {time}'**
+  String cookbookRunStatusCookTimer(String time);
+
+  /// Kochbuch 'Läuft' row status: the cook run is cooking; number of the current step.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking · step {step}'**
+  String cookbookRunStatusCookStep(int step);
+
+  /// Kochbuch 'Läuft' row status: the cook run is on the portion step.
+  ///
+  /// In en, this message translates to:
+  /// **'Portioning'**
+  String get cookbookRunStatusPortion;
+
+  /// Kochbuch 'Läuft' row: who started the cook run and since when (time of day today, else the date).
+  ///
+  /// In en, this message translates to:
+  /// **'{who} · since {since}'**
+  String cookbookRunStartedBy(String who, String since);
+
+  /// Kochbuch 'Läuft' row: 'who' when the signed-in member started the cook run.
+  ///
+  /// In en, this message translates to:
+  /// **'you'**
+  String get cookbookRunStartedByYou;
+
+  /// Kochbuch 'Läuft' row: 'who' when the member who started the cook run has no stored name.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone'**
+  String get cookbookRunStartedBySomeone;
 
   /// Title of the page that blocks an app older than the minimum version.
   ///
@@ -12359,6 +11987,12 @@ abstract class AppLocalizations {
   /// **'{name} · nutrition still open'**
   String dataExportFoodPending(String name);
 
+  /// Food name in the export whose kcal and macros are the AI's rough estimate of a recipe, not counted values.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · estimated nutrition'**
+  String dataExportFoodEstimated(String name);
+
   /// Separator between items of a list in the export, for example the parts of the day.
   ///
   /// In en, this message translates to:
@@ -12395,29 +12029,11 @@ abstract class AppLocalizations {
   /// **'kcal'**
   String get dataExportKcalUnit;
 
-  /// First step of cooking a recipe in the new cooking flow.
-  ///
-  /// In en, this message translates to:
-  /// **'Recipe'**
-  String get cookStepRecipe;
-
-  /// Second step of cooking: assign each ingredient line from the stock.
-  ///
-  /// In en, this message translates to:
-  /// **'Shopping'**
-  String get cookStepShopping;
-
   /// Third step of cooking: the pot question.
   ///
   /// In en, this message translates to:
   /// **'Cooking'**
   String get cookStepCooking;
-
-  /// Last step of cooking: weight, portions and putting the meal into the stock.
-  ///
-  /// In en, this message translates to:
-  /// **'Portioning'**
-  String get cookStepPortion;
 
   /// Portion count of the recipe being cooked.
   ///
@@ -12443,154 +12059,16 @@ abstract class AppLocalizations {
   /// **'Ingredients'**
   String get cookIngredients;
 
-  /// Button on the recipe step that starts assigning stock to each line.
-  ///
-  /// In en, this message translates to:
-  /// **'Assign ingredients'**
-  String get cookAssignAction;
-
-  /// Kicker of the found page: how many lines the stock suggestions cover.
-  ///
-  /// In en, this message translates to:
-  /// **'{done} of {count} ingredients'**
-  String cookFoundKicker(int done, int count);
-
-  /// Title of the page with the stock suggestions to confirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Found in the stock'**
-  String get cookFoundTitle;
-
-  /// Hint on the found page.
-  ///
-  /// In en, this message translates to:
-  /// **'Does the suggestion fit? Tap the item for another one.'**
-  String get cookFoundHint;
-
-  /// Tooltip of the check button that accepts a stock suggestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Fits'**
-  String get cookFits;
-
-  /// Tooltip of the cross button that turns a stock suggestion down.
-  ///
-  /// In en, this message translates to:
-  /// **'Doesn\'t fit'**
-  String get cookFitsNot;
-
-  /// Warning under a line whose stock items hold less than it needs.
-  ///
-  /// In en, this message translates to:
-  /// **'{amount} missing'**
-  String cookMissingAmount(String amount);
-
-  /// Disabled main button while suggestions are neither accepted nor turned down.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{Check 1 more} other{Check {count} more}}'**
-  String cookCheckRest(int count);
-
-  /// Main button that goes to the next step of cooking.
-  ///
-  /// In en, this message translates to:
-  /// **'Next'**
-  String get cookNext;
-
-  /// Kicker of the page with the lines still to settle.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 ingredient} other{{count} ingredients}}'**
-  String cookOpenKicker(int count);
-
-  /// Title of the page with lines that have no accepted stock suggestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Still to settle'**
-  String get cookOpenTitle;
-
-  /// Hint on the page with the lines still to settle.
-  ///
-  /// In en, this message translates to:
-  /// **'Assign from the stock or leave out.'**
-  String get cookOpenHint;
-
-  /// State of a line that the stock has no fitting item for.
-  ///
-  /// In en, this message translates to:
-  /// **'No item in the stock'**
-  String get cookOpenNoItem;
-
-  /// State of a line whose stock suggestion the cook turned down.
-  ///
-  /// In en, this message translates to:
-  /// **'Suggestion turned down'**
-  String get cookOpenRejected;
-
-  /// State of a line the cook leaves out of this cooking.
-  ///
-  /// In en, this message translates to:
-  /// **'Left out'**
-  String get cookOpenOmitted;
-
   /// Button that picks stock items for a line.
   ///
   /// In en, this message translates to:
   /// **'Assign'**
   String get cookAssign;
 
-  /// Button that leaves a line out of this cooking.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave out'**
-  String get cookOmit;
-
-  /// How much of an item the stock holds.
-  ///
-  /// In en, this message translates to:
-  /// **'{amount} left'**
-  String cookStockLeft(String amount);
-
-  /// Title of the pot question before cooking.
-  ///
-  /// In en, this message translates to:
-  /// **'What do you cook in?'**
-  String get cookPotTitle;
-
-  /// Hint of the pot question.
-  ///
-  /// In en, this message translates to:
-  /// **'Weigh the full pot at the end; its empty weight is known.'**
-  String get cookPotHint;
-
-  /// Empty weight of a saved pot.
-  ///
-  /// In en, this message translates to:
-  /// **'empty {grams} g'**
-  String cookPotEmptyWeight(int grams);
-
-  /// Name of a saved utensil without a name.
-  ///
-  /// In en, this message translates to:
-  /// **'Pot'**
-  String get cookPotUnnamed;
-
-  /// Choice of cooking without weighing a pot: the meal is counted in portions or pieces.
-  ///
-  /// In en, this message translates to:
-  /// **'Without pot · by count'**
-  String get cookPotNone;
-
-  /// Button after the pot question that goes to portioning.
-  ///
-  /// In en, this message translates to:
-  /// **'Done cooking'**
-  String get cookDoneCooking;
-
   /// Title of the portioning step.
   ///
   /// In en, this message translates to:
-  /// **'Into the stock'**
+  /// **'Done cooking'**
   String get cookPortionTitle;
 
   /// Label of the field with the name of the cooked meal.
@@ -12598,12 +12076,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name'**
   String get cookMealName;
-
-  /// Label of the field for the weight of the full pot on the scale.
-  ///
-  /// In en, this message translates to:
-  /// **'Pot with food (g)'**
-  String get cookGrossWeight;
 
   /// The food weight: full pot minus the empty pot.
   ///
@@ -12632,62 +12104,20 @@ abstract class AppLocalizations {
   /// Main button that puts the cooked meal into the stock and takes its ingredients.
   ///
   /// In en, this message translates to:
-  /// **'Into the stock'**
+  /// **'Put into the stock'**
   String get cookToStock;
-
-  /// Snack bar after the cooked meal went into the stock.
-  ///
-  /// In en, this message translates to:
-  /// **'{name} is in the stock'**
-  String cookSaved(String name);
-
-  /// Error when putting the cooked meal into the stock failed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not put the meal into the stock.'**
-  String get cookFinishFailed;
-
-  /// Error: an assigned stock item has no nutrition values.
-  ///
-  /// In en, this message translates to:
-  /// **'An ingredient lacks nutrition values.'**
-  String get cookFinishMissingNutrition;
-
-  /// Error: an assigned item holds less than assigned.
-  ///
-  /// In en, this message translates to:
-  /// **'The stock changed: an item holds too little now.'**
-  String get cookFinishTooLittle;
-
-  /// Error: an assigned item was removed from the stock.
-  ///
-  /// In en, this message translates to:
-  /// **'An item is no longer in the stock.'**
-  String get cookFinishItemGone;
-
-  /// Kicker of the sheet that picks stock items for one line.
-  ///
-  /// In en, this message translates to:
-  /// **'Fill line'**
-  String get cookPickerKicker;
 
   /// Hint of the item picker: each tapped item gives what it has, the last fills the rest.
   ///
   /// In en, this message translates to:
-  /// **'Fitting in the stock · tap in order'**
+  /// **'From your stock'**
   String get cookPickerHint;
 
-  /// Sum of the picked items against what the line needs.
+  /// No description provided for @cookPickerOrder.
   ///
   /// In en, this message translates to:
-  /// **'Together: {have} of {need}'**
-  String cookPickerSum(String have, String need);
-
-  /// Item picker without fitting items.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing fitting in the stock.'**
-  String get cookPickerEmpty;
+  /// **'We use them in the order of the numbers.'**
+  String get cookPickerOrder;
 
   /// Button that assigns the picked items to the line.
   ///
@@ -12695,23 +12125,311 @@ abstract class AppLocalizations {
   /// **'Apply'**
   String get cookPickerApply;
 
-  /// Shown when the recipe being cooked was removed.
+  /// Foot of the picker 'Welches nimmst du?' while the picked foods do not cover what the line needs; amount such as '200 ml'.
   ///
   /// In en, this message translates to:
-  /// **'This recipe is no longer in the cookbook.'**
-  String get cookRecipeGone;
+  /// **'{amount} still missing.'**
+  String kochmodusPickerStillMissing(String amount);
 
-  /// Error when the recipe or the stock could not be loaded.
+  /// Button at the foot of the picker that keeps the picks although something is missing.
   ///
   /// In en, this message translates to:
-  /// **'Could not load the recipe.'**
-  String get cookLoadFailed;
+  /// **'Leave it like this'**
+  String get kochmodusPickerKeep;
 
-  /// Button in the item picker that also lists the stock items whose name does not fit the line.
+  /// Confirmation line under the ingredient card after a new pack went into the stock: pack size, what the recipe takes and what stays.
   ///
   /// In en, this message translates to:
-  /// **'Show all stock items'**
-  String get cookPickerShowAll;
+  /// **'{pack} added. We use {need} of it, {rest} is left.'**
+  String kochmodusEnteredPack(String pack, String need, String rest);
+
+  /// Confirmation line when the recipe takes the whole new pack.
+  ///
+  /// In en, this message translates to:
+  /// **'{pack} added. We use all of it.'**
+  String kochmodusEnteredPackAll(String pack);
+
+  /// Confirmation line for a food whose values the app estimated ('Egal, irgendeins').
+  ///
+  /// In en, this message translates to:
+  /// **'Values estimated. We use {need}.'**
+  String kochmodusEnteredEstimated(String need);
+
+  /// Confirmation line when the app took a food from the stock without asking.
+  ///
+  /// In en, this message translates to:
+  /// **'From your stock. {amount} there.'**
+  String kochmodusEnteredFromStock(String amount);
+
+  /// Text button of the confirmation line; opens the amount page or puts the line back on the card.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get kochmodusEnteredChange;
+
+  /// What a screen reader says for the macros of a food or meal, wherever protein, carbohydrates and fat stand beside the kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein {protein} grams, carbohydrates {carbs} grams, fat {fat} grams'**
+  String macroGramsSemanticLabel(int protein, int carbs, int fat);
+
+  /// Short label for carbohydrates in the one-line macro display, between P for protein and F for fat.
+  ///
+  /// In en, this message translates to:
+  /// **'C'**
+  String get macroGramsCarbsShort;
+
+  /// The kcal of one serving of a cooked meal on the page after cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per serving'**
+  String kochmodusDoneKcalPerPortion(int kcal);
+
+  /// The kcal of one piece of a cooked meal that is eaten in pieces, on the page after cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per piece'**
+  String kochmodusDoneKcalPerPiece(int kcal);
+
+  /// The kcal of one container of a cooked meal that was filled into containers, on the page after cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per container'**
+  String kochmodusDoneKcalPerCan(int kcal);
+
+  /// State of a recipe line such as a pinch of salt, which is not weighed and not counted in the nutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'doesn\'t count'**
+  String get recipeLineNotCounted;
+
+  /// Right side of a row in the food picker of a cooking line when nothing of that food is left for the line because other lines take it.
+  ///
+  /// In en, this message translates to:
+  /// **'planned'**
+  String get kochmodusPickerHeld;
+
+  /// Right side of a row in the food picker of a cooking line when another cooking, named here, takes all of that food.
+  ///
+  /// In en, this message translates to:
+  /// **'planned for {name}'**
+  String kochmodusPickerHeldFor(String name);
+
+  /// Shown under the button that lets the app estimate a food for a recipe line, while the estimate runs.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimating the values …'**
+  String get recipeFoodGuessWorking;
+
+  /// Title of the folded row under the ingredients of a recipe that opens a table with kcal, protein, carbohydrates and fat of each ingredient.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition per ingredient'**
+  String get recipeLineNutritionTitle;
+
+  /// Shown in the recipe idea sheet when no recipe idea came back, above the button to try again.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t put a recipe together just now.'**
+  String get aiChefIdeaFailed;
+
+  /// Second line under a food the cook just entered for a recipe line when the line cannot take an amount from it yet, beside the button that opens the amount page.
+  ///
+  /// In en, this message translates to:
+  /// **'Added. We still need the amount.'**
+  String get kochmodusEnteredNothing;
+
+  /// Head of the table of values per ingredient: the portions its numbers are for.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{For 1 portion} other{For {count} portions}}'**
+  String recipeLineNutritionPortions(int count);
+
+  /// Weight of a line that is estimated (from a piece size or a spoon), with its unit, such as "≈ 20 ml estimated": the weight part of a cooking list subline.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {amount} estimated'**
+  String kochmodusWeightEstimated(String amount);
+
+  /// Shown on the recipe page in the place of the estimated energy and macros while the estimate of a recipe is being made.
+  ///
+  /// In en, this message translates to:
+  /// **'We are estimating the nutrition …'**
+  String get recipeEstimating;
+
+  /// Header of the value column of the food-label nutrition table of a recipe whose values are an estimate for one portion.
+  ///
+  /// In en, this message translates to:
+  /// **'1 portion · estimated'**
+  String get recipeNutritionPortionEstimated;
+
+  /// Main button on the page after cooking while a pot is not weighed yet; it opens the weighing of the first pot that waits.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Weigh the pot} other{Weigh the pots}}'**
+  String kochmodusWeighPotsAction(int count);
+
+  /// Helper under the weight field of a pot or pan: how to find the empty weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty, without the lid. Put it on the scale once.'**
+  String get kitchenUtensilWeightHelper;
+
+  /// Main button of the sheet that adds a pot or pan; short so it stays on one line.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get kitchenUtensilAddShort;
+
+  /// Title of the question after the cook picked a food from the stock that holds more than the recipe line needs.
+  ///
+  /// In en, this message translates to:
+  /// **'How much do you take?'**
+  String get kochmodusTakeAskTitle;
+
+  /// Answer to 'How much do you take?': the amount the recipe line asks for.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} · as in the recipe'**
+  String kochmodusTakeAskRecipe(String amount);
+
+  /// Answer to 'How much do you take?': everything the picked food still holds.
+  ///
+  /// In en, this message translates to:
+  /// **'All of it · {amount}'**
+  String kochmodusTakeAskAll(String amount);
+
+  /// Answer to 'How much do you take?': opens the amount sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Another amount'**
+  String get kochmodusTakeAskOther;
+
+  /// Confirmation under the card after the cook picked a food from the stock: how much the line takes of what the food holds.
+  ///
+  /// In en, this message translates to:
+  /// **'From your stock. We take {take} of {there}.'**
+  String kochmodusEnteredFromStockTake(String take, String there);
+
+  /// Confirmation under the card after the cook picked a food kept by weight for a line in pieces or without an amount: the weight is asked while cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'From your stock. {amount} there. You weigh it while cooking.'**
+  String kochmodusEnteredFromStockWeigh(String amount);
+
+  /// Title above the stock foods whose name resembles the recipe line, in the picker where the cook chooses the food.
+  ///
+  /// In en, this message translates to:
+  /// **'Might fit'**
+  String get kochmodusPickerSuggested;
+
+  /// Title above the other stock foods in the picker where the cook chooses the food.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything in stock'**
+  String get kochmodusPickerAll;
+
+  /// Energy of one portion on the card 'Alles bereit' while the weight of at least one ingredient is only estimated.
+  ///
+  /// In en, this message translates to:
+  /// **'Per serving · ≈ {kcal} kcal'**
+  String kochmodusAssignKcalPerPortionEstimated(int kcal);
+
+  /// Header of the value column of the food label under 'Alles bereit' while the weight of at least one ingredient is only estimated.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion · estimated'**
+  String get kochmodusNutritionPortionEstimated;
+
+  /// Warning on the card of an assigned ingredient whose weight is not known and must be weighed while cooking before the meal can go into the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'No weight yet: weigh it while cooking'**
+  String get kochmodusCardWeighWhileCooking;
+
+  /// Title above the ingredients added while cooking, in the guide, once none of them is open any more.
+  ///
+  /// In en, this message translates to:
+  /// **'Just added'**
+  String get kochmodusGuideAddedSettled;
+
+  /// Reason on the page after cooking why the meal cannot go into the stock when the cook counts pieces without a pot and no line takes a food.
+  ///
+  /// In en, this message translates to:
+  /// **'No ingredient from your stock yet'**
+  String get kochmodusBlockNoFood;
+
+  /// Note in the sheet that lists the estimated ingredients when at least one of them has no weight at all and blocks finishing.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines without a weight must be weighed. For the others weighing is optional.'**
+  String get kochmodusEstimatesMustWeigh;
+
+  /// Confirmation under the card after a new food went into the stock for a line whose weight is asked while cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'{pack} entered. You weigh it while cooking.'**
+  String kochmodusEnteredPackWeigh(String pack);
+
+  /// Label of the pot weight field on the page after cooking when the meal is served in pieces, so the pot's weight is not needed.
+  ///
+  /// In en, this message translates to:
+  /// **'{pot} with food (g) · optional'**
+  String kochmodusPotGrossOptional(String pot);
+
+  /// Note under 'Noch zu wiegen' in the sheet 'Ansehen' on the page after cooking, when every listed ingredient lacks a weight.
+  ///
+  /// In en, this message translates to:
+  /// **'You still need to weigh these ingredients.'**
+  String get kochmodusToWeighNote;
+
+  /// Shown in the place of a recipe idea's picture while the picture is being made.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating the picture …'**
+  String get recipeIdeaPictureComing;
+
+  /// Feedback line above the voice buttons: what the cook typed with "Schreiben".
+  ///
+  /// In en, this message translates to:
+  /// **'Typed: {text}'**
+  String kochmodusVoiceTyped(String text);
+
+  /// Under the count of a cooked meal on the Portion step: how much food goes into each container or portion, from the weighed pot.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, can{Per container} other{Per portion}}: {grams} g'**
+  String kochmodusMealPerCount(String kind, int grams);
+
+  /// Under the count of a meal cooked without a pot: roughly how much food goes into each container or portion, from the weights of its ingredients.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, can{Per container} other{Per portion}}: ≈ {grams} g'**
+  String kochmodusMealPerCountEstimated(String kind, int grams);
+
+  /// Android notification channel name of the silent notification that counts down a running cooking timer.
+  ///
+  /// In en, this message translates to:
+  /// **'Running cooking timers'**
+  String get kochmodusTimerCountdownChannelName;
+
+  /// Recipe page header: energy of one portion from the Vorrat foods the cook planned for every ingredient; real values, not an estimate.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per portion'**
+  String recipePlannedKcal(int kcal);
+
+  /// Title of the silent notification that counts down a running cooking timer; label is the timer's name, e.g. 'Schritt 3'.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} is running'**
+  String kochmodusTimerCountdownTitle(String label);
+
+  /// Kochbuch recipe card: energy per portion from the Vorrat foods planned for every ingredient; real values, not an estimate.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal'**
+  String cookbookCardKcal(int kcal);
 
   /// An amount in grams in the cooking flow, such as "150 g".
   ///
@@ -12725,10 +12443,10 @@ abstract class AppLocalizations {
   /// **'{amount} ml'**
   String cookAmountMilliliters(String amount);
 
-  /// A count of pieces in the cooking flow, such as "2 pc".
+  /// A count of pieces in the cooking flow, such as "2 pcs".
   ///
   /// In en, this message translates to:
-  /// **'{amount} pc'**
+  /// **'{amount} pcs'**
   String cookAmountPieces(String amount);
 
   /// An amount followed by its food in the cooking flow, such as "150 g Barilla" or "1 mittlere Zwiebel".
@@ -12737,23 +12455,1529 @@ abstract class AppLocalizations {
   /// **'{amount} {food}'**
   String cookAmountOf(String amount, String food);
 
-  /// What a Vorrat item still holds, shown after the amount a recipe line takes of it.
+  /// Cooking mode step bar: tab for choosing the pots
   ///
   /// In en, this message translates to:
-  /// **'· {amount} left'**
-  String cookStockAfterTake(String amount);
+  /// **'Pots'**
+  String get kochmodusStepPots;
 
-  /// Shown on the portion step of cooking when no recipe line takes anything from the Vorrat, so there is no meal to put in.
+  /// Cooking mode step bar: tab for portioning the cooked meal
   ///
   /// In en, this message translates to:
-  /// **'Nothing from the Vorrat goes into this meal yet.'**
-  String get cookFinishNothingTaken;
+  /// **'Portion'**
+  String get kochmodusStepPortion;
 
-  /// Shown on the pot step of cooking when the saved pots fail to load, above a retry button.
+  /// Cooking mode amount sheet: small uppercase kicker above the line name
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t load your pots.'**
-  String get cookPotLoadFailed;
+  /// **'Amount for this cooking'**
+  String get kochmodusAmountKicker;
+
+  /// Cooking mode amount sheet: the recipe's amount for its portions, e.g. 'Rezept: 200 g für 2'
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe: {amount} for {portions}'**
+  String kochmodusAmountRecipe(String amount, int portions);
+
+  /// Cooking mode amount sheet: note under the amount stepper
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to this cooking. The recipe stays as it is.'**
+  String get kochmodusAmountNote;
+
+  /// Cooking mode amount sheet: preset chip for what the line's assigned Vorrat items still have free, e.g. 'Vorhandenes · 170 g'
+  ///
+  /// In en, this message translates to:
+  /// **'Available · {amount}'**
+  String kochmodusAmountPresetAvailable(String amount);
+
+  /// Cooking mode amount sheet: preset chip for the recipe amount for these portions, e.g. 'Rezept · 250 g'
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe · {amount}'**
+  String kochmodusAmountPresetRecipe(String amount);
+
+  /// Cooking mode weigh sheet: kicker when changing an estimated weight
+  ///
+  /// In en, this message translates to:
+  /// **'Change estimate'**
+  String get kochmodusEstimateKicker;
+
+  /// Cooking mode weigh sheet: kicker when weighing on the scale. Also the button on a cooking list line with an estimated or missing weight that opens the keypad.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh'**
+  String get kochmodusWeigh;
+
+  /// Kochmodus weigh sheet: hint with the estimated weight in grams, from the recipe, a piece size or a spoon.
+  ///
+  /// In en, this message translates to:
+  /// **'About {grams} g'**
+  String kochmodusWeighRecipeEstimate(int grams);
+
+  /// Cooking mode weigh sheet: confirm button with the typed grams
+  ///
+  /// In en, this message translates to:
+  /// **'Weighed: {grams} g'**
+  String kochmodusWeighConfirm(int grams);
+
+  /// Cooking mode weigh sheet: confirm button when changing an estimate
+  ///
+  /// In en, this message translates to:
+  /// **'Use: {grams} g'**
+  String kochmodusEstimateConfirm(int grams);
+
+  /// Cooking mode: error snack bar when an action could not be saved
+  ///
+  /// In en, this message translates to:
+  /// **'We could not save the cooking.'**
+  String get kochmodusSaveFailed;
+
+  /// Cooking mode: error snack bar when Verwerfen failed
+  ///
+  /// In en, this message translates to:
+  /// **'We could not discard the cooking.'**
+  String get kochmodusDiscardFailed;
+
+  /// Error snack bar on the Kochmodus step 'Portion' when 'In Vorrat' fails (replaces the old cookFinishFailed there).
+  ///
+  /// In en, this message translates to:
+  /// **'We could not put the meal into the stock. Check the lines and try again.'**
+  String get kochmodusFinishFailed;
+
+  /// Cooking mode: snack bar with undo after Verwerfen
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking discarded'**
+  String get kochmodusDiscarded;
+
+  /// Cooking mode page: error view with retry
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load the cooking.'**
+  String get kochmodusLoadFailed;
+
+  /// Cooking mode page: shown when the run or recipe was finished, discarded elsewhere, or never existed
+  ///
+  /// In en, this message translates to:
+  /// **'This cooking is gone.'**
+  String get kochmodusGone;
+
+  /// Cooking mode: button back to the cookbook on the gone view (and for the done view)
+  ///
+  /// In en, this message translates to:
+  /// **'To the cookbook'**
+  String get kochmodusBackToCookbook;
+
+  /// Kicker above a cooking step title and above the cooking list title (shown in capitals): recipe name and portions. Shared by Töpfe, Zuweisen, Kochen and Resümee.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {portions, plural, =1{1 serving} other{{portions} servings}}'**
+  String kochmodusRunKicker(String name, int portions);
+
+  /// Title of the Töpfe step of the cooking page.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you cooking in?'**
+  String get kochmodusPotsTitle;
+
+  /// Reason under the title of the pots step.
+  ///
+  /// In en, this message translates to:
+  /// **'We subtract the pot\'s weight later so your portions are right.'**
+  String get kochmodusPotsLead;
+
+  /// Tile on the pots step that adds a kitchen utensil.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a pot or pan'**
+  String get kochmodusPotsAdd;
+
+  /// Line under a utensil tile on Töpfe: the utensil's empty weight.
+  ///
+  /// In en, this message translates to:
+  /// **'empty {grams} g'**
+  String kochmodusPotEmptyWeight(int grams);
+
+  /// Word between two rules, between the pot tiles and the 'No pot' row on Töpfe.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get kochmodusPotsOr;
+
+  /// Title of the radio row on Töpfe for counting finished pieces instead of weighing pots.
+  ///
+  /// In en, this message translates to:
+  /// **'No pot'**
+  String get kochmodusPotsCountedTitle;
+
+  /// Subtitle of the 'No pot' radio row on Töpfe.
+  ///
+  /// In en, this message translates to:
+  /// **'We count the finished pieces, such as pancakes or meatballs'**
+  String get kochmodusPotsCountedHint;
+
+  /// Switch on Töpfe: the meals go into containers afterwards.
+  ///
+  /// In en, this message translates to:
+  /// **'Into containers afterwards'**
+  String get kochmodusPotsCansTitle;
+
+  /// Subtitle of the 'Into containers afterwards' switch on Töpfe.
+  ///
+  /// In en, this message translates to:
+  /// **'You fill everything into containers; each one becomes a portion.'**
+  String get kochmodusPotsCansHint;
+
+  /// Label of the info line on Töpfe; the result of the choice follows in bold.
+  ///
+  /// In en, this message translates to:
+  /// **'Makes:'**
+  String get kochmodusPotsResultLabel;
+
+  /// Result on Töpfe when 'No pot' is picked.
+  ///
+  /// In en, this message translates to:
+  /// **'finished pieces, counted'**
+  String get kochmodusPotsResultCounted;
+
+  /// Result on Töpfe with one pot picked, no containers; pot = utensil name.
+  ///
+  /// In en, this message translates to:
+  /// **'all together in {pot}'**
+  String kochmodusPotsResultTogether(String pot);
+
+  /// Result on Töpfe with one pot picked and containers on.
+  ///
+  /// In en, this message translates to:
+  /// **'all together, then into containers'**
+  String get kochmodusPotsResultTogetherCans;
+
+  /// Result on Töpfe with two or more pots picked, no containers.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 pot, separate} other{{count} pots, separate}}'**
+  String kochmodusPotsResultSeparate(int count);
+
+  /// Result on Töpfe with two or more pots picked and containers on.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 pot, then into containers} other{{count} pots separately, then into containers}}'**
+  String kochmodusPotsResultSeparateCans(int count);
+
+  /// Main button on Töpfe for free cooking; opens Kochen.
+  ///
+  /// In en, this message translates to:
+  /// **'Next · Cook'**
+  String get kochmodusPotsNextCook;
+
+  /// Line above the turned-off Next button while no pot is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a pot or “No pot”.'**
+  String get kochmodusPotsChooseHint;
+
+  /// Head title of the assigning page while an ingredient is open; also the title of the answer sheet of an open line.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you have?'**
+  String get kochmodusAssignTitle;
+
+  /// Progress above the thin bar in the head of the assigning page.
+  ///
+  /// In en, this message translates to:
+  /// **'{settled} of {total} sorted'**
+  String kochmodusAssignProgress(int settled, int total);
+
+  /// Head title of the assigning page once every ingredient is settled.
+  ///
+  /// In en, this message translates to:
+  /// **'All set'**
+  String get kochmodusAssignSettledTitle;
+
+  /// No description provided for @kochmodusAssignToBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One ingredient goes on the shopping list.} other{{count} ingredients go on the shopping list.}}'**
+  String kochmodusAssignToBuy(int count);
+
+  /// No description provided for @kochmodusAssignAlmostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost everything here'**
+  String get kochmodusAssignAlmostTitle;
+
+  /// Energy of one portion under the Zuweisen head once everything is settled.
+  ///
+  /// In en, this message translates to:
+  /// **'Per serving · {kcal} kcal'**
+  String kochmodusAssignKcalPerPortion(int kcal);
+
+  /// No description provided for @kochmodusAssignAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All ingredients'**
+  String get kochmodusAssignAll;
+
+  /// No description provided for @kochmodusAssignReadyText.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One portion. You can start.} other{{count} portions. You can start.}}'**
+  String kochmodusAssignReadyText(int count);
+
+  /// No description provided for @kochmodusCardAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you have this?'**
+  String get kochmodusCardAsk;
+
+  /// No description provided for @kochmodusCardReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get kochmodusCardReady;
+
+  /// No description provided for @kochmodusCardNotCounted.
+  ///
+  /// In en, this message translates to:
+  /// **'Doesn\'t count toward the nutrition.'**
+  String get kochmodusCardNotCounted;
+
+  /// No description provided for @kochmodusCardChangeAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Change amount'**
+  String get kochmodusCardChangeAmount;
+
+  /// No description provided for @kochmodusRowThere.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} here'**
+  String kochmodusRowThere(String amount);
+
+  /// No description provided for @kochmodusRowReady.
+  ///
+  /// In en, this message translates to:
+  /// **'here'**
+  String get kochmodusRowReady;
+
+  /// No description provided for @kochmodusRowShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'on the list'**
+  String get kochmodusRowShopping;
+
+  /// No description provided for @kochmodusRowIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'left out'**
+  String get kochmodusRowIgnored;
+
+  /// No description provided for @kochmodusRowNotCounted.
+  ///
+  /// In en, this message translates to:
+  /// **'doesn\'t count'**
+  String get kochmodusRowNotCounted;
+
+  /// No description provided for @kochmodusRowNow.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get kochmodusRowNow;
+
+  /// No description provided for @kochmodusRowOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'open'**
+  String get kochmodusRowOpen;
+
+  /// No description provided for @kochmodusRowShort.
+  ///
+  /// In en, this message translates to:
+  /// **'not enough'**
+  String get kochmodusRowShort;
+
+  /// No description provided for @kochmodusRowUnclear.
+  ///
+  /// In en, this message translates to:
+  /// **'amount unclear'**
+  String get kochmodusRowUnclear;
+
+  /// Hint in the Zuweisen head after opening a paused run brought its shopping lines back to open.
+  ///
+  /// In en, this message translates to:
+  /// **'Back from shopping: what was on the shopping list is open again.'**
+  String get kochmodusAssignReopenedHint;
+
+  /// Choice button on an open line: put it on the shopping list.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy'**
+  String get kochmodusAssignShop;
+
+  /// Answer on an open ingredient, and in the change sheet: leave it out of this cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave out'**
+  String get kochmodusAssignIgnore;
+
+  /// Answer on an open ingredient, and in the change sheet: it is at home; opens the Vorrat picker or the product search.
+  ///
+  /// In en, this message translates to:
+  /// **'Have it'**
+  String get kochmodusAssignHave;
+
+  /// Sub line of an open line while the Einkaufen choice waits 1.2 s.
+  ///
+  /// In en, this message translates to:
+  /// **'Goes on the shopping list'**
+  String get kochmodusAssignPendingShopping;
+
+  /// Button that opens a change flow: on a line of the Prüfen sheet (keypad), on a settled line in Zuweisen (assign flow again), on a weighed line of the cooking list (keypad again).
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get kochmodusChange;
+
+  /// Title of the sheet behind 'Ändern' of a settled ingredient.
+  ///
+  /// In en, this message translates to:
+  /// **'Change ingredient'**
+  String get kochmodusChangeTitle;
+
+  /// Line under 'Hab ich' in the change sheet of an ingredient.
+  ///
+  /// In en, this message translates to:
+  /// **'From your stock or add it new'**
+  String get kochmodusChangeHaveSub;
+
+  /// Line under 'Weglassen' in the change sheet of an ingredient.
+  ///
+  /// In en, this message translates to:
+  /// **'We cook without this ingredient'**
+  String get kochmodusChangeIgnoreSub;
+
+  /// Button of an ingredient whose text names no amount and that has no rough weight; opens the amount sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter amount'**
+  String get kochmodusAssignSetAmount;
+
+  /// Sub line of an assigned line: the first Vorrat item it takes and how many more items.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}{more, plural, =0{} other{ + {more} more}}'**
+  String kochmodusAssignItems(String name, int more);
+
+  /// Sub line of an assigned ingredient: its foods and what they have for it; amount has its unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{items} · {amount} at home'**
+  String kochmodusAssignItemThere(String items, String amount);
+
+  /// Note of an assigned line whose Vorrat items hold less than the recipe's amount; amount has its unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} missing'**
+  String kochmodusAmountMissing(String amount);
+
+  /// Chip of an ingredient with too little: take what is there and put the rest on the shopping list; amount has its unit.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy {amount}'**
+  String kochmodusAmountBuyRest(String amount);
+
+  /// Chip of an ingredient with too little: pick another Vorrat item that fills the rest.
+  ///
+  /// In en, this message translates to:
+  /// **'Second pack'**
+  String get kochmodusAmountSecondPack;
+
+  /// Chip of a line whose items hold too little: the line takes only what is there; amount has its unit.
+  ///
+  /// In en, this message translates to:
+  /// **'Take only {amount}'**
+  String kochmodusAmountTakeOnly(String amount);
+
+  /// Calm note of a ready ingredient that takes less than the recipe says; amount has its unit.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {amount}'**
+  String kochmodusReadyOnly(String amount);
+
+  /// Calm note of a ready ingredient whose missing rest waits on the shopping list.
+  ///
+  /// In en, this message translates to:
+  /// **'The rest goes on the shopping list'**
+  String get kochmodusReadyRestOnList;
+
+  /// Problem label of a line in Zuweisen whose item holds less than the line takes (amount with unit, such as '200 g'). Also the sub line of an ingredient on the Portion step that takes more than its stock item holds.
+  ///
+  /// In en, this message translates to:
+  /// **'only {amount} left'**
+  String kochmodusOnlyAvailable(String amount);
+
+  /// Problem label of a line in Zuweisen whose Vorrat item is gone. Also the sub line of an ingredient on the Portion step whose stock item is no longer in the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry missing'**
+  String get kochmodusEntryMissing;
+
+  /// Problem label of a line in Zuweisen whose item lacks energy or a macro. Also the sub line of an ingredient on the Portion step whose stock item lacks energy or a macro.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition missing'**
+  String get kochmodusNutritionMissing;
+
+  /// Label above the chips of assigned lines that still need a weight, in the guide step and on the cooking list on Kochen. A chip opens the weigh sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Still to weigh'**
+  String get kochmodusToWeigh;
+
+  /// A line without a known weight: problem label in Zuweisen, subline on the cooking list, and the Portion step ingredient list and Prüfen sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight missing'**
+  String get kochmodusWeightMissing;
+
+  /// Label of the '+' button at the end of the assigning page (plus icon in front).
+  ///
+  /// In en, this message translates to:
+  /// **'Another ingredient'**
+  String get kochmodusAssignAddLine;
+
+  /// Switch in the Zuweisen foot: cook with the guide; only when the recipe has steps.
+  ///
+  /// In en, this message translates to:
+  /// **'With instructions'**
+  String get kochmodusAssignWithGuide;
+
+  /// Sub line of the switch 'Mit Anleitung' at the foot of the assigning page.
+  ///
+  /// In en, this message translates to:
+  /// **'Step by step through the method'**
+  String get kochmodusAssignWithGuideSub;
+
+  /// Kochmodus assign step: confirmation after pausing for later; the stock stays reserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused. The stock stays reserved.'**
+  String get kochmodusAssignLaterDone;
+
+  /// Outlined button in the Zuweisen foot; only closes the page.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get kochmodusAssignLater;
+
+  /// Main button in the Zuweisen foot: start cooking (disabled while lines are open).
+  ///
+  /// In en, this message translates to:
+  /// **'Cook'**
+  String get kochmodusAssignCook;
+
+  /// Main button at the foot of the assigning page when everything is settled and some ingredients wait for the shopping; pauses and goes back to the recipe page.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop first'**
+  String get kochmodusAssignPause;
+
+  /// Snackbar after pausing for the shopping; the page has closed.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s on the shopping list. After shopping: Continue.'**
+  String get kochmodusPausedForShopping;
+
+  /// Action of the snack bar after pausing for the shopping; opens the shopping list.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping list'**
+  String get kochmodusShoppingListAction;
+
+  /// Error snackbar when pausing for the shopping fails.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t put the ingredients on the shopping list.'**
+  String get kochmodusPauseFailed;
+
+  /// Error snack bar in cooking mode when a food found by search, barcode or AI for an ingredient line could not be saved to the stock (Vorrat).
+  ///
+  /// In en, this message translates to:
+  /// **'We could not add the food to the stock.'**
+  String get kochmodusFoodAddFailed;
+
+  /// Main button at the foot of the cooking list and on the last guide step; goes on to portioning.
+  ///
+  /// In en, this message translates to:
+  /// **'Done · Portion'**
+  String get kochmodusToPortion;
+
+  /// Automatic name of a timer started from the cooking list (timer sheet title, timer bar, notification).
+  ///
+  /// In en, this message translates to:
+  /// **'Timer {number}'**
+  String kochmodusTimerName(int number);
+
+  /// Tooltip of the icon button on the cooking list that switches to the step-by-step guide.
+  ///
+  /// In en, this message translates to:
+  /// **'Cook with the instructions'**
+  String get kochmodusShowGuide;
+
+  /// Button on the cooking list that opens the timer sheet; also the kicker of the timer sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer'**
+  String get kochmodusTimerAction;
+
+  /// Count line under the title of the cooking list: lines that count (not ignored).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ingredient} other{{count} ingredients}}'**
+  String kochmodusCookCount(int count);
+
+  /// Count line on the cooking list when lines came in while cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ingredient} other{{count} ingredients}} · {added} just added'**
+  String kochmodusCookCountAdded(int count, int added);
+
+  /// Empty state of the cooking list (free cooking without lines).
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in the pot yet'**
+  String get kochmodusCookEmptyTitle;
+
+  /// Hint under the empty state of the cooking list.
+  ///
+  /// In en, this message translates to:
+  /// **'Just say what goes in: “200 g rice”.'**
+  String get kochmodusCookEmptyHint;
+
+  /// Subline of a line added while cooking that is not assigned yet.
+  ///
+  /// In en, this message translates to:
+  /// **'New · sorted out when portioning'**
+  String get kochmodusCookNewOpen;
+
+  /// Weight part of a line's subline on the cooking list when the cook weighed it.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g weighed'**
+  String kochmodusWeightWeighed(int grams);
+
+  /// Subline of a line on the cooking list: Vorrat item name and its weight text.
+  ///
+  /// In en, this message translates to:
+  /// **'{food} · {weight}'**
+  String kochmodusCookLineSub(String food, String weight);
+
+  /// Tooltip of the remove button of a line added while cooking (list row and guide chip).
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get kochmodusRemoveLine;
+
+  /// SnackBar after a line is removed on the Portion step; it offers Rückgängig to bring the line back.
+  ///
+  /// In en, this message translates to:
+  /// **'{line} removed'**
+  String kochmodusLineRemoved(String line);
+
+  /// Automatic name of a timer started in the guide (time button or voice).
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step}'**
+  String kochmodusGuideTimerLabel(int step);
+
+  /// Kochmodus guide step: label of a timer chip with the step number and the timer number.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} · {number}'**
+  String kochmodusGuideTimerLabelNumbered(int step, int number);
+
+  /// Uppercase kicker at the top of a guide page.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {count}'**
+  String kochmodusGuideProgress(int step, int count);
+
+  /// Tooltip of the icon button in the guide that switches to the cooking list.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ingredients'**
+  String get kochmodusShowList;
+
+  /// Caption under the time buttons of a guide page.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a time to start a timer.'**
+  String get kochmodusGuideTimerHint;
+
+  /// Header of the chips of lines added while cooking, on a guide page.
+  ///
+  /// In en, this message translates to:
+  /// **'Just added · sorted out when portioning'**
+  String get kochmodusGuideAdded;
+
+  /// Button at the foot of the guide: previous step.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get kochmodusGuideBack;
+
+  /// Main button at the foot of the guide: next step.
+  ///
+  /// In en, this message translates to:
+  /// **'Next step'**
+  String get kochmodusGuideNext;
+
+  /// Replaces the rest time of a timer that rang, in the timer bar.
+  ///
+  /// In en, this message translates to:
+  /// **'done'**
+  String get kochmodusTimerDone;
+
+  /// Rest time of a running timer; seconds come zero-padded to two digits.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}:{seconds}'**
+  String kochmodusTimerLeft(int minutes, String seconds);
+
+  /// Button in the timer bar that lets a timer ring a minute later.
+  ///
+  /// In en, this message translates to:
+  /// **'+1 min'**
+  String get kochmodusTimerExtend;
+
+  /// Button in the timer bar that stops a timer.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get kochmodusTimerStop;
+
+  /// A timer duration on a button of the timer sheet or a guide time button.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String kochmodusTimerMinutes(int minutes);
+
+  /// Timer duration that is not whole minutes, on the timer sheet buttons and the guide step's timer button, e.g. '1 min 30 s'.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min {seconds} s'**
+  String kochmodusTimerMinutesSeconds(int minutes, int seconds);
+
+  /// A timer duration below one minute on a button.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} s'**
+  String kochmodusTimerSeconds(int seconds);
+
+  /// Guide time button for a span such as 8–10 minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{from}–{to} min'**
+  String kochmodusTimerMinuteRange(int from, int to);
+
+  /// Hint under the duration buttons of the timer sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'One tap starts it.'**
+  String get kochmodusTimerSheetHint;
+
+  /// Title of the Vorrat picker of one ingredient; the ingredient stands above it.
+  ///
+  /// In en, this message translates to:
+  /// **'Which one do you take?'**
+  String get kochmodusPickerTitle;
+
+  /// Last row of the Vorrat picker: opens the product search with the ingredient's food.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for something else'**
+  String get kochmodusPickerSearchOther;
+
+  /// Title of the sheet that opens from Schreiben while cooking, to type new lines.
+  ///
+  /// In en, this message translates to:
+  /// **'What goes in?'**
+  String get kochmodusTypeTitle;
+
+  /// Feedback line above the voice buttons: what speech recognition (or typing) understood.
+  ///
+  /// In en, this message translates to:
+  /// **'Heard: {text}'**
+  String kochmodusVoiceHeard(String text);
+
+  /// Label of the speak button while the microphone listens; a tap stops it.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening …'**
+  String get kochmodusVoiceListening;
+
+  /// Button at the foot of Kochen that starts voice input.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak'**
+  String get kochmodusVoiceSpeak;
+
+  /// Hint under the voice buttons on the cooking list.
+  ///
+  /// In en, this message translates to:
+  /// **'“200 g rice” · “no” takes the last line back'**
+  String get kochmodusVoiceHintList;
+
+  /// Hint under the voice buttons in the guide.
+  ///
+  /// In en, this message translates to:
+  /// **'“next” · “back” · “timer 5 minutes” · “200 g rice”'**
+  String get kochmodusVoiceHintGuide;
+
+  /// Default meal name on the Kochmodus Portion step for a recipe cooked in two pots or more: recipe name and pot name.
+  ///
+  /// In en, this message translates to:
+  /// **'{recipe} · {pot}'**
+  String kochmodusMealNameInPot(String recipe, String pot);
+
+  /// Default meal name for free cooking from the foods of the first two lines (Portion step name field).
+  ///
+  /// In en, this message translates to:
+  /// **'{first} with {second}'**
+  String kochmodusMealNameWith(String first, String second);
+
+  /// Default meal name for free cooking without lines (Portion step name field).
+  ///
+  /// In en, this message translates to:
+  /// **'Cooked freely'**
+  String get kochmodusMealNameFree;
+
+  /// Name of a chosen pot without its own name, by its place; Portion step weight field, pot chip and weigh sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Pot {number}'**
+  String kochmodusPotNumbered(int number);
+
+  /// Label of the mandatory pot weight field on the Portion step (pot with food on the scale).
+  ///
+  /// In en, this message translates to:
+  /// **'{pot} with food (g) · required'**
+  String kochmodusPotGross(String pot);
+
+  /// Value of the empty pot weight field on the Portion step before weighing.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to weigh'**
+  String get kochmodusPotWeighHint;
+
+  /// Sub line of the weigh keypad sheet when weighing a pot on the Portion step; grams = empty weight of the pot.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty {grams} g · put the pot with the food on the scale'**
+  String kochmodusPotWeighSub(int grams);
+
+  /// Count label instead of Portions when the meals go into cans (Portion step segment and counter).
+  ///
+  /// In en, this message translates to:
+  /// **'Cans'**
+  String get kochmodusMealCans;
+
+  /// Question beside the count of a cooked meal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, piece{How many pieces are there?} can{How many containers are there?} other{How many portions are there?}}'**
+  String kochmodusMealCountQuestion(String kind);
+
+  /// Header of the ingredient list on the Portion step with two pots or more; tapping a line's pot chip moves it to the next pot.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients · tap a pot to switch'**
+  String get kochmodusPortionLinesSwitch;
+
+  /// Title of the box on the Portion step with lines added while cooking that are not assigned yet (button Übernehmen below).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new line} other{{count} new lines}}'**
+  String kochmodusNewLines(int count);
+
+  /// Sub line of an ingredient on the Portion step that is not assigned from the stock yet.
+  ///
+  /// In en, this message translates to:
+  /// **'not assigned yet'**
+  String get kochmodusLineNotAssigned;
+
+  /// Joins two parts with a middle dot: food and weight of a Portion line; portions and estimate summary on the Fertig view.
+  ///
+  /// In en, this message translates to:
+  /// **'{first} · {second}'**
+  String kochmodusJoined(String first, String second);
+
+  /// Button next to the estimated-lines hint at the foot of the Portion step; opens the list of estimated lines.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get kochmodusReview;
+
+  /// How many ingredients carry only an estimated weight or none: foot of the done-cooking step and title of its sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{We estimated the weight of one ingredient} other{We estimated the weight of {count} ingredients}}'**
+  String kochmodusEstimatedIngredients(int count);
+
+  /// Note below the title of the Prüfen sheet (estimated lines).
+  ///
+  /// In en, this message translates to:
+  /// **'Weighing is optional. The nutrition uses what is taken from the stock.'**
+  String get kochmodusEstimatesNote;
+
+  /// Sub line of an estimated line in the Prüfen sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'not weighed · about {grams} g'**
+  String kochmodusEstimateRow(int grams);
+
+  /// Sub line of the weigh keypad when changing an estimate from the Prüfen sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Already cooked · only roughly'**
+  String get kochmodusEstimateSub;
+
+  /// Main button that closes the Prüfen sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks right'**
+  String get kochmodusEstimatesDone;
+
+  /// Subtitle of the switch Ins Kochbuch on the Portion step of free cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'keep as a recipe'**
+  String get kochmodusToCookbookNote;
+
+  /// Disabled In Vorrat button on the Portion step: a line takes more than its stock item holds.
+  ///
+  /// In en, this message translates to:
+  /// **'{line}: only {amount} left'**
+  String kochmodusBlockShort(String line, String amount);
+
+  /// Disabled In Vorrat button: a stock item of the line is gone.
+  ///
+  /// In en, this message translates to:
+  /// **'{line}: entry missing'**
+  String kochmodusBlockEntryMissing(String line);
+
+  /// Disabled In Vorrat button: a stock item of the line lacks energy or a macro.
+  ///
+  /// In en, this message translates to:
+  /// **'{line}: nutrition missing'**
+  String kochmodusBlockNutritionMissing(String line);
+
+  /// Disabled In Vorrat button: pots without a weight above their empty weight.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Weigh the pot first} other{Weigh the pots first}}'**
+  String kochmodusBlockWeighPots(int count);
+
+  /// Disabled In Vorrat button: a pot or the counted meal holds no line that takes something from the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Pot without ingredients'**
+  String get kochmodusBlockPotEmpty;
+
+  /// Cooking mode, button on Portion: a line names an amount but takes nothing from the Vorrat, so it must be weighed or removed first
+  ///
+  /// In en, this message translates to:
+  /// **'{line}: weigh or remove it first'**
+  String kochmodusBlockWithoutTake(String line);
+
+  /// Disabled In Vorrat button on the Portion step: a line without a weight that is not a g or ml item, so it takes nothing; the user must pick another food or remove the line.
+  ///
+  /// In en, this message translates to:
+  /// **'{line}: pick another food or remove it first'**
+  String kochmodusBlockOtherFood(String line);
+
+  /// Disabled In Vorrat button on the Portion step with several pots: the named pot holds no line that takes something from the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'{pot}: no ingredients'**
+  String kochmodusBlockPotEmptyNamed(String pot);
+
+  /// Cooking mode, line on Portion: it was weighed but its item cannot give the amount, so nothing is taken
+  ///
+  /// In en, this message translates to:
+  /// **'We can\'t tell how much of it goes into the pot.'**
+  String get kochmodusTakesNothing;
+
+  /// No description provided for @kochmodusTakeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Take something else'**
+  String get kochmodusTakeOther;
+
+  /// No description provided for @kochmodusUncounted.
+  ///
+  /// In en, this message translates to:
+  /// **'{food} doesn\'t count yet: its weight is missing'**
+  String kochmodusUncounted(String food);
+
+  /// Cooking mode, Vorrat picker: the search found no food
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found'**
+  String get kochmodusPickerNoHits;
+
+  /// Disabled In Vorrat button: lines are neither assigned nor ignored yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Settle the new lines first'**
+  String get kochmodusBlockLinesOpen;
+
+  /// Header of the eaten column of the nutrition table on the Portion step without a pot weight; kind is piece, can or portion.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, piece{Piece} can{Can} other{Portion}}'**
+  String kochmodusNutritionPer(String kind);
+
+  /// Header of the eaten column of the nutrition table on the Portion step with the weight of one portion, can or piece.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, piece{Piece} can{Can} other{Portion}} · {grams} g'**
+  String kochmodusNutritionPerWeight(String kind, int grams);
+
+  /// Headline after the cooked meals went into the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoy your meal!'**
+  String get kochmodusDoneTitle;
+
+  /// What a cooked meal put into the stock, in portions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One portion of {name} is in the stock now.} other{{count} portions of {name} are in the stock now.}}'**
+  String kochmodusDonePortions(int count, String name);
+
+  /// What a cooked meal put into the stock, in pieces.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One piece of {name} is in the stock now.} other{{count} pieces of {name} are in the stock now.}}'**
+  String kochmodusDonePieces(int count, String name);
+
+  /// What a cooked meal put into the stock, in containers.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One container of {name} is in the stock now.} other{{count} containers of {name} are in the stock now.}}'**
+  String kochmodusDoneCans(int count, String name);
+
+  /// Main button after cooking: opens the cooked meal's page in the stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat now'**
+  String get kochmodusDoneEat;
+
+  /// Fertig view summary part when free cooking also became a Kochbuch recipe.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe is in the cookbook now too.'**
+  String get kochmodusDoneInCookbook;
+
+  /// Kochmodus timer sheet: hint shown when exact alarms are not allowed; the timer may ring a few minutes late.
+  ///
+  /// In en, this message translates to:
+  /// **'Without permission for exact alarms, the timer may ring a few minutes late.'**
+  String get kochmodusTimerInexactHint;
+
+  /// Kochmodus timer sheet: button next to the hint about exact alarms (asks for the permission) or about notifications that are off (opens the notification settings).
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get kochmodusTimerAllowExact;
+
+  /// Hint on the Kochmodus timer sheet when this device was asked for the notification permission and notifications are off or the cook timer channel is muted; shown next to the button 'Erlauben' (kochmodusTimerAllowExact), which opens the system notification settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off: the timer does not ring.'**
+  String get kochmodusTimerNotificationsOffHint;
+
+  /// Name of the Android notification channel for cooking timers (system notification settings).
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking timers'**
+  String get kochmodusTimerChannelName;
+
+  /// Title of the notification when a cooking timer ends; label is the timer name, e.g. 'Timer 1'.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} is up'**
+  String kochmodusTimerAlarmTitle(String label);
+
+  /// Text of the cooking timer notification; runName is the recipe or dish being cooked.
+  ///
+  /// In en, this message translates to:
+  /// **'{runName} · Tap to keep cooking'**
+  String kochmodusTimerAlarmBody(String runName);
+
+  /// Text of the cooking timer notification when free cooking has no name yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Free cooking · Tap to keep cooking'**
+  String get kochmodusTimerAlarmBodyFree;
+
+  /// Calorie value of a diary entry whose nutrition the AI estimated; kcal is already formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {kcal} kcal'**
+  String diaryEntryKcalEstimated(String kcal);
+
+  /// Label on a diary entry whose nutrition values were estimated by the AI, not measured.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ Estimated values'**
+  String get diaryEntryNutritionEstimated;
+
+  /// Label of the Kochbuch header action that opens the new recipe menu.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get cookbookNewTool;
+
+  /// Title of the new recipe menu sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'New recipe'**
+  String get cookbookNewRecipeTitle;
+
+  /// Menu entry title: scan a cookbook page or note.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get cookbookNewRecipeScan;
+
+  /// Subtitle of the scan menu entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookbook page or note, up to 3 pages'**
+  String get cookbookNewRecipeScanDescription;
+
+  /// Menu entry title: paste a recipe list from the clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a list'**
+  String get cookbookNewRecipePaste;
+
+  /// Subtitle of the paste menu entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste copied text, for example from a message'**
+  String get cookbookNewRecipePasteDescription;
+
+  /// Menu entry title: start an empty recipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Type it yourself'**
+  String get cookbookNewRecipeType;
+
+  /// Subtitle of the type-it-yourself menu entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Start empty, line by line'**
+  String get cookbookNewRecipeTypeDescription;
+
+  /// Menu entry title: import a recipe from a web link.
+  ///
+  /// In en, this message translates to:
+  /// **'From a link'**
+  String get cookbookNewRecipeLink;
+
+  /// Subtitle of the link menu entry.
+  ///
+  /// In en, this message translates to:
+  /// **'We read the recipe from a web page'**
+  String get cookbookNewRecipeLinkDescription;
+
+  /// Subtitle of the AI menu entry.
+  ///
+  /// In en, this message translates to:
+  /// **'We suggest a recipe for you'**
+  String get cookbookNewRecipeAiDescription;
+
+  /// Title of the recipe editor when editing a saved recipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit recipe'**
+  String get recipeEditorEditTitle;
+
+  /// Label of the recipe photo control in the editor header.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get recipeEditorPhoto;
+
+  /// Section title of the ingredient lines in the recipe editor, with the line count.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients · {count, plural, =1{1 line} other{{count} lines}}'**
+  String recipeEditorIngredientsTitle(int count);
+
+  /// Section title of the preparation steps in the recipe editor, with the step count.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparation · {count, plural, =1{1 step} other{{count} steps}}'**
+  String recipeEditorStepsTitle(int count);
+
+  /// Tooltip of the button in the recipe page header that opens the recipe editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get recipeEditorEdit;
+
+  /// Line above the turned-off save button of the recipe editor that names what is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'{missing, select, both{Still needed: a name and an ingredient} name{Still needed: a name} other{Still needed: an ingredient}}'**
+  String recipeEditorMissing(String missing);
+
+  /// Button that adds an empty ingredient line in the recipe editor.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Ingredient'**
+  String get recipeEditorAddIngredient;
+
+  /// Button that adds an empty preparation step in the recipe editor.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Step'**
+  String get recipeEditorAddStep;
+
+  /// Action that pastes a recipe list from the clipboard into the editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get recipeEditorPaste;
+
+  /// Message shown when pasting finds no text on the clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'The clipboard holds no text.'**
+  String get recipeEditorPasteEmpty;
+
+  /// Message shown when a pasted or shared text is too long to be read as a recipe; nothing was read.
+  ///
+  /// In en, this message translates to:
+  /// **'This text is too long. Paste just the recipe.'**
+  String get recipeEditorPasteTooLong;
+
+  /// Title of the dialog that asks before closing the recipe editor with unsaved input.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard the recipe?'**
+  String get recipeEditorDiscardTitle;
+
+  /// Text of the dialog that asks before closing the recipe editor with unsaved input.
+  ///
+  /// In en, this message translates to:
+  /// **'Your changes will not be saved.'**
+  String get recipeEditorDiscardBody;
+
+  /// Title shown when a recipe link's page could not be read; the user can paste, scan or type the recipe instead.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t read anything from this page'**
+  String get recipeLinkFailedTitle;
+
+  /// Hint under the failed recipe link title, explaining how to add the recipe by hand.
+  ///
+  /// In en, this message translates to:
+  /// **'Some pages hide their recipe. Copy the text from the page and paste it – or scan or type it.'**
+  String get recipeLinkFailedHint;
+
+  /// Button that retries reading a recipe link after it failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get recipeLinkRetry;
+
+  /// Status shown while the page of a recipe link is being read.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the recipe …'**
+  String get recipeLinkReading;
+
+  /// Calorie estimate of a recipe per serving, shown on the recipe page; the AI estimated it.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {kcal} kcal per serving · estimated'**
+  String recipeEstimateKcal(int kcal);
+
+  /// Small label above a recipe that was shared into the app from another app.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get recipeEditorSharedKicker;
+
+  /// Message after another app shared something into the app that it cannot read, such as a text file.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t read that.'**
+  String get recipeShareUnreadable;
+
+  /// Screen reader label of an ingredient line in the recipe editor; a tap turns it into a text field in its place.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit line: {line}'**
+  String recipeEditorEditLine(String line);
+
+  /// Screen reader label of a preparation step in the recipe editor; a tap turns it into a text field in its place.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit step: {step}'**
+  String recipeEditorEditStep(String step);
+
+  /// Tooltip of the button beside the ingredient line in edit that deletes it.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove line'**
+  String get recipeEditorRemoveLine;
+
+  /// Tooltip of the button beside the preparation step in edit that deletes it.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove step'**
+  String get recipeEditorRemoveStep;
+
+  /// Message after an ingredient line was removed in the recipe editor, with an undo action.
+  ///
+  /// In en, this message translates to:
+  /// **'Line removed'**
+  String get recipeEditorLineRemoved;
+
+  /// Message after a preparation step was removed in the recipe editor, with an undo action.
+  ///
+  /// In en, this message translates to:
+  /// **'Step removed'**
+  String get recipeEditorStepRemoved;
+
+  /// Title of the recipe page card while ingredients still wait for an answer.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} still open'**
+  String recipeLinesOpenTitle(int count);
+
+  /// Title of the recipe page card when every ingredient is ready or left out.
+  ///
+  /// In en, this message translates to:
+  /// **'All ready'**
+  String get recipeLinesReadyTitle;
+
+  /// Count of ready ingredients on the recipe page card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ready'**
+  String recipeLinesReady(int count);
+
+  /// Count of ingredients on the shopping list: recipe page card title and counts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} on the shopping list'**
+  String recipeLinesShopping(int count);
+
+  /// Count of left-out ingredients on the recipe page card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left out'**
+  String recipeLinesIgnored(int count);
+
+  /// Count of open ingredients on the recipe page card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} open'**
+  String recipeLinesOpen(int count);
+
+  /// Joins two counts on the recipe page card.
+  ///
+  /// In en, this message translates to:
+  /// **'{first} · {second}'**
+  String recipeLinesJoined(String first, String second);
+
+  /// Chip on a recipe ingredient line that is neither assigned nor ignored yet.
+  ///
+  /// In en, this message translates to:
+  /// **'open'**
+  String get recipeLineOpen;
+
+  /// State of a recipe ingredient that waits on the shopping list.
+  ///
+  /// In en, this message translates to:
+  /// **'on the shopping list'**
+  String get recipeLineShopping;
+
+  /// No description provided for @recipeLineStockAndRest.
+  ///
+  /// In en, this message translates to:
+  /// **'{stock} in stock · {rest} on the shopping list'**
+  String recipeLineStockAndRest(String stock, String rest);
+
+  /// Chip on a recipe ingredient line the user chose to ignore.
+  ///
+  /// In en, this message translates to:
+  /// **'left out'**
+  String get recipeLineIgnored;
+
+  /// Hint on the recipe page explaining that cooking waits until every ingredient line is assigned or ignored.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking starts once every ingredient is ready or left out.'**
+  String get recipeCookNeedsAllLines;
+
+  /// Label of the recipe name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get recipeFromListName;
+
+  /// Label of the portion count field.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get recipeFromListPortions;
+
+  /// Visible label under the scan tool icon on the recipe-from-list page, next to the save button. Scans pages of an ingredient list with the camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get recipeFromListScan;
+
+  /// Shown while the scanned ingredient list is read.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the list …'**
+  String get recipeFromListScanning;
+
+  /// Snackbar when reading a scanned ingredient list fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read the list.'**
+  String get recipeFromListScanFailed;
+
+  /// Button that saves the recipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Save recipe'**
+  String get recipeFromListSave;
+
+  /// Snackbar when saving the recipe fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the recipe.'**
+  String get recipeFromListSaveFailed;
+
+  /// Rough kcal of one portion of a recipe on its Kochbuch card, estimated by the AI; the macros follow below it.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {kcal} kcal'**
+  String cookbookCardEstimate(int kcal);
+
+  /// Button on a recipe page that starts a cook run: the cook gathers the ingredients from the Vorrat or puts them on the shopping list before cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare'**
+  String get recipePrepareAction;
+
+  /// Small kicker above the title of the product search page for a recipe line in the cook flow; the ingredient is the recipe line text and is shown uppercased.
+  ///
+  /// In en, this message translates to:
+  /// **'For {ingredient}'**
+  String recipeFoodFor(String ingredient);
+
+  /// Title of the product search page for a recipe line in the cook flow; food is the ingredient's food name. Must work for any gender and plural, so no article.
+  ///
+  /// In en, this message translates to:
+  /// **'What kind of {food} do you have?'**
+  String recipeFoodTitle(String food);
+
+  /// Title of the product search page for a recipe line in the cook flow, used when the food name is unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you use for this?'**
+  String get recipeFoodTitleFallback;
+
+  /// Large button on the product search page for a recipe line in the cook flow; scans a package barcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan package'**
+  String get recipeFoodScanTitle;
+
+  /// Line under the scan button on the product search page for a recipe line in the cook flow; says a food already in stock is taken from stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the barcode in front of the camera. If it is already in stock, we take it from there.'**
+  String get recipeFoodScanLine;
+
+  /// Divider text between the scan button and the search field on the product search page for a recipe line in the cook flow.
+  ///
+  /// In en, this message translates to:
+  /// **'or pick one'**
+  String get recipeFoodOrPick;
+
+  /// First row of the list on the product search page for a recipe line in the cook flow; opens the whole stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Take from stock'**
+  String get recipeFoodFromStock;
+
+  /// Grey line under the 'Take from stock' row on the product search page for a recipe line in the cook flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else you already have'**
+  String get recipeFoodFromStockLine;
+
+  /// Grey line of a food already in stock, in the list on the product search page for a recipe line in the cook flow; amount like '750 g'.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} in stock'**
+  String recipeFoodInStock(String amount);
+
+  /// Grey line of a food in the list on the product search page for a recipe line in the cook flow: brand and pack size, e.g. 'House brand · 1 kg'.
+  ///
+  /// In en, this message translates to:
+  /// **'{brand} · {size}'**
+  String recipeFoodBrandAndSize(String brand, String size);
+
+  /// Quiet last row of the product search page for a recipe line in the cook flow; opens the manual product editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter it yourself'**
+  String get recipeFoodOwnEntry;
+
+  /// Button at the foot of the 'Was für Mehl hast du?' food pick for a recipe line in the cook flow; the app estimates the food by its name and takes exactly the amount the line needs.
+  ///
+  /// In en, this message translates to:
+  /// **'Any will do'**
+  String get recipeFoodGuess;
+
+  /// Small line under the recipeFoodGuess button on the food pick for a recipe line; tells the user the app estimates the values.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll estimate the values for you.'**
+  String get recipeFoodGuessLine;
+
+  /// Title of the sheet that lists the whole stock for a recipe line in the cook flow.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you take from stock?'**
+  String get recipeFoodStockSheetTitle;
+
+  /// Shown in the stock sheet for a recipe line in the cook flow when the stock is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is in stock right now.'**
+  String get recipeFoodStockEmpty;
+
+  /// Shown in the stock sheet for a recipe line in the cook flow when the stock failed to load.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your stock.'**
+  String get recipeFoodStockLoadFailed;
 }
 
 class _AppLocalizationsDelegate

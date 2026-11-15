@@ -176,6 +176,7 @@ describe('app 3.7.0 encrypted documents', () => {
     ['prepared_meals', {}],
     ['prepared_meal_templates', {}],
     ['kitchen_utensils', {}],
+    ['cook_runs', {}],
   ];
   for (const [collection, plaintext] of household) {
     it(`writes a household ${collection} document`, async () => {
@@ -183,6 +184,13 @@ describe('app 3.7.0 encrypted documents', () => {
       await assertSucceeds(db.doc(`households/h1/${collection}/d1`).set({ ...plaintext, payload }));
     });
   }
+
+  // recipes/data/cook_run_repository.dart ends a run by deleting its document
+  it('deletes a household cook_runs document', async () => {
+    const db = account(env, 'ada').firestore();
+    await assertSucceeds(db.doc('households/h1/cook_runs/d1').set({ payload }));
+    await assertSucceeds(db.doc('households/h1/cook_runs/d1').delete());
+  });
 
   // calories/data/calorie_entry_document_codec.dart: logged_at is a Timestamp
   for (const collection of ['calorie_entries', 'planned_entries']) {

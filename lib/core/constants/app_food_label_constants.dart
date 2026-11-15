@@ -109,6 +109,11 @@ abstract final class AppFoodLabel {
   /// macro colors such as the fat yellow stay readable.
   static const double lightLabelMaxLightness = 0.38;
 
+  /// Lowest HSL lightness of macro colored text on dark paper, such as text
+  /// over a photo in the light theme, so the dark macro colors stay
+  /// readable.
+  static const double darkLabelMinLightness = 0.66;
+
   /// Width of the portion count wheel on the eat page.
   static const double countWheel = 72;
 

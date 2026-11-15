@@ -2,7 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 
-/// Minus, the count, and plus; the count never goes below one.
+/// Minus, the count, and plus; the count never goes below one. Without
+/// [onChanged] both buttons are off and the count only shows.
 class PortionStepper extends StatelessWidget {
   /// Creates the stepper for [count].
   const new({
@@ -18,8 +19,8 @@ class PortionStepper extends StatelessWidget {
   /// The current count.
   final int count;
 
-  /// Called with the new count.
-  final ValueChanged<int> onChanged;
+  /// Called with the new count; `null` turns the buttons off.
+  final ValueChanged<int>? onChanged;
 
   /// Tooltip of the minus button.
   final String lessTooltip;
@@ -35,6 +36,7 @@ class PortionStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onChanged = this.onChanged;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     return Row(
@@ -42,7 +44,9 @@ class PortionStepper extends StatelessWidget {
       children: [
         IconButton.filledTonal(
           tooltip: lessTooltip,
-          onPressed: count > 1 ? () => onChanged(count - 1) : null,
+          onPressed: onChanged != null && count > 1
+              ? () => onChanged(count - 1)
+              : null,
           icon: const Icon(Icons.remove_rounded),
         ),
         ConstrainedBox(
@@ -60,7 +64,7 @@ class PortionStepper extends StatelessWidget {
         IconButton.filledTonal(
           key: moreKey,
           tooltip: moreTooltip,
-          onPressed: () => onChanged(count + 1),
+          onPressed: onChanged == null ? null : () => onChanged(count + 1),
           icon: const Icon(Icons.add_rounded),
         ),
       ],

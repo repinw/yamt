@@ -96,6 +96,16 @@ class ProductSearchHubSearchCoordinator {
     unawaited(_executeSearch(normalized, requestId));
   }
 
+  /// Runs the search for [value] at once, without the debounce, and returns
+  /// its results; empty when it failed or a newer search replaced it.
+  Future<List<OffProductSearchResult>> searchNow(String value) async {
+    _query = value;
+    _searchDebounce?.cancel();
+    final requestId = ++_activeRequestId;
+    await _executeSearch(value.trim(), requestId);
+    return _isCurrentRequest(requestId) ? _results : const [];
+  }
+
   /// Clears results and cancels pending requests.
   void clear() {
     _query = '';
