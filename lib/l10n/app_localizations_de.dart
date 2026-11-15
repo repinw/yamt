@@ -37,21 +37,74 @@ class AppLocalizationsDe extends AppLocalizations {
   String get aiChefIdeaTitle => 'Rezeptidee';
 
   @override
-  String get aiChefSetupTitle => 'Worauf hast du Lust?';
-
-  @override
-  String get aiChefUseInventoryTitle => 'Vorrat beachten';
+  String get aiChefUseInventoryTitle => 'Vorrat zuerst';
 
   @override
   String get aiChefUseInventorySubtitle =>
-      'Zutaten aus deinem Vorrat bevorzugen.';
+      'Wir nehmen zuerst, was du zuhause hast.';
 
   @override
   String get aiChefWishesLabel => 'Wünsche';
 
   @override
-  String get aiChefWishesHint =>
-      'z. B. vegetarisch, schnell, proteinreich, ohne Reis';
+  String get aiChefWishesHint => 'z. B. Lachs, schnell';
+
+  @override
+  String get aiChefExclusionsLabel => 'Bloß nicht';
+
+  @override
+  String get aiChefExclusionsAddAction => 'Zutat';
+
+  @override
+  String get aiChefExclusionsInputHint => 'z. B. Koriander';
+
+  @override
+  String aiChefExclusionsRemoveTooltip(String ingredient) {
+    return '$ingredient entfernen';
+  }
+
+  @override
+  String get aiChefExclusionsSaveError =>
+      'Wir konnten deine Liste nicht speichern.';
+
+  @override
+  String get aiChefExclusionsLoadError =>
+      'Wir konnten deine Liste nicht laden.';
+
+  @override
+  String get aiChefWishesAddAction => 'Wunsch';
+
+  @override
+  String get aiChefMustUseLabel => 'Unbedingt rein';
+
+  @override
+  String get aiChefMustUseSearchHint => 'Im Vorrat suchen';
+
+  @override
+  String get aiChefMustUseOldestFirst => 'Am längsten da';
+
+  @override
+  String aiChefMustUseDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days Tage',
+      one: '1 Tag',
+      zero: 'heute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiChefMustUseApply(int count) {
+    return 'Übernehmen ($count)';
+  }
+
+  @override
+  String get aiChefMustUseEmpty => 'Dein Vorrat ist leer.';
+
+  @override
+  String get aiChefMustUseLoadError => 'Wir konnten deinen Vorrat nicht laden.';
 
   @override
   String get aiChefGenerateAction => 'Rezept vorschlagen';

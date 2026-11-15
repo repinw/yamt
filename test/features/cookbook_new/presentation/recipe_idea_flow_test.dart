@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/ai_chef/data/ai_chef_exclusions_repository.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_image_generator.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_repository.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
@@ -20,6 +21,7 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/fake_ai_chef.dart';
+import '../../../helpers/fake_ai_chef_exclusions_repository.dart';
 import '../../../helpers/fake_inventory_item_repository.dart';
 import '../../../helpers/fake_prepared_meal_template_repository.dart';
 
@@ -38,6 +40,9 @@ Future<({FakeAiChef chef, FakePreparedMealTemplateRepository templates})> _pump(
       overrides: [
         clockProvider.overrideWithValue(() => DateTime.utc(2026, 11, 13)),
         aiChefRepositoryProvider.overrideWithValue(chef.repository),
+        aiChefExclusionsRepositoryProvider.overrideWithValue(
+          FakeAiChefExclusionsRepository(),
+        ),
         aiChefImageGeneratorProvider.overrideWithValue(chef.imageGenerator),
         preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
         inventoryItemRepositoryProvider.overrideWithValue(

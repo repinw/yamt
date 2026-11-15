@@ -5,6 +5,9 @@ abstract final class AppSheetTokens {
   /// idea.
   static const double tallSheetHeightFactor = 0.94;
 
+  /// Share of the screen height that a sheet with a list to pick from takes.
+  static const double pickListSheetHeightFactor = 0.8;
+
   /// Duration of the sheet entrance and the hero flight into it.
   static const Duration heroSheetTransition = Duration(milliseconds: 380);
 

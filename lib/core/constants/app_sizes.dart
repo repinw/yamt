@@ -91,6 +91,13 @@ abstract final class AppSizes {
   /// Icon size for compact search controls.
   static const double compactSearchIcon = 18;
 
+  /// Width of a text field that sits inline between chips.
+  static const double inlineChipInputWidth = 160;
+
+  /// Icon size of a leading icon in a setup row; the row text starts after
+  /// it.
+  static const double setupRowIcon = 24;
+
   /// Icon size for compact search settings button.
   static const double compactSearchSettingsIcon = 21;
 
