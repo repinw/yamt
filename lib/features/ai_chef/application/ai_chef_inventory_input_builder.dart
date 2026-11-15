@@ -17,6 +17,22 @@ class AiChefInventoryInputBuilder {
         .toList(growable: false);
   }
 
+  /// Returns the items the user can pick to use up, the longest in stock
+  /// first.
+  List<InventoryItem> pickableOldestFirst(List<InventoryItem> items) {
+    return items.where(_canUseInventoryItem).toList()
+      ..sort((a, b) => a.entryDate.compareTo(b.entryDate));
+  }
+
+  /// Full calendar days that [item] has been in stock on [today].
+  int daysInStock(InventoryItem item, DateTime today) {
+    final entry = item.entryDate.toLocal();
+    final start = DateTime.utc(entry.year, entry.month, entry.day);
+    final end = DateTime.utc(today.year, today.month, today.day);
+    final days = end.difference(start).inDays;
+    return days < 0 ? 0 : days;
+  }
+
   bool _canUseInventoryItem(InventoryItem item) {
     return item.canBeSavedToInventory &&
         !item.isFullyConsumed &&

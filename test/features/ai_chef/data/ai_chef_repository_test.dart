@@ -70,6 +70,27 @@ void main() {
     expect(idea.imagePrompt, 'a soup');
   });
 
+  test(
+    'loadRecipeIdea sends Bloß nicht and Unbedingt rein one per line',
+    () async {
+      Map<String, Object?>? askedInputs;
+      await repository(onAsk: (_, inputs) => askedInputs = inputs)
+          .loadRecipeIdea(
+            languageCode: 'de',
+            seed: 'Suppe',
+            now: _now,
+            excludedIngredients: const ['Koriander', 'Rosinen'],
+            mustUseIngredients: const ['Spinat (available: 200 g)', 'Quark'],
+          );
+
+      expect(askedInputs?['excluded_ingredients'], 'Koriander\nRosinen');
+      expect(
+        askedInputs?['must_use_ingredients'],
+        'Spinat (available: 200 g)\nQuark',
+      );
+    },
+  );
+
   test('loadRecipeIdea throws when the template client throws', () {
     final failing = FirebaseAiChefRepository(
       templateModelClient: ({required templateId, required inputs}) async {

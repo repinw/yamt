@@ -73,6 +73,46 @@ void main() {
     expect(result.first, 'Item 0 (available: 1 x)');
     expect(result.last, 'Item 39 (available: 1 x)');
   });
+
+  test('pickableOldestFirst sorts the longest in stock first', () {
+    final items = [
+      _inventoryItem(
+        id: 'new',
+        name: 'Quark',
+        quantity: 1,
+        entryDate: DateTime(2026, 11, 10),
+      ),
+      _inventoryItem(
+        id: 'old',
+        name: 'Spinat',
+        quantity: 1,
+        entryDate: DateTime(2026, 11, 3),
+      ),
+      _inventoryItem(
+        id: 'blank',
+        name: ' ',
+        quantity: 1,
+        entryDate: DateTime(2026, 10),
+      ),
+    ];
+
+    expect(builder.pickableOldestFirst(items).map((item) => item.id), [
+      'old',
+      'new',
+    ]);
+  });
+
+  test('daysInStock counts calendar days and never goes below zero', () {
+    final item = _inventoryItem(
+      id: 'a',
+      name: 'Spinat',
+      quantity: 1,
+      entryDate: DateTime(2026, 11, 3, 23, 30),
+    );
+
+    expect(builder.daysInStock(item, DateTime(2026, 11, 15, 0, 10)), 12);
+    expect(builder.daysInStock(item, DateTime(2026, 11)), 0);
+  });
 }
 
 InventoryItem _inventoryItem({
@@ -87,11 +127,12 @@ InventoryItem _inventoryItem({
   InventoryAmountUnit? amountUnit,
   bool isDeposit = false,
   bool isDiscount = false,
+  DateTime? entryDate,
 }) {
   return InventoryItem.create(
     id: id,
     name: name,
-    entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+    entryDate: entryDate ?? DateTime.parse('2026-04-02T10:00:00Z'),
     storeName: 'Store',
     quantity: quantity,
     initialQuantity: 2,

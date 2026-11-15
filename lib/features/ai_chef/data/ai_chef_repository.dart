@@ -54,8 +54,10 @@ class FirebaseAiChefRepository {
 
   /// Asks the template `recipe-idea-template` for a recipe in
   /// [languageCode] with the topic and wishes [seed], from the formatted
-  /// Vorrat [inventoryIngredients], made at [now]. The picture is not
-  /// waited for: the image generator makes it from the idea's prompt.
+  /// Vorrat [inventoryIngredients], made at [now]. The recipe contains each
+  /// of [mustUseIngredients] (Vorrat entries in the same form) and never one
+  /// of [excludedIngredients]. The picture is not waited for: the image
+  /// generator makes it from the idea's prompt.
   /// Throws when the request fails or takes longer than 60 seconds; a
   /// [FormatException] says the answer cannot be used.
   Future<AiChefRecipeIdea> loadRecipeIdea({
@@ -63,11 +65,15 @@ class FirebaseAiChefRepository {
     required String seed,
     required DateTime now,
     List<String> inventoryIngredients = const [],
+    List<String> excludedIngredients = const [],
+    List<String> mustUseIngredients = const [],
   }) async {
     log(
       'Requesting recipe from Firebase AI '
       'with lang: $languageCode, seed: $seed, '
-      'inventoryItems: ${inventoryIngredients.length}...',
+      'inventoryItems: ${inventoryIngredients.length}, '
+      'excluded: ${excludedIngredients.length}, '
+      'mustUse: ${mustUseIngredients.length}...',
       name: _logName,
     );
     final rawText = await _templateModelClient(
@@ -76,6 +82,10 @@ class FirebaseAiChefRepository {
         'language': languageCode,
         'seed': seed,
         'inventory': inventoryIngredients.join('\n'),
+        if (excludedIngredients.isNotEmpty)
+          'excluded_ingredients': excludedIngredients.join('\n'),
+        if (mustUseIngredients.isNotEmpty)
+          'must_use_ingredients': mustUseIngredients.join('\n'),
       },
     ).timeout(_timeout);
     log('Raw AI Response received: $rawText', name: _logName);
