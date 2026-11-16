@@ -61,7 +61,8 @@ class Project {
   /// The folder names under `lib/features/`.
   final Set<String> features;
 
-  /// The feature order from `architecture.md`, earliest first.
+  /// The feature order from `architecture/feature-boundaries.md`, earliest
+  /// first.
   final List<String> featureOrder;
 
   /// The position of [feature] in the feature order, or `null`.
@@ -71,7 +72,7 @@ class Project {
   }
 }
 
-/// A rule from `architecture.md` that the architecture test checks.
+/// A rule from `architecture/` that the architecture test checks.
 class ArchitectureRule {
   /// Creates a rule with a stable [id], its [rule] text, and its [check].
   const new({required this.id, required this.rule, required this.check});
@@ -79,7 +80,8 @@ class ArchitectureRule {
   /// The stable id. The baseline uses it as key.
   final String id;
 
-  /// The rule in `architecture.md`, with the section that states it.
+  /// The rule, led by the file in `architecture/` that states it. The test
+  /// puts `architecture/` in front of it.
   final String rule;
 
   /// Returns every violation of the rule in a project.
@@ -87,13 +89,16 @@ class ArchitectureRule {
 }
 
 /// Reads the feature order from the `### Feature Order` code block of
-/// `architecture.md` below [root].
+/// `architecture/feature-boundaries.md` below [root].
 List<String> readFeatureOrder(String root) {
-  final text = File('$root/architecture.md').readAsStringSync();
+  final text = File('$root/architecture/feature-boundaries.md')
+      .readAsStringSync();
   final block = RegExp(r'### Feature Order[\s\S]*?```text\n([\s\S]*?)```')
       .firstMatch(text);
   if (block == null) {
-    throw StateError('architecture.md has no Feature Order code block.');
+    throw StateError(
+      'architecture/feature-boundaries.md has no Feature Order code block.',
+    );
   }
   return block
       .group(1)!
@@ -123,8 +128,8 @@ final List<ArchitectureRule> architectureRules = [
   _importRule(
     id: 'feature-order',
     rule:
-        '§6 Feature Order: a feature imports only features that come '
-        'earlier in the list.',
+        'feature-boundaries.md, Feature Order: a feature imports only '
+        'features that come earlier in the list.',
     violates: (project, from, to) {
       final fromOrder = project.orderOf(featureOf(from) ?? '');
       final toOrder = project.orderOf(featureOf(to) ?? '');
@@ -134,8 +139,9 @@ final List<ArchitectureRule> architectureRules = [
   _importRule(
     id: 'foreign-presentation',
     rule:
-        '§6 Feature Order: from another feature, import only domain/, '
-        'data/, application/, presentation/models/, presentation/widgets/, '
+        'feature-boundaries.md, Feature Order: from another feature, import '
+        'only domain/, data/, application/, presentation/models/, '
+        'presentation/widgets/, '
         'and presentation/*_flow.dart.',
     violates: (project, from, to) {
       final fromFeature = featureOf(from);
@@ -148,8 +154,8 @@ final List<ArchitectureRule> architectureRules = [
   _importRule(
     id: 'core-imports-feature',
     rule:
-        '§6 Cross-Feature Workflows: lib/core does not import features. '
-        'Only lib/core/router/ may.',
+        'feature-boundaries.md, Cross-Feature Workflows: lib/core does not '
+        'import features. Only lib/core/router/ may.',
     violates: (project, from, to) =>
         from.startsWith('lib/core/') &&
         !from.startsWith('lib/core/router/') &&
@@ -158,7 +164,7 @@ final List<ArchitectureRule> architectureRules = [
   _fileRule(
     id: 'feature-folders',
     rule:
-        'Where New Code Goes: feature code lives in domain/, data/, '
+        'where-new-code-goes.md: feature code lives in domain/, data/, '
         'application/, or presentation/.',
     violates: (path) {
       final inner = featurePathOf(path);
@@ -169,13 +175,15 @@ final List<ArchitectureRule> architectureRules = [
   _fileRule(
     id: 'presentation-folders',
     rule:
-        'Where New Code Goes: presentation/ holds *_page.dart and '
+        'where-new-code-goes.md: presentation/ holds *_page.dart and '
         '*_flow.dart files plus controllers/, models/, and widgets/.',
     violates: _violatesPresentationFolders,
   ),
   _fileRule(
     id: 'file-roles',
-    rule: 'File Names: no vague roles such as _store or _coordinator.',
+    rule:
+        'where-new-code-goes.md, File Names: no vague roles such as _store '
+        'or _coordinator.',
     violates: (path) {
       if (featureOf(path) == null) return false;
       final name = path.split('/').last.replaceAll('.dart', '');
@@ -184,7 +192,7 @@ final List<ArchitectureRule> architectureRules = [
   ),
   _fileRule(
     id: 'flow-placement',
-    rule: 'Where New Code Goes: UI flows live in presentation/.',
+    rule: 'where-new-code-goes.md: UI flows live in presentation/.',
     violates: (path) =>
         featureOf(path) != null &&
         path.endsWith('_flow.dart') &&
@@ -193,14 +201,14 @@ final List<ArchitectureRule> architectureRules = [
   _lineRule(
     id: 'clock',
     rule:
-        '§1 Layers: no DateTime.now, called or torn off, in domain, '
+        'layers.md: no DateTime.now, called or torn off, in domain, '
         'application, or controllers. Read clockProvider.',
     pattern: RegExp(r'DateTime\.now\b'),
     appliesTo: _isClockRestricted,
   ),
   _lineRule(
     id: 'sdk-instance',
-    rule: '§2 Data Layer: no .instance calls in features.',
+    rule: 'data-layer.md: no .instance calls in features.',
     pattern: RegExp(
       r'\b(?:FirebaseFirestore|FirebaseAuth|FirebaseStorage|FirebaseAppCheck'
       '|FirebaseAI|FirebaseFunctions|FirebaseMessaging|GoogleSignIn)'
@@ -211,8 +219,8 @@ final List<ArchitectureRule> architectureRules = [
   _lineRule(
     id: 'theme-values',
     rule:
-        '§9 UI: no Colors.*, Color(0x...), or TextStyle(...) in features. '
-        'Use the theme.',
+        'widgets-and-ui.md, UI: no Colors.*, Color(0x...), or TextStyle(...) '
+        'in features. Use the theme.',
     pattern: RegExp(
       r'\bColors\.(?!transparent\b)[a-z]\w*|\bColor\(0x'
       r'|\bColor\.from(?:ARGB|RGBO)\(|\bTextStyle\(',
@@ -221,14 +229,14 @@ final List<ArchitectureRule> architectureRules = [
   ),
   _lineRule(
     id: 'ignore-comment',
-    rule: '§12 Hygiene: no // ignore or // ignore_for_file comments.',
+    rule: 'hygiene.md: no // ignore or // ignore_for_file comments.',
     pattern: RegExp(r'//\s*ignore(?:_for_file)?\s*:'),
     appliesTo: _isAny,
   ),
   _lineRule(
     id: 'tap-outside-unfocus',
     rule:
-        '§8 Navigation: unfocus on onTapUpOutside, never onTapOutside. The '
+        'navigation.md: unfocus on onTapUpOutside, never onTapOutside. The '
         'pointer-down of a back gesture would take the focus, and the page '
         'would close with the keyboard.',
     pattern: RegExp(r'\bonTapOutside\s*:'),
@@ -236,31 +244,31 @@ final List<ArchitectureRule> architectureRules = [
   ),
   _lineRule(
     id: 'route-extra-cast',
-    rule: '§8 Navigation: read extra only with requireRouteExtra.',
+    rule: 'navigation.md: read extra only with requireRouteExtra.',
     pattern: RegExp(r'\.extra!?\s+as\b'),
     appliesTo: _isAny,
   ),
   _lineRule(
     id: 'bare-keep-alive',
-    rule: '§3 Lifecycle: close every ref.keepAlive() link.',
+    rule: 'riverpod.md, Lifecycle: close every ref.keepAlive() link.',
     pattern: RegExp(r'^\s*ref\.keepAlive\(\);'),
     appliesTo: _isAny,
   ),
   _lineRule(
     id: 'export',
-    rule: '§3 Riverpod: no export statements. Import concrete files.',
+    rule: 'riverpod.md: no export statements. Import concrete files.',
     pattern: RegExp('^export '),
     appliesTo: _isAny,
   ),
   _lineRule(
     id: 'material-import',
-    rule: 'Stack: import material_ui, never flutter/material.dart.',
+    rule: 'stack.md: import material_ui, never flutter/material.dart.',
     pattern: RegExp(r'package:flutter/material\.dart'),
     appliesTo: _isAny,
   ),
   _lineRule(
     id: 'legacy-riverpod',
-    rule: '§3 Riverpod: only generated providers, no legacy provider types.',
+    rule: 'riverpod.md: only generated providers, no legacy provider types.',
     pattern: RegExp(
       r'\b(?:StateProvider|StateNotifierProvider|ChangeNotifierProvider)\b'
       r'|flutter_riverpod/legacy\.dart',
@@ -269,7 +277,7 @@ final List<ArchitectureRule> architectureRules = [
   ),
   _lineRule(
     id: 'domain-imports',
-    rule: '§1 Layers: domain does not import Flutter, Riverpod, or Firebase.',
+    rule: 'layers.md: domain does not import Flutter, Riverpod, or Firebase.',
     pattern: RegExp(
       "^import 'package:(?:flutter|flutter_riverpod|riverpod"
       '|riverpod_annotation|cloud_firestore|firebase_[a-z_]+|material_ui)/',
@@ -278,13 +286,13 @@ final List<ArchitectureRule> architectureRules = [
   ),
   _lineRule(
     id: 'second-ai-sdk',
-    rule: 'Stack: Firebase AI only, no google_generative_ai.',
+    rule: 'stack.md: Firebase AI only, no google_generative_ai.',
     pattern: RegExp('package:google_generative_ai/'),
     appliesTo: _isAny,
   ),
   _lineRule(
     id: 'session-interface',
-    rule: '§2 Data Layer: no per-feature session interfaces.',
+    rule: 'data-layer.md: no per-feature session interfaces.',
     pattern: RegExp(r'interface\s+class\s+\w+UserSession\b'),
     appliesTo: _isAny,
   ),

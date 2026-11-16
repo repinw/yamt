@@ -2,7 +2,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 // JSON values of Vorrat meals and their foods.
 //
-// Compatibility code from before the removal rule in architecture.md §12:
+// Compatibility code from before the removal rule in architecture/hygiene.md:
 // these readers accept the loose values of meals saved by older versions
 // (numbers as text, missing fields as 0 or ""). The release checklist lists
 // them; the user decides when they go. Do not use them for new fields; new

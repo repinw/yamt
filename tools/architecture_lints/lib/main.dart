@@ -37,7 +37,7 @@ class MaxFileLinesRule extends AnalysisRule {
   static const lint = LintCode(
     'max_file_lines',
     'File exceeds the limit of {0} lines ({1} lines). '
-        'Split it per architecture.md.',
+        'Split it per architecture/widgets-and-ui.md.',
   );
 
   @override

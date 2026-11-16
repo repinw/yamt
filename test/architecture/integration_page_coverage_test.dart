@@ -36,7 +36,7 @@ void main() {
       missing,
       isEmpty,
       reason:
-          'architecture.md §11: a page needs an integration test in '
+          'architecture/testing.md: a page needs an integration test in '
           'integration_test/<feature>/ that drives it. Import the page in '
           'the test or in a test helper that the test imports.',
     );

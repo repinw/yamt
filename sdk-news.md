@@ -13,7 +13,7 @@ in the pub cache.
 ## Dart 3.14
 
 No new language features. The language is the one from 3.13 (see
-`architecture.md`, Stack).
+`architecture/stack.md`).
 
 - **`Future.syncValue(value)`** makes a completed future from a plain value.
   New lint `future_sync_value` asks for it where `Future.sync` returns a
