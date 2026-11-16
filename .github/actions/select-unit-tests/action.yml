@@ -1,0 +1,57 @@
+name: Select unit tests
+description: >-
+  Runs tool/ci_unit_targets.py for a pull request and selects every test for
+  any other event. Needs a checkout with fetch-depth 0. A failing or empty
+  script result selects every test and turns analyze on.
+
+outputs:
+  mode:
+    description: none, list or all
+    value: ${{ steps.select.outputs.mode }}
+  tests:
+    description: With mode list, a file with one test path per line
+    value: ${{ steps.select.outputs.tests }}
+  analyze:
+    description: true when analyze, the changed-file lints and the hash check must run
+    value: ${{ steps.select.outputs.analyze }}
+  flutter:
+    description: true when a later step needs Flutter
+    value: ${{ steps.select.outputs.flutter }}
+
+runs:
+  using: composite
+  steps:
+    - id: select
+      shell: bash
+      env:
+        EVENT: ${{ github.event_name }}
+        BASE: ${{ github.base_ref }}
+      run: |
+        tests="$RUNNER_TEMP/unit-tests.txt"
+        result=all
+        analyze=true
+        if [ "$EVENT" = pull_request ] && [ -n "$BASE" ]; then
+          result=$(tool/ci_unit_targets.py "origin/$BASE") || result=all
+          analyze=$(tool/ci_unit_targets.py --analyze "origin/$BASE") || analyze=true
+        fi
+        case "$result" in
+          none) mode=none ;;
+          all | '') mode=all ;;
+          *)
+            mode=list
+            printf '%s\n' "$result" >"$tests"
+            ;;
+        esac
+        [ "$analyze" = false ] || analyze=true
+        flutter=true
+        if [ "$mode" = none ] && [ "$analyze" = false ]; then
+          flutter=false
+        fi
+        echo "Tests: $mode; analyze: $analyze"
+        [ "$mode" != list ] || cat "$tests"
+        {
+          echo "mode=$mode"
+          echo "tests=$tests"
+          echo "analyze=$analyze"
+          echo "flutter=$flutter"
+        } >>"$GITHUB_OUTPUT"

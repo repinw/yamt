@@ -1,11 +1,14 @@
 name: CI
 
-# Pull requests run only analyze, the unit and widget tests (also in parallel
-# across a clock change) and the provider hash check, so they stay fast. The
-# emulator tests run after the merge: a
-# push to master runs the integration tests that the pushed commits affect,
-# and the nightly run, a release tag and a manual run run all of them. A
-# failed run after the merge opens an issue.
+# Pull requests run only what their change needs, so they stay fast: the unit
+# and widget tests whose imports reach a changed file (also in parallel across
+# a clock change), and analyze and the provider hash check when Dart code or
+# packages changed (tool/ci_unit_targets.py). A change that no test can see
+# runs no Flutter step. Every run after the merge runs the full unit suite.
+# The emulator tests run after the merge too: a push to master runs the
+# integration tests that the pushed commits affect, and the nightly run, a
+# release tag and a manual run run all of them. A failed unit or integration
+# run after the merge opens an issue.
 on:
   pull_request:
   push:
@@ -52,42 +55,64 @@ jobs:
             exit 1
           fi
 
+      # A pull request runs the tests that its change affects
+      # (tool/ci_unit_targets.py); every other event runs all of them. The
+      # ruleset requires this job, so it always runs and skips steps instead.
+      - name: Select tests
+        id: select
+        uses: ./.github/actions/select-unit-tests
+
       - uses: subosito/flutter-action@v2
+        if: steps.select.outputs.flutter != 'false'
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
       - name: Get packages
+        if: steps.select.outputs.flutter != 'false'
         run: |
           flutter pub get
           (cd tools/architecture_lints && dart pub get)
 
       # Fails on every issue except max_file_lines in old files.
       - name: Analyze
+        if: steps.select.outputs.analyze != 'false'
         run: tool/ci_analyze.sh
 
       # Old files may keep their plugin lints such as max_file_lines, but a
       # changed file must not get a new one: the changed files are compared
       # with the base one by one.
       - name: No new lints in changed files
+        if: steps.select.outputs.analyze != 'false'
         run: tool/ci_changed_file_lints.sh origin/${{ github.base_ref || 'master' }}
 
       - name: Unit and widget tests
-        run: flutter test
+        if: steps.select.outputs.mode != 'none'
+        env:
+          MODE: ${{ steps.select.outputs.mode }}
+          TESTS: ${{ steps.select.outputs.tests }}
+        run: |
+          if [ "$MODE" = list ]; then
+            mapfile -t paths <"$TESTS"
+            flutter test "${paths[@]}"
+          else
+            flutter test
+          fi
 
       # A stale provider hash compiles and passes every test, so only this
       # step catches it. It runs last because it regenerates the code, and
       # the steps above must check the generated code that the commits hold.
       # The pre-push hook in tool/git-hooks runs it too.
       - name: Provider hashes are current
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.select.outputs.analyze != 'false' }}
         run: tool/check_provider_hashes.sh
 
   # The runner is in UTC, which has no clock change, so a test that steps
   # days by 24 hours passes there and fails on a machine in Europe/Berlin.
-  # This job runs the whole suite in a time zone like Europe/Berlin whose
-  # clock change falls next to the day of the run (tool/clock_change_tz.sh).
+  # This job runs the tests of the job above in a time zone like
+  # Europe/Berlin whose clock change falls next to the day of the run
+  # (tool/clock_change_tz.sh). It selects them the same way.
   clock-change:
     name: Unit tests across a clock change (${{ matrix.change }})
     runs-on: ubuntu-latest
@@ -102,33 +127,101 @@ jobs:
           - spring -1
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Select tests
+        id: select
+        uses: ./.github/actions/select-unit-tests
 
       - uses: subosito/flutter-action@v2
+        if: steps.select.outputs.mode != 'none'
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
       - name: Get packages
+        if: steps.select.outputs.mode != 'none'
         run: flutter pub get
 
       - name: Unit and widget tests
+        if: steps.select.outputs.mode != 'none'
+        env:
+          MODE: ${{ steps.select.outputs.mode }}
+          TESTS: ${{ steps.select.outputs.tests }}
+          CHANGE: ${{ matrix.change }}
         run: |
-          tz=$(tool/clock_change_tz.sh ${{ matrix.change }})
+          read -r season offset <<<"$CHANGE"
+          tz=$(tool/clock_change_tz.sh "$season" "$offset")
           echo "TZ=$tz"
-          TZ="$tz" flutter test
+          paths=()
+          if [ "$MODE" = list ]; then
+            mapfile -t paths <"$TESTS"
+          fi
+          TZ="$tz" flutter test "${paths[@]}"
 
       # These tests pin the 2026 clock changes of Europe/Berlin and skip in
-      # the zones above, so one entry also runs them in Europe/Berlin.
+      # the zones above, so one entry also runs them in Europe/Berlin: all of
+      # them, or those under the selected paths.
       - name: Clock change tests in Europe/Berlin
-        if: matrix.change == 'fall 0'
-        run: >-
-          flutter test test/features/calories/clock_change
-          test/features/calories/application/calorie_week_overview_provider_test.dart
-          test/features/health/clock_change
-          test/core/domain/local_day_window_test.dart
+        if: matrix.change == 'fall 0' && steps.select.outputs.mode != 'none'
         env:
           TZ: Europe/Berlin
+          MODE: ${{ steps.select.outputs.mode }}
+          TESTS: ${{ steps.select.outputs.tests }}
+        run: |
+          berlin=(
+            test/features/calories/clock_change
+            test/features/calories/application/calorie_week_overview_provider_test.dart
+            test/features/health/clock_change
+            test/core/domain/local_day_window_test.dart
+          )
+          paths=()
+          if [ "$MODE" = list ]; then
+            while read -r selected; do
+              for path in "${berlin[@]}"; do
+                case "$selected/" in
+                  "$path"/*) paths+=("$selected") ;;
+                esac
+              done
+            done <"$TESTS"
+            if [ "${#paths[@]}" -eq 0 ]; then
+              echo "No selected test runs in Europe/Berlin."
+              exit 0
+            fi
+          else
+            paths=("${berlin[@]}")
+          fi
+          flutter test "${paths[@]}"
+
+  # A pull request runs only the affected unit tests, so the full run after
+  # the merge must not fail unnoticed. One open issue collects all failures
+  # until it is closed; a cancelled run reports nothing.
+  unit-result:
+    name: Unit tests after the merge
+    needs: [unit, clock-change]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Report a failed run in an issue
+        if: contains(needs.*.result, 'failure')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title='Unit tests failed after the merge'
+          body="Failed after a $GITHUB_EVENT_NAME run on $GITHUB_REF_NAME at $GITHUB_SHA. Run: $RUN_URL"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label testing \
+            --state open --search "\"$title\" in:title" --json number -q '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" \
+              --label testing --body "$body"
+          fi
 
   integration-targets:
     name: List integration tests
