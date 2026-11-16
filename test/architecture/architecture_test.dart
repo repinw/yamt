@@ -16,15 +16,17 @@ void main() {
     expect(
       featureOrder.toSet().length,
       featureOrder.length,
-      reason: 'The Feature Order in architecture.md lists a feature twice.',
+      reason:
+          'The Feature Order in architecture/feature-boundaries.md lists a '
+          'feature twice.',
     );
     expect(
       featureOrder.toSet(),
       project.features,
       reason:
-          'The Feature Order in architecture.md must list exactly the '
-          'folders in lib/features/. Add a new feature after every feature '
-          'that it imports.',
+          'The Feature Order in architecture/feature-boundaries.md must list '
+          'exactly the folders in lib/features/. Add a new feature after '
+          'every feature that it imports.',
     );
   });
 
@@ -42,7 +44,7 @@ void main() {
         );
         if (problems.isEmpty) return;
         fail(
-          '${rule.rule}\n\n${problems.join('\n')}\n\n'
+          'architecture/${rule.rule}\n\n${problems.join('\n')}\n\n'
           'NEW: fix the code. NEVER add it to '
           'test/architecture/architecture_baseline.dart.\n'
           'FIXED: lower or remove the entry in the baseline.',

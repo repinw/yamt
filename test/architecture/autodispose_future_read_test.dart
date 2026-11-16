@@ -37,8 +37,8 @@ void main() {
         )
         ..writeln(violations.join('\n'))
         ..writeln(
-          '\nPer architecture.md, calling .read(provider.future) on '
-          'unlistened auto-disposed providers causes disposal during '
+          '\nPer architecture/riverpod.md, calling .read(provider.future) '
+          'on unlistened auto-disposed providers causes disposal during '
           'loading (ProviderDisposedException). Query repository directly '
           'or pass data from the caller.',
         );

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Fails when a Dart file changed against the base branch has a rule that fires
-# more often than on the base branch (architecture.md, Gates, item 3).
+# more often than on the base branch (architecture/pre-push-review.md, Gates,
+# item 3).
 #
 # Old files may keep their findings (tool/ci_analyze.sh lets max_file_lines
 # pass), so this script analyzes the changed files one by one, on HEAD and on
