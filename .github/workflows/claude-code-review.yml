@@ -38,8 +38,10 @@ jobs:
             of ${{ github.repository }}. The base is
             origin/${{ github.event.pull_request.base.ref }}.
 
-            1. Read `architecture.md` and `AGENTS.md`. The Pre-Push Review
-               and its checklist are the rules of this review. Check first
+            1. Read `architecture.md`, every file in `architecture/`, and
+               `AGENTS.md`. The Pre-Push Review
+               (`architecture/pre-push-review.md`) and its checklist are the
+               rules of this review. Check first
                what no test catches: the repository shape, cross-feature
                workflows, the provider lifecycle, error display, and
                hardcoded strings.
@@ -54,8 +56,8 @@ jobs:
                nits that the analyzer already covers.
             4. Decide:
                - REQUEST_CHANGES if at least one finding is a bug, breaks a
-                 MUST or NEVER rule of `architecture.md`, or leaves the code
-                 unsafe to merge.
+                 MUST or NEVER rule of `architecture.md` or of a file in
+                 `architecture/`, or leaves the code unsafe to merge.
                - APPROVE otherwise, also when only small suggestions remain.
             5. Write the decision as the single word APPROVE or
                REQUEST_CHANGES into `review-verdict.txt`, and a short summary
