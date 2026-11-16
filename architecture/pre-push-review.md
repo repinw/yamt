@@ -75,7 +75,7 @@ user.
    tree, `tool/check_provider_hashes.sh` then finds stale provider hashes;
    the pre-push hook in `tool/git-hooks` runs it on every push once
    `git config core.hooksPath tool/git-hooks` is set, and CI runs it on every
-   pull request.
+   pull request that changes Dart code, ARB files or packages.
 2. `flutter gen-l10n` if ARB files changed.
 3. `tool/ci_changed_file_lints.sh` reports no new issue, and
    `tool/ci_analyze.sh` passes. It analyzes `lib`, `test` and
@@ -84,7 +84,10 @@ user.
    changed files with `origin/master` one by one: in a file that you changed,
    no rule may fire more often than there.
 4. `flutter test -d flutter-tester test/architecture` passes.
-5. Tests of the affected features pass.
+5. Tests of the affected features pass. A pull request runs on CI only the
+   unit and widget tests whose imports reach a changed file
+   (`tool/ci_unit_targets.py`); the full suite runs after the merge to
+   `master`, and a failed run opens an issue.
 6. `npx jscpd lib` lists no clone in a file that you changed. The project
    baseline still has clones, so the command itself fails.
 7. The change leaves no unreachable file and no unused symbol (step 4).
