@@ -3,12 +3,8 @@ import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 
-/// Calculates rolling cycle totals and carryover before today.
-({
-  double totalConsumedKcal,
-  double totalGoalKcal,
-  double carryoverBeforeTodayKcal,
-})
+/// Calculates rolling cycle totals.
+({double totalConsumedKcal, double totalGoalKcal})
 calculateCalorieWeekCycleTotals({
   required DateTime cycleStartDate,
   required DateTime today,
@@ -19,7 +15,6 @@ calculateCalorieWeekCycleTotals({
 }) {
   var totalConsumedKcal = 0.0;
   var totalGoalKcal = 0.0;
-  var carryoverBeforeTodayKcal = 0.0;
 
   if (!cycleStartDate.isAfter(today)) {
     for (var index = 0; index < historicalCarryoverDays.length; index += 1) {
@@ -30,7 +25,6 @@ calculateCalorieWeekCycleTotals({
       final consumedKcal = isPauseDay ? day.goalKcal : day.consumedKcal;
       totalConsumedKcal += consumedKcal;
       totalGoalKcal += day.goalKcal;
-      carryoverBeforeTodayKcal += day.goalKcal - consumedKcal;
     }
 
     for (final day in visibleOverviews) {
@@ -39,17 +33,10 @@ calculateCalorieWeekCycleTotals({
       }
       totalConsumedKcal += day.countedTotalKcal;
       totalGoalKcal += day.goalKcal;
-      if (isBeforeDay(day.date, today)) {
-        carryoverBeforeTodayKcal += day.goalKcal - day.countedTotalKcal;
-      }
     }
   }
 
-  return (
-    totalConsumedKcal: totalConsumedKcal,
-    totalGoalKcal: totalGoalKcal,
-    carryoverBeforeTodayKcal: carryoverBeforeTodayKcal,
-  );
+  return (totalConsumedKcal: totalConsumedKcal, totalGoalKcal: totalGoalKcal);
 }
 
 /// Returns true if [left] is strictly before [right] calendar date.
