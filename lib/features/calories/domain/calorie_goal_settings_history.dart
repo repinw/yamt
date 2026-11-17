@@ -38,6 +38,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
       calorieMathVersion: currentCalorieMathVersion,
+      weekBalanceMode: weekBalanceMode,
       updatedAt: changedAt,
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
       pendingWeeklyCheckIn: null,

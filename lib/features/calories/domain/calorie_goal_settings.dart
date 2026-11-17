@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
+import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 
 part 'calorie_goal_settings.g.dart';
 
@@ -38,6 +39,7 @@ class CalorieGoalSettings {
     required this.pendingWeeklyCheckIn,
     required this.skippedIntakeDayKeys,
     required this.calorieMathVersion,
+    this.weekBalanceMode = WeekBalanceMode.show,
     this.trainingWeekdays = const <int>[],
     this.trainingDayKcalOffset = 0.0,
     this.trainingDayOverrides = const <String, bool>{},
@@ -56,6 +58,7 @@ class CalorieGoalSettings {
     : dailyKcalGoal = null,
       calculatorProfile = null,
       calorieMathVersion = currentCalorieMathVersion,
+      weekBalanceMode = WeekBalanceMode.show,
       updatedAt = null,
       goalHistory = const <CalorieGoalHistoryEntry>[],
       pendingWeeklyCheckIn = null,
@@ -128,6 +131,10 @@ class CalorieGoalSettings {
   /// The calorie math data version.
   @JsonKey(defaultValue: currentCalorieMathVersion)
   final int calorieMathVersion;
+
+  /// How the diary shows and counts the week of the goal run.
+  @JsonKey(defaultValue: WeekBalanceMode.show)
+  final WeekBalanceMode weekBalanceMode;
 
   /// The updated at.
   @NullableFlexibleDateTimeConverter()
@@ -231,6 +238,7 @@ class CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
       calorieMathVersion: calorieMathVersion,
+      weekBalanceMode: weekBalanceMode,
       updatedAt: updatedAt,
       goalHistory: goalHistory,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
@@ -251,6 +259,7 @@ class CalorieGoalSettings {
     double? dailyKcalGoal,
     CalorieCalculatorProfile? calculatorProfile,
     int? calorieMathVersion,
+    WeekBalanceMode? weekBalanceMode,
     DateTime? updatedAt,
     List<CalorieGoalHistoryEntry>? goalHistory,
     PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
@@ -266,6 +275,7 @@ class CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal ?? this.dailyKcalGoal,
       calculatorProfile: calculatorProfile ?? this.calculatorProfile,
       calorieMathVersion: calorieMathVersion ?? this.calorieMathVersion,
+      weekBalanceMode: weekBalanceMode ?? this.weekBalanceMode,
       updatedAt: updatedAt ?? this.updatedAt,
       goalHistory: goalHistory ?? this.goalHistory,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn ?? this.pendingWeeklyCheckIn,

@@ -49,6 +49,9 @@ CalorieWeekOverview _$CalorieWeekOverviewFromJson(
   isPreviousDayClosed: json['is_previous_day_closed'] as bool,
   previousDayCarryoverKcal: (json['previous_day_carryover_kcal'] as num?)
       ?.toDouble(),
+  weekBalance: json['week_balance'] == null
+      ? null
+      : WeekBalance.fromJson(json['week_balance'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$CalorieWeekOverviewToJson(
@@ -66,4 +69,5 @@ Map<String, dynamic> _$CalorieWeekOverviewToJson(
   'future_goal_kcal': instance.futureGoalKcal,
   'previous_day_carryover_kcal': instance.previousDayCarryoverKcal,
   'is_previous_day_closed': instance.isPreviousDayClosed,
+  'week_balance': instance.weekBalance?.toJson(),
 };

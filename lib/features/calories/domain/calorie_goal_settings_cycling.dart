@@ -63,6 +63,18 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
     return resolvedKcal.clamp(minimumDailyCalorieBudgetKcal, double.infinity);
   }
 
+  /// The goal of [day] as if it were a normal day: a training day without
+  /// its session.
+  double normalDayGoalKcalForDay(DateTime day) {
+    final goal = goalKcalForDay(day);
+    return isTrainingDay(day) ? goal - trainingSessionKcalForDay(day) : goal;
+  }
+
+  /// The most kcal the carryover may add to or take from a normal day like
+  /// [day], which the week balance names to the user.
+  double carryoverLimitKcalForDay(DateTime day) =>
+      CalorieBudgetCalculator.carryoverLimitKcal(normalDayGoalKcalForDay(day));
+
   /// kcal of one training session on [day]: the offset of the active
   /// calculator profile, or the default offset without a weekly schedule.
   double trainingSessionKcalForDay(DateTime day) {

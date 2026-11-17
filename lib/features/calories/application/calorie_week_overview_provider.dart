@@ -12,6 +12,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 
 part 'calorie_week_overview_provider.g.dart';
 
@@ -94,6 +95,21 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     if (!ref.mounted) {
       throw StateError('Calorie week overview disposed.');
     }
+    final runEnd = settings.countingGoalEntryForDay(today) == null
+        ? today
+        : resolveCalorieGoalRunEndDate(settings: settings, day: today);
+    // The days of the run after the selected day, up to today; a later day
+    // has no entries.
+    final laterEntries = await readEntriesInRangeOrEmpty(
+      repository: repository,
+      startInclusive: nextLocalDay(today),
+      endExclusive: nextLocalDay(
+        runEnd.isBefore(realToday) ? runEnd : realToday,
+      ),
+    );
+    if (!ref.mounted) {
+      throw StateError('Calorie week overview disposed.');
+    }
     return buildCalorieWeekOverview(
       settings: settings,
       overviews: overviews,
@@ -101,6 +117,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       balanceStartDate: balanceStartDate,
       carryoverStartDate: carryoverStartDate,
       historicalEntries: historicalEntries,
+      laterEntries: laterEntries,
       readClosedDay: closedDayRepository.readClosedDay,
     );
   } finally {

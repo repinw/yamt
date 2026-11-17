@@ -6,6 +6,7 @@ void main() {
     final dailyAdjustment = CalorieBudgetCalculator.distributeCarryover(
       carryoverKcal: -1200,
       remainingDays: 6,
+      baseGoalKcal: 2200,
     );
 
     expect(dailyAdjustment, -200);
