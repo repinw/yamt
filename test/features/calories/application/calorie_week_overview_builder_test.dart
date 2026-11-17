@@ -38,6 +38,7 @@ CalorieWeekOverview _build(
     balanceStartDate: _runStart,
     carryoverStartDate: _runStart,
     historicalEntries: const [],
+    laterEntries: const [],
     readClosedDay: () {
       onClosedDayRead?.call();
       return closedDay;

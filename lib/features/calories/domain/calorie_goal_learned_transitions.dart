@@ -136,6 +136,7 @@ extension CalorieGoalLearnedTransitions on CalorieGoalSettings {
       dailyKcalGoal: this.dailyKcalGoal,
       calculatorProfile: calculatorProfile,
       calorieMathVersion: snapshotSettings.calorieMathVersion,
+      weekBalanceMode: weekBalanceMode,
       updatedAt: snapshotSettings.updatedAt,
       goalHistory: snapshotSettings.goalHistory,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,

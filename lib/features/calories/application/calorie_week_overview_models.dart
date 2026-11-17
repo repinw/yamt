@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/features/calories/domain/calorie_week_balance.dart';
 
 part 'calorie_week_overview_models.g.dart';
 
@@ -104,6 +105,7 @@ class CalorieWeekOverview {
     required this.futureGoalKcal,
     required this.isPreviousDayClosed,
     this.previousDayCarryoverKcal,
+    this.weekBalance,
   });
 
   /// Creates data from persisted JSON.
@@ -152,4 +154,8 @@ class CalorieWeekOverview {
 
   /// Whether today is closed, so tomorrow already counts like a started day.
   final bool isPreviousDayClosed;
+
+  /// The budgets of the seven days of the run that holds the selected day,
+  /// or null when the day has no run.
+  final WeekBalance? weekBalance;
 }

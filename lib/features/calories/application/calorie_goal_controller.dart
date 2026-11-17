@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
+import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 
 part 'calorie_goal_controller.g.dart';
 
@@ -216,6 +217,10 @@ class CalorieGoalController extends _$CalorieGoalController {
         () => setCaloriePauseDay(controller: this, day: day, isPause: isPause),
       );
 
+  /// Sets how the diary shows and counts the week of the goal run.
+  Future<bool> setWeekBalanceMode(WeekBalanceMode mode) =>
+      updateSettings((settings) => settings.copyWith(weekBalanceMode: mode));
+
   /// Applies [change] to the current settings and persists the result.
   ///
   /// Reports `false` when the settings could not load or save.
@@ -251,7 +256,6 @@ class CalorieGoalController extends _$CalorieGoalController {
     if (ref.mounted) {
       state = optimistic;
     }
-
     final repository = ref.read(calorieSettingsRepositoryProvider);
     try {
       await repository.saveSettings(nextSettings);
@@ -268,10 +272,9 @@ class CalorieGoalController extends _$CalorieGoalController {
     }
   }
 
-  /// Undoes [optimistic] after a failed save, so an error stays an error and
-  /// never turns into empty settings. Newer settings from the stream stay.
-  /// Settings that were still loading load again, because setting a loading
-  /// state by hand would leave the pending future open forever.
+  /// Undoes [optimistic] after a failed save: an error stays an error, newer
+  /// settings from the stream stay, and loading settings load again (a loading
+  /// state set by hand would leave the pending future open forever).
   void _rollBack(
     AsyncValue<CalorieGoalSettings> previous,
     AsyncData<CalorieGoalSettings> optimistic,

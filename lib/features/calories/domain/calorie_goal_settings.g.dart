@@ -38,6 +38,12 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
               .toList() ??
           [],
       calorieMathVersion: (json['calorie_math_version'] as num?)?.toInt() ?? 3,
+      weekBalanceMode:
+          $enumDecodeNullable(
+            _$WeekBalanceModeEnumMap,
+            json['week_balance_mode'],
+          ) ??
+          WeekBalanceMode.show,
       trainingWeekdays:
           (json['training_weekdays'] as List<dynamic>?)
               ?.map((e) => (e as num).toInt())
@@ -72,6 +78,7 @@ Map<String, dynamic> _$CalorieGoalSettingsToJson(
   ),
   'calculator_profile': instance.calculatorProfile?.toJson(),
   'calorie_math_version': instance.calorieMathVersion,
+  'week_balance_mode': _$WeekBalanceModeEnumMap[instance.weekBalanceMode]!,
   'updated_at': const NullableFlexibleDateTimeConverter().toJson(
     instance.updatedAt,
   ),
@@ -85,4 +92,10 @@ Map<String, dynamic> _$CalorieGoalSettingsToJson(
   'training_day_overrides': instance.trainingDayOverrides,
   'unplanned_training_day_overrides': instance.unplannedTrainingDayOverrides,
   'pause_day_keys': instance.pauseDayKeys,
+};
+
+const _$WeekBalanceModeEnumMap = {
+  WeekBalanceMode.off: 'off',
+  WeekBalanceMode.show: 'show',
+  WeekBalanceMode.carryover: 'carryover',
 };

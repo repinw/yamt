@@ -1,23 +1,22 @@
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/features/calories/application/calorie_week_balance_builder.dart';
 import 'package:yamt/features/calories/application/calorie_week_cycle_totals.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
-import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
-import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/diary_day_status.dart';
 
 /// Builds the week overview of the visible days [overviews], whose last day
 /// is the selected day.
 ///
-/// The carryover comes from [historicalEntries] between
-/// [carryoverStartDate] and the first visible day. [realToday] is today;
-/// [readClosedDay] is asked only for tomorrow, so a bad stored value cannot
-/// break the other days.
+/// The week balance of the selected day's run gives its carryover; the days
+/// of the run after the selected day come from [laterEntries]. The totals
+/// come from [historicalEntries] between [carryoverStartDate] and the first
+/// visible day. [realToday] is today; [readClosedDay] is asked only for
+/// tomorrow, so a bad stored value cannot break the other days.
 CalorieWeekOverview buildCalorieWeekOverview({
   required CalorieGoalSettings settings,
   required List<CalorieWeekDayOverview> overviews,
@@ -25,6 +24,7 @@ CalorieWeekOverview buildCalorieWeekOverview({
   required DateTime balanceStartDate,
   required DateTime carryoverStartDate,
   required List<CalorieEntry> historicalEntries,
+  required List<CalorieEntry> laterEntries,
   required DateTime? Function() readClosedDay,
 }) {
   final today = overviews.last.date;
@@ -59,40 +59,27 @@ CalorieWeekOverview buildCalorieWeekOverview({
       : nextGoalStartDate == null
       ? null
       : settings.goalKcalForDay(nextGoalStartDate);
-  final todayBaseGoalKcal = overviews.last.baseGoalKcal > 0
-      ? overviews.last.baseGoalKcal
-      : overviews.last.goalKcal;
-  final distributedCarryoverKcal = CalorieBudgetCalculator.distributeCarryover(
-    carryoverKcal: cycleTotals.carryoverBeforeTodayKcal,
-    remainingDays: resolveRemainingCalorieGoalRunDays(
-      settings: settings,
-      day: today,
-    ),
-    baseGoalKcal: todayBaseGoalKcal,
+  final weekBalance = buildCalorieWeekBalance(
+    settings: settings,
+    overviews: overviews,
+    realToday: realToday,
+    laterEntries: laterEntries,
   );
+  final carryoverBeforeTodayKcal =
+      weekBalance?.dayOf(today)?.carryoverKcal ?? 0.0;
   // Tomorrow can plan with today's carryover once today is closed, unless
   // it starts a new run or is a pause day.
   final previousDayCarryoverKcal =
       isSameLocalDay(today, nextLocalDay(realToday)) &&
           isBeforeDay(carryoverStartDate, today) &&
           !overviews.last.isPauseDay
-      ? distributedCarryoverKcal
+      ? carryoverBeforeTodayKcal
       : null;
   // Only tomorrow reads the closed day, so a bad stored value cannot break
   // the other days.
   final closedDay = previousDayCarryoverKcal == null ? null : readClosedDay();
   final isPreviousDayClosed =
       closedDay != null && isSameLocalDay(closedDay, realToday);
-  // Any other future day gets no carryover: the days before it are not
-  // finished yet, so a carryover from them would be made up.
-  final carryoverBeforeTodayKcal =
-      DiaryDayStatus.of(
-        day: today,
-        today: realToday,
-        isPreviousDayClosed: isPreviousDayClosed,
-      ).isPlanned
-      ? 0.0
-      : distributedCarryoverKcal;
   final todayFlexibleGoalKcal =
       overviews.last.goalKcal + carryoverBeforeTodayKcal;
   return CalorieWeekOverview(
@@ -108,5 +95,6 @@ CalorieWeekOverview buildCalorieWeekOverview({
     futureGoalKcal: futureGoalKcal,
     previousDayCarryoverKcal: previousDayCarryoverKcal,
     isPreviousDayClosed: isPreviousDayClosed,
+    weekBalance: weekBalance,
   );
 }
