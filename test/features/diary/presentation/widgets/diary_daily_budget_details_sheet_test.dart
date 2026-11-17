@@ -13,8 +13,10 @@ void main() {
   Widget buildTestWidget(
     DiaryDailyBudgetDetailsData data, {
     double? plannedKcal,
+    Locale? locale,
   }) {
     return MaterialApp(
+      locale: locale,
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
@@ -27,7 +29,9 @@ void main() {
       home: Scaffold(
         body: Builder(
           builder: (context) {
-            final numberFormat = NumberFormat.decimalPattern('en');
+            final numberFormat = NumberFormat.decimalPattern(
+              locale?.toLanguageTag() ?? 'en',
+            );
             return Center(
               child: ElevatedButton(
                 onPressed: () => showDiaryDailyBudgetDetailsSheet(
@@ -148,6 +152,7 @@ void main() {
           protein: 0,
           fat: 0,
         ),
+        carriesOver: true,
       );
 
       await tester.pumpWidget(buildTestWidget(data));
@@ -218,6 +223,7 @@ void main() {
           protein: 0,
           fat: 0,
         ),
+        carriesOver: true,
       );
 
       await tester.pumpWidget(buildTestWidget(data));
@@ -235,6 +241,69 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('K34: without the carryover the sheet has no section about '
+        'the previous days', (tester) async {
+      DiaryDailyBudgetDetailsData dataWith({required bool carriesOver}) =>
+          DiaryDailyBudgetDetailsData(
+            selectedDay: DateTime(2026, 4, 15),
+            baseGoalKcal: 2000,
+            carryoverKcal: 0,
+            targetKcal: 2000,
+            eatenKcal: 650,
+            dayLeftKcal: 1350,
+            isPauseDay: false,
+            totalCarryoverBeforeTodayKcal: 300,
+            remainingRunDays: 5,
+            previousDays: [
+              DiaryCarryoverDayDetail(
+                date: DateTime(2026, 4, 13),
+                goalKcal: 2000,
+                consumedKcal: 1700,
+                differenceKcal: 300,
+                isPauseDay: false,
+              ),
+            ],
+            carryoverMacroDelta: const DiaryMacroTargets(
+              carbs: 0,
+              protein: 0,
+              fat: 0,
+            ),
+            carriesOver: carriesOver,
+          );
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          dataWith(carriesOver: false),
+          locale: const Locale('de'),
+        ),
+      );
+      await tester.tap(find.text('Open Sheet'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+        findsOneWidget,
+      );
+      expect(find.text('Übertrag aus den Vortagen'), findsNothing);
+
+      Navigator.of(
+        tester.element(
+          find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+        ),
+      ).pop();
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        buildTestWidget(
+          dataWith(carriesOver: true),
+          locale: const Locale('de'),
+        ),
+      );
+      await tester.tap(find.text('Open Sheet'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Übertrag aus den Vortagen'), findsOneWidget);
     });
 
     testWidgets(
