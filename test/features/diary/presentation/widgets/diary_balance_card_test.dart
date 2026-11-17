@@ -276,43 +276,24 @@ void main() {
     expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,500');
   });
 
-  testWidgets('tomorrow closes the day before and offers undo', (tester) async {
-    await _pumpTomorrow(tester, isPreviousDayClosed: false);
-    final repository = _closedDayRepository(tester);
+  testWidgets('K9: tomorrow shows no button to close or reopen the day '
+      'before', (tester) async {
+    for (final isPreviousDayClosed in [false, true]) {
+      await _pumpTomorrow(tester, isPreviousDayClosed: isPreviousDayClosed);
 
-    // The whole of tomorrow is a plan.
-    expect(
-      _textOf(tester, DiaryBudgetCardKeys.kcalUnit),
-      'kcal left after plan',
-    );
-    expect(find.text('Close Sunday'), findsOneWidget);
-    expect(find.byKey(DiaryBudgetCardKeys.reopenPreviousDay), findsNothing);
-
-    await tester.tap(find.byKey(DiaryBudgetCardKeys.closePreviousDay));
-    await tester.pumpAndSettle();
-
-    expect(repository.readClosedDay(), DateTime(2026, 4, 26));
-
-    await tester.tap(find.text('Undo'));
-    await tester.pumpAndSettle();
-
-    expect(repository.readClosedDay(), isNull);
-  });
-
-  testWidgets('tomorrow reopens the closed day before', (tester) async {
-    await _pumpTomorrow(tester, isPreviousDayClosed: true);
-    final repository = _closedDayRepository(tester);
-    await repository.saveClosedDay(DateTime(2026, 4, 26));
-
-    // Closed, tomorrow counts like a started day.
-    expect(find.text('Sunday closed'), findsOneWidget);
-    expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,318');
-    expect(_textOf(tester, DiaryBudgetCardKeys.kcalUnit), 'kcal left');
-
-    await tester.tap(find.byKey(DiaryBudgetCardKeys.reopenPreviousDay));
-    await tester.pumpAndSettle();
-
-    expect(repository.readClosedDay(), isNull);
+      expect(
+        find.byKey(DiaryBudgetCardKeys.closePreviousDay),
+        findsNothing,
+        reason: 'closed: $isPreviousDayClosed',
+      );
+      expect(
+        find.byKey(DiaryBudgetCardKeys.reopenPreviousDay),
+        findsNothing,
+        reason: 'closed: $isPreviousDayClosed',
+      );
+      expect(find.text('Close Sunday'), findsNothing);
+      expect(find.text('Sunday closed'), findsNothing);
+    }
   });
 
   testWidgets('a closed tomorrow counts its plans until the chip is off', (
@@ -842,7 +823,3 @@ final _breakfastPlan = CalorieEntry.create(
   createdAt: DateTime(2026, 4, 26, 20),
   updatedAt: DateTime(2026, 4, 26, 20),
 );
-
-ClosedDayRepository _closedDayRepository(WidgetTester tester) =>
-    ProviderScope.containerOf(tester.element(find.byType(DiaryBalanceCard)))
-        .read(closedDayRepositoryProvider);
