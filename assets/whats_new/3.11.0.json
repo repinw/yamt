@@ -1,0 +1,20 @@
+{
+  "de": {
+    "new": [
+      "Wochenleiste im Tagebuch: deine Woche auf einen Blick, mit Zahlen unter den Tagen"
+    ],
+    "improved": [
+      "Der Kalorien-Übertrag ist jetzt optional und standardmäßig aus. „Mit Übertrag“ schaltest du ein, indem du die Wochenleiste hältst, oder in den Einstellungen."
+    ],
+    "fixed": []
+  },
+  "en": {
+    "new": [
+      "Week strip in the diary: your week at a glance, with numbers under the days"
+    ],
+    "improved": [
+      "The calorie carryover is now optional and off by default. You turn on \"With carryover\" by holding the week strip, or in the settings."
+    ],
+    "fixed": []
+  }
+}

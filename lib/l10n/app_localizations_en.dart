@@ -5483,7 +5483,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileTrainingNote =>
-      'Counts for this run only, like a day type in the diary. The run total stays; the carryover passes what past days got differently on to the days left.';
+      'Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the days left pass on what past days got differently.';
 
   @override
   String get profileTrainingPauseDay => 'Pause day';
@@ -6699,6 +6699,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryBudgetCarryoverRow => 'Carryover from the week';
+
+  @override
+  String get weekBalanceTitle => 'Weekly goal balance';
+
+  @override
+  String get weekBalanceOff => 'Off';
+
+  @override
+  String get weekBalanceOffHint => 'Every day stands on its own.';
+
+  @override
+  String get weekBalanceShow => 'Show';
+
+  @override
+  String get weekBalanceShowHint =>
+      'Shows the week. Your daily budget stays the same.';
+
+  @override
+  String get weekBalanceCarryover => 'With carryover';
+
+  @override
+  String weekBalanceCarryoverHint(String kcal) {
+    return 'Balances the week, at most $kcal kcal per day.';
+  }
+
+  @override
+  String get weekBalanceChangeLater => 'Change later: in the settings.';
+
+  @override
+  String get diaryWeekCardMenuOpen => 'Open weekly goal balance';
+
+  @override
+  String get diaryWeekToday => 'Today';
+
+  @override
+  String get diaryWeekDayPause => 'Pause';
+
+  @override
+  String get diaryWeekDayEmpty => 'empty';
+
+  @override
+  String diaryWeekDayOver(String kcal) {
+    return '+$kcal';
+  }
+
+  @override
+  String diaryWeekDayUnder(String kcal) {
+    return '−$kcal';
+  }
+
+  @override
+  String diaryBudgetCarryoverChipLess(String goal, String kcal) {
+    return '$goal − $kcal from the week';
+  }
+
+  @override
+  String diaryBudgetCarryoverChipMore(String goal, String kcal) {
+    return '$goal + $kcal from the week';
+  }
 
   @override
   String get diaryBudgetPlannedCountedRow => 'Planned · counted';
