@@ -11,6 +11,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dar
 import 'package:yamt/features/diary/presentation/widgets/diary_overdue_plans_hint.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_page_header.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_steps_card/diary_steps_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card.dart';
 
 /// Scrollable content of one diary day: daily card, steps, header, and
 /// meals.
@@ -56,6 +57,7 @@ class DiaryDayView extends ConsumerWidget {
           ),
           sliver: SliverList.list(
             children: [
+              _NarrowContent(child: DiaryWeekCard(day: day)),
               _NarrowContent(
                 child: DiaryStepsCard(
                   day: day,

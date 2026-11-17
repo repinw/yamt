@@ -25,6 +25,7 @@ import 'package:yamt/features/settings/presentation/widgets/settings_plan_shorta
 import 'package:yamt/features/settings/presentation/widgets/settings_profile_card/settings_profile_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_steps_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_week_balance_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines settings page.
@@ -73,6 +74,7 @@ class SettingsPage extends ConsumerWidget {
                           children: const [
                             SettingsHealthConnectTile(),
                             SettingsStepsTile(),
+                            SettingsWeekBalanceTile(),
                             _CalorieGoalStartTile(),
                             _CalorieGoalCalculatorTile(),
                             _MacroGoalsTile(),

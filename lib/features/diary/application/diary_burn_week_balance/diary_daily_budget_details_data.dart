@@ -48,6 +48,7 @@ class DiaryDailyBudgetDetailsData {
     required this.remainingRunDays,
     required this.previousDays,
     required this.carryoverMacroDelta,
+    this.carriesOver = false,
     this.unadjustedBaseGoalKcal,
     this.cyclingAdjustmentKcal = 0.0,
   });
@@ -112,9 +113,13 @@ class DiaryDailyBudgetDetailsData {
   /// Whether today is an active training day.
   bool get isTrainingDay => cyclingAdjustmentKcal > 0;
 
-  /// Whether Schutzregel C capped the daily carryover reduction.
+  /// Whether the budget of the day includes the carryover (the mode "Mit
+  /// Übertrag"), so the sheet explains it.
+  final bool carriesOver;
+
+  /// Whether Schutzregel C limited the daily carryover.
   bool get wasSafetyCapActive {
-    if (totalCarryoverBeforeTodayKcal >= 0 || remainingRunDays <= 0) {
+    if (remainingRunDays <= 0) {
       return false;
     }
     final rawDailyKcal = totalCarryoverBeforeTodayKcal / remainingRunDays;
@@ -171,6 +176,7 @@ class _DiaryDailyBudgetDetailsResolver {
       remainingRunDays: _resolveRemainingRunDays(),
       previousDays: List<DiaryCarryoverDayDetail>.unmodifiable(previousDays),
       carryoverMacroDelta: carryoverMacroDelta,
+      carriesOver: weekOverview.weekBalance?.mode.carriesOver ?? false,
     );
   }
 
@@ -201,7 +207,10 @@ class _DiaryDailyBudgetDetailsResolver {
 }
 
 DiaryCarryoverDayDetail _toCarryoverDayDetail(CalorieWeekDayOverview day) {
-  final differenceKcal = day.goalKcal - day.countedTotalKcal;
+  // A day without entries counts nothing, like a pause day.
+  final differenceKcal = day.isPauseDay || !day.hasEntries
+      ? 0.0
+      : day.goalKcal - day.totalKcal;
   return DiaryCarryoverDayDetail(
     date: day.date,
     goalKcal: day.goalKcal,

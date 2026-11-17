@@ -113,11 +113,13 @@ class DiaryDailyBudgetDetailsSheet extends StatelessWidget {
                     numberFormat: numberFormat,
                     plannedKcal: plannedKcal,
                   ),
-                  const SizedBox(height: AppSpacing.lg),
-                  DiaryDailyBudgetCarryoverSection(
-                    data: data,
-                    numberFormat: numberFormat,
-                  ),
+                  if (data.carriesOver) ...[
+                    const SizedBox(height: AppSpacing.lg),
+                    DiaryDailyBudgetCarryoverSection(
+                      data: data,
+                      numberFormat: numberFormat,
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_week_balance.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
@@ -33,4 +34,12 @@ DiaryBalanceCardData? diaryBalanceCard(Ref ref, DateTime day) {
 DateTime? diaryRunWeekStart(Ref ref, DateTime day) => ref.watch(
   diaryBalanceCardProvider(day)
       .select((card) => card?.loadedMetrics?.runWeekStart),
+);
+
+/// The week balance of the run that holds [day], or null while the day's
+/// balance has not loaded or the day has no run.
+@riverpod
+WeekBalance? diaryWeekBalance(Ref ref, DateTime day) => ref.watch(
+  diaryBalanceCardProvider(day)
+      .select((card) => card?.loadedMetrics?.weekBalance),
 );

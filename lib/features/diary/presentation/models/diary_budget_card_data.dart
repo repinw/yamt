@@ -61,8 +61,7 @@ class DiaryBudgetCardData {
     this.openPlans,
     this.notCounting,
     this.budgetDetails,
-    this.canClosePreviousDay = false,
-    this.isPreviousDayClosed = false,
+    this.overIsMiss = true,
     this.runWeekStart,
     this.paceKcal,
   });
@@ -111,12 +110,7 @@ class DiaryBudgetCardData {
           ? DiaryBudgetRunEnded(restart.startDate)
           : null,
       budgetDetails: loaded?.budgetDetails,
-      // Only a future day has a day before to close, and only when closing
-      // it brings a carryover. A cached dashboard from yesterday may still
-      // carry the values after midnight.
-      canClosePreviousDay:
-          status.isFuture && loaded?.previousDayCarryoverKcal != null,
-      isPreviousDayClosed: status == DiaryDayStatus.afterClosedDay,
+      overIsMiss: loaded?.weekBalance?.overIsMiss ?? true,
       runWeekStart: loaded?.runWeekStart,
       paceKcal: paceShare == null || (loaded?.state.isPauseDay ?? false)
           ? null
@@ -167,11 +161,9 @@ class DiaryBudgetCardData {
   /// Breakdown for the budget sheet, or null on a planned day.
   final DiaryDailyBudgetDetailsData? budgetDetails;
 
-  /// Whether the day before can be closed (or reopened) from here.
-  final bool canClosePreviousDay;
-
-  /// Whether the day before is closed.
-  final bool isPreviousDayClosed;
+  /// Whether going over the budget is the miss, so it shows in the error
+  /// color: for every weight goal but gaining.
+  final bool overIsMiss;
 
   /// First day of the run week the day belongs to, or null outside a run.
   final DateTime? runWeekStart;
