@@ -16,8 +16,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// The three modes of the week balance as radio options, each with its line;
 /// the one of the account is marked, and a tap picks another (#911). The
-/// week card's menu and the settings show it. Shows nothing while the
-/// settings load. [onPicked] runs after a tap saved the mode.
+/// week card's menu and the settings show it. Keeps the room of the
+/// options while the settings load. [onPicked] runs after a tap saved the mode.
 class WeekBalanceModeChoice extends ConsumerWidget {
   /// Creates the choice.
   const new({this.onPicked, super.key});
@@ -29,7 +29,11 @@ class WeekBalanceModeChoice extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(calorieGoalControllerProvider).value;
     if (settings == null) {
-      return const SizedBox.shrink();
+      // Keeps the room of the options, so the page does not jump when the
+      // settings load.
+      return SizedBox(
+        height: AppWeekCard.optionHeight * WeekBalanceMode.values.length,
+      );
     }
     final l10n = AppLocalizations.of(context)!;
     final limit =
