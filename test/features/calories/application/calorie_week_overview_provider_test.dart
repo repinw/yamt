@@ -430,6 +430,59 @@ void main() {
     },
   );
 
+  test('K28: a past day of the run sees the later days up to today', () async {
+    final container = _futureDaysContainer(
+      today: planToday,
+      mode: WeekBalanceMode.carryover,
+    );
+    final yesterday = addLocalDays(planToday, -1);
+
+    final overview = await _readWeekOverviewForWindow(container, yesterday);
+    final days = overview.weekBalance!.days;
+
+    expect(days.first.date, yesterday);
+    expect(days[0].eatenKcal, 1400);
+    expect(days[1].date, planToday);
+    expect(days[1].eatenKcal, 800);
+    expect(days[1].hasEntries, isTrue);
+    expect(days[2].hasEntries, isFalse);
+    // The same week as seen from today.
+    final today = await _readWeekOverviewForWindow(container, planToday);
+    expect(
+      [for (final day in days) day.budgetKcal],
+      [for (final day in today.weekBalance!.days) day.budgetKcal],
+    );
+  });
+
+  test('K26: a coming day sees the run with today as it is', () async {
+    final container = _futureDaysContainer(
+      today: planToday,
+      mode: WeekBalanceMode.carryover,
+    );
+
+    final overview = await _readWeekOverviewForWindow(
+      container,
+      planDayAfterTomorrow,
+    );
+    final days = overview.weekBalance!.days;
+
+    expect(days[1].date, planToday);
+    expect(days[1].eatenKcal, 800);
+    expect(days[2].hasEntries, isFalse);
+    expect(days[3].carryoverKcal, 100);
+  });
+
+  test('K37: a day before the goal has no week balance', () async {
+    final container = _futureDaysContainer(today: planToday);
+
+    final overview = await _readWeekOverviewForWindow(
+      container,
+      addLocalDays(planToday, -3),
+    );
+
+    expect(overview.weekBalance, isNull);
+  });
+
   test('calorieWeekOverview offers no carryover when tomorrow starts a new '
       'run', () async {
     // The run started six days ago, so today is its last day.

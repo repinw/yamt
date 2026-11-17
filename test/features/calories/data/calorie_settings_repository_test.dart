@@ -7,6 +7,7 @@ import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 
 const _settingsPath = 'users/user-1/calorie_settings/default';
 
@@ -239,5 +240,52 @@ void main() {
     await repository.saveSettings(goalSettings(2200));
 
     expect((await repository.readSettings()).dailyKcalGoal, 2200);
+  });
+
+  test('K5: the mode of the week balance is stored with the account', () async {
+    final firestore = FakeFirebaseFirestore();
+    await repositoryFor(firestore).saveSettings(
+      goalSettings(2200).copyWith(weekBalanceMode: WeekBalanceMode.carryover),
+    );
+
+    // Another phone of the same account reads the same document.
+    final otherPhone = repositoryFor(firestore);
+
+    expect(
+      (await otherPhone.readSettings()).weekBalanceMode,
+      WeekBalanceMode.carryover,
+    );
+    expect(
+      (await otherPhone.watchSettings().first).weekBalanceMode,
+      WeekBalanceMode.carryover,
+    );
+  });
+
+  test(
+    'K31: a stored document from before the mode reads as "Anzeigen"',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await seedSettings(
+        firestore,
+        goalSettings(2200).toJson()..remove('week_balance_mode'),
+      );
+
+      expect(
+        (await repositoryFor(firestore).readSettings()).weekBalanceMode,
+        WeekBalanceMode.show,
+      );
+    },
+  );
+
+  test('an unknown mode in the document fails the read', () async {
+    final firestore = FakeFirebaseFirestore();
+    await seedSettings(
+      firestore,
+      goalSettings(2200).toJson()..['week_balance_mode'] = 'weekly',
+    );
+    final repository = repositoryFor(firestore);
+
+    await expectLater(repository.readSettings(), throwsArgumentError);
+    await expectLater(repository.watchSettings().first, throwsArgumentError);
   });
 }
