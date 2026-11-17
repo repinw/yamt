@@ -36,14 +36,45 @@ void main() {
 
       final card = find.byKey(WeekCardKeys.card);
       expect(card, findsOneWidget);
-      expect(find.text('OK'), findsNothing);
-      final hit = tester.hitTestOnBinding(tester.getCenter(card));
-      final cardBox = tester.renderObject(card);
       expect(
-        hit.path.any((entry) => identical(entry.target, cardBox)),
-        isTrue,
-        reason: 'a tap on the card reaches the card, nothing covers it',
+        find.descendant(of: card, matching: find.text('OK')),
+        findsNothing,
+        reason: 'the card itself has no "OK" button',
       );
+      expect(
+        find.descendant(of: card, matching: find.byType(ButtonStyleButton)),
+        findsNothing,
+        reason: 'the card has no button of an intro',
+      );
+      // Other cards of the diary may have their own "OK" (the prompt for a
+      // missing weight); none may lie over the week card.
+      final cardRect = tester.getRect(card);
+      for (final ok in find.text('OK').evaluate()) {
+        final okRect = tester.getRect(find.byWidget(ok.widget));
+        expect(
+          okRect.overlaps(cardRect),
+          isFalse,
+          reason: 'no "OK" lies over the week card',
+        );
+      }
+      expect(
+        find.byType(ModalBarrier).hitTestable(),
+        findsNothing,
+        reason: 'no dialog or sheet is open over the diary',
+      );
+      final cardBox = tester.renderObject(card);
+      for (final point in [
+        cardRect.center,
+        cardRect.centerLeft.translate(4, 0),
+        cardRect.centerRight.translate(-4, 0),
+      ]) {
+        final hit = tester.hitTestOnBinding(point);
+        expect(
+          hit.path.any((entry) => identical(entry.target, cardBox)),
+          isTrue,
+          reason: 'a tap on the card at $point reaches the card',
+        );
+      }
     });
 
     test('K32: "Was ist neu" of the next version has an entry about the '
