@@ -225,3 +225,94 @@ final class DiaryRunWeekStartFamily extends $Family
   @override
   String toString() => r'diaryRunWeekStartProvider';
 }
+
+/// The week balance of the run that holds [day], or null while the day's
+/// balance has not loaded or the day has no run.
+
+@ProviderFor(diaryWeekBalance)
+final diaryWeekBalanceProvider = DiaryWeekBalanceFamily._();
+
+/// The week balance of the run that holds [day], or null while the day's
+/// balance has not loaded or the day has no run.
+
+final class DiaryWeekBalanceProvider
+    extends $FunctionalProvider<WeekBalance?, WeekBalance?, WeekBalance?>
+    with $Provider<WeekBalance?> {
+  /// The week balance of the run that holds [day], or null while the day's
+  /// balance has not loaded or the day has no run.
+  DiaryWeekBalanceProvider._({
+    required DiaryWeekBalanceFamily super.from,
+    required DateTime super.argument,
+  }) : super(
+         retry: null,
+         name: r'diaryWeekBalanceProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryWeekBalanceHash();
+
+  @override
+  String toString() {
+    return r'diaryWeekBalanceProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<WeekBalance?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  WeekBalance? create(Ref ref) {
+    final argument = this.argument as DateTime;
+    return diaryWeekBalance(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WeekBalance? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WeekBalance?>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DiaryWeekBalanceProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$diaryWeekBalanceHash() => r'5131cdffe435077402a8cad09ffcbd8ed6a2c4e2';
+
+/// The week balance of the run that holds [day], or null while the day's
+/// balance has not loaded or the day has no run.
+
+final class DiaryWeekBalanceFamily extends $Family
+    with $FunctionalFamilyOverride<WeekBalance?, DateTime> {
+  DiaryWeekBalanceFamily._()
+    : super(
+        retry: null,
+        name: r'diaryWeekBalanceProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// The week balance of the run that holds [day], or null while the day's
+  /// balance has not loaded or the day has no run.
+
+  DiaryWeekBalanceProvider call(DateTime day) =>
+      DiaryWeekBalanceProvider._(argument: day, from: this);
+
+  @override
+  String toString() => r'diaryWeekBalanceProvider';
+}

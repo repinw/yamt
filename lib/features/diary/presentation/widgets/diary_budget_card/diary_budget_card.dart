@@ -18,7 +18,6 @@ import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_kcal_column.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_ledger.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_macro_column.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_previous_day_button.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_toggle_row.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_view_chips.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_week_strip.dart';
@@ -187,11 +186,6 @@ class _Body extends StatelessWidget {
             ),
           ],
         ),
-        if (data.canClosePreviousDay && !data.isPauseDay)
-          DiaryBudgetPreviousDayButton(
-            day: data.day,
-            isClosed: data.isPreviousDayClosed,
-          ),
         if (showDetails) ...[
           DiaryBudgetFadeIn(
             order: 1,

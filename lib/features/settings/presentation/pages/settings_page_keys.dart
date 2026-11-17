@@ -46,6 +46,9 @@ abstract final class SettingsPageKeys {
   /// Steps switch row.
   static const stepsTile = ValueKey<String>('settings-steps-tile');
 
+  /// Week balance mode row, next to the steps row.
+  static const weekBalanceTile = ValueKey<String>('settings-week-balance-tile');
+
   /// Day-before reminder switch row.
   static const planShortageReminderTile = ValueKey<String>(
     'settings-plan-shortage-reminder-tile',

@@ -81,15 +81,14 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       previous,
       next,
     ) {
-      // Every day of the week up to this one counts: their types and goals
-      // add up to the carryover this day starts with.
-      final weekDays = buildRollingLocalDays(anchorDay: normalizedDay);
-      List<Object?>? signatures(CalorieGoalSettings? settings) =>
-          settings == null
-          ? null
-          : [for (final day in weekDays) diaryDayGoalSignature(settings, day)];
-      final previousSignatures = signatures(previous?.value);
-      final nextSignatures = signatures(next.value);
+      final nextSignatures = diaryDashboardGoalSignatures(
+        next.value,
+        normalizedDay,
+      );
+      final previousSignatures = diaryDashboardGoalSignatures(
+        previous?.value,
+        normalizedDay,
+      );
       if (previousSignatures == null ||
           nextSignatures == null ||
           const ListEquality<Object?>().equals(

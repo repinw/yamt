@@ -9,7 +9,7 @@ import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 part 'diary_day_dashboard_cache_repository.g.dart';
 
 const _cacheLogName = 'DiaryDayDashboardCacheRepository';
-const _cacheVersion = 5;
+const _cacheVersion = 6;
 const _keyPrefix = 'diary_day_dashboard_v';
 
 /// Stores the last good diary dashboard snapshot of each day for instant

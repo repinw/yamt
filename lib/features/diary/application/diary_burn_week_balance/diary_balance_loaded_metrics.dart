@@ -1,6 +1,7 @@
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/calorie_week_balance.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
@@ -15,7 +16,7 @@ class DiaryBalanceLoadedMetrics {
     required this.state,
     required this.runWeekStart,
     this.budgetDetails,
-    this.previousDayCarryoverKcal,
+    this.weekBalance,
     this.isPreviousDayClosed = false,
   });
 
@@ -34,9 +35,9 @@ class DiaryBalanceLoadedMetrics {
   /// Detailed budget and carryover breakdown for the selected day.
   final DiaryDailyBudgetDetailsData? budgetDetails;
 
-  /// Carryover per day the selected day gets from closing the day before.
-  /// Set only on tomorrow, while its run has earlier days.
-  final double? previousDayCarryoverKcal;
+  /// The budgets of the seven days of the run that holds the selected day,
+  /// or null when the day has no run.
+  final WeekBalance? weekBalance;
 
   /// Whether the day before is closed, so the selected day counts like a
   /// started day instead of a plan.
@@ -112,7 +113,7 @@ DiaryBalanceLoadedMetrics _buildDiaryBalanceLoadedMetrics(
     state: state,
     runWeekStart: weekStart,
     budgetDetails: _resolveBudgetDetails(context, weekStart, state, daily),
-    previousDayCarryoverKcal: context.weekOverview.previousDayCarryoverKcal,
+    weekBalance: context.weekOverview.weekBalance,
     isPreviousDayClosed: context.weekOverview.isPreviousDayClosed,
   );
 }

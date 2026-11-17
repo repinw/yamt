@@ -22,6 +22,7 @@ class DiaryBudgetLine extends StatelessWidget {
     this.eatenColor,
     this.scaleKcal,
     this.pace,
+    this.overColor,
     this.wrapPlanArea,
     super.key,
   });
@@ -47,6 +48,9 @@ class DiaryBudgetLine extends StatelessWidget {
   /// Amount the day should be at by now; null draws no pace marker.
   final double? pace;
 
+  /// Color of the part over the target; the error color by default.
+  final Color? overColor;
+
   /// Wraps an empty box over the planned part, as high as the line, for
   /// example to give that part its own tap.
   final Widget Function(Widget area)? wrapPlanArea;
@@ -57,7 +61,7 @@ class DiaryBudgetLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
-    final error = Theme.of(context).colorScheme.error;
+    final error = overColor ?? Theme.of(context).colorScheme.error;
     final height = compact ? AppBudgetCard.macroLine : AppBudgetCard.line;
     final bar = compact ? AppBudgetCard.macroLineBar : AppBudgetCard.lineBar;
     final marker = compact

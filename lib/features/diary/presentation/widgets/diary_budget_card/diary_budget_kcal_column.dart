@@ -44,6 +44,10 @@ class DiaryBudgetKcalColumn extends StatelessWidget {
     final metrics = data.metrics;
     final (:unitStyle, :subStyle) = _styles(context);
     String kcal(double value) => numberFormat.format(value.round());
+    // Going over is the miss for every weight goal but gaining.
+    final overColor = data.overIsMiss
+        ? Theme.of(context).colorScheme.error
+        : colors.ink;
 
     if (data.isPauseDay) {
       return _PauseKcal(data: data, numberFormat: numberFormat);
@@ -79,7 +83,7 @@ class DiaryBudgetKcalColumn extends StatelessWidget {
                 ? AppBudgetCard.bigNumberLong
                 : AppBudgetCard.bigNumber,
             color: data.isOver
-                ? Theme.of(context).colorScheme.error
+                ? overColor
                 : data.isPlannedDay
                 ? colors.plan
                 : colors.accentText,
@@ -93,6 +97,15 @@ class DiaryBudgetKcalColumn extends StatelessWidget {
             style: unitStyle,
           ),
         ),
+        // With the details open the goal and what the week adds to it.
+        if (showDetails && metrics.carryoverKcal.round() != 0)
+          DiaryBudgetFadeIn(
+            child: _CarryoverChip(
+              goalKcal: metrics.targetKcal - metrics.carryoverKcal,
+              carryoverKcal: metrics.carryoverKcal,
+              numberFormat: numberFormat,
+            ),
+          ),
         const SizedBox(height: AppSpacing.xs),
         DiaryBudgetLine(
           eaten: metrics.eatenKcal,
@@ -102,6 +115,7 @@ class DiaryBudgetKcalColumn extends StatelessWidget {
           // take the user's accent.
           eatenColor: data.isPlannedDay ? colors.plan : colors.accent,
           pace: data.paceKcal,
+          overColor: overColor,
         ),
         // The eaten view already shows eaten of target.
         if (showDetails && !showEaten)
@@ -128,6 +142,52 @@ class DiaryBudgetKcalColumn extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// The goal and the carryover that the week adds to it or takes from it, as
+/// "2.200 − 125 aus der Woche".
+class _CarryoverChip extends StatelessWidget {
+  const new({
+    required this.goalKcal,
+    required this.carryoverKcal,
+    required this.numberFormat,
+  });
+
+  final double goalKcal;
+  final double carryoverKcal;
+  final NumberFormat numberFormat;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = FoodLabelColors.of(context);
+    final goal = numberFormat.format(goalKcal.round());
+    final carryover = numberFormat.format(carryoverKcal.abs().round());
+    final isLess = carryoverKcal < 0;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.paper,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        child: Text(
+          isLess
+              ? l10n.diaryBudgetCarryoverChipLess(goal, carryover)
+              : l10n.diaryBudgetCarryoverChipMore(goal, carryover),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            fontFamily: AppFonts.geist,
+            fontWeight: FontWeight.w600,
+            color: isLess ? colors.ink : colors.accentText,
+          ),
+        ),
+      ),
     );
   }
 }

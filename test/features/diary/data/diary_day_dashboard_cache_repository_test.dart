@@ -49,7 +49,7 @@ void main() {
 
   test('removes the entries of older cache versions on save', () async {
     final oldKeys = [
-      for (final version in [2, 3, 4]) 'diary_day_dashboard_v$version:a:b',
+      for (final version in [2, 3, 4, 5]) 'diary_day_dashboard_v$version:a:b',
     ];
     final preferences = MemoryAppPreferences(
       initialStrings: {for (final key in oldKeys) key: '{}', 'other': 'x'},
@@ -207,7 +207,7 @@ CalorieWeekOverview _weekOverview(DateTime day) {
 }
 
 String _cacheKey(String userId, DateTime day) {
-  return 'diary_day_dashboard_v5:$userId:${_dayKey(day)}';
+  return 'diary_day_dashboard_v6:$userId:${_dayKey(day)}';
 }
 
 String _dayKey(DateTime day) => localDayKey(day);
