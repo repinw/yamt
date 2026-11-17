@@ -9196,7 +9196,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileTrainingNote.
   ///
   /// In en, this message translates to:
-  /// **'Counts for this run only, like a day type in the diary. The run total stays; the carryover passes what past days got differently on to the days left.'**
+  /// **'Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the days left pass on what past days got differently.'**
   String get profileTrainingNote;
 
   /// No description provided for @profileTrainingPauseDay.
@@ -11088,6 +11088,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Carryover from the week'**
   String get diaryBudgetCarryoverRow;
+
+  /// Heading of the week balance menu and the settings tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly goal balance'**
+  String get weekBalanceTitle;
+
+  /// Mode option: no week balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get weekBalanceOff;
+
+  /// Line under the Off option.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day stands on its own.'**
+  String get weekBalanceOffHint;
+
+  /// Mode option: show the week card.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get weekBalanceShow;
+
+  /// Line under the Show option.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows the week. Your daily budget stays the same.'**
+  String get weekBalanceShowHint;
+
+  /// Mode option: week card with carryover.
+  ///
+  /// In en, this message translates to:
+  /// **'With carryover'**
+  String get weekBalanceCarryover;
+
+  /// Line under the carryover option; kcal is the daily limit (20 % of the goal, at most 350).
+  ///
+  /// In en, this message translates to:
+  /// **'Balances the week, at most {kcal} kcal per day.'**
+  String weekBalanceCarryoverHint(String kcal);
+
+  /// Hint below the mode options in the week card menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Change later: in the settings.'**
+  String get weekBalanceChangeLater;
+
+  /// Semantics label of the week card: opens the mode menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Open weekly goal balance'**
+  String get diaryWeekCardMenuOpen;
+
+  /// Field name of today in the week strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get diaryWeekToday;
+
+  /// Label under a pause day in the week strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get diaryWeekDayPause;
+
+  /// Label under a finished day without entries in the week strip.
+  ///
+  /// In en, this message translates to:
+  /// **'empty'**
+  String get diaryWeekDayEmpty;
+
+  /// Number under a day in the week strip that went over the goal: plus sign and the formatted kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'+{kcal}'**
+  String diaryWeekDayOver(String kcal);
+
+  /// Number under a day in the week strip that stayed under the goal: minus sign (U+2212) and the formatted kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'−{kcal}'**
+  String diaryWeekDayUnder(String kcal);
+
+  /// Chip under the budget: goal minus the carryover taken from the week.
+  ///
+  /// In en, this message translates to:
+  /// **'{goal} − {kcal} from the week'**
+  String diaryBudgetCarryoverChipLess(String goal, String kcal);
+
+  /// Chip under the budget: goal plus the carryover added from the week.
+  ///
+  /// In en, this message translates to:
+  /// **'{goal} + {kcal} from the week'**
+  String diaryBudgetCarryoverChipMore(String goal, String kcal);
 
   /// No description provided for @diaryBudgetPlannedCountedRow.
   ///

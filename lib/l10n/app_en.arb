@@ -3399,7 +3399,7 @@
     }
   },
   "profileTrainingRunSum": "Run total",
-  "profileTrainingNote": "Counts for this run only, like a day type in the diary. The run total stays; the carryover passes what past days got differently on to the days left.",
+  "profileTrainingNote": "Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the days left pass on what past days got differently.",
   "profileTrainingPauseDay": "Pause day",
   "profileTrainingOtherRestDays": "{count, plural, =1{Other normal day} other{{count} other normal days}}",
   "@profileTrainingOtherRestDays": {
@@ -4436,6 +4436,101 @@
   },
   "diaryBudgetBufferRow": "Buffer adjustment",
   "diaryBudgetCarryoverRow": "Carryover from the week",
+  "weekBalanceTitle": "Weekly goal balance",
+  "@weekBalanceTitle": {
+    "description": "Heading of the week balance menu and the settings tile."
+  },
+  "weekBalanceOff": "Off",
+  "@weekBalanceOff": {
+    "description": "Mode option: no week balance."
+  },
+  "weekBalanceOffHint": "Every day stands on its own.",
+  "@weekBalanceOffHint": {
+    "description": "Line under the Off option."
+  },
+  "weekBalanceShow": "Show",
+  "@weekBalanceShow": {
+    "description": "Mode option: show the week card."
+  },
+  "weekBalanceShowHint": "Shows the week. Your daily budget stays the same.",
+  "@weekBalanceShowHint": {
+    "description": "Line under the Show option."
+  },
+  "weekBalanceCarryover": "With carryover",
+  "@weekBalanceCarryover": {
+    "description": "Mode option: week card with carryover."
+  },
+  "weekBalanceCarryoverHint": "Balances the week, at most {kcal} kcal per day.",
+  "@weekBalanceCarryoverHint": {
+    "description": "Line under the carryover option; kcal is the daily limit (20 % of the goal, at most 350).",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "weekBalanceChangeLater": "Change later: in the settings.",
+  "@weekBalanceChangeLater": {
+    "description": "Hint below the mode options in the week card menu."
+  },
+  "diaryWeekCardMenuOpen": "Open weekly goal balance",
+  "@diaryWeekCardMenuOpen": {
+    "description": "Semantics label of the week card: opens the mode menu."
+  },
+  "diaryWeekToday": "Today",
+  "@diaryWeekToday": {
+    "description": "Field name of today in the week strip."
+  },
+  "diaryWeekDayPause": "Pause",
+  "@diaryWeekDayPause": {
+    "description": "Label under a pause day in the week strip."
+  },
+  "diaryWeekDayEmpty": "empty",
+  "@diaryWeekDayEmpty": {
+    "description": "Label under a finished day without entries in the week strip."
+  },
+  "diaryWeekDayOver": "+{kcal}",
+  "@diaryWeekDayOver": {
+    "description": "Number under a day in the week strip that went over the goal: plus sign and the formatted kcal.",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryWeekDayUnder": "−{kcal}",
+  "@diaryWeekDayUnder": {
+    "description": "Number under a day in the week strip that stayed under the goal: minus sign (U+2212) and the formatted kcal.",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetCarryoverChipLess": "{goal} − {kcal} from the week",
+  "@diaryBudgetCarryoverChipLess": {
+    "description": "Chip under the budget: goal minus the carryover taken from the week.",
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBudgetCarryoverChipMore": "{goal} + {kcal} from the week",
+  "@diaryBudgetCarryoverChipMore": {
+    "description": "Chip under the budget: goal plus the carryover added from the week.",
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
   "diaryBudgetPlannedCountedRow": "Planned · counted",
   "diaryBudgetOverRow": "Over",
   "diaryBudgetAllDays": "All days",

@@ -5558,7 +5558,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileTrainingNote =>
-      'Gilt nur für diesen Run, wie ein Tagestyp im Tagebuch. Die Summe des Runs bleibt; was vergangene Tage anders bekommen, gibt der Übertrag an die restlichen Tage weiter.';
+      'Gilt nur für diesen Run, wie ein Tagestyp im Tagebuch. Die Summe des Runs bleibt. Bei eingeschaltetem Übertrag geben die restlichen Tage weiter, was vergangene Tage anders bekommen.';
 
   @override
   String get profileTrainingPauseDay => 'Pausentag';
@@ -6790,6 +6790,65 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryBudgetCarryoverRow => 'Übertrag aus der Woche';
+
+  @override
+  String get weekBalanceTitle => 'Wochenzielbalance';
+
+  @override
+  String get weekBalanceOff => 'Aus';
+
+  @override
+  String get weekBalanceOffHint => 'Jeder Tag steht für sich.';
+
+  @override
+  String get weekBalanceShow => 'Anzeigen';
+
+  @override
+  String get weekBalanceShowHint =>
+      'Zeigt die Woche. Dein Tagesbudget bleibt gleich.';
+
+  @override
+  String get weekBalanceCarryover => 'Mit Übertrag';
+
+  @override
+  String weekBalanceCarryoverHint(String kcal) {
+    return 'Gleicht die Woche aus, höchstens $kcal kcal pro Tag.';
+  }
+
+  @override
+  String get weekBalanceChangeLater => 'Später ändern: in den Einstellungen.';
+
+  @override
+  String get diaryWeekCardMenuOpen => 'Wochenzielbalance öffnen';
+
+  @override
+  String get diaryWeekToday => 'Heute';
+
+  @override
+  String get diaryWeekDayPause => 'Pause';
+
+  @override
+  String get diaryWeekDayEmpty => 'leer';
+
+  @override
+  String diaryWeekDayOver(String kcal) {
+    return '+$kcal';
+  }
+
+  @override
+  String diaryWeekDayUnder(String kcal) {
+    return '−$kcal';
+  }
+
+  @override
+  String diaryBudgetCarryoverChipLess(String goal, String kcal) {
+    return '$goal − $kcal aus der Woche';
+  }
+
+  @override
+  String diaryBudgetCarryoverChipMore(String goal, String kcal) {
+    return '$goal + $kcal aus der Woche';
+  }
 
   @override
   String get diaryBudgetPlannedCountedRow => 'Geplant · eingerechnet';
