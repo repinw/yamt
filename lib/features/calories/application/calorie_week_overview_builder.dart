@@ -63,8 +63,13 @@ CalorieWeekOverview buildCalorieWeekOverview({
   final closedDay = settings.weekBalanceMode.carriesOver
       ? readClosedDay()
       : null;
+  // A close does not count while tomorrow is a pause day: that day takes
+  // no carryover. The stored value stays, so the close counts again once
+  // tomorrow is a normal day.
   final isTodayClosed =
-      closedDay != null && isSameLocalDay(closedDay, realToday);
+      closedDay != null &&
+      isSameLocalDay(closedDay, realToday) &&
+      !settings.isPauseDay(nextLocalDay(realToday));
   final weekBalance = buildCalorieWeekBalance(
     settings: settings,
     overviews: overviews,

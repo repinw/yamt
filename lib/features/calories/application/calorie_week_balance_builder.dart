@@ -18,9 +18,10 @@ import 'package:yamt/features/calories/domain/calorie_week_balance.dart';
 /// run's days after it. [realToday] is today; with [isTodayClosed] it counts
 /// as a finished day for the days after it.
 ///
-/// A new goal starts a new run, so a run it cuts short ends the day before:
-/// its budgets stay the ones of the full run and the balance holds only its
-/// own days.
+/// A new goal ends the run of the old one the day before it takes effect,
+/// even when it counts only from a later day (the days between belong to no
+/// run): the run's budgets stay the ones of the full run and the balance
+/// holds only its own days.
 WeekBalance? buildCalorieWeekBalance({
   required CalorieGoalSettings settings,
   required List<CalorieWeekDayOverview> overviews,
@@ -66,15 +67,15 @@ WeekBalance? buildCalorieWeekBalance({
         inputOf(addLocalDays(runStart, index)),
     ],
   );
-  final nextGoalStart = settings.nextGoalStartAfterDay(selectedDay);
-  if (nextGoalStart == null) {
+  final nextGoalEffective = settings.nextGoalEffectiveDateAfterDay(selectedDay);
+  if (nextGoalEffective == null) {
     return fullRun;
   }
   return WeekBalance(
     mode: fullRun.mode,
     weightGoal: fullRun.weightGoal,
     days: List<WeekBalanceDay>.unmodifiable(
-      fullRun.days.where((day) => day.date.isBefore(nextGoalStart)),
+      fullRun.days.where((day) => day.date.isBefore(nextGoalEffective)),
     ),
   );
 }
