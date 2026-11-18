@@ -91,7 +91,10 @@ void main() {
     }
   });
 
-  test('K9: a stored closed day does not change the budget of tomorrow', () {
+  // Closed, today counts as finished: +600 from yesterday and +1200 from
+  // today make +1800 over the five days from tomorrow on, 360 a day, which
+  // the limit of 20 % of 2000 and at most 350 cuts to +350.
+  test('K39: in "Mit Übertrag" a closed today counts for tomorrow', () {
     final open = _build(_tomorrow, mode: WeekBalanceMode.carryover);
     final closed = _build(
       _tomorrow,
@@ -99,35 +102,16 @@ void main() {
       closedDay: _today,
     );
 
-    expect(closed.carryoverBeforeTodayKcal, open.carryoverBeforeTodayKcal);
-    expect(closed.todayFlexibleGoalKcal, open.todayFlexibleGoalKcal);
+    expect(open.carryoverBeforeTodayKcal, 100);
+    expect(closed.carryoverBeforeTodayKcal, 350);
+    expect(closed.todayFlexibleGoalKcal, 2350);
+    expect(closed.weekBalance?.dayOf(_tomorrow)?.budgetKcal, 2350);
   });
 
-  // The close-day plumbing is still in lib/ (K9 removed its button); these
-  // two keep its flag honest until it is deleted.
-  test('tomorrow reports today as closed once it is stored', () {
-    final week = _build(
-      _tomorrow,
-      mode: WeekBalanceMode.show,
-      closedDay: _today,
-    );
-
-    expect(week.isPreviousDayClosed, isTrue);
-  });
-
-  test('a closed day other than today does not count', () {
-    final week = _build(
-      _tomorrow,
-      mode: WeekBalanceMode.show,
-      closedDay: _runStart,
-    );
-
-    expect(week.isPreviousDayClosed, isFalse);
-  });
-
-  test('a later day never reads the closed day', () {
+  test('K39: in "Mit Übertrag" a closed today counts for every coming '
+      'day, not only tomorrow', () {
     var reads = 0;
-    _build(
+    final week = _build(
       _dayAfter,
       mode: WeekBalanceMode.carryover,
       closedDay: _today,
@@ -136,6 +120,63 @@ void main() {
       },
     );
 
-    expect(reads, 0);
+    expect(reads, 1);
+    // +1800 − 350 for tomorrow leaves +1450 over four days: 362.5, cut to 350.
+    expect(week.carryoverBeforeTodayKcal, 350);
+    expect(week.todayFlexibleGoalKcal, 2350);
+    expect(week.isPreviousDayClosed, isFalse, reason: 'only tomorrow says so');
+    expect(week.previousDayCarryoverKcal, isNull);
+  });
+
+  test('K9: in "Aus" and "Anzeigen" a stored closed today is never read '
+      'and changes no budget', () {
+    for (final mode in [WeekBalanceMode.off, WeekBalanceMode.show]) {
+      for (final day in [_today, _tomorrow, _dayAfter]) {
+        var reads = 0;
+        final week = _build(
+          day,
+          mode: mode,
+          closedDay: _today,
+          onClosedDayRead: () {
+            reads += 1;
+          },
+        );
+
+        expect(reads, 0, reason: '${mode.name} $day');
+        expect(week.carryoverBeforeTodayKcal, 0, reason: '${mode.name} $day');
+        expect(week.todayFlexibleGoalKcal, 2000, reason: '${mode.name} $day');
+        expect(week.isPreviousDayClosed, isFalse, reason: '${mode.name} $day');
+        expect(
+          week.previousDayCarryoverKcal,
+          isNull,
+          reason: '${mode.name} $day',
+        );
+      }
+    }
+  });
+
+  test('K38: tomorrow reports today as closed once it is stored', () {
+    final open = _build(_tomorrow, mode: WeekBalanceMode.carryover);
+    final closed = _build(
+      _tomorrow,
+      mode: WeekBalanceMode.carryover,
+      closedDay: _today,
+    );
+
+    expect(open.isPreviousDayClosed, isFalse);
+    expect(open.previousDayCarryoverKcal, 100);
+    expect(closed.isPreviousDayClosed, isTrue);
+    expect(closed.previousDayCarryoverKcal, 350);
+  });
+
+  test('a closed day other than today does not count', () {
+    final week = _build(
+      _tomorrow,
+      mode: WeekBalanceMode.carryover,
+      closedDay: _runStart,
+    );
+
+    expect(week.isPreviousDayClosed, isFalse);
+    expect(week.carryoverBeforeTodayKcal, 100);
   });
 }

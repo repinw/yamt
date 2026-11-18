@@ -283,24 +283,31 @@ void main() {
     expect(_textOf(tester, DiaryBudgetCardKeys.kcalValue), '1,500');
   });
 
-  testWidgets('K9: tomorrow shows no button to close or reopen the day '
-      'before', (tester) async {
-    for (final isPreviousDayClosed in [false, true]) {
-      await _pumpTomorrow(tester, isPreviousDayClosed: isPreviousDayClosed);
+  testWidgets('K38/K41: in "Mit Übertrag" tomorrow offers to close today, '
+      'and names it closed once it is', (tester) async {
+    await _pumpTomorrow(tester, isPreviousDayClosed: false);
 
-      expect(
-        find.byKey(DiaryBudgetCardKeys.closePreviousDay),
-        findsNothing,
-        reason: 'closed: $isPreviousDayClosed',
-      );
-      expect(
-        find.byKey(DiaryBudgetCardKeys.reopenPreviousDay),
-        findsNothing,
-        reason: 'closed: $isPreviousDayClosed',
-      );
-      expect(find.text('Close Sunday'), findsNothing);
-      expect(find.text('Sunday closed'), findsNothing);
-    }
+    expect(find.byKey(DiaryBudgetCardKeys.closePreviousDay), findsOneWidget);
+    expect(find.byKey(DiaryBudgetCardKeys.reopenPreviousDay), findsNothing);
+    expect(find.text('Close Sunday'), findsOneWidget);
+
+    await _pumpTomorrow(tester, isPreviousDayClosed: true);
+
+    expect(find.byKey(DiaryBudgetCardKeys.closePreviousDay), findsNothing);
+    expect(find.byKey(DiaryBudgetCardKeys.reopenPreviousDay), findsOneWidget);
+    expect(find.text('Sunday closed'), findsOneWidget);
+  });
+
+  testWidgets('K9: in "Aus" and "Anzeigen" tomorrow shows no button to close '
+      'or reopen the day before', (tester) async {
+    // Only the mode that carries over gives tomorrow a carryover of the
+    // closed day (calorie_week_overview_builder_test).
+    await _pumpTomorrow(tester, isPreviousDayClosed: false, carriesOver: false);
+
+    expect(find.byKey(DiaryBudgetCardKeys.closePreviousDay), findsNothing);
+    expect(find.byKey(DiaryBudgetCardKeys.reopenPreviousDay), findsNothing);
+    expect(find.text('Close Sunday'), findsNothing);
+    expect(find.text('Sunday closed'), findsNothing);
   });
 
   testWidgets('a closed tomorrow counts its plans until the chip is off', (
@@ -886,6 +893,7 @@ Future<void> _pumpTomorrow(
   bool showDetails = false,
   List<CalorieEntry> plans = const [],
   bool paceMarkerOn = false,
+  bool carriesOver = true,
 }) {
   final day = DateTime(2026, 4, 27);
   return _pumpBalanceCard(
@@ -896,7 +904,7 @@ Future<void> _pumpTomorrow(
     dayTotals: const [0, 0, 0, 0, 0, 0, 900],
     runState: const BurnWeekRunState.initial(),
     todayFlexibleGoalKcal: isPreviousDayClosed ? 2218 : 2000,
-    previousDayCarryoverKcal: 218,
+    previousDayCarryoverKcal: carriesOver ? 218 : null,
     isPreviousDayClosed: isPreviousDayClosed,
     showDetails: showDetails,
     plans: plans,

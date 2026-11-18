@@ -1,10 +1,13 @@
 // The choice of the week balance mode (#911): K2 and K35 of
 // lib/features/diary/CRITERIA.md.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
@@ -32,12 +35,14 @@ Future<void> _pump(
   WidgetTester tester,
   CalorieSettingsRepository repository, {
   required Widget child,
+  List<Override> overrides = const [],
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         clockProvider.overrideWithValue(() => DateTime(2026, 11, 19, 10)),
         calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ...overrides,
       ],
       child: MaterialApp(
         locale: const Locale('de'),
@@ -152,7 +157,22 @@ void main() {
       );
     });
 
-    testWidgets('settings that fail to load throw nothing', (tester) async {
+    testWidgets('a failed save says so in a snack bar', (tester) async {
+      final repository = _repository()..saveShouldFail = true;
+      await _pump(tester, repository, child: const WeekBalanceModeChoice());
+
+      await tester.tap(_option(WeekBalanceMode.carryover));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Wochenzielbalance konnte nicht geändert werden.'),
+        findsOneWidget,
+      );
+      expect(_selected(), WeekBalanceMode.show);
+    });
+
+    testWidgets('settings that fail to load show the load error and no '
+        'option', (tester) async {
       final repository = _repository();
       await _pump(
         tester,
@@ -161,6 +181,41 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
+      expect(
+        find.text(
+          'Dein Ziel konnte nicht geladen werden. Prüfe deine Verbindung.',
+        ),
+        findsOneWidget,
+      );
+      for (final mode in WeekBalanceMode.values) {
+        expect(_option(mode), findsNothing, reason: mode.name);
+      }
+    });
+
+    testWidgets('K35: the limit follows the goal of today with its TDEE '
+        'offset, not the stored goal', (tester) async {
+      // Stored 2.200 (limit 350); today's TDEE takes 600 off: 1.600 → 320.
+      await _pump(
+        tester,
+        _repository(),
+        child: const WeekBalanceModeChoice(),
+        overrides: [
+          goalTdeeOffsetsByDayProvider.overrideWith((ref) async {
+            final settings = await ref.watch(
+              calorieGoalControllerProvider.future,
+            );
+            return GoalTdeeOffsets(
+              settings: settings,
+              byDay: const {'2026-11-19': -600},
+            );
+          }),
+        ],
+      );
+
+      expect(
+        find.text('Gleicht die Woche aus, höchstens 320 kcal pro Tag.'),
+        findsOneWidget,
+      );
     });
   });
 }

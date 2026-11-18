@@ -29,6 +29,7 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -133,6 +134,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   DateTime? goalStart,
   List<CalorieEntry> calorieEntries = const <CalorieEntry>[],
   List<CalorieEntry> plans = const <CalorieEntry>[],
+  WeekBalanceMode weekBalanceMode = WeekBalanceMode.show,
   // Without the household, the Vorrat stays loading, and a provider that
   // waits for it when the test ends fails its teardown.
   bool householdKnown = true,
@@ -157,7 +159,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       calculatorProfile: null,
       effectiveDate:
           goalStart ?? _selectedDay.subtract(const Duration(days: 14)),
-    ),
+    ).copyWith(weekBalanceMode: weekBalanceMode),
   );
   final router = GoRouter(
     initialLocation: AppRoutes.homeCalories,
@@ -1285,10 +1287,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('tomorrow plans with the carryover once the day before is '
-      'closed', (tester) async {
+  testWidgets('in "Mit Übertrag" tomorrow plans with the carryover once the '
+      'day before is closed', (tester) async {
     final harness = _buildHarness(
       today: _selectedDay.subtract(const Duration(days: 1)),
+      // Only this mode offers to close the day before (K38).
+      weekBalanceMode: WeekBalanceMode.carryover,
       // The run started on Sunday, so tomorrow is in its middle.
       goalStart: _selectedDay.subtract(const Duration(days: 10)),
       plans: [
