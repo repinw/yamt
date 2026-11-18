@@ -197,6 +197,32 @@ class DiaryAcceptanceHarness {
     );
   }
 
+  /// Replaces everything logged on [day] with one entry of [kcal], as an
+  /// edit of an earlier day does (K40).
+  Future<void> changeEaten(
+    WidgetTester tester,
+    DateTime day,
+    double kcal,
+  ) async {
+    final old = log.entries.where(
+      (entry) => isSameLocalDay(entry.loggedAt, day),
+    );
+    await tester.runAsync(() async {
+      for (final entry in old.toList()) {
+        await log.deleteEntry(entry.id);
+      }
+    });
+    await eat(tester, day, kcal);
+  }
+
+  /// Closes the app and opens the diary again on [now], on the same phone:
+  /// the device storage and the account stay (K42).
+  Future<void> restart(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await settle(tester);
+    await pumpDiary(tester);
+  }
+
   /// Logs [kcal] more on [day] through the app's entry saver, as the eat
   /// flows do.
   Future<void> eat(WidgetTester tester, DateTime day, double kcal) async {
@@ -518,3 +544,42 @@ String de(num kcal) {
 
 /// A signed carryover like the criteria: "−125", "+350" (U+2212 minus).
 String signed(num kcal) => kcal < 0 ? '−${de(kcal)}' : '+${de(kcal)}';
+
+/// The button "Wochentag abschließen" on the shown day's budget card.
+Finder get closeDayButton => find.descendant(
+  of: find.byKey(DiaryBudgetCardKeys.card),
+  matching: find.byKey(DiaryBudgetCardKeys.closePreviousDay),
+);
+
+/// The button "Wochentag abgeschlossen" on the shown day's budget card.
+Finder get reopenDayButton => find.descendant(
+  of: find.byKey(DiaryBudgetCardKeys.card),
+  matching: find.byKey(DiaryBudgetCardKeys.reopenPreviousDay),
+);
+
+/// Taps "Wochentag abschließen" on the shown day (tomorrow), K38, K39.
+Future<void> closeToday(WidgetTester tester) async {
+  expect(
+    closeDayButton,
+    findsOneWidget,
+    reason: "tomorrow's budget card offers to close today (K38)",
+  );
+  await tester.ensureVisible(closeDayButton);
+  await tester.tap(closeDayButton);
+  await settle(tester);
+}
+
+/// Taps "Wochentag abgeschlossen" on the shown day (tomorrow), K41.
+Future<void> reopenToday(WidgetTester tester) async {
+  expect(
+    reopenDayButton,
+    findsOneWidget,
+    reason: "tomorrow's budget card shows the closed day (K41)",
+  );
+  await tester.ensureVisible(reopenDayButton);
+  await tester.tap(reopenDayButton);
+  await settle(tester);
+}
+
+/// The undo action of the snack bar on the screen.
+Finder get undoAction => find.text('Rückgängig');

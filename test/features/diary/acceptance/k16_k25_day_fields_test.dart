@@ -172,6 +172,33 @@ void main() {
       }
     });
 
+    testWidgets('K21: once today is closed, the coming days show their '
+        'piece by K39, not by the preview', (tester) async {
+      // Thursday 650 eaten: the preview gives Friday to Sunday −125 each;
+      // closed, Thursday counts and they get +350 each (K39).
+      await DiaryAcceptanceHarness(
+        now: morningOf(runDay(3)),
+        eaten: {
+          runDay(0): 2200,
+          runDay(1): 1900,
+          runDay(2): 3000,
+          runDay(3): 650,
+        },
+      ).pumpDiary(tester);
+      await chooseModeInDiary(tester, WeekBalanceMode.carryover);
+      for (final day in [4, 5, 6]) {
+        _expectPart(day, WeekCardKeys.debtPiece, findsOneWidget, '$day −125');
+      }
+
+      await nextDay(tester);
+      await closeToday(tester);
+
+      for (final day in [4, 5, 6]) {
+        _expectPart(day, WeekCardKeys.extraPiece, findsOneWidget, '$day +350');
+        _expectPart(day, WeekCardKeys.debtPiece, findsNothing, '$day more');
+      }
+    });
+
     testWidgets('K21: in "Anzeigen" no field has such a piece', (tester) async {
       await DiaryAcceptanceHarness(
         now: morningOf(runDay(3)),

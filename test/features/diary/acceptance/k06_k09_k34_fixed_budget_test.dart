@@ -113,7 +113,7 @@ void main() {
   });
 
   group('K9', () {
-    for (final mode in WeekBalanceMode.values) {
+    for (final mode in _fixedModes) {
       testWidgets('K9: in "${mode.label}" tomorrow\'s budget card has no '
           '"<Wochentag> abschließen" and no "<Wochentag> abgeschlossen"', (
         tester,
@@ -125,6 +125,8 @@ void main() {
         await ensureDetails(tester);
 
         final card = find.byKey(DiaryBudgetCardKeys.card);
+        expect(closeDayButton, findsNothing);
+        expect(reopenDayButton, findsNothing);
         expect(
           find.descendant(
             of: card,
