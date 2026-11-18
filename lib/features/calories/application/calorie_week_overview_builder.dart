@@ -15,8 +15,9 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart
 /// The week balance of the selected day's run gives its carryover; the days
 /// of the run after the selected day come from [laterEntries]. The totals
 /// come from [historicalEntries] between [carryoverStartDate] and the first
-/// visible day. [realToday] is today; [readClosedDay] is asked only for
-/// tomorrow, so a bad stored value cannot break the other days.
+/// visible day. [realToday] is today; [readClosedDay] is asked only in the
+/// mode that carries over, where a closed today counts as a finished day for
+/// every day after it.
 CalorieWeekOverview buildCalorieWeekOverview({
   required CalorieGoalSettings settings,
   required List<CalorieWeekDayOverview> overviews,
@@ -59,27 +60,30 @@ CalorieWeekOverview buildCalorieWeekOverview({
       : nextGoalStartDate == null
       ? null
       : settings.goalKcalForDay(nextGoalStartDate);
+  final closedDay = settings.weekBalanceMode.carriesOver
+      ? readClosedDay()
+      : null;
+  final isTodayClosed =
+      closedDay != null && isSameLocalDay(closedDay, realToday);
   final weekBalance = buildCalorieWeekBalance(
     settings: settings,
     overviews: overviews,
     realToday: realToday,
     laterEntries: laterEntries,
+    isTodayClosed: isTodayClosed,
   );
   final carryoverBeforeTodayKcal =
       weekBalance?.dayOf(today)?.carryoverKcal ?? 0.0;
-  // Tomorrow can plan with today's carryover once today is closed, unless
-  // it starts a new run or is a pause day.
+  // In the mode that carries over, today can be closed for tomorrow, unless
+  // tomorrow starts a new run or is a pause day.
   final previousDayCarryoverKcal =
-      isSameLocalDay(today, nextLocalDay(realToday)) &&
+      settings.weekBalanceMode.carriesOver &&
+          isSameLocalDay(today, nextLocalDay(realToday)) &&
           isBeforeDay(carryoverStartDate, today) &&
           !overviews.last.isPauseDay
       ? carryoverBeforeTodayKcal
       : null;
-  // Only tomorrow reads the closed day, so a bad stored value cannot break
-  // the other days.
-  final closedDay = previousDayCarryoverKcal == null ? null : readClosedDay();
-  final isPreviousDayClosed =
-      closedDay != null && isSameLocalDay(closedDay, realToday);
+  final isPreviousDayClosed = previousDayCarryoverKcal != null && isTodayClosed;
   final todayFlexibleGoalKcal =
       overviews.last.goalKcal + carryoverBeforeTodayKcal;
   return CalorieWeekOverview(

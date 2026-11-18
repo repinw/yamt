@@ -15,12 +15,14 @@ import 'package:yamt/features/calories/domain/calorie_week_balance.dart';
 ///
 /// The days of the run up to the selected day come from [overviews], the
 /// rolling window that ends on it; [laterEntries] are the entries of the
-/// run's days after it. [realToday] is today.
+/// run's days after it. [realToday] is today; with [isTodayClosed] it counts
+/// as a finished day for the days after it.
 WeekBalance? buildCalorieWeekBalance({
   required CalorieGoalSettings settings,
   required List<CalorieWeekDayOverview> overviews,
   required DateTime realToday,
   required List<CalorieEntry> laterEntries,
+  bool isTodayClosed = false,
 }) {
   final selectedDay = overviews.last.date;
   if (settings.countingGoalEntryForDay(selectedDay) == null) {
@@ -54,6 +56,7 @@ WeekBalance? buildCalorieWeekBalance({
         settings.calculatorProfile?.goalMode ??
         CalorieGoalMode.maintain,
     today: realToday,
+    isTodayClosed: isTodayClosed,
     days: [
       for (var index = 0; index < calorieGoalRunLengthDays; index += 1)
         inputOf(addLocalDays(runStart, index)),
