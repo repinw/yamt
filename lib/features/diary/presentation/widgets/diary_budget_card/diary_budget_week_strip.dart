@@ -19,13 +19,16 @@ import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_labels.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// The seven days of the run week with their day types. A tap switches a
-/// day between normal and training. A pause day only shows: the pause button
-/// of the card sets and removes it (#921).
+/// The days of the run week with their day types: seven, or fewer for a run
+/// that a new goal cut short, whose strip holds no day of another run. A tap
+/// switches a day between normal and training. A pause day only shows: the
+/// pause button of the card sets and removes it (#921).
 class DiaryBudgetWeekStrip extends ConsumerWidget {
-  /// Creates the strip of the run week starting on [weekStart].
+  /// Creates the strip of the [dayCount] days of the run week starting on
+  /// [weekStart].
   const new({
     required this.weekStart,
+    required this.dayCount,
     required this.selectedDay,
     required this.today,
     super.key,
@@ -33,6 +36,9 @@ class DiaryBudgetWeekStrip extends ConsumerWidget {
 
   /// First day of the run week.
   final DateTime weekStart;
+
+  /// Number of days of the run week.
+  final int dayCount;
 
   /// Day of the card, marked with a ring.
   final DateTime selectedDay;
@@ -46,7 +52,7 @@ class DiaryBudgetWeekStrip extends ConsumerWidget {
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final days = [
-      for (var i = 0; i < calorieGoalRunLengthDays; i++)
+      for (var i = 0; i < dayCount; i++)
         addLocalDays(normalizeLocalDay(weekStart), i),
     ];
     final types = [
@@ -109,6 +115,9 @@ class DiaryBudgetWeekStrip extends ConsumerWidget {
                       },
                     ),
                   ),
+                // Keeps the width of a day, so a short run does not stretch.
+                for (var i = days.length; i < calorieGoalRunLengthDays; i++)
+                  const Spacer(),
               ],
             ),
           ],
