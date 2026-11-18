@@ -1,4 +1,3 @@
-import 'package:yamt/features/inventory/domain/cook_line_food.dart';
 import 'package:yamt/features/recipes/application/ingredient_exact_quantity.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/features/recipes/domain/cook_line_text.dart';
@@ -74,15 +73,3 @@ String cookLineLabel(CookRunLine line, TemplateIngredientRequirement? need) =>
       ].join(' '),
       _ => '${need.amount} ${need.unit.code} ${need.name}',
     };
-
-/// [text], a line as the page shows it ([cookLineLabel]), split into its
-/// amount and its food (`cookLineFoodName`): "1000 ml" and "Milch", "1/2" and
-/// "Zitrone", "1 Prise" and "Salz", "100 g" and "Frischkäse (Doppelrahm)".
-/// No amount for a line that names none ("Salz") or whose food comes first
-/// ("Butter 100 g").
-({String? amount, String food}) cookLineTextParts(String text) {
-  final line = text.trim();
-  final at = line.indexOf(cookLineFoodName(line));
-  if (at <= 0) return (amount: null, food: line);
-  return (amount: line.substring(0, at).trim(), food: line.substring(at));
-}

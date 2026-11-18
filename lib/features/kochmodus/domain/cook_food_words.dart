@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:yamt/features/inventory/domain/cook_line_food.dart';
 import 'package:yamt/features/inventory/domain/ingredient_compound_head.dart';
 import 'package:yamt/features/inventory/domain/ingredient_match_lexicon.dart';
 import 'package:yamt/features/inventory/domain/ingredient_match_tokens.dart';
@@ -69,94 +68,6 @@ bool cookFoodOnlyInsideWord(String text, String name) {
   }
   return inside;
 }
-
-/// Whether the instruction [step] names the food [food] (`cookLineFoodName` of
-/// a line): a word of [food] stands in [step] as a whole word, in any letter
-/// case, in the singular or plural ("Zwiebel" and "Zwiebeln", "Ei" and
-/// "Eier"). Only the words before what the food is for count
-/// (`cookFoodBeforePhrase`): "braten" does not name "Olivenöl zum Braten",
-/// nor "nach" "Salz nach Geschmack". A word for a kind ("rote", "schwarzer")
-/// and a word such as "Bio" or "frische" never count, nor does a word that
-/// only starts or ends a longer one: "Milchreis dazugeben" does not name
-/// "Milch", "in Salzwasser kochen" not "Wasser". An article or a small word
-/// inside the food's name never counts either: "von der Platte nehmen" does
-/// not name "Saft von 1 Zitrone", nor "aus der Pfanne nehmen" "Tomaten aus
-/// der Dose". The last part of a word with a hyphen is a word of its own
-/// ("Milch" of "H-Milch"). A word of the step that ends a compound of the
-/// food, its head, names it too: "Bohnen" names "Kidneybohnen"; not a word
-/// of two letters ("Öl" ends "Alkohol"), nor one a word holds by chance, nor
-/// a verb such as "braten" ("Schweinebraten").
-bool cookStepNamesFood(String step, String food) {
-  final stepForms = {
-    for (final word in cookFoodWords(step)) ..._saidForms(word),
-  };
-  final named = cookFoodBeforePhrase(food);
-  final foodWords = {
-    ...cookFoodWords(named),
-    for (final word in named.split(' '))
-      if (word.contains('-')) ...cookFoodWords(word.split('-').last),
-  };
-  return foodWords.any(
-    (word) =>
-        !_smallWords.contains(word) &&
-        !isIngredientKindWord(word, fallbackIngredientMatchLexicon) &&
-        _saidForms(word).any(
-          (form) => stepForms.contains(form) || _endsWithHead(form, stepForms),
-        ),
-  );
-}
-
-// Whether the step word [head] of [stepForms] ends the longer [word] of a
-// food, as the head of its compound.
-bool _endsWithHead(String word, Set<String> stepForms) => stepForms.any(
-  (head) =>
-      head.length > 2 &&
-      word.length > head.length + 2 &&
-      word.endsWith(head) &&
-      // Also its forms, such as "brate".
-      !_verbHeads.any((verb) => verb.startsWith(head)) &&
-      !_holdsByChance(word, {head}),
-);
-
-// Verbs of nearly every instruction that also end the name of a food: "braten"
-// is no "Schweinebraten".
-const _verbHeads = {'braten'};
-
-// Articles and small words that stand inside a food's name ("Saft von 1
-// Zitrone", "Saft aus 1 Zitrone", "Abrieb einer Zitrone") and in nearly every
-// instruction.
-const _smallWords = {
-  'der',
-  'die',
-  'das',
-  'den',
-  'dem',
-  'des',
-  'ein',
-  'eine',
-  'einer',
-  'einem',
-  'einen',
-  'eines',
-  'von',
-  'vom',
-  'aus',
-  'mit',
-  'ohne',
-  'und',
-  'oder',
-  'am',
-  'im',
-  'the',
-  'a',
-  'an',
-  'of',
-  'from',
-  'and',
-  'or',
-  'with',
-  'without',
-};
 
 bool _startsOrEnds(String word, String food) =>
     word.startsWith(food) || word.endsWith(food);

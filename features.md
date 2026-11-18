@@ -1436,12 +1436,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   named in a step or from "Timer"; when it ends, the phone rings with a
   notification, and a tap opens the cooking. On Android the timer rings like
   an alarm clock, also on a muted phone, until it is tapped, swiped, or
-  stopped, and for at most 10 minutes.
-- Under a step of the guide, the app lists the ingredients the step names, with
-  their amounts. A step names an ingredient by its food only: "Olivenöl zum
-  Braten" is named by "Olivenöl", not by "braten", and "Salz nach Geschmack" not
-  by "nach"; articles and small words in a food's name ("von", "aus", "der")
-  never count: "Saft aus 1 Zitrone" is named by "Saft". "Zurück" on the first
+  stopped, and for at most 10 minutes. The start of cooking asks for the
+  notification permission once; the first timer asks only when the start did
+  not. On Android the ask for exact alarms comes when cooking starts, not when
+  an existing run is reopened, and it repeats at each start until the cook
+  declines once.
+- The guide shows a step's text and times only; it lists no ingredients under
+  a step. "Zurück" on the first
   step goes to Töpfe. A tap on a single time in a step starts the timer at
   once, none while a timer of that name still counts; a span of two times asks which end. When notifications are off
   or Android may let the timer ring late, a hint with "Erlauben" stands under
@@ -1466,7 +1467,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   zu wiegen", one chip each; a tap opens the weighing. An ingredient in
   pieces, a measure ("Zehe") or without an amount that takes from a food kept
   in g or ml has only a guessed weight ("1 Zwiebel" is not "150 g"): it reads
-  "≈ … geschätzt" and stays listed, also under every step of the guide, until
+  "≈ … geschätzt" and stays listed until
   the cook weighs it or sets an amount in g or ml. An ingredient in spoons, one
   from a food kept in pieces with its own piece weight (eggs), and one that
   does not count, and one whose food left the Vorrat ("Eintrag fehlt", without

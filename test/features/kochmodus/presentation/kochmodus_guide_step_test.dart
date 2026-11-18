@@ -1,12 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_cook_list.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_guide_step.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_pots_step.dart';
-import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_step_foods.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_timer_sheet.dart';
+import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_to_weigh.dart';
 import 'package:yamt/features/recipes/domain/cook_line_settlement.dart';
 import 'package:yamt/features/recipes/domain/cook_run.dart';
 import 'package:yamt/features/recipes/domain/cook_run_changes.dart';
@@ -281,7 +280,10 @@ void main() {
 
       testWidgets('inexact alarms show the exact-alarm hint', (tester) async {
         await harness.preferences.setString(asked, 'set');
-        harness.notifications.exactAllowed = false;
+        // The cook declined the exact alarm ask at the start (W2).
+        harness.notifications
+          ..exactAllowed = false
+          ..grantsExact = false;
 
         await openGuide(tester);
 
@@ -374,88 +376,53 @@ void main() {
       await close(tester);
     });
   });
-  group('the foods a step names', () {
-    final milk = stockItem(
-      'milk',
-      1000,
-      unit: InventoryAmountUnit.milliliter,
-    ).copyWith(name: 'Milch');
-    final sugar = stockItem('sugar', 500).copyWith(name: 'Zucker');
-
-    CookRun foodsRun({int guideStep = 0}) => buildCookRun(
-      step: CookRunStep.cook,
-      pots: CookPotsChosen(pots: const [cookPotA], inCans: false),
-      steps: const [
-        'Milch mit Salz aufkochen.',
-        'Zucker dazugeben.',
-        'Alles gut umrühren.',
-      ],
-      lines: [
-        textLine('l-milk', '1 l Milch', settlement: assigned({'milk': 1000})),
-        textLine('l-salt', '1 Prise Salz', settlement: const LineIgnored()),
-        textLine('l-sugar', 'Zucker', settlement: assigned({'sugar': 50})),
-      ],
-    ).useGuide(on: true).guideTo(guideStep);
-
-    Future<void> openFoods(WidgetTester tester, {int guideStep = 0}) async {
-      await harness.stock(tester, [milk, sugar]);
-      await open(tester, foodsRun(guideStep: guideStep));
-    }
-
-    Finder inBlock(Finder finder) => find.descendant(
-      of: find.byKey(KochmodusStepFoods.blockKey),
-      matching: finder,
-    );
-
-    testWidgets('one row per food under the sentence, amount and food as '
-        'text', (tester) async {
-      await openFoods(tester);
-
-      expect(find.byKey(KochmodusStepFoods.blockKey), findsOneWidget);
-      expect(
-        tester
-            .widget<Text>(find.byKey(KochmodusStepFoods.rowKey('l-milk')))
-            .data,
-        'Milch',
+  group('K9: a step shows its sentence and no recipe lines', () {
+    testWidgets('K9: no recipe line stands below the step', (tester) async {
+      await harness.stock(tester, [
+        stockItem('onion', 500).copyWith(name: 'Zwiebel'),
+        stockItem('garlic', 100).copyWith(name: 'Knoblauch'),
+      ]);
+      await open(
+        tester,
+        buildCookRun(
+          step: CookRunStep.cook,
+          pots: CookPotsChosen(pots: const [cookPotA], inCans: false),
+          steps: const ['Zwiebel und Knoblauch im selben Topf andünsten'],
+          lines: [
+            textLine(
+              'l-onion',
+              '1 Zwiebel',
+              settlement: assigned({'onion': 80}),
+            ),
+            textLine(
+              'l-garlic',
+              '2 Knoblauchzehen',
+              settlement: assigned({'garlic': 10}),
+            ),
+          ],
+        ).useGuide(on: true).guideTo(0),
       );
+
       expect(
-        tester
-            .widget<Text>(find.byKey(KochmodusStepFoods.rowKey('l-salt')))
-            .data,
-        'Salz',
+        find.text('Zwiebel und Knoblauch im selben Topf andünsten'),
+        findsOneWidget,
       );
-      expect(inBlock(find.text('1000\u00A0ml')).evaluate(), isEmpty);
-      expect(inBlock(find.text('1000 ml')), findsOneWidget);
-      expect(inBlock(find.text('1 Prise')), findsOneWidget);
-      expect(find.byKey(KochmodusStepFoods.rowKey('l-sugar')), findsNothing);
-      // Under the sentence.
-      expect(
-        tester.getTopLeft(find.byKey(KochmodusStepFoods.blockKey)).dy,
-        greaterThan(
-          tester.getBottomLeft(find.text('Milch mit Salz aufkochen.')).dy - 1,
-        ),
-      );
-      await close(tester);
-    });
+      expect(find.byKey(const ValueKey('kochmodus-guide-foods')), findsNothing);
+      // A line may stand in its to-weigh chip (K9 keeps those); nowhere else.
+      void expectOnlyInChip(String text, String lineId) {
+        final all = find.text(text);
+        final inChip = find.descendant(
+          of: find.byKey(KochmodusToWeigh.chipKey(lineId)),
+          matching: all,
+        );
+        expect(all.evaluate().length, inChip.evaluate().length);
+      }
 
-    testWidgets('a food without an amount shows its name alone', (
-      tester,
-    ) async {
-      await openFoods(tester, guideStep: 1);
-
-      final shown = tester
-          .widgetList<Text>(inBlock(find.byType(Text)))
-          .map((text) => text.data)
-          .where((text) => text != null && text.isNotEmpty);
-      expect(shown, ['Zucker']);
-      await close(tester);
-    });
-
-    testWidgets('a step that names no line has no block', (tester) async {
-      await openFoods(tester, guideStep: 2);
-
-      expect(find.byKey(KochmodusStepFoods.blockKey), findsNothing);
-      expect(find.text('Alles gut umrühren.'), findsOneWidget);
+      expectOnlyInChip('1 Zwiebel', 'l-onion');
+      expectOnlyInChip('2 Knoblauchzehen', 'l-garlic');
+      expect(find.text('Zwiebel'), findsNothing);
+      expect(find.text('Knoblauchzehen'), findsNothing);
+      expect(find.text('Knoblauch'), findsNothing);
       await close(tester);
     });
   });

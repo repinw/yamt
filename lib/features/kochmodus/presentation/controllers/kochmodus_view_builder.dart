@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:yamt/features/inventory/domain/cook_line_food.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
@@ -9,7 +8,6 @@ import 'package:yamt/features/kochmodus/application/cook_line_parse.dart';
 import 'package:yamt/features/kochmodus/application/cook_run_finish_service.dart';
 import 'package:yamt/features/kochmodus/application/cook_takes.dart';
 import 'package:yamt/features/kochmodus/domain/cook_duration.dart';
-import 'package:yamt/features/kochmodus/domain/cook_food_words.dart';
 import 'package:yamt/features/kochmodus/domain/cook_line_weight.dart';
 import 'package:yamt/features/kochmodus/domain/cook_meal_name.dart';
 import 'package:yamt/features/kochmodus/domain/cook_pot_split.dart';
@@ -119,7 +117,7 @@ KochmodusView buildKochmodusView({
         ? null
         : kochmodusPortionMacros(portionLabel),
     portionLabel: portionLabel,
-    guide: [for (final text in run.steps) _guideLine(text, lines)],
+    guide: [for (final text in run.steps) _guideLine(text)],
     timers: run.timers.sortedBy((timer) => timer.endsAt),
     estimated: [
       for (final line in assigned)
@@ -145,24 +143,11 @@ KochmodusView buildKochmodusView({
   );
 }
 
-// The instruction [text] with its timers and the [lines] it names: not one
-// the cook left out, but one that does not count (a pinch of salt goes in).
-KochmodusGuideLine _guideLine(String text, List<KochmodusLineView> lines) => (
+// The instruction [text] with the timers of the times it names.
+KochmodusGuideLine _guideLine(String text) => (
   text: text,
   timerSteps: [
     for (final duration in cookDurationsIn(text)) cookTimerSteps(duration),
-  ],
-  foods: [
-    for (final line in lines)
-      if ((line.settlement is! LineIgnored || line.notCounted) &&
-          cookStepNamesFood(text, cookLineFoodName(line.line.text)))
-        switch (cookLineTextParts(line.text)) {
-          (:final amount, :final food) => (
-            lineId: line.id,
-            amount: amount,
-            food: food,
-          ),
-        },
   ],
 );
 

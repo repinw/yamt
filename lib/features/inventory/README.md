@@ -28,15 +28,12 @@ discard events, and inventory-backed calorie handoff context.
   400 g Dose Tomaten"; a type number stays: "Weizenmehl Type 405").
   `cookLineFoodPhrase` is the words as they stand, without amount, measure,
   brackets and what follows a comma, and keeps lowercase adjectives ("rote
-  Linsen"). `cookFoodBeforePhrase` cuts a food name before the words for what
-  the food is for or how it comes ("Olivenöl" of "Olivenöl zum Braten"); "aus"
-  and "from" cut nothing ("Saft aus 1 Zitrone" stays whole). They
-  live beside the matching lexicon they need; `kochmodus` and `cookbook_new`
-  read them.
+  Linsen"). They live beside the matching lexicon they need; `kochmodus` and
+  `cookbook_new` read them.
 - The match lexicon (`IngredientMatchLexicon`), with its kind words
   (`kindWords`: colours and kinds such as "schwarz", "rot", "grün",
   "getrocknet", "gemahlen", in every ending; English too).
-  `isIngredientKindWord` says whether a word is one; `kochmodus` reads it.
+  `isIngredientKindWord` says whether a word is one.
 
 ## Does Not Own
 
