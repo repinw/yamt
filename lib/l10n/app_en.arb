@@ -3399,7 +3399,7 @@
     }
   },
   "profileTrainingRunSum": "Run total",
-  "profileTrainingNote": "Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the days left pass on what past days got differently.",
+  "profileTrainingNote": "Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the carryover passes on to the days left how far past days ran over or under.",
   "profileTrainingPauseDay": "Pause day",
   "profileTrainingOtherRestDays": "{count, plural, =1{Other normal day} other{{count} other normal days}}",
   "@profileTrainingOtherRestDays": {
@@ -4472,6 +4472,10 @@
   "weekBalanceChangeLater": "Change later: in the settings.",
   "@weekBalanceChangeLater": {
     "description": "Hint below the mode options in the week card menu."
+  },
+  "weekBalanceSaveFailed": "Could not change the weekly goal balance.",
+  "@weekBalanceSaveFailed": {
+    "description": "Error snack bar when saving the week balance mode (Off, Show, With carryover) fails."
   },
   "diaryWeekCardMenuOpen": "Open weekly goal balance",
   "@diaryWeekCardMenuOpen": {

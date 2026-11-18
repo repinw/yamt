@@ -5483,7 +5483,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileTrainingNote =>
-      'Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the days left pass on what past days got differently.';
+      'Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the carryover passes on to the days left how far past days ran over or under.';
 
   @override
   String get profileTrainingPauseDay => 'Pause day';
@@ -6726,6 +6726,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weekBalanceChangeLater => 'Change later: in the settings.';
+
+  @override
+  String get weekBalanceSaveFailed =>
+      'Could not change the weekly goal balance.';
 
   @override
   String get diaryWeekCardMenuOpen => 'Open weekly goal balance';

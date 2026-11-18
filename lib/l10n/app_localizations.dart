@@ -9196,7 +9196,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileTrainingNote.
   ///
   /// In en, this message translates to:
-  /// **'Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the days left pass on what past days got differently.'**
+  /// **'Counts for this run only, like a day type in the diary. The run total stays. With the carryover turned on, the carryover passes on to the days left how far past days ran over or under.'**
   String get profileTrainingNote;
 
   /// No description provided for @profileTrainingPauseDay.
@@ -11136,6 +11136,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change later: in the settings.'**
   String get weekBalanceChangeLater;
+
+  /// Error snack bar when saving the week balance mode (Off, Show, With carryover) fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the weekly goal balance.'**
+  String get weekBalanceSaveFailed;
 
   /// Semantics label of the week card: opens the mode menu.
   ///
