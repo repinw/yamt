@@ -43,13 +43,7 @@ class DiaryWeekDayBar extends StatelessWidget {
     final isFinished = day.date.isBefore(normalizedToday);
     final isEmpty =
         !day.isPauseDay && !isComing && !day.hasEntries && isFinished;
-    final difference = day.eatenKcal - day.budgetKcal;
-    final fellShort =
-        isFinished &&
-        day.hasEntries &&
-        !day.isPauseDay &&
-        !balance.overIsMiss &&
-        -difference >= AppWeekCard.numberThresholdKcal;
+    final fellShort = isFinished && !balance.overIsMiss && balance.isMiss(day);
 
     return ClipRRect(
       borderRadius: radius,

@@ -100,8 +100,8 @@ class DiaryWeekDayField extends StatelessWidget {
     );
   }
 
-  /// The number under a finished day, or null when the day is within
-  /// [AppWeekCard.numberThresholdKcal] of its budget.
+  /// The number under a finished day, or null when the day is not off its
+  /// budget enough to name it.
   ({String text, Color color})? _number(
     AppLocalizations l10n,
     FoodLabelColors colors,
@@ -114,18 +114,16 @@ class DiaryWeekDayField extends StatelessWidget {
     if (!day.hasEntries) {
       return (text: l10n.diaryWeekDayEmpty, color: colors.muted);
     }
-    final difference = day.eatenKcal - day.budgetKcal;
-    if (difference.abs() < AppWeekCard.numberThresholdKcal) {
+    if (!day.isOffBudget) {
       return null;
     }
+    final difference = day.differenceKcal;
     final kcal = NumberFormat.decimalPattern(locale)
         .format(difference.abs().round());
     final over = difference > 0;
-    // The miss is going over, or for a weight goal of gaining, falling short.
-    final isMiss = over == balance.overIsMiss;
     return (
       text: over ? l10n.diaryWeekDayOver(kcal) : l10n.diaryWeekDayUnder(kcal),
-      color: isMiss
+      color: balance.isMiss(day)
           ? error
           : over
           ? colors.ink
