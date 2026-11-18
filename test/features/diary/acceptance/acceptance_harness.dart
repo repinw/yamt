@@ -31,8 +31,10 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_transition_helpers.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dart';
@@ -73,8 +75,34 @@ class _MockUser extends Mock implements User {
   bool get isAnonymous => false;
 }
 
-/// A goal of `kcal` that counts from the day `from` on.
+/// A goal of `kcal` that counts from the day `from` on, set on that day.
 typedef NewGoal = ({DateTime from, double kcal});
+
+/// A goal of [kcal] set on the day [setOn] that counts from [countsFrom]
+/// ("Zielstart") on, stored as the app stores it: effective from the day it
+/// is set, counting from its start (K49).
+class GoalChange {
+  /// Creates the change; [trainingWeekdays] replaces the training weekdays
+  /// of the goal before it (1 = Monday), when given.
+  const new({
+    required this.setOn,
+    required this.countsFrom,
+    required this.kcal,
+    this.trainingWeekdays,
+  });
+
+  /// The day the goal is set.
+  final DateTime setOn;
+
+  /// The goal's start ("Zielstart"), the first day it counts.
+  final DateTime countsFrom;
+
+  /// The goal's daily average.
+  final double kcal;
+
+  /// The training weekdays of the new goal, or null to keep the old ones.
+  final List<int>? trainingWeekdays;
+}
 
 /// One account with a goal run, logged days and a fixed clock.
 class DiaryAcceptanceHarness {
@@ -85,7 +113,9 @@ class DiaryAcceptanceHarness {
   /// (one session of [trainingSessionKcal] on top of the goal). [now] is the
   /// wall clock. Without [hasGoal] the account has no goal at all.
   /// [newGoal] is a second goal that counts from its start day on,
-  /// set after the first one (K47).
+  /// set after the first one (K47); [goalChange] is one that may count from
+  /// a later day than it is set (K49). [trainingWeekdays] are the planned
+  /// training weekdays of the first goal (1 = Monday).
   new({
     required this.now,
     DateTime? goalStart,
@@ -98,40 +128,46 @@ class DiaryAcceptanceHarness {
     bool hasGoal = true,
     BurnWeekRunState runState = const BurnWeekRunState.initial(),
     NewGoal? newGoal,
+    GoalChange? goalChange,
+    List<int> trainingWeekdays = const <int>[],
   }) : firestore = FakeFirebaseFirestore(),
        preferences = _phonePreferences(),
        runStateRepository = FakeBurnWeekRunStateRepository(runState),
        log = FakeCalorieLogRepository(),
        settings = FakeCalorieSettingsRepository(
          initialSettings: hasGoal
-             ? _withNewGoal(
-                 CalorieGoalSettings.single(
-                   dailyKcalGoal: goalKcal,
-                   calculatorProfile: CalorieCalculatorProfile(
-                     sex: CalorieCalculatorSex.male,
-                     weightKg: 80,
-                     heightCm: 180,
-                     ageYears: 30,
-                     activityLevel: 1.2,
-                     goalMode: goalMode,
-                     goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
-                         ? 0
-                         : 0.5,
+             ? _withGoalChange(
+                 _withNewGoal(
+                   CalorieGoalSettings.single(
+                     dailyKcalGoal: goalKcal,
+                     calculatorProfile: CalorieCalculatorProfile(
+                       sex: CalorieCalculatorSex.male,
+                       weightKg: 80,
+                       heightCm: 180,
+                       ageYears: 30,
+                       activityLevel: 1.2,
+                       goalMode: goalMode,
+                       goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
+                           ? 0
+                           : 0.5,
+                       trainingDayKcalOffset: trainingSessionKcal,
+                       trainingWeekdays: trainingWeekdays,
+                     ),
+                     effectiveDate: goalStart ?? runMonday,
+                     countingStartDate: goalStart ?? runMonday,
+                     trainingWeekdays: trainingWeekdays,
                      trainingDayKcalOffset: trainingSessionKcal,
+                     pauseDayKeys: [
+                       for (final day in pauseDays) localDayKey(day),
+                     ],
+                   ).copyWith(
+                     unplannedTrainingDayOverrides: {
+                       for (final day in trainingDays) localDayKey(day): true,
+                     },
                    ),
-                   effectiveDate: goalStart ?? runMonday,
-                   countingStartDate: goalStart ?? runMonday,
-                   trainingWeekdays: const <int>[],
-                   trainingDayKcalOffset: trainingSessionKcal,
-                   pauseDayKeys: [
-                     for (final day in pauseDays) localDayKey(day),
-                   ],
-                 ).copyWith(
-                   unplannedTrainingDayOverrides: {
-                     for (final day in trainingDays) localDayKey(day): true,
-                   },
+                   newGoal,
                  ),
-                 newGoal,
+                 goalChange,
                )
              : const CalorieGoalSettings.empty(),
        ) {
@@ -187,24 +223,47 @@ class DiaryAcceptanceHarness {
   static CalorieGoalSettings _withNewGoal(
     CalorieGoalSettings settings,
     NewGoal? goal,
+  ) => goal == null
+      ? settings
+      : _withGoalChange(
+          settings,
+          GoalChange(setOn: goal.from, countsFrom: goal.from, kcal: goal.kcal),
+        );
+
+  /// [settings] after [change], through the domain call that the app's goal
+  /// save makes (`transitionToCalculatedGoal`): a start after the day it is
+  /// set makes the goal effective on that day and counting from its start.
+  static CalorieGoalSettings _withGoalChange(
+    CalorieGoalSettings settings,
+    GoalChange? change,
   ) {
-    if (goal == null) return settings;
-    final from = normalizeLocalDay(goal.from);
-    final last = settings.goalHistory.last;
-    return settings.copyWith(
-      dailyKcalGoal: goal.kcal,
-      updatedAt: from,
-      goalHistory: [
-        ...settings.goalHistory,
-        CalorieGoalHistoryEntry(
-          dailyKcalGoal: goal.kcal,
-          calculatorProfile: last.calculatorProfile,
-          effectiveDate: from,
-          changedAt: from,
-          countingStartDate: from,
-        ),
-      ],
+    if (change == null) return settings;
+    final today = normalizeLocalDay(change.setOn);
+    final start = normalizeLocalDay(change.countsFrom);
+    final effective = start.isAfter(today) ? today : start;
+    final profile = settings.goalHistory.last.calculatorProfile!;
+    final weekdays = change.trainingWeekdays;
+    final next = settings.applyGoalChange(
+      changedAt: goalChangeTimestamp(
+        normalizedEffectiveDate: effective,
+        normalizedToday: today,
+        now: morningOf(today),
+      ),
+      dailyKcalGoal: change.kcal,
+      calculatorProfile: weekdays == null
+          ? profile
+          : profile.copyWith(trainingWeekdays: weekdays),
+      countingStartDate: start,
+      source: CalorieGoalSource.calculator,
+      replaceFutureHistory: true,
     );
+    final added = next.goalHistory.last;
+    if (next.goalHistory.length != settings.goalHistory.length + 1 ||
+        !isSameLocalDay(added.effectiveDate, effective) ||
+        !isSameLocalDay(added.effectiveCountingStartDate, start)) {
+      throw StateError('The harness did not store the goal change as the app.');
+    }
+    return next;
   }
 
   /// Sets [goal], a new goal that counts from its start day on,
@@ -213,6 +272,15 @@ class DiaryAcceptanceHarness {
     await tester.runAsync(() async {
       final current = await settings.readSettings();
       await settings.saveSettings(_withNewGoal(current, goal));
+    });
+    await settle(tester);
+  }
+
+  /// Sets [change] while the app is open (K49).
+  Future<void> setGoalChange(WidgetTester tester, GoalChange change) async {
+    await tester.runAsync(() async {
+      final current = await settings.readSettings();
+      await settings.saveSettings(_withGoalChange(current, change));
     });
     await settle(tester);
   }
@@ -438,6 +506,33 @@ String dayNumberText(WidgetTester tester, int index) =>
 /// The name under the week card's field at [index].
 String dayNameText(WidgetTester tester, int index) =>
     textUnder(tester, find.byKey(WeekCardKeys.dayName(index)));
+
+/// The number of the week card's fields, counted from index 0 on as long as
+/// they follow each other.
+int weekFieldCount(WidgetTester tester) {
+  var count = 0;
+  while (find.byKey(WeekCardKeys.day(count)).evaluate().isNotEmpty) {
+    count += 1;
+  }
+  return count;
+}
+
+/// The names under the week card's fields, in their order.
+List<String> weekDayNames(WidgetTester tester) => [
+  for (var index = 0; index < weekFieldCount(tester); index += 1)
+    dayNameText(tester, index),
+];
+
+/// The index of the one field of the week card that has the frame.
+int? framedWeekDay(WidgetTester tester) {
+  expect(find.byKey(WeekCardKeys.frame), findsOneWidget);
+  for (var index = 0; index < 7; index += 1) {
+    if (partOfDay(index, WeekCardKeys.frame).evaluate().isNotEmpty) {
+      return index;
+    }
+  }
+  return null;
+}
 
 /// [part] inside the week card's field at [index].
 Finder partOfDay(int index, Key part) => find.descendant(
