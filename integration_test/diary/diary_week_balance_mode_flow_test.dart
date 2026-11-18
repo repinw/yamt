@@ -200,4 +200,31 @@ void main() {
     );
     await tester.pumpAndSettle(const Duration(seconds: 5));
   });
+
+  testWidgets('a new goal from Thursday cuts the old run short: Thursday '
+      'shows seven fields, Tuesday three', (tester) async {
+    // K47: a run from Monday; the new goal of 2.000 counts from Thursday.
+    final harness = diary.DiaryAcceptanceHarness(
+      now: diary.morningOf(diary.runDay(3)),
+      newGoal: (from: diary.runDay(3), kcal: 2000),
+      eaten: {
+        diary.runDay(0): 2200,
+        diary.runDay(1): 1900,
+        diary.runDay(2): 3000,
+      },
+    );
+    await harness.pumpDiary(tester);
+    await _openWeekCardMenu(tester);
+    await _pickInMenu(tester, WeekBalanceMode.carryover);
+
+    expect(find.byKey(DiaryWeekCardKeys.day(6)), findsOneWidget);
+    expect(_budgetKcal(tester), '2.000');
+
+    await diary.previousDay(tester, times: 2);
+
+    expect(find.byKey(DiaryWeekCardKeys.card), findsOneWidget);
+    expect(find.byKey(DiaryWeekCardKeys.day(2)), findsOneWidget);
+    expect(find.byKey(DiaryWeekCardKeys.day(3)), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
