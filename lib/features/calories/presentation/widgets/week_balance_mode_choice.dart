@@ -7,6 +7,7 @@ import 'package:yamt/core/constants/app_week_card_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
@@ -84,19 +85,30 @@ class WeekBalanceModeChoice extends ConsumerWidget {
             label: label,
             hint: hint,
             isSelected: mode == stored.weekBalanceMode,
-            onTap: () => unawaited(_pick(ref, mode)),
+            onTap: () => unawaited(_pick(context, ref, mode)),
           ),
       ],
     );
   }
 
-  Future<void> _pick(WidgetRef ref, WeekBalanceMode mode) async {
+  Future<void> _pick(
+    BuildContext context,
+    WidgetRef ref,
+    WeekBalanceMode mode,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final saved = await ref
         .read(calorieGoalControllerProvider.notifier)
         .setWeekBalanceMode(mode);
     if (saved) {
       onPicked?.call();
+      return;
     }
+    messenger.showAppSnackBar(
+      l10n.weekBalanceSaveFailed,
+      tone: AppSnackBarTone.error,
+    );
   }
 }
 
