@@ -17,6 +17,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
+import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
@@ -30,6 +31,7 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
@@ -71,6 +73,9 @@ class _MockUser extends Mock implements User {
   bool get isAnonymous => false;
 }
 
+/// A goal of `kcal` that counts from the day `from` on.
+typedef NewGoal = ({DateTime from, double kcal});
+
 /// One account with a goal run, logged days and a fixed clock.
 class DiaryAcceptanceHarness {
   /// Creates the account.
@@ -79,6 +84,8 @@ class DiaryAcceptanceHarness {
   /// no entries. [trainingDays] are days that the diary made training days
   /// (one session of [trainingSessionKcal] on top of the goal). [now] is the
   /// wall clock. Without [hasGoal] the account has no goal at all.
+  /// [newGoal] is a second goal that counts from its start day on,
+  /// set after the first one (K47).
   new({
     required this.now,
     DateTime? goalStart,
@@ -90,35 +97,41 @@ class DiaryAcceptanceHarness {
     double trainingSessionKcal = 250,
     bool hasGoal = true,
     BurnWeekRunState runState = const BurnWeekRunState.initial(),
+    NewGoal? newGoal,
   }) : firestore = FakeFirebaseFirestore(),
        preferences = _phonePreferences(),
        runStateRepository = FakeBurnWeekRunStateRepository(runState),
        log = FakeCalorieLogRepository(),
        settings = FakeCalorieSettingsRepository(
          initialSettings: hasGoal
-             ? CalorieGoalSettings.single(
-                 dailyKcalGoal: goalKcal,
-                 calculatorProfile: CalorieCalculatorProfile(
-                   sex: CalorieCalculatorSex.male,
-                   weightKg: 80,
-                   heightCm: 180,
-                   ageYears: 30,
-                   activityLevel: 1.2,
-                   goalMode: goalMode,
-                   goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
-                       ? 0
-                       : 0.5,
+             ? _withNewGoal(
+                 CalorieGoalSettings.single(
+                   dailyKcalGoal: goalKcal,
+                   calculatorProfile: CalorieCalculatorProfile(
+                     sex: CalorieCalculatorSex.male,
+                     weightKg: 80,
+                     heightCm: 180,
+                     ageYears: 30,
+                     activityLevel: 1.2,
+                     goalMode: goalMode,
+                     goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
+                         ? 0
+                         : 0.5,
+                     trainingDayKcalOffset: trainingSessionKcal,
+                   ),
+                   effectiveDate: goalStart ?? runMonday,
+                   countingStartDate: goalStart ?? runMonday,
+                   trainingWeekdays: const <int>[],
                    trainingDayKcalOffset: trainingSessionKcal,
+                   pauseDayKeys: [
+                     for (final day in pauseDays) localDayKey(day),
+                   ],
+                 ).copyWith(
+                   unplannedTrainingDayOverrides: {
+                     for (final day in trainingDays) localDayKey(day): true,
+                   },
                  ),
-                 effectiveDate: goalStart ?? runMonday,
-                 countingStartDate: goalStart ?? runMonday,
-                 trainingWeekdays: const <int>[],
-                 trainingDayKcalOffset: trainingSessionKcal,
-                 pauseDayKeys: [for (final day in pauseDays) localDayKey(day)],
-               ).copyWith(
-                 unplannedTrainingDayOverrides: {
-                   for (final day in trainingDays) localDayKey(day): true,
-                 },
+                 newGoal,
                )
              : const CalorieGoalSettings.empty(),
        ) {
@@ -170,6 +183,39 @@ class DiaryAcceptanceHarness {
   late ProviderContainer container;
 
   var _nextId = 0;
+
+  static CalorieGoalSettings _withNewGoal(
+    CalorieGoalSettings settings,
+    NewGoal? goal,
+  ) {
+    if (goal == null) return settings;
+    final from = normalizeLocalDay(goal.from);
+    final last = settings.goalHistory.last;
+    return settings.copyWith(
+      dailyKcalGoal: goal.kcal,
+      updatedAt: from,
+      goalHistory: [
+        ...settings.goalHistory,
+        CalorieGoalHistoryEntry(
+          dailyKcalGoal: goal.kcal,
+          calculatorProfile: last.calculatorProfile,
+          effectiveDate: from,
+          changedAt: from,
+          countingStartDate: from,
+        ),
+      ],
+    );
+  }
+
+  /// Sets [goal], a new goal that counts from its start day on,
+  /// while the app is open (K47, K48).
+  Future<void> setNewGoal(WidgetTester tester, NewGoal goal) async {
+    await tester.runAsync(() async {
+      final current = await settings.readSettings();
+      await settings.saveSettings(_withNewGoal(current, goal));
+    });
+    await settle(tester);
+  }
 
   static MemoryAppPreferences _phonePreferences() => MemoryAppPreferences(
     completedCalorieGoalOnboardingUserIds: const {'user-1'},
@@ -515,9 +561,23 @@ Future<void> chooseModeInDiary(
   await closeMenuIfOpen(tester);
 }
 
+/// Waits until no snack bar is on the screen. The app's snack bars sit at
+/// the top, over the day navigator, so a user lets one pass (four seconds,
+/// K41) before paging.
+Future<void> waitForSnackBarToPass(WidgetTester tester) async {
+  final snackBar = find.byType(AppSnackBarView);
+  if (snackBar.evaluate().isEmpty) return;
+  for (var i = 0; i < 10 && snackBar.evaluate().isNotEmpty; i += 1) {
+    await tester.pump(const Duration(seconds: 1));
+  }
+  expect(snackBar, findsNothing, reason: 'the snack bar hides itself');
+  await settle(tester);
+}
+
 /// Pages the diary one day back.
 Future<void> previousDay(WidgetTester tester, {int times = 1}) async {
   for (var i = 0; i < times; i += 1) {
+    await waitForSnackBarToPass(tester);
     await tester.tap(find.byKey(DiaryDayNavigatorKeys.previous));
     await settle(tester);
   }
@@ -526,6 +586,7 @@ Future<void> previousDay(WidgetTester tester, {int times = 1}) async {
 /// Pages the diary one day on.
 Future<void> nextDay(WidgetTester tester, {int times = 1}) async {
   for (var i = 0; i < times; i += 1) {
+    await waitForSnackBarToPass(tester);
     await tester.tap(find.byKey(DiaryDayNavigatorKeys.next));
     await settle(tester);
   }
