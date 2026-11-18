@@ -107,16 +107,6 @@ DateTime resolveCalorieGoalRunEndDate({
   return addLocalDays(runStart, calorieGoalRunLengthDays - 1);
 }
 
-/// Resolve remaining days in the active run, including [day].
-int resolveRemainingCalorieGoalRunDays({
-  required CalorieGoalSettings settings,
-  required DateTime day,
-}) {
-  final normalizedDay = normalizeLocalDay(day);
-  final runEnd = resolveCalorieGoalRunEndDate(settings: settings, day: day);
-  return localDaysBetween(normalizedDay, runEnd) + 1;
-}
-
 /// Resolve where carryover starts for the current 7-day run.
 DateTime resolveCalorieCarryoverStartDate({
   required CalorieGoalSettings settings,
