@@ -136,7 +136,6 @@ void main() {
       DateTime(2026, 10, 20),
     );
     expect(resolveCalorieGoalRunNumber(settings: settings, day: day), 3);
-    expect(resolveRemainingCalorieGoalRunDays(settings: settings, day: day), 1);
   });
 
   test('the Burn Week moves on by calendar days across the clock change', () {

@@ -1,5 +1,7 @@
 // The choice of the week balance mode (#911): K2 and K35 of
 // lib/features/diary/CRITERIA.md.
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -217,7 +219,68 @@ void main() {
         findsOneWidget,
       );
     });
+
+    testWidgets('the carryover option has no line while the budget settings '
+        'load', (tester) async {
+      await _pump(
+        tester,
+        _repository(),
+        child: const WeekBalanceModeChoice(),
+        overrides: [
+          calorieBudgetSettingsProvider.overrideWith(
+            (ref) => Completer<CalorieGoalSettings>().future,
+          ),
+        ],
+      );
+
+      _expectCarryoverWithoutLine();
+    });
+
+    testWidgets('the carryover option has no line when the budget settings '
+        'fail', (tester) async {
+      await _pump(
+        tester,
+        _repository(),
+        child: const WeekBalanceModeChoice(),
+        overrides: [
+          calorieBudgetSettingsProvider.overrideWith(
+            (ref) async => throw StateError('budget failed'),
+          ),
+        ],
+      );
+
+      expect(tester.takeException(), isNull);
+      _expectCarryoverWithoutLine();
+    });
   });
+}
+
+/// The carryover option shows its label and no line, and the other options
+/// keep theirs.
+void _expectCarryoverWithoutLine() {
+  final carryover = _option(WeekBalanceMode.carryover);
+  expect(
+    find.descendant(of: carryover, matching: find.text('Mit Übertrag')),
+    findsOneWidget,
+  );
+  expect(
+    find.descendant(of: carryover, matching: find.textContaining('kcal')),
+    findsNothing,
+  );
+  expect(
+    find.descendant(
+      of: carryover,
+      matching: find.textContaining('Gleicht die Woche aus'),
+    ),
+    findsNothing,
+  );
+  expect(
+    find.descendant(
+      of: _option(WeekBalanceMode.show),
+      matching: find.text('Zeigt die Woche. Dein Tagesbudget bleibt gleich.'),
+    ),
+    findsOneWidget,
+  );
 }
 
 /// Settings whose stream fails.

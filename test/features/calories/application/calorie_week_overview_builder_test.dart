@@ -3,6 +3,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_builder.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 
 final _today = DateTime(2026, 10, 8);
@@ -10,12 +11,16 @@ final DateTime _tomorrow = addLocalDays(_today, 1);
 final DateTime _dayAfter = addLocalDays(_today, 2);
 final DateTime _runStart = addLocalDays(_today, -1);
 
-CalorieGoalSettings _settings(WeekBalanceMode mode) =>
-    CalorieGoalSettings.single(
-      dailyKcalGoal: 2000,
-      calculatorProfile: null,
-      effectiveDate: _runStart,
-    ).copyWith(weekBalanceMode: mode);
+CalorieGoalSettings _settings(WeekBalanceMode mode, {DateTime? pauseDay}) {
+  final settings = CalorieGoalSettings.single(
+    dailyKcalGoal: 2000,
+    calculatorProfile: null,
+    effectiveDate: _runStart,
+  ).copyWith(weekBalanceMode: mode);
+  return pauseDay == null
+      ? settings
+      : settings.setPauseDay(day: pauseDay, isPause: true);
+}
 
 /// The overview of the window that ends on [day]: yesterday, the first day
 /// of the run, 1400 kcal and today 800 kcal, under a 2000 kcal goal. The
@@ -24,11 +29,12 @@ CalorieWeekOverview _build(
   DateTime day, {
   required WeekBalanceMode mode,
   DateTime? closedDay,
+  DateTime? pauseDay,
   void Function()? onClosedDayRead,
 }) {
   final eaten = {localDayKey(_runStart): 1400.0, localDayKey(_today): 800.0};
   return buildCalorieWeekOverview(
-    settings: _settings(mode),
+    settings: _settings(mode, pauseDay: pauseDay),
     overviews: [
       for (final date in buildRollingLocalDays(anchorDay: day))
         CalorieWeekDayOverview(
@@ -178,5 +184,60 @@ void main() {
 
     expect(week.isPreviousDayClosed, isFalse);
     expect(week.carryoverBeforeTodayKcal, 100);
+  });
+
+  group('K50: a close does not count while tomorrow is a pause day', () {
+    test('tomorrow does not report today as closed', () {
+      final week = _build(
+        _tomorrow,
+        mode: WeekBalanceMode.carryover,
+        closedDay: _today,
+        pauseDay: _tomorrow,
+      );
+
+      expect(week.isPreviousDayClosed, isFalse);
+    });
+
+    test('the days after tomorrow get the same as without the close', () {
+      final open = _build(
+        _dayAfter,
+        mode: WeekBalanceMode.carryover,
+        pauseDay: _tomorrow,
+      );
+      final closed = _build(
+        _dayAfter,
+        mode: WeekBalanceMode.carryover,
+        closedDay: _today,
+        pauseDay: _tomorrow,
+      );
+
+      expect(closed.carryoverBeforeTodayKcal, open.carryoverBeforeTodayKcal);
+      expect(closed.todayFlexibleGoalKcal, open.todayFlexibleGoalKcal);
+      expect(
+        closed.weekBalance?.dayOf(_dayAfter)?.budgetKcal,
+        open.weekBalance?.dayOf(_dayAfter)?.budgetKcal,
+      );
+      // Without the pause day the close moves the day after to 2.350.
+      expect(
+        _build(
+          _dayAfter,
+          mode: WeekBalanceMode.carryover,
+          closedDay: _today,
+        ).todayFlexibleGoalKcal,
+        2350,
+      );
+      expect(closed.todayFlexibleGoalKcal, isNot(2350));
+    });
+
+    test('a pause day after tomorrow leaves the close counting', () {
+      final week = _build(
+        _tomorrow,
+        mode: WeekBalanceMode.carryover,
+        closedDay: _today,
+        pauseDay: _dayAfter,
+      );
+
+      expect(week.isPreviousDayClosed, isTrue);
+    });
   });
 }
