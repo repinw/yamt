@@ -5558,7 +5558,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileTrainingNote =>
-      'Gilt nur für diesen Run, wie ein Tagestyp im Tagebuch. Die Summe des Runs bleibt. Bei eingeschaltetem Übertrag geben die restlichen Tage weiter, was vergangene Tage anders bekommen.';
+      'Gilt nur für diesen Run, wie ein Tagestyp im Tagebuch. Die Summe des Runs bleibt. Bei eingeschaltetem Übertrag gibt der Übertrag an die restlichen Tage weiter, um wie viel vergangene Tage darüber oder darunter lagen.';
 
   @override
   String get profileTrainingPauseDay => 'Pausentag';
@@ -6817,6 +6817,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get weekBalanceChangeLater => 'Später ändern: in den Einstellungen.';
+
+  @override
+  String get weekBalanceSaveFailed =>
+      'Wochenzielbalance konnte nicht geändert werden.';
 
   @override
   String get diaryWeekCardMenuOpen => 'Wochenzielbalance öffnen';
