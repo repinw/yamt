@@ -117,6 +117,47 @@ void main() {
     expect(calls.removedWishes, ['schnell']);
   });
 
+  testWidgets('a comma or semicolon ends a wish at once', (tester) async {
+    final calls = await _pump(tester);
+
+    await tester.tap(find.byKey(AiChefPillRow.addKey(_wish)));
+    await tester.pump();
+    final input = find.byKey(AiChefPillRow.inputKey(_wish));
+    await tester.enterText(input, 'schnell,');
+    await tester.pump();
+
+    expect(calls.wishes, ['schnell']);
+    expect(input, findsOneWidget);
+    expect(tester.widget<TextField>(input).controller!.text, isEmpty);
+
+    await tester.enterText(input, 'Lachs; scharf');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+
+    expect(calls.wishes, ['schnell', 'Lachs', ' scharf']);
+  });
+
+  testWidgets('a pasted list ends in pills, the rest on leaving', (
+    tester,
+  ) async {
+    final calls = await _pump(tester);
+
+    await tester.tap(find.byKey(AiChefPillRow.addKey(_never)));
+    await tester.pump();
+    final input = find.byKey(AiChefPillRow.inputKey(_never));
+    await tester.enterText(input, 'Pilze, Rosinen; Koriander');
+    await tester.pump();
+
+    expect(calls.added, ['Pilze', ' Rosinen']);
+    expect(tester.widget<TextField>(input).controller!.text, ' Koriander');
+
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+
+    expect(calls.added, ['Pilze', ' Rosinen', ' Koriander']);
+    expect(input, findsNothing);
+  });
+
   testWidgets('adds a Bloß nicht entry and removes a pill', (tester) async {
     final calls = await _pump(tester, excludedIngredients: const ['Rosinen']);
 
