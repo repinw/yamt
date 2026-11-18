@@ -132,7 +132,7 @@ class CalorieGoalSettings {
   @JsonKey(defaultValue: currentCalorieMathVersion)
   final int calorieMathVersion;
 
-  /// How the diary shows and counts the week of the goal run.
+  /// Temporary compatibility, added in 3.11.0: the default for old settings.
   @JsonKey(defaultValue: WeekBalanceMode.show)
   final WeekBalanceMode weekBalanceMode;
 
@@ -226,9 +226,8 @@ class CalorieGoalSettings {
   }
 
   /// The latest learned tdee changed at.
-  DateTime? get latestLearnedTdeeChangedAt {
-    return latestLearnedTdeeEntry?.effectiveChangedAt;
-  }
+  DateTime? get latestLearnedTdeeChangedAt =>
+      latestLearnedTdeeEntry?.effectiveChangedAt;
 
   /// Copy with pending weekly check in.
   CalorieGoalSettings copyWithPendingWeeklyCheckIn(

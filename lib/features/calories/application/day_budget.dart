@@ -29,8 +29,8 @@ class DayBudget {
 
 /// Resolves the budget of the last day of [week].
 ///
-/// The macro targets take the week's carryover, which the week overview
-/// already leaves out for a planned day, so they match the kcal goal.
+/// The macro targets take the week's carryover, the same one the kcal budget
+/// of the day includes, so they match it.
 DayBudget resolveDayBudget({
   required CalorieWeekOverview week,
   required DailyNutritionTargetResolver nutrition,
