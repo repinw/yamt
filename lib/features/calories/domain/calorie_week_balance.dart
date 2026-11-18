@@ -168,7 +168,8 @@ class WeekBalance {
   /// budget is the miss.
   final CalorieGoalMode weightGoal;
 
-  /// The seven days of the run, from its first day.
+  /// The days of the run, from its first day: seven, or fewer for a run that
+  /// a new goal cut short.
   final List<WeekBalanceDay> days;
 
   /// Whether going over the budget is the miss: for every weight goal but
