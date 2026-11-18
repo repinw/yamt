@@ -304,18 +304,56 @@ and feature description docs. This is product-facing; architecture rules stay in
   keeps no stock source.
 - Future days are shown as a plan: the card reads "kcal übrig nach Plan"
   with the day's goal less its plans, drawn in the plan color; the macros
-  count the plans too. The goal has no carryover, because the days before it
-  are not finished; the training and rest day split still applies. More
+  count the plans too. Without the carryover the goal is the plain goal; with
+  "Mit Übertrag" it includes the preview of the carryover. The training and
+  rest day split still applies. More
   than the goal shows in the error color like on other days. Future days
   show no weekly check-in and no budget details.
-- Tomorrow can plan with today's carryover: the button "<Wd> abschließen"
-  (today's short weekday) closes today. Tomorrow then counts like a started
-  day: the card shows "kcal übrig" with the goal plus that carryover, like
-  today; a snack bar offers undo, and "✓ <Wd> abgeschlossen" reopens the
-  day on a tap. The carryover stays live:
-  food logged later today or edits to earlier days change it. When tomorrow
-  starts a new 7-day run, it gets no carryover and shows no button. The
-  closed day is saved on the device and counts only until midnight.
+- The week balance is a setting ("Wochenzielbalance") with three modes:
+  "Aus", "Anzeigen" and "Mit Übertrag". It is saved per account, and every
+  account starts with "Anzeigen". Hold the week card to change it in a menu
+  with a line for each mode, or pick it in the settings next to "Schritte im
+  Tagebuch". Switching recomputes the whole running run.
+  - "Aus" and "Anzeigen": every day has only its own goal. The budget
+    card, the macro targets, and the sheet "Alle Tage" never count what past
+    days were over or under, the card shows nothing about the week, and
+    there is no "<Wochentag> abschließen". "Aus" also hides the week card.
+  - "Mit Übertrag": what finished days of the run were over or under their
+    budget moves the budget of the days left. The balance is spread over the
+    days left in the run, today included, at most 20 % of the day's goal
+    and 350 kcal either way, and never below 1.200 kcal. A pause day and a
+    day without entries add nothing. What is left at the run's end is
+    dropped. The budget, the macro targets, the widget, and the free kcal
+    notices use the budget with the carryover. "Details" shows it as a chip
+    ("2.200 − 125 aus der Woche") and a ledger row.
+- The week card sits between the budget card and the steps card in the modes
+  "Anzeigen" and "Mit Übertrag", with no title and no total: one field for
+  each day of the run that holds the shown day, named "Mo" to "So", with
+  "Heute" in bold and the shown day framed. A finished day's field fills like
+  the kcal line against that day's budget, and only the part above the budget
+  is red; a pause day is hatched, a day without entries is an empty track,
+  and coming days are dashed outlines. With "Details" open, numbers stand
+  under the finished days: eaten minus that day's budget (+ more, − less, from
+  50 kcal off), "Pause", or "leer". A gain goal turns red when short, not
+  when over. With the carryover, a day with less budget has a dark piece at
+  the front of its field and a day with more has a dashed piece at the end;
+  today and every coming day show a preview that assumes the days until then
+  hit their budget. A tap does nothing. Without a goal run there is no card.
+- "<Wochentag> abschließen" exists only with the carryover. On tomorrow's
+  card the button names today's weekday and closes today: today then counts
+  as a finished day for tomorrow and every later day of the run, in the
+  week card and on the budget cards, also when today is under its budget.
+  Tomorrow then counts like a started day: the card shows "kcal übrig" with
+  the goal plus that carryover, like today; a snack bar offers undo, and
+  "<Wochentag> abgeschlossen" reopens the day on a tap. The carryover stays
+  live: food logged later today or edits to earlier days change it. When
+  tomorrow starts a new 7-day run or is a pause day, there is no button.
+  The closed day is saved on the device and counts only until midnight; a
+  switch to another mode and back keeps it until then.
+- A new goal starts a new 7-day run on its start day and cuts the old run
+  short: the old run's balance reaches no day of the new run, the week card
+  of the old run shows only its own days, and the budgets of the old run's
+  past days stay as they were.
 - Plans on today, or on a closed tomorrow, show in the plan color after the
   eaten share of the kcal and macro lines. The chip "Nach Plan" shows only
   when the day has such plans; on by default, it counts them: the card then
@@ -414,8 +452,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   with the training days chosen so far, still undecided. A check-in swiped away or
   put off with "Später" also keeps its step and choices for "Fortsetzen"
   while the diary stays open.
-- Burn Week budget model with daily goal, activity credit, carryover, skipped
-  days, remaining calories, and details sheet.
+- Burn Week budget model with daily goal, activity credit, the optional
+  carryover, skipped days, remaining calories, and details sheet.
 - Macro tracking for protein, carbs, fat, and extended nutrient fields.
 - Protein and fat targets in g/kg: 1.6 g protein, 2.0 g while losing weight
   with training; 0.8 g fat for men, 0.9 g for women. The training days decide

@@ -19,10 +19,20 @@ changes.
   Later features read and change this state.
 - The goal list: every goal with its dates, pace, start and end weight, and
   reached date. Progress reads it for its goal menu and past goal card.
+- The week balance (#911): `WeekBalanceMode` ("Aus", "Anzeigen", "Mit
+  Übertrag"), stored per account in the calorie goal settings (default
+  "Anzeigen"), and `WeekBalance`, the seven days of
+  a goal run with their budget and carryover, which the diary's week card
+  and the week overview read.
+- The carryover rule and its limit: the balance of the finished days of the
+  run, spread over the days left, at most 20 % of the day's goal and 350 kcal
+  in both directions, and never below 1.200 kcal
+  (`CalorieBudgetCalculator`). Only the mode "Mit Übertrag" adds it to a
+  budget. A new goal starts a new run and cuts the old one short, so the old
+  balance reaches no day of the new run.
 - The closed day: today closed early by the signed-in user, saved only on
-  this device, so
-  tomorrow's week overview counts today as finished and gives tomorrow its
-  carryover.
+  this device. In the mode "Mit Übertrag" only, every coming day of the run
+  counts today as finished and gets its carryover from it.
 - Plans: food the signed-in user plans to eat on a later day, stored
   encrypted apart from the calorie entries so no sum counts them, and the
   actions that save and delete them.
@@ -56,6 +66,10 @@ changes.
 - `TrainingDayChips` and `TrainingWeekDepotChart` pick the training days of
   a week and show how the week's calories spread over training and rest days.
   Onboarding and the weekly check-in use them.
+- `WeekBalanceModeChoice` (`presentation/widgets/week_balance_mode_choice.dart`)
+  is the choice of the week balance mode with its limit line. The diary's
+  week card menu and the settings show it; `WeekBalanceModeKeys` in
+  `presentation/widgets/calories_page_keys.dart` names its keys.
 - Calorie entry editors, goal dialogs, calculator sheets, the consumed-unit
   labels, and the debug menu section of the Home side menu.
 - `showCalorieEntryEditor` opens the new-entry editor on the root navigator.
