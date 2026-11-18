@@ -11,7 +11,7 @@ import 'package:yamt/features/calories/application/calorie_goal_controller.dart'
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_keys.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The three modes of the week balance as radio options, each with its line;
@@ -58,7 +58,7 @@ class WeekBalanceModeChoice extends ConsumerWidget {
       children: [
         for (final MapEntry(key: mode, value: (label, hint)) in options.entries)
           _Option(
-            key: DiaryWeekCardKeys.modeOption(mode),
+            key: WeekBalanceModeKeys.option(mode),
             label: label,
             hint: hint,
             isSelected: mode == settings.weekBalanceMode,
@@ -123,7 +123,7 @@ class _Option extends StatelessWidget {
                   child: isSelected
                       ? Center(
                           child: DecoratedBox(
-                            key: DiaryWeekCardKeys.modeSelected,
+                            key: WeekBalanceModeKeys.selected,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: colors.ink,

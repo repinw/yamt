@@ -7,7 +7,7 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_keys.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_week_balance_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -73,14 +73,14 @@ void main() {
     final repository = await _pump(tester);
     expect(
       find.descendant(
-        of: find.byKey(DiaryWeekCardKeys.modeOption(WeekBalanceMode.off)),
-        matching: find.byKey(DiaryWeekCardKeys.modeSelected),
+        of: find.byKey(WeekBalanceModeKeys.option(WeekBalanceMode.off)),
+        matching: find.byKey(WeekBalanceModeKeys.selected),
       ),
       findsOneWidget,
     );
 
     await tester.tap(
-      find.byKey(DiaryWeekCardKeys.modeOption(WeekBalanceMode.carryover)),
+      find.byKey(WeekBalanceModeKeys.option(WeekBalanceMode.carryover)),
     );
     await tester.pumpAndSettle();
 
@@ -90,8 +90,8 @@ void main() {
     );
     expect(
       find.descendant(
-        of: find.byKey(DiaryWeekCardKeys.modeOption(WeekBalanceMode.carryover)),
-        matching: find.byKey(DiaryWeekCardKeys.modeSelected),
+        of: find.byKey(WeekBalanceModeKeys.option(WeekBalanceMode.carryover)),
+        matching: find.byKey(WeekBalanceModeKeys.selected),
       ),
       findsOneWidget,
     );

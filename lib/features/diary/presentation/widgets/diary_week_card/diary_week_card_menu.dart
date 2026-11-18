@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/calories/presentation/widgets/week_balance_mode_choice.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_sheet_frame.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/week_balance_mode_choice.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the week card's menu.
