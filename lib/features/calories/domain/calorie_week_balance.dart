@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
@@ -18,7 +20,12 @@ typedef WeekBalanceDayInput = ({
   bool isPauseDay,
 });
 
+/// A finished day that is off its budget by less than this many kcal is no
+/// miss and shows no number.
+const weekBalanceNoticeKcal = 50.0;
+
 /// One day of a goal run with the budget it is measured against.
+@immutable
 @JsonSerializable(fieldRename: FieldRename.snake)
 class WeekBalanceDay {
   /// Creates a day of the week balance.
@@ -58,6 +65,32 @@ class WeekBalanceDay {
 
   /// What the day is measured against: the goal and the carryover.
   double get budgetKcal => goalKcal + carryoverKcal;
+
+  /// Eaten minus the budget: positive when more was eaten.
+  double get differenceKcal => eatenKcal - budgetKcal;
+
+  /// Whether the day is off its budget by at least [weekBalanceNoticeKcal].
+  bool get isOffBudget => differenceKcal.abs() >= weekBalanceNoticeKcal;
+
+  @override
+  bool operator ==(Object other) =>
+      other is WeekBalanceDay &&
+      other.date == date &&
+      other.goalKcal == goalKcal &&
+      other.eatenKcal == eatenKcal &&
+      other.hasEntries == hasEntries &&
+      other.isPauseDay == isPauseDay &&
+      other.carryoverKcal == carryoverKcal;
+
+  @override
+  int get hashCode => Object.hash(
+    date,
+    goalKcal,
+    eatenKcal,
+    hasEntries,
+    isPauseDay,
+    carryoverKcal,
+  );
 }
 
 /// The seven days of the goal run that holds a diary day, with the budget of
@@ -70,6 +103,7 @@ class WeekBalanceDay {
 /// end of the run is dropped. For the days after today it assumes that today
 /// and every day until then hit their budget; what today is already over its
 /// budget counts at once.
+@immutable
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class WeekBalance {
   /// Creates a week balance.
@@ -134,6 +168,14 @@ class WeekBalance {
   /// gaining.
   bool get overIsMiss => weightGoal != CalorieGoalMode.gain;
 
+  /// Whether [day] is a miss: a day that counts, off its budget by at least
+  /// [weekBalanceNoticeKcal] on the side that [overIsMiss] names.
+  bool isMiss(WeekBalanceDay day) =>
+      day.hasEntries &&
+      !day.isPauseDay &&
+      day.isOffBudget &&
+      (day.differenceKcal > 0) == overIsMiss;
+
   /// The day of [day], or null when it is no day of the run.
   WeekBalanceDay? dayOf(DateTime day) {
     for (final candidate in days) {
@@ -143,6 +185,20 @@ class WeekBalance {
     }
     return null;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is WeekBalance &&
+      other.mode == mode &&
+      other.weightGoal == weightGoal &&
+      const ListEquality<WeekBalanceDay>().equals(other.days, days);
+
+  @override
+  int get hashCode => Object.hash(
+    mode,
+    weightGoal,
+    const ListEquality<WeekBalanceDay>().hash(days),
+  );
 }
 
 /// What [day] adds to the balance of the run: a finished day its goal minus

@@ -43,9 +43,6 @@ abstract final class AppWeekCard {
   /// Width of a stripe of a pause day's hatching.
   static const double hatchStroke = 1.2;
 
-  /// A day off its budget by less than this many kcal shows no number.
-  static const double numberThresholdKcal = 50;
-
   /// Gap between the text of an option of the week menu and its mark.
   static const double optionGap = 14;
 
