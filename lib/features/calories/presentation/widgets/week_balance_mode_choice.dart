@@ -7,8 +7,10 @@ import 'package:yamt/core/constants/app_week_card_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/calories/application/calorie_budget_settings_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -27,20 +29,40 @@ class WeekBalanceModeChoice extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(calorieGoalControllerProvider).value;
-    if (settings == null) {
-      // Keeps the room of the options, so the page does not jump when the
-      // settings load.
-      return SizedBox(
-        height: AppWeekCard.optionHeight * WeekBalanceMode.values.length,
-      );
-    }
     final l10n = AppLocalizations.of(context)!;
+
+    return ref
+        .watch(calorieGoalControllerProvider)
+        .when(
+          skipLoadingOnReload: true,
+          // Keeps the room of the options, so the page does not jump when the
+          // settings load.
+          loading: () => SizedBox(
+            height: AppWeekCard.optionHeight * WeekBalanceMode.values.length,
+          ),
+          error: (_, _) => Text(
+            l10n.calorieGoalLoadFailed,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: FoodLabelColors.of(context).muted),
+          ),
+          data: (stored) => _options(context, ref, stored),
+        );
+  }
+
+  Widget _options(
+    BuildContext context,
+    WidgetRef ref,
+    CalorieGoalSettings stored,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    // The limit is the one the rule caps with: the goals that follow the
+    // TDEE once they are computed.
+    final budget = ref.watch(calorieBudgetSettingsProvider).value ?? stored;
     final limit =
         NumberFormat.decimalPattern(
           Localizations.localeOf(context).toLanguageTag(),
         ).format(
-          settings
+          budget
               .carryoverLimitKcalForDay(ref.watch(diaryTodayProvider))
               .round(),
         );
@@ -61,7 +83,7 @@ class WeekBalanceModeChoice extends ConsumerWidget {
             key: WeekBalanceModeKeys.option(mode),
             label: label,
             hint: hint,
-            isSelected: mode == settings.weekBalanceMode,
+            isSelected: mode == stored.weekBalanceMode,
             onTap: () => unawaited(_pick(ref, mode)),
           ),
       ],
