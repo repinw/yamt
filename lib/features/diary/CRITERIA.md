@@ -5,12 +5,23 @@
 Sources used below:
 
 - **Notes** = the user's decisions in the playground notes
-  `kalorien-uebertrag-decisions.md`, all dated 2026-11-17; each criterion
+  `kalorien-uebertrag-decisions.md`, dated 2026-11-17 unless named
+  otherwise below (the KF 3 entries of 2026-11-18); each criterion
   quotes the entry it comes from. "FREIGABE" is the entry "FREIGABE DES MOCKS
   (Version 50)". "KF" are the later entries "Kriterien-Fragen" (KF 1 =
   "Frage 1 (Standard)", KF 2 = "Frage 2 (leerer Tag), Platz, Fasten-Frage",
   KF 3 = "Frage 3 (Knopf ‚abschließen‘)", KF list n = item n of "Liste der
-  kleinen Punkte").
+  kleinen Punkte"). "KF 3 KORREKTUR" is the entry "KORREKTUR 2026-11-18"
+  under KF 3, dated 2026-11-18; it replaces the first reading of KF 3.
+  "KF 3 O4" is the entry "2026-11-18, Frage O4" under KF 3 (user's answer
+  "Überall"). "KF 3 Session" is the entry "2026-11-18, von der Session
+  entschieden, dem User gesagt, kein Einwand" under KF 3: decided by the
+  session and told to the user, who did not object; these are not the
+  user's own words.
+- **features.md** = `features.md` on master, the Diary part about
+  "<Wd> abschließen": how the button behaves today. The user decided to keep
+  the button (KF 3 KORREKTUR), so this behaviour is a source where no newer
+  decision differs.
 - **Mock** = the approved artboard "Vorschlag · Wochenleiste"
   (`Vorschlag.dc.html`, artifact version 50). Its dark strip
   "Mock-Steuerung" is not part of the app. The rejected artboards
@@ -136,11 +147,13 @@ Given: mode "Aus" or "Anzeigen", and Wednesday of this run was 800 kcal over.
 When: I look at the macro targets on Thursday.
 Then: they are the same as on a day without anything over or under before it.
 
-### K9 – No "<Wochentag> abschließen" in any mode
-Source: KF 3 ("so wie du es sagst. nichts zum abschließen ohne übertrag": the button is struck); issue #922.
-Given: any mode.
+### K9 – Without the carryover, no "<Wochentag> abschließen"
+Source: KF 3 ("nichts zum abschließen ohne übertrag"); KF 3 KORREKTUR (2026-11-18: the button stays in "Mit Übertrag", "in ‚Aus‘ und ‚Anzeigen‘ gibt es ihn nicht"); issue #922.
+Changed 2026-11-18: before, the button was struck in every mode; that misread KF 3.
+Given: mode "Aus" or "Anzeigen".
 When: I open tomorrow in the diary.
-Then: the budget card shows no button "<Wochentag> abschließen" (e.g. no "Do abschließen") and no "<Wochentag> abgeschlossen".
+Then: the budget card shows no button "<Wochentag> abschließen" and no "<Wochentag> abgeschlossen".
+And: in mode "Mit Übertrag" the button is there (K38).
 
 ### K34 – Sheet "Alle Tage" shows the carryover only with the carryover
 Source: KF list 9.
@@ -198,6 +211,10 @@ The preview assumes that today and every day until the shown day hit their
 budget. What today is already over its budget counts at once; what today is
 under its budget counts only after the day is over. Each coming day then gets
 its carryover by K11.
+This table is for a today that is not closed. Once today is closed (K39),
+today counts as a finished day for every coming day, in the week card and on
+the budget cards alike, so what today is under its budget counts at once too
+(KF 3 O4).
 Mode "Mit Übertrag", goal 2.200.
 The run starts on a Monday.
 | Finished days of the run       | Today (run day) | Budget today | Eaten today | Preview carryover of each coming day |
@@ -212,11 +229,12 @@ The run starts on a Monday.
 
 ### K27 – With the carryover, every coming day's budget card shows the preview
 Source: KF 3 ("mit Übertrag zeigt die Budget-Karte von morgen dieselbe Vorschau wie die Leiste"); notes, entry "Kriterien-Fragen · letzte Punkte", point 1 (every coming day, not only tomorrow).
-Given: mode "Mit Übertrag"; first row of K26 (Thursday, 900 eaten so far).
+Given: mode "Mit Übertrag"; first row of K26 (Thursday, 900 eaten so far); today is not closed (K39).
 When: I open Friday, then Saturday, then Sunday in the diary.
 Then: each budget card shows "2.075" "kcal übrig", the same budget as that day's field in the week card.
 When: I eat 2.175 more on Thursday (3.075 in total) and open Friday, Saturday and Sunday again.
 Then: each of their budget cards shows "1.850".
+And: once today is closed, every coming day's budget card still matches its field in the week card (K39, KF 3 O4).
 And: in mode "Aus" or "Anzeigen", every coming day's budget card shows the plain goal "2.200".
 
 ### K12 – With the carryover, the macro targets follow the budget
@@ -239,6 +257,89 @@ Source: issue #911 ("Das TDEE-Lernen ist nicht betroffen").
 Given: a learned TDEE from past weeks.
 When: I switch between "Aus", "Anzeigen" and "Mit Übertrag".
 Then: the learned TDEE stays the same.
+
+### K38 – With the carryover, tomorrow offers to close today
+Source: KF 3 KORREKTUR (2026-11-18: "ich dachte wir behalten wochentag abschließen für leute die mit übertrag arbeiten?"); issue #922 ("Was er heute macht"); features.md; KF 3 Session (2026-11-18, O5: full weekday name).
+Given: mode "Mit Übertrag"; today is Thursday, the 4th day of the run; today is not closed.
+When: I open tomorrow (Friday) in the diary.
+Then: the budget card shows the button "Donnerstag abschließen": today's weekday written out in full, not tomorrow's, and not short ("Do abschließen" is wrong).
+And: today and the days of the run other than tomorrow show no such button.
+And: in mode "Aus" or "Anzeigen" there is none (K9).
+
+### K39 – Closing today makes it count as a finished day for every coming day
+Source: KF 3 KORREKTUR; KF 3 O4 (2026-11-18, user: "Überall": week card and the budget cards of all coming days); issue #922 ("Morgen zählt dann wie ein schon begonnener Tag: Die Karte zeigt ‚kcal übrig‘ mit dem Ziel plus dem Übertrag von heute"); features.md; K11.
+After a tap on "Donnerstag abschließen", today counts as a finished day
+everywhere the carryover is worked out: the budget cards of tomorrow and of
+every later day of the run, and those days' fields in the week card. Their
+carryover is worked out by K11 with today's eaten kcal in the balance, also
+when today is under its budget. Before the tap, they show the preview (K26,
+K27).
+Mode "Mit Übertrag", goal 2.200; run starts on a Monday; finished days Mo
+2.200 · Tu 1.900 · We 3.000 (balance −500); today is Thursday (budget 2.075).
+Friday, Saturday and Sunday get the same budget in every row (3 days
+remain), so one column stands for all three.
+| Eaten today (Thursday) | Fr, Sa, Su before closing | Fr, Sa, Su after closing |
+| ---------------------- | ------------------------- | ------------------------ |
+| 1.400                  | 2.075 (−125)              | 2.300 (+100)             |
+| 1.475                  | 2.075 (−125)              | 2.275 (+75)              |
+| 650                    | 2.075 (−125)              | 2.550 (+350)             |
+| 500                    | 2.075 (−125)              | 2.550 (+350, limit)      |
+| 2.075                  | 2.075 (−125)              | 2.075 (−125)             |
+| 3.075                  | 1.850 (−350)              | 1.850 (−350)             |
+Each of these budget cards shows the budget as "<n>" "kcal übrig" before anything is eaten on that day.
+In the week card (K21), first row: before closing, the fields of Friday,
+Saturday and Sunday each have a dark piece of 125 kcal at the front; after
+closing, each has a dashed extra piece of 100 kcal at the end and no dark
+piece. Thursday's own carryover stays −125 (it comes from Monday to
+Wednesday only).
+And: tomorrow then counts like a started day: plans on it show in the plan colour after the eaten share, as on today (features.md).
+
+### K40 – The closed carryover stays live
+Source: issue #922 ("Der Übertrag bleibt live: Isst man heute noch etwas oder ändert frühere Tage, ändert er sich"); features.md.
+Given: the first row of K39 after closing (Thursday 1.400 eaten, Friday 2.300).
+When: I log 75 kcal more on Thursday.
+Then: Friday's budget card shows "2.275" (second row of K39).
+When: I change Wednesday from 3.000 to 2.700.
+Then: Friday's budget card shows "2.375" (balance +525, ÷ 3 = +175), and so do Saturday's and Sunday's (KF 3 O4).
+
+### K41 – "Donnerstag abgeschlossen" reopens today, with undo
+Source: issue #922 ("‚✓ Do abgeschlossen‘ öffnet den Tag wieder, und es gibt Rückgängig"); features.md ("a snack bar offers undo"); KF 3 O4 ("wieder öffnen nimmt es zurück"); KF 3 Session (O5: full weekday name).
+Given: mode "Mit Übertrag"; first row of K39.
+When: I tap "Donnerstag abschließen" on Friday.
+Then: the button turns into "Donnerstag abgeschlossen" with a check mark, Friday shows "2.300", and a snack bar offers undo.
+When: I tap undo in the snack bar.
+Then: today is open again: the button reads "Donnerstag abschließen"; Friday, Saturday and Sunday show "2.075" again, and their fields in the week card have the 125 kcal dark piece again.
+When: I close again and then tap "Donnerstag abgeschlossen".
+Then: today is open again in the same way.
+
+### K42 – The close holds until midnight, on this phone only
+Source: issue #922 ("Der Abschluss wird nur auf dem Gerät gespeichert und gilt nur bis Mitternacht"); features.md.
+Given: I closed Thursday on Thursday.
+When: I close and open the app again on Thursday.
+Then: Thursday is still closed (K41 label on Friday, Friday with today's carryover).
+When: midnight passes and Friday is today.
+Then: Friday's budget comes from K11 with Thursday as a finished day, and Saturday shows "Freitag abschließen", not closed.
+Phone only: that a second phone with the same account does not see the close.
+
+### K43 – No button when tomorrow starts a new run
+Source: issue #922 ("Beginnt morgen ein neuer Run, gibt es keinen Übertrag und keinen Knopf"); features.md.
+Given: mode "Mit Übertrag"; today is the 7th day of the run.
+When: I open tomorrow in the diary.
+Then: the budget card shows no "<Wochentag> abschließen" and tomorrow's budget is its plain goal (K11, first day of a new run).
+
+### K44 – No button when tomorrow is a pause day
+Source: KF 3 Session (2026-11-18, O6: "kein Knopf, wenn morgen ein Pausentag ist").
+Given: mode "Mit Übertrag"; today is Thursday, the 4th day of the run; Friday is a pause day.
+When: I open Friday in the diary.
+Then: the budget card shows no "Donnerstag abschließen" and no "Donnerstag abgeschlossen".
+
+### K45 – A mode switch keeps the close until midnight
+Source: KF 3 Session (2026-11-18, O7: "ein Wechsel zu ‚Anzeigen‘ und zurück lässt den Tag bis Mitternacht abgeschlossen"); K9; K39.
+Given: mode "Mit Übertrag"; first row of K39; I closed Thursday (Friday 2.300).
+When: I switch to "Anzeigen" and open Friday.
+Then: Friday shows the plain goal "2.200" and no button (K9).
+When: I switch back to "Mit Übertrag" on the same Thursday and open Friday.
+Then: the button reads "Donnerstag abgeschlossen", and Friday, Saturday and Sunday show "2.300".
 
 **Group: week card (modes "Anzeigen" and "Mit Übertrag")**
 
@@ -337,7 +438,7 @@ Source: FREIGABE ("Schuld als dunkles Stück vorne in allen Folgetagen, Zusatz g
 Given: mode "Mit Übertrag".
 Then: a day with less budget (negative carryover) has a dark piece at the front of its field as long as the carryover; what was eaten that day follows behind it, and red starts at that day's budget.
 And: a day with more budget (positive carryover) has a dashed extra piece at the end of its field as long as the carryover.
-And: today and every coming day of the run show their piece at once, not only tomorrow; coming days use the preview of K26.
+And: today and every coming day of the run show their piece at once, not only tomorrow; coming days use the preview of K26, or K39 once today is closed (KF 3 O4).
 And: in mode "Anzeigen" no field has such a piece.
 Phone only: whether the dark piece reads as "from the days before" and whether a small piece (e.g. 25 kcal) is still visible.
 
@@ -366,3 +467,7 @@ And: today never turns red for being under, because the day is not over yet.
   fasting day. Separate issue idea, not part of #911.
 - O3: whether the strip "Tagesarten im Run" in the budget card's details stays
   next to the new week card.
+- O8: how today's own field in the week card looks once today is closed:
+  still drawn as today (no number under it with "Details", never red for
+  being under, K19, K23) or like a finished day. No source says; K39 fixes
+  only the coming days.
