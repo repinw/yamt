@@ -406,4 +406,185 @@ void main() {
       [for (final day in balance.days) day.toJson()],
     );
   });
+
+  group('isTodayClosed', () {
+    WeekBalance thursday({
+      required bool closed,
+      double? eatenToday = 1400,
+      WeekBalanceMode mode = WeekBalanceMode.carryover,
+    }) => WeekBalance.resolve(
+      mode: mode,
+      weightGoal: CalorieGoalMode.lose,
+      today: _day(3).add(const Duration(hours: 10)),
+      isTodayClosed: closed,
+      days: [
+        for (var index = 0; index < 7; index += 1)
+          (
+            date: _day(index),
+            goalKcal: 2200,
+            eatenKcal:
+                const {0: 2200.0, 1: 1900.0, 2: 3000.0}[index] ??
+                (index == 3 ? eatenToday ?? 0 : 0),
+            hasEntries: index < 3 || (index == 3 && eatenToday != null),
+            isPauseDay: false,
+          ),
+      ],
+    );
+
+    List<double> carryovers(WeekBalance balance) => [
+      for (final day in balance.days) day.carryoverKcal,
+    ];
+
+    test('K39: a closed today counts what it saved for the days after it', () {
+      // Balance −500 before Thursday; open, Thursday counts as hitting
+      // 2.075; closed, it adds 2.200 − 1.400 = +800.
+      expect(carryovers(thursday(closed: false)), [
+        0,
+        0,
+        60,
+        -125,
+        -125,
+        -125,
+        -125,
+      ]);
+      expect(carryovers(thursday(closed: true)), [
+        0,
+        0,
+        60,
+        -125,
+        100,
+        100,
+        100,
+      ]);
+    });
+
+    test('a closed today without entries adds 0 to the balance', () {
+      // −500 over the three days after Thursday: −166,67 → −167; then
+      // −333 over two → −167 (half away from zero); then −166 on Sunday.
+      expect(carryovers(thursday(closed: true, eatenToday: null)).sublist(4), [
+        -167,
+        -167,
+        -166,
+      ]);
+      // Open, the empty today still counts as hitting its budget.
+      expect(carryovers(thursday(closed: false, eatenToday: null)).sublist(4), [
+        -125,
+        -125,
+        -125,
+      ]);
+    });
+
+    test('K9: without the carryover a closed today moves no day', () {
+      for (final mode in [WeekBalanceMode.off, WeekBalanceMode.show]) {
+        expect(
+          carryovers(thursday(closed: true, mode: mode)),
+          everyElement(0),
+          reason: mode.name,
+        );
+      }
+    });
+  });
+
+  group('isOffBudget and isMiss', () {
+    WeekBalanceDay dayEating(
+      double eaten, {
+      bool hasEntries = true,
+      bool isPauseDay = false,
+    }) => WeekBalanceDay(
+      date: _day(0),
+      goalKcal: 2000,
+      eatenKcal: eaten,
+      hasEntries: hasEntries,
+      isPauseDay: isPauseDay,
+      carryoverKcal: 0,
+    );
+
+    test('a day is off its budget from 50 kcal on, in both directions', () {
+      const rows = [
+        (2049.0, false),
+        (2050.0, true),
+        (2051.0, true),
+        (1951.0, false),
+        (1950.0, true),
+        (1949.0, true),
+      ];
+      for (final (eaten, off) in rows) {
+        expect(dayEating(eaten).isOffBudget, off, reason: '$eaten');
+      }
+    });
+
+    test('K22/K23: the miss side follows the weight goal', () {
+      const rows = [
+        (CalorieGoalMode.lose, 2050.0, true),
+        (CalorieGoalMode.lose, 1950.0, false),
+        (CalorieGoalMode.lose, 2049.0, false),
+        (CalorieGoalMode.maintain, 2050.0, true),
+        (CalorieGoalMode.maintain, 1950.0, false),
+        (CalorieGoalMode.gain, 2050.0, false),
+        (CalorieGoalMode.gain, 1950.0, true),
+        (CalorieGoalMode.gain, 1951.0, false),
+      ];
+      for (final (goal, eaten, miss) in rows) {
+        final balance = WeekBalance(
+          mode: WeekBalanceMode.show,
+          weightGoal: goal,
+          days: [dayEating(eaten)],
+        );
+        expect(
+          balance.isMiss(balance.days.single),
+          miss,
+          reason: '${goal.name} $eaten',
+        );
+      }
+    });
+
+    test('a pause day and a day without entries are never a miss', () {
+      final balance = WeekBalance(
+        mode: WeekBalanceMode.show,
+        weightGoal: CalorieGoalMode.gain,
+        days: [
+          dayEating(3000, isPauseDay: true),
+          dayEating(0, hasEntries: false),
+        ],
+      );
+
+      expect(balance.isMiss(balance.days[0]), isFalse);
+      expect(balance.isMiss(balance.days[1]), isFalse);
+    });
+  });
+
+  group('equality', () {
+    WeekBalanceDay day({double carryover = 0}) => WeekBalanceDay(
+      date: _day(0),
+      goalKcal: 2200,
+      eatenKcal: 1900,
+      hasEntries: true,
+      isPauseDay: false,
+      carryoverKcal: carryover,
+    );
+
+    test('WeekBalanceDay compares by value', () {
+      expect(day(), day());
+      expect(day().hashCode, day().hashCode);
+      expect(day(), isNot(day(carryover: 60)));
+    });
+
+    test('WeekBalance compares mode, weight goal and days', () {
+      WeekBalance balance({
+        WeekBalanceMode mode = WeekBalanceMode.carryover,
+        CalorieGoalMode goal = CalorieGoalMode.lose,
+        double carryover = 0,
+      }) => WeekBalance(
+        mode: mode,
+        weightGoal: goal,
+        days: [day(carryover: carryover)],
+      );
+
+      expect(balance(), balance());
+      expect(balance().hashCode, balance().hashCode);
+      expect(balance(), isNot(balance(mode: WeekBalanceMode.show)));
+      expect(balance(), isNot(balance(goal: CalorieGoalMode.gain)));
+      expect(balance(), isNot(balance(carryover: 60)));
+    });
+  });
 }

@@ -428,4 +428,62 @@ void main() {
       expect(data.targetKcal, 2627);
     });
   });
+
+  group('wasSafetyCapActive', () {
+    DiaryDailyBudgetDetailsData details({
+      required double total,
+      required double carryover,
+      int remainingDays = 2,
+      bool isPauseDay = false,
+    }) => DiaryDailyBudgetDetailsData(
+      selectedDay: DateTime(2026, 4, 14),
+      baseGoalKcal: 2000,
+      carryoverKcal: carryover,
+      targetKcal: 2000 + carryover,
+      eatenKcal: 0,
+      dayLeftKcal: 2000 + carryover,
+      isPauseDay: isPauseDay,
+      totalCarryoverBeforeTodayKcal: total,
+      remainingRunDays: remainingDays,
+      previousDays: const [],
+      carryoverMacroDelta: const DiaryMacroTargets(
+        carbs: 0,
+        protein: 0,
+        fat: 0,
+      ),
+    );
+
+    test('a negative carryover cut by the limit is a cut', () {
+      expect(details(total: -1000, carryover: -350).wasSafetyCapActive, isTrue);
+    });
+
+    test('a capped plus is no cut', () {
+      // +1.000 over two days would be +500, the limit gives +350.
+      expect(details(total: 1000, carryover: 350).wasSafetyCapActive, isFalse);
+    });
+
+    test('a pause day is no cut, though it has no carryover', () {
+      expect(
+        details(
+          total: -1000,
+          carryover: 0,
+          isPauseDay: true,
+        ).wasSafetyCapActive,
+        isFalse,
+      );
+    });
+
+    test('a negative carryover that is not cut is no cut', () {
+      expect(details(total: -400, carryover: -200).wasSafetyCapActive, isFalse);
+      // Rounding by less than half a kcal is no cut either.
+      expect(
+        details(
+          total: -500,
+          carryover: -167,
+          remainingDays: 3,
+        ).wasSafetyCapActive,
+        isFalse,
+      );
+    });
+  });
 }

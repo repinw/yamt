@@ -413,22 +413,40 @@ void main() {
     }
   });
 
-  test(
-    'K9: a stored closed today does not change the budget of tomorrow',
-    () async {
-      final container = _futureDaysContainer(
-        today: planToday,
-        mode: WeekBalanceMode.carryover,
-      );
+  test('K39: in "Mit Übertrag" a stored closed today counts for tomorrow '
+      'and the days after it', () async {
+    final container = _futureDaysContainer(
+      today: planToday,
+      mode: WeekBalanceMode.carryover,
+    );
 
-      final open = await _readWeekOverviewForWindow(container, planTomorrow);
-      await _setClosedDay(container, planToday);
-      final closed = await _readWeekOverviewForWindow(container, planTomorrow);
+    final open = await _readWeekOverviewForWindow(container, planTomorrow);
+    await _setClosedDay(container, planToday);
+    final closed = await _readWeekOverviewForWindow(container, planTomorrow);
+    final dayAfter = await _readWeekOverviewForWindow(
+      container,
+      planDayAfterTomorrow,
+    );
 
-      expect(open.todayFlexibleGoalKcal, 2100);
-      expect(closed.todayFlexibleGoalKcal, open.todayFlexibleGoalKcal);
-    },
-  );
+    expect(open.todayFlexibleGoalKcal, 2100);
+    expect(open.isPreviousDayClosed, isFalse);
+    // +600 and +1200 over five days: 360, cut to the limit of 350.
+    expect(closed.todayFlexibleGoalKcal, 2350);
+    expect(closed.isPreviousDayClosed, isTrue);
+    expect(dayAfter.todayFlexibleGoalKcal, 2350);
+  });
+
+  test('K9: in "Anzeigen" a stored closed today changes no budget', () async {
+    // The container's default mode is "Anzeigen".
+    final container = _futureDaysContainer(today: planToday);
+
+    await _setClosedDay(container, planToday);
+    final tomorrow = await _readWeekOverviewForWindow(container, planTomorrow);
+
+    expect(tomorrow.todayFlexibleGoalKcal, 2000);
+    expect(tomorrow.isPreviousDayClosed, isFalse);
+    expect(tomorrow.previousDayCarryoverKcal, isNull);
+  });
 
   test('K28: a past day of the run sees the later days up to today', () async {
     final container = _futureDaysContainer(

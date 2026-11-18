@@ -91,6 +91,19 @@ void main() {
     );
   });
 
+  test('K11: at the 1,200 floor the carryover rounds toward zero', () {
+    // The limit of 1.299,6 is −259,92; the floor allows −99,6 only, and
+    // −100 would take the budget to 1.199,6.
+    final carryover = CalorieBudgetCalculator.distributeCarryover(
+      carryoverKcal: -5000,
+      remainingDays: 2,
+      baseGoalKcal: 1299.6,
+    );
+
+    expect(carryover, -99);
+    expect(1299.6 + carryover, greaterThanOrEqualTo(1200));
+  });
+
   test('K11: a positive carryover is capped like a negative one', () {
     // six days of 1.900 at 2.200 → +1.800 on day 7: +350.
     expect(
