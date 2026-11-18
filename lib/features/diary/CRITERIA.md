@@ -398,18 +398,55 @@ And: the budget card shows "2.000" "kcal übrig", with no chip "… aus der Woch
 And: Friday to next Wednesday carry no piece from the old run's balance of −500; with nothing eaten yet today, their fields have no dark piece and their budget cards show "2.000".
 When: I page the diary to Tuesday.
 Then: the strip shows the old run with the frame on Tuesday; no field is named "Heute", and no field shows Thursday or a later day with a piece from the old run's balance.
-And: the strip of the old run shows only that run's days: three fields "Mo", "Di", "Mi", and no field for Thursday or later (notes, entry "2026-11-18, Frage O9", user: "Nur seine Tage"). This is the one case with fewer than seven fields (K14).
+And: the strip of the old run shows only that run's days: three fields "Mo", "Di", "Mi", and no field for Thursday or later (notes, entry "2026-11-18, Frage O9", user: "Nur seine Tage"). A run cut short by a new goal is the one case with fewer than seven fields (K14, K49).
 How the three fields fill the card (width, position) is decided by no source; it is left to the phone test.
 Phone only: the layout of a strip with fewer than seven fields.
 And: in mode "Anzeigen" the same holds for the fields and the day names; there are no pieces in any mode but "Mit Übertrag" (K21).
 
 ### K48 – Cutting a run short does not change its past budgets
-Source: notes, entry "2026-11-18, O10, von der Session entschieden, dem User gesagt" (decided by the session and told to the user, not the user's own words); K11; K20.
+Source: notes, entry "2026-11-18, O10, von der Session entschieden, dem User gesagt" (decided by the session and told to the user, not the user's own words); notes, entry "2026-11-18, von der Session entschieden … Folgerungen …" (same kind of source; training days); K11; K20.
 Given: the setup of K47; on Wednesday, before the new goal existed, Wednesday's budget was 2.260 (balance +300 ÷ 5 remaining days = +60).
 When: I set the new goal from Thursday and page the diary to Wednesday, "Details" open.
 Then: Wednesday's budget card still counts against 2.260, not against a budget worked out with the shorter run (+300 ÷ 1 day, which would give 2.500).
 And: under Wednesday's field stands "+740" (3.000 against 2.260, K20).
 And: Tuesday keeps its budget of 2.200 (balance 0 on that day).
+The day's goal stays too when the new goal has other training days (notes,
+entry "2026-11-18, von der Session entschieden (dem User gesagt, keine
+Aussage des Users), Folgerungen …": "Die Ziele der Tage eines gekürzten Runs
+ändern sich nicht durch die Trainingstage des neuen Ziels"):
+Given: mode "Anzeigen"; the old goal from Monday averages 2.200 with 350 kcal per training session and the training days Monday and Wednesday, so Monday and Wednesday have the goal 2.450 and Tuesday 2.100; on Thursday I set a new goal from Thursday with the same average and session and the training days Thursday, Friday and Saturday.
+When: I page the diary to Monday, Tuesday and Wednesday.
+Then: their budget cards show the goals 2.450, 2.100 and 2.450, as before the new goal; the training days of the new goal do not count in the old run (they would give 2.300, 1.950 and 2.300).
+
+### K49 – A goal that counts from a later day: practice days belong to no run
+Source: notes, entry "2026-11-18, von der Session entschieden (dem User gesagt, keine Aussage des Users), Folgerungen aus ‚neues ziel setzt einen neuen 7 tage run voraus‘, ‚Nur seine Tage‘ und K37" ("Der alte Run endet am Tag, bevor das neue Ziel gesetzt gilt, auch wenn das neue Ziel erst später zu zählen beginnt; Übungstage dazwischen gehören zu keinem Run und stehen in keiner Leiste"); K11; K37; K47.
+Given: mode "Mit Übertrag"; a run started on Monday with goal 2.200; Mo 2.200, Tu 1.900, We 3.000 eaten; on Thursday I set a new goal of 2.000 that takes effect on Thursday and counts from Saturday ("Zielstart" Saturday).
+Then: the old run ends on Wednesday, the day before the new goal takes effect.
+When: I page the diary to Tuesday.
+Then: the strip shows only "Mo", "Di", "Mi" (K47), with no field for Thursday or later.
+When: I open Thursday (today), then Friday.
+Then: neither shows a week card (K37): the steps card follows the budget card directly.
+And: each budget card counts against the plain new goal "2.000", with no carryover and no chip "… aus der Woche"; the old run's balance of −500 does not reach them.
+When: I open Saturday.
+Then: the strip shows the new run from Saturday to the next Friday, named "Sa", "So", "Mo", "Di", "Mi", "Do", "Fr"; Thursday and Friday appear in no strip.
+And: Saturday's carryover is 0 and its budget card shows "2.000" (K11, first day of a new run).
+And: in mode "Anzeigen" the strips and the missing week card are the same.
+
+### K50 – A close does not count while tomorrow is a pause day
+Source: notes, entry "2026-11-18, von der Session entschieden (dem User gesagt, keine Aussage des Users), Folgerungen …" ("Ein Abschluss zählt nicht, solange morgen ein Pausentag ist"); K39; K44.
+Given: mode "Mit Übertrag"; first row of K39; I closed Thursday (Friday, Saturday and Sunday 2.300).
+When: on Thursday I make Friday a pause day.
+Then: Friday shows no "Donnerstag abgeschlossen" and no "Donnerstag abschließen" (K44).
+And: Saturday and Sunday show, in their budget cards and their fields in the week card, the same as if Thursday had never been closed.
+When: on the same Thursday I make Friday a normal day again.
+Then: the close counts again: Friday shows "Donnerstag abgeschlossen", and Friday, Saturday and Sunday show "2.300".
+
+### K51 – "Tagesarten im Run" shows only the days of its run
+Source: notes, entry "2026-11-18, von der Session entschieden (dem User gesagt, keine Aussage des Users), Folgerungen …" ("Die Tagesarten-Leiste in den Details zeigt nur die Tage des Runs"); K47; K48. Applies only while the strip "Tagesarten im Run" exists (O3).
+Given: the setup of the training example in K48 (old run cut short to Monday–Wednesday, training days Monday and Wednesday; the new goal trains Thursday, Friday and Saturday).
+When: I page the diary to Tuesday and open "Details" on the budget card.
+Then: the strip "Tagesarten im Run" shows only Monday, Tuesday and Wednesday; no day from Thursday on is in it, so none can be switched there.
+And: its count of training days counts only those days: 2, not 5.
 
 ### K29 – A plain tap on the strip does nothing
 Source: KF list 8; mock.
