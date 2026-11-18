@@ -7,8 +7,10 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_repository.dart';
 import 'package:yamt/features/ai_chef/presentation/controllers/'
     'ai_chef_controller.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 
 import '../../../../helpers/fake_inventory_item_repository.dart';
 
@@ -48,9 +50,27 @@ class _Harness {
     List<InventoryItem> stock = const [],
     FakeInventoryItemRepository? inventory,
     Future<String?> Function()? answer,
+    Map<String, int> planned = const {},
+    Map<String, int> runReserved = const {},
+    bool plansFail = false,
   }) {
     container = ProviderContainer(
       overrides: [
+        openPlanDemandProvider.overrideWith((ref) async {
+          if (plansFail) {
+            throw StateError('plans offline');
+          }
+          return (
+            plannedByItemId: planned,
+            runReservedByItemId: runReserved,
+            missingByItemId: const <String, int>{},
+            plannedPortionsByMealId: const <String, double>{},
+            missingShareByPlanId: const <String, double>{},
+            missingIngredientsByPlanId: const <String, Map<String, int>>{},
+            unstockedIngredientsByPlanId:
+                const <String, List<PlanUnstockedIngredient>>{},
+          );
+        }),
         clockProvider.overrideWithValue(() => _now),
         inventoryItemRepositoryProvider.overrideWithValue(
           inventory ?? FakeInventoryItemRepository(stock),
@@ -139,6 +159,54 @@ void main() {
       expect(h.asked!['must_use_ingredients'], 'Quark (available: 1 x)');
     },
   );
+
+  test(
+    'generateRecipe leaves out what plans and cook runs keep of the Vorrat',
+    () async {
+      final h = _Harness(
+        stock: [
+          _item('Kokosnussmilch'),
+          _item('Quark'),
+          InventoryItem.create(
+            id: 'Reis',
+            name: 'Reis',
+            entryDate: DateTime.utc(2026, 4, 2),
+            storeName: 'Store',
+            quantity: 3,
+          ),
+        ],
+        planned: const {'Kokosnussmilch': 1, 'Reis': 1},
+        runReserved: const {'Reis': 1},
+      );
+      addTearDown(h.container.dispose);
+
+      await h.controller.generateRecipe(
+        isGerman: true,
+        includeInventory: true,
+        mustUseIds: const {'Kokosnussmilch'},
+      );
+
+      expect(
+        h.asked!['inventory'],
+        'Quark (available: 1 x)\nReis (available: 1 x)',
+      );
+      expect(h.asked!.containsKey('must_use_ingredients'), isFalse);
+      expect(
+        (await h.controller.loadPickableItems()).map((item) => item.id),
+        isNot(contains('Kokosnussmilch')),
+      );
+    },
+  );
+
+  test('a kept pack never goes out as free when the plans fail', () async {
+    final h = _Harness(stock: [_item('Kokosnussmilch')], plansFail: true);
+    addTearDown(h.container.dispose);
+
+    await h.controller.generateRecipe(isGerman: true, includeInventory: true);
+
+    expect(h.asked!['inventory'], '');
+    await expectLater(h.controller.loadPickableItems(), throwsStateError);
+  });
 
   test('generateRecipe sends no picks with the Vorrat off', () async {
     final h = _Harness(stock: [_item('Quark')]);

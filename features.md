@@ -1590,6 +1590,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   "Lachs" or "schnell", only for this idea), and "Bloß nicht"; the main
   action says "Rezept vorschlagen". A comma or semicolon ends a pill at
   once, so "Lachs, schnell" gives two pills.
+- The Vorrat sent with an idea, and the "Unbedingt rein" list, leave out what
+  open plans and running cook runs keep: a pack kept in full is missing, a
+  pack kept in part goes with the rest. When the plans cannot be read, the
+  Vorrat is handled like one that cannot be read.
 - "Unbedingt rein": while "Vorrat zuerst" is on, the cook picks Vorrat items
   that must go into the recipe from a sheet with search, sorted by "Am
   längsten da" with each item's age in days (red from 7 days). The picks
