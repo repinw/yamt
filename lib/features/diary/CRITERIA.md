@@ -32,6 +32,10 @@ Sources used below:
 Words used below:
 
 - **Run**: the fixed block of 7 days that starts on the goal's start day.
+  A new goal starts a new run on its start day; the old run ends the day
+  before, even if it had fewer than 7 days (notes, entry "2026-11-18,
+  Review-Frage zu K28", user: "neues ziel setzt einen neuen 7 tage run
+  voraus.").
 - **Goal**: the day's own kcal goal (normal day, training day).
 - **Budget**: what the budget card counts against on that day: the goal, plus
   the carryover when the mode is "Mit Übertrag".
@@ -203,6 +207,10 @@ end of the run is dropped.
 | 1.200               | balance −2.000                                   | 5                | 0         | 1.200        |
 | 1.200               | balance +600                                     | 6                | +240      | 1.440        |
 | 2.200               | previous run ended with balance −2.000           | 1 of a new run   | 0         | 2.200        |
+| 2.000 (new goal from today, Thursday) | old run Mo 2.200 · Tu 1.900 · We 3.000 (balance −500), cut short by the new goal | 1 of a new run | 0 | 2.000 |
+The last row: a new goal ends the old run the day before (notes, entry
+"2026-11-18, Review-Frage zu K28"); the old run's balance never reaches a day
+of the new run.
 Rows without "training day" are normal days; weight goal "Abnehmen".
 
 ### K26 – Preview of the carryover on coming days
@@ -356,6 +364,7 @@ Source: FREIGABE ("schlanke Leiste aus sieben Tagesfeldern ohne Titel und ohne W
 Given: mode "Anzeigen" or "Mit Übertrag".
 When: I open today in the diary.
 Then: between the budget card and the steps card stands a card with seven fields, one for each day of the current run, in their order.
+And: a run cut short by a new goal has only its own days, so fewer fields (K47).
 And: the card has no title and no total for the week.
 
 ### K37 – No strip without a run
@@ -372,12 +381,35 @@ And: "Heute" is bold and its field has a frame.
 And: a run that starts on another weekday names its fields from that weekday on.
 
 ### K28 – On another day, the strip shows that day's run
-Source: KF list 6.
+Source: KF list 6; notes, entry "2026-11-18, Review-Frage zu K28" (user: "neues ziel setzt einen neuen 7 tage run voraus.").
 Given: today is Thursday, the 4th day of a run that started on a Monday.
 When: I page the diary to Tuesday.
 Then: the strip shows the same run, Tuesday's field has the frame, and the field names are "Mo", "Di", "Mi", "Heute", "Fr", "Sa", "So" ("Heute" stays at the real today).
 When: I page to a day of the previous run.
 Then: the strip shows the seven days of that previous run with the frame on the shown day, and no field is named "Heute".
+Changed 2026-11-18: a run cut short by a new goal (K47).
+
+### K47 – A new goal mid-run cuts the old run short in the strip
+Source: notes, entry "2026-11-18, Review-Frage zu K28" (user: "neues ziel setzt einen neuen 7 tage run voraus."; a new goal starts a new 7-day run, the old run ends the day before); K11; K26; K28.
+Given: mode "Mit Übertrag"; a run started on Monday with goal 2.200; Mo 2.200, Tu 1.900, We 3.000 eaten; on Thursday I set a new goal of 2.000 that counts from Thursday.
+When: I open today (Thursday).
+Then: the strip shows the new run from Thursday to next Wednesday: the fields are named "Heute", "Fr", "Sa", "So", "Mo", "Di", "Mi", and none of them holds a day of the old run.
+And: the budget card shows "2.000" "kcal übrig", with no chip "… aus der Woche" (K11, last row).
+And: Friday to next Wednesday carry no piece from the old run's balance of −500; with nothing eaten yet today, their fields have no dark piece and their budget cards show "2.000".
+When: I page the diary to Tuesday.
+Then: the strip shows the old run with the frame on Tuesday; no field is named "Heute", and no field shows Thursday or a later day with a piece from the old run's balance.
+And: the strip of the old run shows only that run's days: three fields "Mo", "Di", "Mi", and no field for Thursday or later (notes, entry "2026-11-18, Frage O9", user: "Nur seine Tage"). This is the one case with fewer than seven fields (K14).
+How the three fields fill the card (width, position) is decided by no source; it is left to the phone test.
+Phone only: the layout of a strip with fewer than seven fields.
+And: in mode "Anzeigen" the same holds for the fields and the day names; there are no pieces in any mode but "Mit Übertrag" (K21).
+
+### K48 – Cutting a run short does not change its past budgets
+Source: notes, entry "2026-11-18, O10, von der Session entschieden, dem User gesagt" (decided by the session and told to the user, not the user's own words); K11; K20.
+Given: the setup of K47; on Wednesday, before the new goal existed, Wednesday's budget was 2.260 (balance +300 ÷ 5 remaining days = +60).
+When: I set the new goal from Thursday and page the diary to Wednesday, "Details" open.
+Then: Wednesday's budget card still counts against 2.260, not against a budget worked out with the shorter run (+300 ÷ 1 day, which would give 2.500).
+And: under Wednesday's field stands "+740" (3.000 against 2.260, K20).
+And: Tuesday keeps its budget of 2.200 (balance 0 on that day).
 
 ### K29 – A plain tap on the strip does nothing
 Source: KF list 8; mock.
