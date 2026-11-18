@@ -19,6 +19,7 @@ class _Row {
     this.trainingToday = false,
     this.normalGoal,
     this.previousRun = const [],
+    this.oldGoal,
   });
 
   /// The row as the table writes it.
@@ -43,6 +44,11 @@ class _Row {
   /// Kcal eaten on the 7 days of the run before, when the row starts a new
   /// run.
   final List<double> previousRun;
+
+  /// Goal of the run that a new goal of [goal], counting from today, cut
+  /// short; null when the goal did not change. [finished] and [runDay] then
+  /// count from the old run's first day.
+  final double? oldGoal;
 
   /// Today's day of the run, 1 to 7.
   final int runDay;
@@ -192,6 +198,16 @@ const _rows = <_Row>[
     carryover: 0,
     budget: 2200,
   ),
+  _Row(
+    '2.000 (new goal from today, Thursday), old run Mo 2.200 · Tu 1.900 · '
+    'We 3.000 (balance −500) cut short by the new goal, day 1 of a new run',
+    goal: 2000,
+    oldGoal: 2200,
+    finished: [2200, 1900, 3000],
+    runDay: 4,
+    carryover: 0,
+    budget: 2000,
+  ),
 ];
 
 DiaryAcceptanceHarness _harnessOf(_Row row) {
@@ -201,7 +217,8 @@ DiaryAcceptanceHarness _harnessOf(_Row row) {
   return DiaryAcceptanceHarness(
     now: morningOf(today),
     goalStart: row.previousRun.isEmpty ? runMonday : previousRunStart,
-    goalKcal: normalGoal,
+    goalKcal: row.oldGoal ?? normalGoal,
+    newGoal: row.oldGoal == null ? null : (from: today, kcal: row.goal),
     trainingDays: row.trainingToday ? {today} : const {},
     trainingSessionKcal: row.trainingToday ? row.goal - normalGoal : 250,
     pauseDays: {for (final offset in row.pauseOffsets) runDay(offset)},
