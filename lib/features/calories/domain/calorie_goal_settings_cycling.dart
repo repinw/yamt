@@ -1,6 +1,7 @@
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/training_week_goals.dart';
@@ -23,12 +24,12 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
 
   /// Whether the weekly training schedule makes [day] a training day,
   /// without the per-day overrides.
-  bool isScheduledTrainingDay(DateTime day) {
-    final activeProfile =
-        goalEntryForDay(day)?.calculatorProfile ?? calculatorProfile;
-    final weekdays = activeProfile?.trainingWeekdays ?? trainingWeekdays;
-    return weekdays.contains(day.weekday);
-  }
+  bool isScheduledTrainingDay(DateTime day) =>
+      _scheduledWeekdaysOf(goalEntryForDay(day)).contains(day.weekday);
+
+  List<int> _scheduledWeekdaysOf(CalorieGoalHistoryEntry? entry) =>
+      (entry?.calculatorProfile ?? calculatorProfile)?.trainingWeekdays ??
+      trainingWeekdays;
 
   /// Whether [day] is marked as a pause/exception day.
   bool isPauseDay(DateTime day) {
@@ -97,9 +98,10 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
     return weekdays.isEmpty ? defaultTrainingDayKcalOffset : 0.0;
   }
 
-  /// Number of planned training days in the 7-day run of [day]. Before a
-  /// goal starts counting there is no run, and the weekly schedule counts
-  /// instead.
+  /// Number of planned training days in the 7-day run of [day], all with the
+  /// schedule of the goal that counts on [day]: a run that a new goal cuts
+  /// short keeps its goals. Before a goal starts counting there is no run,
+  /// and the weekly schedule counts instead.
   int _plannedTrainingDaysInRun(DateTime day) {
     if (countingGoalEntryForDay(day) == null) {
       final activeProfile =
@@ -107,9 +109,12 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
       return (activeProfile?.trainingWeekdays ?? trainingWeekdays).length;
     }
     final runStart = resolveCalorieGoalRunStartDate(settings: this, day: day);
+    final weekdays = _scheduledWeekdaysOf(countingGoalEntryForDay(day));
     var count = 0;
     for (var offset = 0; offset < calorieGoalRunLengthDays; offset++) {
-      if (isPlannedTrainingDay(addLocalDays(runStart, offset))) {
+      final runDay = addLocalDays(runStart, offset);
+      if (trainingDayOverrides[localDayKey(runDay)] ??
+          weekdays.contains(runDay.weekday)) {
         count++;
       }
     }

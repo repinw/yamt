@@ -57,22 +57,23 @@ class WeekBalanceModeChoice extends ConsumerWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     // The limit is the one the rule caps with: the goals that follow the
-    // TDEE once they are computed.
-    final budget = ref.watch(calorieBudgetSettingsProvider).value ?? stored;
-    final limit =
-        NumberFormat.decimalPattern(
-          Localizations.localeOf(context).toLanguageTag(),
-        ).format(
-          budget
-              .carryoverLimitKcalForDay(ref.watch(diaryTodayProvider))
-              .round(),
-        );
-    final options = <WeekBalanceMode, (String, String)>{
+    // TDEE once they are computed. Until they are, the line shows none.
+    final budget = ref.watch(calorieBudgetSettingsProvider).value;
+    final limit = budget == null
+        ? null
+        : NumberFormat.decimalPattern(
+            Localizations.localeOf(context).toLanguageTag(),
+          ).format(
+            budget
+                .carryoverLimitKcalForDay(ref.watch(diaryTodayProvider))
+                .round(),
+          );
+    final options = <WeekBalanceMode, (String, String?)>{
       WeekBalanceMode.off: (l10n.weekBalanceOff, l10n.weekBalanceOffHint),
       WeekBalanceMode.show: (l10n.weekBalanceShow, l10n.weekBalanceShowHint),
       WeekBalanceMode.carryover: (
         l10n.weekBalanceCarryover,
-        l10n.weekBalanceCarryoverHint(limit),
+        limit == null ? null : l10n.weekBalanceCarryoverHint(limit),
       ),
     };
 
@@ -123,7 +124,7 @@ class _Option extends StatelessWidget {
   });
 
   final String label;
-  final String hint;
+  final String? hint;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -181,13 +182,14 @@ class _Option extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    Text(
-                      hint,
-                      style: textTheme.bodySmall?.copyWith(
-                        fontFamily: AppFonts.geist,
-                        color: colors.muted,
+                    if (hint != null)
+                      Text(
+                        hint!,
+                        style: textTheme.bodySmall?.copyWith(
+                          fontFamily: AppFonts.geist,
+                          color: colors.muted,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

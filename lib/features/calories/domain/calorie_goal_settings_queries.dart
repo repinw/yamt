@@ -148,6 +148,20 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
     return null;
   }
 
+  /// First day after [day] on which another goal takes effect, check-ins
+  /// excluded, or `null` when none does. The goal that counts on [day] ends
+  /// the day before, even if the next one counts only from a later day.
+  DateTime? nextGoalEffectiveDateAfterDay(DateTime day) {
+    final normalizedDay = normalizeLocalDay(day);
+    for (final entry in sortedGoalHistory) {
+      if (!entry.isWeeklyCheckIn &&
+          entry.effectiveDate.isAfter(normalizedDay)) {
+        return entry.effectiveDate;
+      }
+    }
+    return null;
+  }
+
   /// The latest entry with a goal, check-ins included, in effect on [day].
   CalorieGoalHistoryEntry? baseGoalEntryForDay(DateTime day) {
     final normalizedDay = normalizeLocalDay(day);
