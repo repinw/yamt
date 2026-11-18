@@ -12,6 +12,7 @@ part 'cook_timer_alarm_controller.g.dart';
 
 const _logName = 'CookTimerAlarmController';
 const _permissionsAskedKey = 'cook_timer_permissions_asked_v2';
+const _exactDeclinedKey = 'cook_timer_exact_alarms_declined';
 const _setValue = 'set';
 
 /// The Android notification channel of the cook timers, which ring like an
@@ -35,10 +36,13 @@ typedef CookTimerAlarmTexts = ({
 });
 
 /// Keeps the notifications of the cook timers this device started in line
-/// with the household's cook runs. When the cooking page first opens on this
-/// device ([askPermissions]), or else with the first timer it rings, it asks
-/// once for the notification permission and, when Android does not allow
-/// exact alarms yet, for those.
+/// with the household's cook runs. At the start of cooking
+/// ([askPermissions]) it asks once per device for the notification
+/// permission, and for exact alarms at every start until Android allows them
+/// or the cook came back from the system screen without allowing them. When
+/// cooking goes on with a running run, it asks for the notification
+/// permission only. The first timer it rings asks for that too, never for
+/// exact alarms: those do not open the system screen mid-step.
 @riverpod
 class CookTimerAlarmController extends _$CookTimerAlarmController {
   @override
@@ -51,7 +55,7 @@ class CookTimerAlarmController extends _$CookTimerAlarmController {
   Future<void> _syncs = Future.value();
   // The runs whose cooking page is open, so a tap never opens one twice.
   final _openRuns = <String>{};
-  Future<void>? _asking;
+  Future<void> _asking = Future.value();
 
   /// The cooking page of the run [runId] opened.
   void pageOpened(String runId) => _openRuns.add(runId);
@@ -69,11 +73,14 @@ class CookTimerAlarmController extends _$CookTimerAlarmController {
     await _logged(ref.read(localNotificationsProvider).openSettings);
   }
 
-  /// Asks once per device, at the start of cooking, for what the timers need
-  /// to ring: notifications and, on Android, exact alarms, which the alarm
-  /// clock needs to ring on time. Nothing after the system answered once.
-  Future<void> askPermissions() =>
-      _askPermissionsOnce(ref.read(localNotificationsProvider));
+  /// Asks for what the timers need to ring: notifications once per device
+  /// and, when [exact] is set and on Android, exact alarms, which the alarm
+  /// clock needs to ring on time. Exact alarms are asked while they are not
+  /// allowed and the cook has not declined them once. [exact] is set at a
+  /// start of cooking and unset when a running run is opened again, since the
+  /// system screen must not open mid-step.
+  Future<void> askPermissions({bool exact = true}) =>
+      _askPermissionsOnce(exact: exact);
 
   /// Opens the system screen that allows exact alarms, then checks again
   /// whether timers ring on time.
@@ -124,7 +131,7 @@ class CookTimerAlarmController extends _$CookTimerAlarmController {
       }
     }
     if (changes.schedule.isEmpty) return;
-    await _askPermissionsOnce(notifications);
+    await _askPermissionsOnce(exact: false);
     if (!ref.mounted) return;
     // Without exact alarms, Android may ring a few minutes late.
     final exact = await _logged(notifications.canScheduleExact) ?? false;
@@ -152,24 +159,50 @@ class CookTimerAlarmController extends _$CookTimerAlarmController {
     }
   }
 
-  // One request at a time: two pages may ask at once.
-  Future<void> _askPermissionsOnce(LocalNotifications notifications) =>
-      _asking ??= _askPermissions(notifications)
-          .whenComplete(() => _asking = null);
+  // One request at a time: two pages may ask at once, and the one after
+  // finds what the first one settled.
+  Future<void> _askPermissionsOnce({required bool exact}) {
+    final next = _asking.then((_) => _askPermissions(exact: exact));
+    return _asking = next.catchError((Object error, StackTrace stackTrace) {
+      logFailure(
+        'Asking for the cook timer permissions failed.',
+        _logName,
+        error,
+        stackTrace,
+      );
+    });
+  }
+
+  Future<void> _askPermissions({required bool exact}) async {
+    if (!ref.mounted) return;
+    final notifications = ref.read(localNotificationsProvider);
+    await _askNotifications(notifications);
+    if (exact && ref.mounted) await _askExactAlarms(notifications);
+  }
 
   // Asked counts only once the system answered, so a failed request asks
-  // again with the next timer.
-  Future<void> _askPermissions(LocalNotifications notifications) async {
+  // again with the next start.
+  Future<void> _askNotifications(LocalNotifications notifications) async {
     final preferences = ref.read(appPreferencesProvider);
     if (preferences.getStringSync(_permissionsAskedKey) == _setValue) return;
-    final granted = await _logged(notifications.requestPermission);
-    if (granted == null) return;
-    if (granted && !(await _logged(notifications.canScheduleExact) ?? true)) {
-      await _logged(notifications.requestExactAlarms);
-      if (ref.mounted) ref.invalidate(cookTimerExactAllowedProvider);
-    }
+    if (await _logged(notifications.requestPermission) == null) return;
     await preferences.setString(_permissionsAskedKey, _setValue);
     if (ref.mounted) ref.invalidate(cookTimerNotificationsBlockedProvider);
+  }
+
+  // Independent of the notification ask. Declined counts only when the
+  // system screen opened and the cook came back without allowing, so a
+  // failed request asks again with the next start.
+  Future<void> _askExactAlarms(LocalNotifications notifications) async {
+    final preferences = ref.read(appPreferencesProvider);
+    if (preferences.getStringSync(_exactDeclinedKey) == _setValue) return;
+    if (await _logged(notifications.canScheduleExact) ?? true) return;
+    if (!ref.mounted) return;
+    final answered =
+        await _succeeded(notifications.requestExactAlarms) &&
+        !(await _logged(notifications.canScheduleExact) ?? true);
+    if (answered) await preferences.setString(_exactDeclinedKey, _setValue);
+    if (ref.mounted) ref.invalidate(cookTimerExactAllowedProvider);
   }
 
   Future<bool> _succeeded(Future<void> Function() call) async =>

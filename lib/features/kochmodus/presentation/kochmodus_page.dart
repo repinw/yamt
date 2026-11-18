@@ -55,9 +55,10 @@ class _KochmodusPageState extends ConsumerState<KochmodusPage> {
     _alarms = ref.read(cookTimerAlarmControllerProvider.notifier)
       ..pageOpened(_target.cookRunId);
     // The timers' permissions come at the start, not mid-step at the first
-    // timer.
+    // timer. Going on with a running run never opens the exact-alarm screen.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(_alarms.askPermissions());
+      if (!mounted) return;
+      unawaited(_alarms.askPermissions(exact: widget.runId == null));
     });
     final provider = kochmodusControllerProvider(_target);
     ref

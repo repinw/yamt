@@ -9,26 +9,35 @@ part of 'cook_timer_alarm_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Keeps the notifications of the cook timers this device started in line
-/// with the household's cook runs. When the cooking page first opens on this
-/// device ([askPermissions]), or else with the first timer it rings, it asks
-/// once for the notification permission and, when Android does not allow
-/// exact alarms yet, for those.
+/// with the household's cook runs. At the start of cooking
+/// ([askPermissions]) it asks once per device for the notification
+/// permission, and for exact alarms at every start until Android allows them
+/// or the cook came back from the system screen without allowing them. When
+/// cooking goes on with a running run, it asks for the notification
+/// permission only. The first timer it rings asks for that too, never for
+/// exact alarms: those do not open the system screen mid-step.
 
 @ProviderFor(CookTimerAlarmController)
 final cookTimerAlarmControllerProvider = CookTimerAlarmControllerProvider._();
 
 /// Keeps the notifications of the cook timers this device started in line
-/// with the household's cook runs. When the cooking page first opens on this
-/// device ([askPermissions]), or else with the first timer it rings, it asks
-/// once for the notification permission and, when Android does not allow
-/// exact alarms yet, for those.
+/// with the household's cook runs. At the start of cooking
+/// ([askPermissions]) it asks once per device for the notification
+/// permission, and for exact alarms at every start until Android allows them
+/// or the cook came back from the system screen without allowing them. When
+/// cooking goes on with a running run, it asks for the notification
+/// permission only. The first timer it rings asks for that too, never for
+/// exact alarms: those do not open the system screen mid-step.
 final class CookTimerAlarmControllerProvider
     extends $NotifierProvider<CookTimerAlarmController, void> {
   /// Keeps the notifications of the cook timers this device started in line
-  /// with the household's cook runs. When the cooking page first opens on this
-  /// device ([askPermissions]), or else with the first timer it rings, it asks
-  /// once for the notification permission and, when Android does not allow
-  /// exact alarms yet, for those.
+  /// with the household's cook runs. At the start of cooking
+  /// ([askPermissions]) it asks once per device for the notification
+  /// permission, and for exact alarms at every start until Android allows them
+  /// or the cook came back from the system screen without allowing them. When
+  /// cooking goes on with a running run, it asks for the notification
+  /// permission only. The first timer it rings asks for that too, never for
+  /// exact alarms: those do not open the system screen mid-step.
   CookTimerAlarmControllerProvider._()
     : super(
         from: null,
@@ -57,13 +66,16 @@ final class CookTimerAlarmControllerProvider
 }
 
 String _$cookTimerAlarmControllerHash() =>
-    r'eb214ef4b5f6fc2a1fa4b1eebc3d29b5ea3b89ee';
+    r'e56fbf7d9c6fab8f8d64e9dd8eb1a0f6ec5f7bd9';
 
 /// Keeps the notifications of the cook timers this device started in line
-/// with the household's cook runs. When the cooking page first opens on this
-/// device ([askPermissions]), or else with the first timer it rings, it asks
-/// once for the notification permission and, when Android does not allow
-/// exact alarms yet, for those.
+/// with the household's cook runs. At the start of cooking
+/// ([askPermissions]) it asks once per device for the notification
+/// permission, and for exact alarms at every start until Android allows them
+/// or the cook came back from the system screen without allowing them. When
+/// cooking goes on with a running run, it asks for the notification
+/// permission only. The first timer it rings asks for that too, never for
+/// exact alarms: those do not open the system screen mid-step.
 
 abstract class _$CookTimerAlarmController extends $Notifier<void> {
   void build();

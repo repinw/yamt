@@ -252,7 +252,7 @@ void main() {
     ) async {
       harness.notifications
         ..exactAllowed = false
-        // The cook says no at the start of cooking.
+        // Reopening a running run asks nothing; the cook allows later.
         ..grantsExact = false;
       final run = _run(const []);
       await harness.store(tester, run);
@@ -262,9 +262,9 @@ void main() {
         initialLocation: AppRoutes.homeCookRunPath(run.id),
       );
       final l10n = harness.l10n(tester);
-      // The start of cooking asked once already, before any timer.
+      // Reopening a running run asks for no exact alarms.
       expect(harness.notifications.permissionRequests, 1);
-      expect(harness.notifications.exactRequests, 1);
+      expect(harness.notifications.exactRequests, 0);
 
       await tester.tap(find.byKey(KochmodusCookList.timerKey));
       await harness.idle(tester);
@@ -276,7 +276,7 @@ void main() {
       await tester.tap(find.byKey(KochmodusTimerSheet.allowExactKey));
       await harness.idle(tester);
 
-      expect(harness.notifications.exactRequests, 2);
+      expect(harness.notifications.exactRequests, 1);
       expect(find.byKey(KochmodusTimerSheet.allowExactKey), findsNothing);
       await close(tester);
     });

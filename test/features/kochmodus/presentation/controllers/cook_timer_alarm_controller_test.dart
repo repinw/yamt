@@ -16,6 +16,7 @@ import '../../../recipes/cook_run_fixtures.dart';
 
 void main() {
   _blockedTests();
+  _exactAlarmCriteriaTests();
   _syncTests();
   late ProviderContainer container;
 
@@ -226,6 +227,17 @@ void _syncTests() {
       ));
     });
 
+    test('W1: the first timer never asks for exact alarms mid-step', () async {
+      notifications
+        ..exactAllowed = false
+        ..grantsExact = false;
+
+      await controller().sync([_runWith('a')], _texts);
+
+      expect(notifications.scheduled.keys, [cookTimerNotificationId('a')]);
+      expect(notifications.exactRequests, 0);
+    });
+
     test('a failing tray read still schedules the timer', () async {
       notifications.activeFails = true;
 
@@ -284,6 +296,171 @@ void _syncTests() {
 
       expect(notifications.active, {id});
       expect(notifications.scheduled, isEmpty);
+    });
+  });
+}
+
+/// The first request for exact alarms does not reach the system.
+class _FlakyExactNotifications extends FakeLocalNotifications {
+  var _failed = false;
+
+  @override
+  Future<bool> requestExactAlarms() async {
+    if (!_failed) {
+      _failed = true;
+      throw StateError('The system screen did not open.');
+    }
+    return await super.requestExactAlarms();
+  }
+}
+
+// Acceptance tests of "Erlaubnis für genaue Wecker beim Kochstart" (W1-W6) in
+// lib/features/kochmodus/CRITERIA.md. A start of cooking is askPermissions().
+void _exactAlarmCriteriaTests() {
+  group('Erlaubnis für genaue Wecker beim Kochstart', () {
+    setUp(TestWidgetsFlutterBinding.ensureInitialized);
+
+    // One start of cooking on a device with [preferences], a fresh app run.
+    Future<void> startCooking(
+      LocalNotifications notifications,
+      MemoryAppPreferences preferences,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(preferences),
+          localNotificationsProvider.overrideWithValue(notifications),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(cookTimerAlarmControllerProvider, (_, _) {});
+      await container
+          .read(cookTimerAlarmControllerProvider.notifier)
+          .askPermissions();
+    }
+
+    test('W1: starting to cook opens the exact alarm screen', () async {
+      final notifications = FakeLocalNotifications()..exactAllowed = false;
+
+      await startCooking(notifications, MemoryAppPreferences());
+
+      expect(notifications.exactRequests, 1);
+    });
+
+    test('W1: every start asks again as long as exact alarms are not allowed '
+        'and the cook has not declined', () async {
+      final notifications = _FlakyExactNotifications()..exactAllowed = false;
+      final preferences = MemoryAppPreferences();
+
+      await startCooking(notifications, preferences);
+      // The first screen never opened, so nothing was declined.
+      expect(notifications.exactRequests, 0);
+      await startCooking(notifications, preferences);
+
+      expect(notifications.exactRequests, 1);
+    });
+
+    test('W2: after one decline the start never asks again', () async {
+      final notifications = FakeLocalNotifications()
+        ..exactAllowed = false
+        ..grantsExact = false;
+      final preferences = MemoryAppPreferences();
+
+      await startCooking(notifications, preferences);
+      expect(notifications.exactRequests, 1);
+      // Also after the app was closed and opened again.
+      await startCooking(notifications, preferences);
+      await startCooking(notifications, preferences);
+
+      expect(notifications.exactRequests, 1);
+    });
+
+    test('W3: allowed exact alarms are not asked', () async {
+      final notifications = FakeLocalNotifications()..exactAllowed = true;
+
+      await startCooking(notifications, MemoryAppPreferences());
+      await startCooking(notifications, MemoryAppPreferences());
+
+      expect(notifications.exactRequests, 0);
+    });
+
+    test('W4: an older app version asked for notifications; exact alarms are '
+        'still asked', () async {
+      final notifications = FakeLocalNotifications()
+        ..exactAllowed = false
+        ..grantsExact = false;
+      final preferences = MemoryAppPreferences(
+        initialStrings: const {_askedKey: 'set'},
+      );
+
+      await startCooking(notifications, preferences);
+
+      expect(notifications.exactRequests, 1);
+    });
+
+    test('W4: notifications asked earlier and denied; exact alarms are still '
+        'asked', () async {
+      final notifications = FakeLocalNotifications()
+        ..allowed = false
+        ..grants = false
+        ..exactAllowed = false
+        ..grantsExact = false;
+      final preferences = MemoryAppPreferences(
+        initialStrings: const {_askedKey: 'set'},
+      );
+
+      await startCooking(notifications, preferences);
+
+      expect(notifications.exactRequests, 1);
+    });
+
+    test(
+      'W4: denying notifications does not count as declining exact alarms',
+      () async {
+        final notifications = FakeLocalNotifications()
+          ..grants = false
+          ..exactAllowed = false
+          ..grantsExact = false;
+        final preferences = MemoryAppPreferences();
+
+        await startCooking(notifications, preferences);
+
+        // The exact alarm screen opens at this start although notifications
+        // were denied, and the denial is not remembered as a decline of it.
+        expect(notifications.permissionRequests, 1);
+        expect(notifications.exactRequests, 1);
+      },
+    );
+
+    test('W5: the notification permission is asked only once', () async {
+      final notifications = FakeLocalNotifications();
+      final preferences = MemoryAppPreferences();
+
+      await startCooking(notifications, preferences);
+      await startCooking(notifications, preferences);
+      await startCooking(notifications, preferences);
+
+      expect(notifications.permissionRequests, 1);
+    });
+
+    test('W5: not asked again after an older app version asked', () async {
+      final notifications = FakeLocalNotifications();
+
+      await startCooking(
+        notifications,
+        MemoryAppPreferences(initialStrings: const {_askedKey: 'set'}),
+      );
+
+      expect(notifications.permissionRequests, 0);
+    });
+
+    test('W6: iOS, where exact alarms are always allowed, asks nothing '
+        'about them', () async {
+      // iOS reports exact alarms as allowed.
+      final notifications = FakeLocalNotifications()..exactAllowed = true;
+
+      await startCooking(notifications, MemoryAppPreferences());
+
+      expect(notifications.exactRequests, 0);
     });
   });
 }
