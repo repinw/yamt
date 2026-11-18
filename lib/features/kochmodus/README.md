@@ -35,9 +35,9 @@ or a meal without a recipe.
   (`KochmodusNutritionLabel`). The done
   view takes one serving's values and its kind (portion, piece, or can) from
   the view model (`KochmodusDone`, `KochmodusServing`).
-- The guide step (`KochmodusGuideStep`) shows under an instruction the lines it
-  names with their amounts (`KochmodusStepFoods`), and under its times the
-  hint why a timer may not ring as it should (`KochmodusTimerHint`).
+- The guide step (`KochmodusGuideStep`) shows the instruction and, under its
+  times, the hint why a timer may not ring as it should (`KochmodusTimerHint`).
+  It lists no recipe lines.
 - The step Töpfe: a pot the cook adds there is chosen at once; one that is gone
   again after the undo of adding it is not.
 - The amount sheet of a line (typed amount, "Vorhandenes" and "Rezept"
@@ -70,19 +70,6 @@ or a meal without a recipe.
   fact: it is limited by the run's own other lines, not by other runs'
   reservations, and what the items cannot hold goes onto the last item so the
   stock check names it.
-- The guide shows under a step the lines it names, each with the amount the
-  cooking list says (`KochmodusView.guide`, `KochmodusGuideLine.foods`,
-  `KochmodusStepFood`; `cookLineTextParts` splits a line into amount and
-  food). A step names a line when one of the line's food words
-  (`cookLineFoodName`) stands in it as a whole word, in singular or plural
-  (`cookStepNamesFood`), or ends a compound of it as its head ("Bohnen" names
-  "Kidneybohnen"; not a two-letter word, nor "braten"); only the words before what the food is for count
-  (`cookFoodBeforePhrase` in `inventory`: "Olivenöl" of "Olivenöl zum Braten",
-  so "braten" does not name it); articles and small words ("von", "aus",
-  "from"; "Saft aus 1 Zitrone" stays whole), kind words, "Bio",
-  and a word that only starts a longer one ("Milchreis" for "Milch") never
-  count, and the last part of a hyphenated word is a word of its own. A line the cook left out is skipped; a
-  line that does not count (a pinch of salt) stays.
 - While a pot waits for its weight and that is the first reason on "Fertig
   gekocht", the main button says "Topf wiegen" ("Töpfe wiegen" for several) and
   opens the weighing of that pot (`KochmodusPortionView.potToWeigh`,
@@ -388,7 +375,11 @@ or a meal without a recipe.
   notifications of the cook timers this device started, rings them as an alarm
   on Android (through the system's alarm clock, also on a phone set to vibrate
   or silent, with a silent countdown in the tray until then), and opens the run
-  on a tap.
+  on a tap. The start of cooking asks for the notification permission once;
+  the first timer asks only when the start did not. It asks for exact alarms
+  when cooking starts, not when an existing run is reopened, at each start
+  until the cook declines once (its own marker, independent of the
+  notification ask).
 - `KochmodusAssignPage` is reached by the route `AppRoutes.homeCook` (a
   recipe, optionally with its portions).
 - `KochmodusPage` is reached by the routes `AppRoutes.homeCookRun` (a run) and

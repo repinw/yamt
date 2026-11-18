@@ -12,7 +12,6 @@ import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_meal_box.
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_portion_line.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_portion_lines.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_portion_step.dart';
-import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_step_foods.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_timer_bar.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_timer_sheet.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_to_weigh.dart';
@@ -322,12 +321,8 @@ void main() {
     await harness.store(tester, _run(guide: true));
     await harness.pumpRun(tester, 'recipe-t1');
 
-    // The first step names the flour and says how much it takes.
-    expect(find.byKey(KochmodusStepFoods.blockKey), findsOneWidget);
-    expect(find.byKey(KochmodusStepFoods.rowKey('l-flour')), findsOneWidget);
     await tester.tap(find.byKey(KochmodusGuideStep.nextKey));
     await harness.idle(tester);
-    expect(find.byKey(KochmodusStepFoods.blockKey), findsNothing);
     await tester.tap(find.byKey(KochmodusGuideStep.portionKey));
     await harness.idle(tester);
     await _weighPot(tester, harness);

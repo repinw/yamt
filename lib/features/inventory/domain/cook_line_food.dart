@@ -46,26 +46,6 @@ String cookLineFoodName(String text) {
 String cookLineFoodPhrase(String text) =>
     _withoutMeasure(_foodPart(text)).join(' ');
 
-/// The words of the food name [name] that name the food itself: up to a word
-/// after the first that starts what it is for or how it comes. "Olivenöl" for
-/// "Olivenöl zum Braten", "Salz und Pfeffer" for "Salz und Pfeffer nach
-/// Belieben", "salt" for "salt to taste". "aus" and "from" start none: "Saft
-/// aus 1 Zitrone" stays whole. For whether a step of the guide names a line.
-String cookFoodBeforePhrase(String name) {
-  final words = name.trim().split(_spaces);
-  final end = words.indexWhere(
-    (word) => _phraseStarts.contains(normalizeIngredientMatchText(word)),
-    1,
-  );
-  return end < 0 ? name : words.take(end).join(' ');
-}
-
-// The words that start a phrase behind a food, in German and English: "zum
-// Braten", "zur Deko", "nach Geschmack", "für die Form", "in Scheiben", "to
-// taste", "for frying".
-const _phraseStarts = {'für', 'in', 'nach', 'zum', 'zur', 'for', 'to'};
-final _spaces = RegExp(r'\s+');
-
 String _foodPart(String text) {
   final name = normalizeCookLineText(
     text.replaceAll(_brackets, ' ').split(_partComma).first,

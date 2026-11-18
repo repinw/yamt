@@ -58,20 +58,9 @@ typedef KochmodusDoneMeal = ({
 /// and whether free cooking also became a Kochbuch recipe.
 typedef KochmodusDone = ({List<KochmodusDoneMeal> meals, bool inCookbook});
 
-/// A line that an instruction of the guide names (`cookStepNamesFood`), as
-/// the cooking list says it for the run's portions: its amount ("2 EL",
-/// `null` when it names none) and its food ("Zucker").
-typedef KochmodusStepFood = ({String lineId, String? amount, String food});
-
 /// One instruction of the guide ("Kochhelfer") with the timer choices of
-/// each time it names (a span like "8–10 Min" gives each minute) and the
-/// lines it names, in the run's order: not those the cook left out, but
-/// those that do not count, such as a pinch of salt.
-typedef KochmodusGuideLine = ({
-  String text,
-  List<List<Duration>> timerSteps,
-  List<KochmodusStepFood> foods,
-});
+/// each time it names (a span like "8–10 Min" gives each minute).
+typedef KochmodusGuideLine = ({String text, List<List<Duration>> timerSteps});
 
 /// Assigning or cooking as it is now: the run or its draft, the tab, and
 /// every derived list the steps show. Built by `buildKochmodusView`.

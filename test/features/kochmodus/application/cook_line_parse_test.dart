@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/kochmodus/application/cook_line_amount.dart';
-import 'package:yamt/features/kochmodus/application/cook_line_parse.dart';
 import 'package:yamt/features/kochmodus/application/cook_recipe_line.dart';
 import 'package:yamt/features/kochmodus/presentation/controllers/kochmodus_view_builder.dart';
 import 'package:yamt/features/kochmodus/presentation/models/kochmodus_line_view.dart';
@@ -668,31 +667,5 @@ void main() {
     final run = freeRun([textLine('l', '1/2 Zitrone')]);
     expect(run.kind, CookRunKind.free);
     expect(cookRecipeLineText(run, run.lines.single, const {}), '1/2 Zitrone');
-  });
-
-  group('cookLineTextParts', () {
-    const parts = <(String, String?, String)>[
-      ('1000 ml Milch', '1000 ml', 'Milch'),
-      ('1/2 Zitrone', '1/2', 'Zitrone'),
-      ('1 Prise Salz', '1 Prise', 'Salz'),
-      ('Salz', null, 'Salz'),
-      (
-        '100 g Frischkäse (Doppelrahmstufe)',
-        '100 g',
-        'Frischkäse (Doppelrahmstufe)',
-      ),
-      ('2 Zwiebeln, fein gewürfelt', '2', 'Zwiebeln, fein gewürfelt'),
-      ('etwas Öl', 'etwas', 'Öl'),
-      // The food comes first: no amount to split off.
-      ('Butter 100 g', null, 'Butter 100 g'),
-    ];
-    for (final (text, amount, food) in parts) {
-      test('"$text" is ${amount ?? 'no amount'} and "$food"', () {
-        final result = cookLineTextParts(text);
-
-        expect(result.amount, amount);
-        expect(result.food, food);
-      });
-    }
   });
 }

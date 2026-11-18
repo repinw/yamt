@@ -136,24 +136,4 @@ void main() {
       });
     }
   });
-
-  group('cookFoodBeforePhrase', () {
-    const names = {
-      'Olivenöl zum Braten': 'Olivenöl',
-      'Salz und Pfeffer nach Belieben': 'Salz und Pfeffer',
-      'salt to taste': 'salt',
-      'Käse in Scheiben': 'Käse',
-      'Zimt': 'Zimt',
-      // "aus" and "from" do not cut the name.
-      'Saft aus 1 Zitrone': 'Saft aus 1 Zitrone',
-      'Tomaten aus der Dose': 'Tomaten aus der Dose',
-      'tomatoes from a can': 'tomatoes from a can',
-    };
-
-    for (final MapEntry(key: name, value: food) in names.entries) {
-      test('"$name" is "$food"', () {
-        expect(cookFoodBeforePhrase(name), food);
-      });
-    }
-  });
 }

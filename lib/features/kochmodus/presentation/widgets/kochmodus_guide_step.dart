@@ -10,7 +10,6 @@ import 'package:yamt/features/kochmodus/presentation/controllers/kochmodus_contr
 import 'package:yamt/features/kochmodus/presentation/kochmodus_action_flow.dart';
 import 'package:yamt/features/kochmodus/presentation/models/kochmodus_target.dart';
 import 'package:yamt/features/kochmodus/presentation/models/kochmodus_view.dart';
-import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_step_foods.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_step_foot.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_timer_bar.dart';
 import 'package:yamt/features/kochmodus/presentation/widgets/kochmodus_timer_sheet.dart';
@@ -20,12 +19,11 @@ import 'package:yamt/features/recipes/domain/cook_line_settlement.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The guide ("Kochhelfer"): one instruction per page ("Schritt N von M"),
-/// the amounts of the foods it names, each time it names as a button that
-/// starts a timer (a span asks which end) with the hint when timers may not
-/// ring ([KochmodusTimerHint]), the lines still to
-/// weigh, the lines that came in while cooking, then timers, voice and
-/// "Zurück" | "Nächster Schritt"; the last step ends with
-/// "Fertig · Portionieren". "Zurück" on the first step shows the tab "Töpfe".
+/// each time it names as a button that starts a timer (a span asks which end)
+/// with the hint when timers may not ring ([KochmodusTimerHint]), the lines
+/// still to weigh, the lines that came in while cooking, then timers, voice
+/// and "Zurück" | "Nächster Schritt"; the last step ends with "Fertig ·
+/// Portionieren". "Zurück" on the first step shows the tab "Töpfe".
 class KochmodusGuideStep extends StatelessWidget {
   /// Creates the guide of [view] for the cooking of [target].
   const new({required this.target, required this.view, super.key});
@@ -123,13 +121,6 @@ class KochmodusGuideStep extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              if (step.foods.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.xl),
-                KochmodusStepFoods(
-                  key: KochmodusStepFoods.blockKey,
-                  foods: step.foods,
-                ),
-              ],
               if (step.timerSteps.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xl),
                 Wrap(
