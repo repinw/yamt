@@ -202,6 +202,7 @@ class _Body extends StatelessWidget {
               order: 2,
               child: DiaryBudgetWeekStrip(
                 weekStart: weekStart,
+                dayCount: data.runWeekDayCount,
                 selectedDay: data.day,
                 today: today,
               ),

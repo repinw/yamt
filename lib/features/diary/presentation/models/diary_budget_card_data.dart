@@ -1,3 +1,4 @@
+import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
@@ -65,6 +66,7 @@ class DiaryBudgetCardData {
     this.isPreviousDayClosed = false,
     this.overIsMiss = true,
     this.runWeekStart,
+    this.runWeekDayCount = calorieGoalRunLengthDays,
     this.paceKcal,
   });
 
@@ -120,6 +122,8 @@ class DiaryBudgetCardData {
       isPreviousDayClosed: status == DiaryDayStatus.afterClosedDay,
       overIsMiss: loaded?.weekBalance?.overIsMiss ?? true,
       runWeekStart: loaded?.runWeekStart,
+      runWeekDayCount:
+          loaded?.weekBalance?.days.length ?? calorieGoalRunLengthDays,
       paceKcal: paceShare == null || (loaded?.state.isPauseDay ?? false)
           ? null
           : metrics.targetKcal * paceShare,
@@ -181,6 +185,9 @@ class DiaryBudgetCardData {
 
   /// First day of the run week the day belongs to, or null outside a run.
   final DateTime? runWeekStart;
+
+  /// Days of that run: seven, or fewer for a run that a new goal cut short.
+  final int runWeekDayCount;
 
   /// Protein, carbs, and fat, or empty while the macros load.
   final List<DiaryBudgetMacro> macros;

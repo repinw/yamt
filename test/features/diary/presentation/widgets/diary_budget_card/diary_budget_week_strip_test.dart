@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_week_strip.dart';
@@ -57,6 +58,7 @@ Future<_RecordingCalorieGoalController> _pumpStrip(WidgetTester tester) async {
         home: Scaffold(
           body: DiaryBudgetWeekStrip(
             weekStart: _monday,
+            dayCount: calorieGoalRunLengthDays,
             selectedDay: _monday,
             today: _monday,
           ),
