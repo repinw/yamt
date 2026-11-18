@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/week_balance_mode_choice.dart';
+import 'package:yamt/features/calories/presentation/widgets/week_balance_mode_choice.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';

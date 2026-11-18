@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 
 /// Defines calorie goal start dialog keys.
 abstract final class CalorieGoalStartDialogKeys {
@@ -73,4 +74,14 @@ abstract final class CalorieEntryEditorKeys {
 
   /// The save button.
   static const saveButton = Key('calorie_entry_save_button');
+}
+
+/// Defines the keys of the week balance mode choice.
+abstract final class WeekBalanceModeKeys {
+  /// The option of [mode], in the week card's menu and in the settings.
+  static ValueKey<String> option(WeekBalanceMode mode) =>
+      ValueKey<String>('week-balance-mode-${mode.name}');
+
+  /// The mark inside the selected option.
+  static const selected = ValueKey<String>('week-balance-mode-selected');
 }

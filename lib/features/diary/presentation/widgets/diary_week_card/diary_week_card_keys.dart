@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 
-/// Keys of the diary's week card, its menu and the mode choice, for tests.
+/// Keys of the diary's week card and its menu, for tests.
 abstract final class DiaryWeekCardKeys {
   /// The week card between the budget card and the steps card.
   static const card = ValueKey<String>('diary-week-card');
@@ -44,11 +43,4 @@ abstract final class DiaryWeekCardKeys {
 
   /// The menu that holding the card opens.
   static const menu = ValueKey<String>('diary-week-card-menu');
-
-  /// The option of [mode], in the menu and in the settings.
-  static ValueKey<String> modeOption(WeekBalanceMode mode) =>
-      ValueKey<String>('week-balance-mode-${mode.name}');
-
-  /// The mark inside the selected option.
-  static const modeSelected = ValueKey<String>('week-balance-mode-selected');
 }
