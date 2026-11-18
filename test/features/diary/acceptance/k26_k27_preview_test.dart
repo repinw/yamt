@@ -181,6 +181,45 @@ void main() {
       }
     });
 
+    testWidgets("K27: once today is closed, every coming day's budget card "
+        'still matches its field in the week card', (tester) async {
+      // Thursday 1.400 eaten; closed, Friday to Sunday get +100 (K39).
+      await DiaryAcceptanceHarness(
+        now: morningOf(runDay(3)),
+        eaten: {
+          runDay(0): 2200,
+          runDay(1): 1900,
+          runDay(2): 3000,
+          runDay(3): 1400,
+        },
+      ).pumpDiary(tester);
+      await chooseModeInDiary(tester, WeekBalanceMode.carryover);
+
+      await nextDay(tester);
+      await closeToday(tester);
+
+      for (var day = 4; day < 7; day += 1) {
+        if (day > 4) await nextDay(tester);
+        expect(budgetKcalText(tester), '2.300', reason: _weekdays[day]);
+        expect(
+          find.descendant(
+            of: find.byKey(WeekCardKeys.day(day)),
+            matching: find.byKey(WeekCardKeys.extraPiece),
+          ),
+          findsOneWidget,
+          reason: 'the field of ${_weekdays[day]} has more budget too',
+        );
+        expect(
+          find.descendant(
+            of: find.byKey(WeekCardKeys.day(day)),
+            matching: find.byKey(WeekCardKeys.debtPiece),
+          ),
+          findsNothing,
+          reason: 'the field of ${_weekdays[day]} has no less budget',
+        );
+      }
+    });
+
     for (final mode in [WeekBalanceMode.off, WeekBalanceMode.show]) {
       testWidgets('K27: in "${mode.label}" every coming day\'s budget card '
           'shows the plain goal "2.200"', (tester) async {
