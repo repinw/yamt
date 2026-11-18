@@ -1,4 +1,5 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 
 const _maxInventoryIngredients = 40;
 
@@ -15,6 +16,27 @@ class AiChefInventoryInputBuilder {
         .where((ingredient) => ingredient.isNotEmpty)
         .take(_maxInventoryIngredients)
         .toList(growable: false);
+  }
+
+  /// Returns [items] without the stock that open plans and running cook runs
+  /// keep, [reservedOf] an item id in the pack's stored unit ("verplant"): a
+  /// pack kept in full is left out, a pack kept in part counts with what is
+  /// left.
+  List<InventoryItem> freeStock(
+    List<InventoryItem> items,
+    int Function(String itemId) reservedOf,
+  ) {
+    return [for (final item in items) ?_free(item, reservedOf(item.id))];
+  }
+
+  InventoryItem? _free(InventoryItem item, int reserved) {
+    if (reserved < 1) {
+      return item;
+    }
+    if (reserved >= item.availableAmount) {
+      return null;
+    }
+    return item.reducedBy(reserved);
   }
 
   /// Returns the items the user can pick to use up, the longest in stock

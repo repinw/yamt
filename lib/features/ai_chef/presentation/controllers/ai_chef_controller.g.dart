@@ -36,7 +36,7 @@ final class AiChefControllerProvider
   AiChefController create() => AiChefController();
 }
 
-String _$aiChefControllerHash() => r'0c191f65bd347c6dec57dc85aa9df411c8ed9c32';
+String _$aiChefControllerHash() => r'e96c1e408b5affacb46fd75ed1595be9a65fd1bf';
 
 /// Puts a recipe idea together; `null` until the cook asks for one.
 

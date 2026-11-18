@@ -102,6 +102,29 @@ void main() {
     ]);
   });
 
+  test('freeStock leaves out a pack kept in full and sends the rest', () {
+    final reserved = {'milk': 150, 'beans': 1, 'rice': 2};
+    final free = builder.freeStock([
+      _inventoryItem(
+        id: 'milk',
+        name: 'Milk',
+        quantity: 1,
+        initialAmount: 200,
+        currentAmount: 200,
+        amountUnit: InventoryAmountUnit.milliliter,
+      ),
+      _inventoryItem(id: 'beans', name: 'Beans', quantity: 1),
+      _inventoryItem(id: 'rice', name: 'Rice', quantity: 3),
+      _inventoryItem(id: 'salt', name: 'Salt', quantity: 1),
+    ], (id) => reserved[id] ?? 0);
+
+    expect(builder.build(free), <String>[
+      'Milk (available: 50 ml)',
+      'Rice (available: 1 x)',
+      'Salt (available: 1 x)',
+    ]);
+  });
+
   test('daysInStock counts calendar days and never goes below zero', () {
     final item = _inventoryItem(
       id: 'a',

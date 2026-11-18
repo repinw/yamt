@@ -7,8 +7,10 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/ai_chef/application/'
     'ai_chef_inventory_input_builder.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_repository.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_demand.dart';
 
 part 'ai_chef_controller.g.dart';
 
@@ -84,14 +86,32 @@ class AiChefController extends _$AiChefController {
   /// The Vorrat the cook can pick "Unbedingt rein" from, the longest in
   /// stock first. Throws when the Vorrat cannot be read.
   Future<List<InventoryItem>> loadPickableItems() async {
-    final items = await ref.read(inventoryItemRepositoryProvider).readAll();
-    return const AiChefInventoryInputBuilder().pickableOldestFirst(items);
+    return const AiChefInventoryInputBuilder().pickableOldestFirst(
+      await _freeStock(),
+    );
+  }
+
+  /// The Vorrat without what open plans and running cook runs keep, so a
+  /// pack another recipe needs is not offered again. Throws when the Vorrat
+  /// or the plans cannot be read: a kept pack never goes out as free.
+  Future<List<InventoryItem>> _freeStock() async {
+    final demand = ref.listen(openPlanDemandProvider.future, (_, _) {});
+    try {
+      final items = await ref.read(inventoryItemRepositoryProvider).readAll();
+      final loaded = await demand.read();
+      return const AiChefInventoryInputBuilder().freeStock(
+        items,
+        loaded.plannedOrReservedOf,
+      );
+    } finally {
+      demand.close();
+    }
   }
 
   Future<_InventoryInput> _inventory(Set<String> mustUseIds) async {
     const builder = AiChefInventoryInputBuilder();
     try {
-      final items = await ref.read(inventoryItemRepositoryProvider).readAll();
+      final items = await _freeStock();
       return (
         available: builder.build(items),
         mustUse: builder.build([
