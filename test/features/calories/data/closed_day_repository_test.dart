@@ -34,6 +34,27 @@ void main() {
     expect(ClosedDayRepository(preferences, null).readClosedDay(), isNull);
   });
 
+  test('a corrupt stored value reads as no closed day', () async {
+    for (final junk in ['', 'gestern', '2026-13-45', '{"day": 5}']) {
+      final preferences = MemoryAppPreferences();
+      final repository = ClosedDayRepository(preferences, 'user-1');
+      await repository.saveClosedDay(DateTime(2026, 10, 5));
+      // The one key the repository wrote, overwritten with junk.
+      final key = (await preferences.keys()).single;
+      await preferences.setString(key, junk);
+
+      expect(
+        repository.readClosedDay,
+        returnsNormally,
+        reason: 'stored "$junk"',
+      );
+      expect(repository.readClosedDay(), isNull, reason: 'stored "$junk"');
+      // The bad value is removed, not kept and dropped on every read.
+      expect(await preferences.keys(), isEmpty, reason: 'stored "$junk"');
+      expect(repository.readClosedDay(), isNull, reason: 'stored "$junk"');
+    }
+  });
+
   test('does not save while signed out', () async {
     final repository = ClosedDayRepository(MemoryAppPreferences(), null);
 
