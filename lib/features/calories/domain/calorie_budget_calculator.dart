@@ -35,7 +35,7 @@ abstract final class CalorieBudgetCalculator {
   ///
   /// The carryover is limited by [carryoverLimitKcal] in both directions
   /// (Schutzregel C), and a negative one never takes the budget below
-  /// [minimumDailyCalorieBudgetKcal].
+  /// [minimumDailyCalorieBudgetKcal]: at that floor it rounds toward zero.
   static double distributeCarryover({
     required double carryoverKcal,
     required int remainingDays,
@@ -47,6 +47,8 @@ abstract final class CalorieBudgetCalculator {
       limit,
     );
     final floor = math.min(0, minimumDailyCalorieBudgetKcal - baseGoalKcal);
-    return (daily < 0 ? math.max(daily, floor) : daily).roundToDouble();
+    final rounded = daily.roundToDouble();
+    // Rounding must not undercut the minimum: at the floor go toward zero.
+    return rounded < floor ? floor.ceilToDouble() : rounded;
   }
 }
