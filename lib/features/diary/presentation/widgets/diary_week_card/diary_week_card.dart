@@ -9,6 +9,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
@@ -18,11 +19,12 @@ import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_w
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The week of the goal run that holds [day] as a strip of seven day fields
-/// (#911), between the budget card and the steps card. Each finished day's
-/// field fills like the kcal line against that day's budget; with the
-/// budget card's details open, numbers stand under the finished days. A long
-/// press opens the menu with the mode; a tap does nothing. Shows nothing
-/// while the mode is off or the day has no run.
+/// (#911; fewer for a run that a new goal cut short), between the budget card
+/// and the steps card. Each finished day's field fills like the kcal line
+/// against that day's budget; with the budget card's details open, numbers
+/// stand under the finished days. A long press opens the menu with the mode;
+/// a tap does nothing. Shows nothing while the mode is off or the day has no
+/// run.
 class DiaryWeekCard extends ConsumerWidget {
   /// Creates the card for [day].
   const new({required this.day, super.key});
@@ -84,6 +86,14 @@ class DiaryWeekCard extends ConsumerWidget {
                         showNumber: showDetails,
                       ),
                     ),
+                  // A run cut short by a new goal has fewer fields; they keep
+                  // the width they have with seven and start at the left.
+                  for (
+                    var empty = balance.days.length;
+                    empty < calorieGoalRunLengthDays;
+                    empty += 1
+                  )
+                    const Expanded(child: SizedBox.shrink()),
                 ],
               ),
             ),
