@@ -341,6 +341,14 @@ Then: Friday shows the plain goal "2.200" and no button (K9).
 When: I switch back to "Mit Übertrag" on the same Thursday and open Friday.
 Then: the button reads "Donnerstag abgeschlossen", and Friday, Saturday and Sunday show "2.300".
 
+### K46 – A closed today still looks like today in the week card
+Source: notes, entry "2026-11-18, Frage O8" under KF 3 (user: "ja passt so"); K19; K23.
+Given: mode "Mit Übertrag"; first row of K39; I closed Thursday; weight goal "Zunehmen"; "Details" open.
+When: I look at the week card on Thursday.
+Then: Thursday's field still looks like today: no number stands under it, and it is not red for being under its budget.
+When: midnight passes and Friday is today.
+Then: Thursday's field is a normal finished day: under it stands "−675" (1.400 against 2.075, K20), and it is red (K23).
+
 **Group: week card (modes "Anzeigen" and "Mit Übertrag")**
 
 ### K14 – The week card is a strip of seven day fields
@@ -467,7 +475,3 @@ And: today never turns red for being under, because the day is not over yet.
   fasting day. Separate issue idea, not part of #911.
 - O3: whether the strip "Tagesarten im Run" in the budget card's details stays
   next to the new week card.
-- O8: how today's own field in the week card looks once today is closed:
-  still drawn as today (no number under it with "Details", never red for
-  being under, K19, K23) or like a finished day. No source says; K39 fixes
-  only the coming days.
