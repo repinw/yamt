@@ -68,6 +68,9 @@ class AiChefPillRow extends StatefulWidget {
   State<AiChefPillRow> createState() => _AiChefPillRowState();
 }
 
+/// Typed between two entries.
+final _separators = RegExp('[,;]');
+
 class _AiChefPillRowState extends State<AiChefPillRow> {
   final _inputController = TextEditingController();
   final _inputFocus = FocusNode();
@@ -102,13 +105,35 @@ class _AiChefPillRowState extends State<AiChefPillRow> {
     _inputFocus.requestFocus();
   }
 
+  // A comma or semicolon ends a pill at once; the field stays open for the
+  // next one.
+  void _splitOnSeparator(String value) {
+    final parts = value.split(_separators);
+    if (parts.length < 2) {
+      return;
+    }
+    _keepTyping(parts.removeLast());
+    parts.forEach(_add);
+  }
+
+  void _keepTyping(String rest) {
+    _inputController.value = TextEditingValue(
+      text: rest,
+      selection: TextSelection.collapsed(offset: rest.length),
+    );
+  }
+
+  void _add(String entry) {
+    if (entry.trim().isNotEmpty) {
+      widget.onAdd(entry);
+    }
+  }
+
   void _submit(String value) {
     if (!_isAdding) {
       return;
     }
-    if (value.trim().isNotEmpty) {
-      widget.onAdd(value);
-    }
+    value.split(_separators).forEach(_add);
     _inputController.clear();
     setState(() {
       _isAdding = false;
@@ -174,6 +199,7 @@ class _AiChefPillRowState extends State<AiChefPillRow> {
                     isDense: true,
                     hintText: widget.hint,
                   ),
+                  onChanged: _splitOnSeparator,
                   onSubmitted: _submit,
                   onTapUpOutside: (_) => _inputFocus.unfocus(),
                 ),
