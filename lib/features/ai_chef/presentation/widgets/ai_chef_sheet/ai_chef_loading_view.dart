@@ -24,6 +24,7 @@ class _AiChefLoadingViewState extends State<AiChefLoadingView> {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
+    final quoteStyle = textTheme.bodyMedium?.copyWith(color: colors.muted);
     final quotes = [
       l10n.aiChefQuoteLoveGarlic,
       l10n.aiChefQuoteCookingMagic,
@@ -31,7 +32,10 @@ class _AiChefLoadingViewState extends State<AiChefLoadingView> {
       l10n.aiChefQuoteKitchenTalks,
     ];
 
-    return Padding(
+    // A modal sheet is only as wide as its content: without the full width
+    // the sheet would follow the length of the quote.
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -47,10 +51,18 @@ class _AiChefLoadingViewState extends State<AiChefLoadingView> {
               fontWeight: FontWeight.w700,
             ),
           ),
-          Text(
-            quotes[(_pick * quotes.length).floor()],
-            textAlign: TextAlign.center,
-            style: textTheme.bodyMedium?.copyWith(color: colors.muted),
+          // Two lines kept for every quote, so a short one leaves the sheet
+          // as tall as a long one.
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Text('\n', style: quoteStyle),
+              Text(
+                quotes[(_pick * quotes.length).floor()],
+                textAlign: TextAlign.center,
+                style: quoteStyle,
+              ),
+            ],
           ),
         ],
       ),
