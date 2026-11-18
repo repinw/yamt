@@ -102,7 +102,7 @@ class WeekBalanceDay {
 /// (see [CalorieBudgetCalculator.distributeCarryover]) and what is left at the
 /// end of the run is dropped. For the days after today it assumes that today
 /// and every day until then hit their budget; what today is already over its
-/// budget counts at once.
+/// budget counts at once. Once today is closed, it counts as a finished day.
 @immutable
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class WeekBalance {
@@ -110,12 +110,14 @@ class WeekBalance {
   const new({required this.mode, required this.weightGoal, required this.days});
 
   /// Resolves the budgets of the run [days], from its first day, with
-  /// [today] the real today.
+  /// [today] the real today. With [isTodayClosed], today counts as finished
+  /// for the days after it.
   factory resolve({
     required WeekBalanceMode mode,
     required CalorieGoalMode weightGoal,
     required DateTime today,
     required List<WeekBalanceDayInput> days,
+    bool isTodayClosed = false,
   }) {
     var balance = 0.0;
     final normalizedToday = normalizeLocalDay(today);
@@ -129,7 +131,12 @@ class WeekBalance {
             )
           : 0.0;
       final budget = day.goalKcal + carryover;
-      balance += _balanceOf(day, budget: budget, today: normalizedToday);
+      balance += _balanceOf(
+        day,
+        budget: budget,
+        today: normalizedToday,
+        isTodayClosed: isTodayClosed,
+      );
       resolved.add(
         WeekBalanceDay(
           date: day.date,
@@ -201,18 +208,21 @@ class WeekBalance {
   );
 }
 
-/// What [day] adds to the balance of the run: a finished day its goal minus
-/// what was eaten, today the same unless it stays within its [budget], and a
-/// coming day what it frees or takes by hitting its budget.
+/// What [day] adds to the balance of the run: a finished day, and today once
+/// it is [isTodayClosed], its goal minus what was eaten; an open today the
+/// same unless it stays within its [budget]; a coming day what it frees or
+/// takes by hitting its budget.
 double _balanceOf(
   WeekBalanceDayInput day, {
   required double budget,
   required DateTime today,
+  required bool isTodayClosed,
 }) {
   if (day.isPauseDay) {
     return 0;
   }
-  if (day.date.isBefore(today)) {
+  if (day.date.isBefore(today) ||
+      (isTodayClosed && isSameLocalDay(day.date, today))) {
     return day.hasEntries ? day.goalKcal - day.eatenKcal : 0;
   }
   final counted = isSameLocalDay(day.date, today)

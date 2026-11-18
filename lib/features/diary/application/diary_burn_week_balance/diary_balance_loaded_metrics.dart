@@ -17,6 +17,7 @@ class DiaryBalanceLoadedMetrics {
     required this.runWeekStart,
     this.budgetDetails,
     this.weekBalance,
+    this.previousDayCarryoverKcal,
     this.isPreviousDayClosed = false,
   });
 
@@ -38,6 +39,11 @@ class DiaryBalanceLoadedMetrics {
   /// The budgets of the seven days of the run that holds the selected day,
   /// or null when the day has no run.
   final WeekBalance? weekBalance;
+
+  /// Carryover per day the selected day gets from closing the day before.
+  /// Set only on tomorrow, in the mode that carries over, while its run has
+  /// earlier days.
+  final double? previousDayCarryoverKcal;
 
   /// Whether the day before is closed, so the selected day counts like a
   /// started day instead of a plan.
@@ -114,6 +120,7 @@ DiaryBalanceLoadedMetrics _buildDiaryBalanceLoadedMetrics(
     runWeekStart: weekStart,
     budgetDetails: _resolveBudgetDetails(context, weekStart, state, daily),
     weekBalance: context.weekOverview.weekBalance,
+    previousDayCarryoverKcal: context.weekOverview.previousDayCarryoverKcal,
     isPreviousDayClosed: context.weekOverview.isPreviousDayClosed,
   );
 }
@@ -134,9 +141,8 @@ DiaryDailyBalanceMetrics _resolveDailyMetrics(
   baseGoalKcal: context.selectedDayOverview.goalKcal,
 );
 
-/// The days before a future day are not finished, so a future day has no
-/// carryover to explain and no budget details, unless the day before it is
-/// closed.
+/// A future day whose day before is open is a plan: it shows the preview of
+/// its carryover but has no budget details, which explain finished days.
 DiaryDailyBudgetDetailsData? _resolveBudgetDetails(
   _DiaryBalanceLoadedContext context,
   DateTime weekStart,

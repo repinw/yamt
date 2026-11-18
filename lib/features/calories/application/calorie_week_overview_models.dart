@@ -147,12 +147,14 @@ class CalorieWeekOverview {
 
   /// Carryover per day that tomorrow gets when today is closed early.
   ///
-  /// Set only when the window ends tomorrow and tomorrow's run has earlier
-  /// days; a new run starts without carryover. While today is closed, it
-  /// equals [carryoverBeforeTodayKcal].
+  /// Set only in the mode that carries over, when the window ends tomorrow
+  /// and tomorrow's run has earlier days; a new run starts without carryover.
+  /// While today is closed, it equals [carryoverBeforeTodayKcal].
   final double? previousDayCarryoverKcal;
 
   /// Whether today is closed, so tomorrow already counts like a started day.
+  /// Only tomorrow reports it, and only where [previousDayCarryoverKcal] is
+  /// set.
   final bool isPreviousDayClosed;
 
   /// The budgets of the seven days of the run that holds the selected day,
