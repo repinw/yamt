@@ -100,8 +100,9 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
 
   /// Number of planned training days in the 7-day run of [day], all with the
   /// schedule of the goal that counts on [day]: a run that a new goal cuts
-  /// short keeps its goals. Before a goal starts counting there is no run,
-  /// and the weekly schedule counts instead.
+  /// short keeps its goals, so the planned overrides of the days from the
+  /// new goal on do not count in it. Before a goal starts counting there is
+  /// no run, and the weekly schedule counts instead.
   int _plannedTrainingDaysInRun(DateTime day) {
     if (countingGoalEntryForDay(day) == null) {
       final activeProfile =
@@ -110,11 +111,16 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
     }
     final runStart = resolveCalorieGoalRunStartDate(settings: this, day: day);
     final weekdays = _scheduledWeekdaysOf(countingGoalEntryForDay(day));
+    final nextGoalStart = nextGoalEffectiveDateAfterDay(day);
     var count = 0;
     for (var offset = 0; offset < calorieGoalRunLengthDays; offset++) {
       final runDay = addLocalDays(runStart, offset);
-      if (trainingDayOverrides[localDayKey(runDay)] ??
-          weekdays.contains(runDay.weekday)) {
+      final belongsToNextGoal =
+          nextGoalStart != null && !runDay.isBefore(nextGoalStart);
+      final override = belongsToNextGoal
+          ? null
+          : trainingDayOverrides[localDayKey(runDay)];
+      if (override ?? weekdays.contains(runDay.weekday)) {
         count++;
       }
     }
