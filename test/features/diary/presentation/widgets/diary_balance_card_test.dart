@@ -22,7 +22,10 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_week_balance.dart';
+import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -35,6 +38,10 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_loading.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_week_card/diary_week_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_week_card/diary_week_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/auth_user_data_key_session.dart';
@@ -406,6 +413,90 @@ void main() {
     expect(find.byKey(DiaryBalanceCardKeys.retryButton), findsOneWidget);
   });
 
+  group('week card', () {
+    final day = DateTime(2026, 4, 27);
+    WeekBalance balance(WeekBalanceMode mode) => WeekBalance.resolve(
+      mode: mode,
+      weightGoal: CalorieGoalMode.lose,
+      today: day,
+      days: [
+        for (var index = 0; index < 7; index += 1)
+          (
+            date: addLocalDays(day, index),
+            goalKcal: 2000,
+            eatenKcal: index == 0 ? 800 : 0,
+            hasEntries: index == 0,
+            isPauseDay: false,
+          ),
+      ],
+    );
+    Future<void> pump(
+      WidgetTester tester, {
+      WeekBalance? weekBalance,
+      FutureOr<CalorieWeekOverview> Function()? weekOverviewBuilder,
+      bool weekOverviewThrows = false,
+      bool settle = true,
+    }) => _pumpBalanceCard(
+      tester,
+      now: DateTime(2026, 4, 27, 12),
+      selectedDay: day,
+      weekStartDate: day,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 800],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: localDayKey(day),
+      ),
+      weekBalance: weekBalance,
+      weekOverviewBuilder: weekOverviewBuilder,
+      weekOverviewThrows: weekOverviewThrows,
+      settle: settle,
+      withWeekCard: true,
+    );
+
+    testWidgets('K14: shows the seven days of the run once the week has '
+        'loaded', (tester) async {
+      await pump(tester, weekBalance: balance(WeekBalanceMode.show));
+
+      expect(find.byKey(DiaryWeekCardKeys.card), findsOneWidget);
+      for (var index = 0; index < 7; index += 1) {
+        expect(find.byKey(DiaryWeekCardKeys.day(index)), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('K3: is gone in the mode "Aus"', (tester) async {
+      await pump(tester, weekBalance: balance(WeekBalanceMode.off));
+
+      expect(find.byKey(DiaryWeekCardKeys.card), findsNothing);
+    });
+
+    testWidgets('K37: is gone without a run', (tester) async {
+      await pump(tester);
+
+      expect(find.byKey(DiaryWeekCardKeys.card), findsNothing);
+    });
+
+    testWidgets('loading the week throws nothing', (tester) async {
+      final never = Completer<CalorieWeekOverview>();
+      await pump(
+        tester,
+        weekOverviewBuilder: () => never.future,
+        settle: false,
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byKey(DiaryWeekCardKeys.card), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a week that fails to load throws nothing', (tester) async {
+      await pump(tester, weekOverviewThrows: true);
+
+      expect(find.byKey(DiaryBalanceCardKeys.retryButton), findsOneWidget);
+      expect(find.byKey(DiaryWeekCardKeys.card), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('pace marker', () {
     final marker = find.byKey(DiaryBudgetLine.paceKey);
 
@@ -592,6 +683,8 @@ Future<void> _pumpBalanceCard(
   bool isPreviousDayClosed = false,
   List<CalorieEntry> plans = const <CalorieEntry>[],
   bool paceMarkerOn = false,
+  WeekBalance? weekBalance,
+  bool withWeekCard = false,
 }) async {
   final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final weekOverview = _weekOverview(
@@ -607,6 +700,7 @@ Future<void> _pumpBalanceCard(
     isPauseDay: isPauseDay,
     previousDayCarryoverKcal: previousDayCarryoverKcal,
     isPreviousDayClosed: isPreviousDayClosed,
+    weekBalance: weekBalance,
   );
   final selectedDayOverview = weekOverview.days.last;
   final repository = FakeCalorieLogRepository();
@@ -671,7 +765,12 @@ Future<void> _pumpBalanceCard(
         home: Scaffold(
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            child: DiaryBalanceCard(selectedDay: normalizedSelectedDay),
+            child: Column(
+              children: [
+                DiaryBalanceCard(selectedDay: normalizedSelectedDay),
+                if (withWeekCard) DiaryWeekCard(day: normalizedSelectedDay),
+              ],
+            ),
           ),
         ),
       ),
@@ -701,6 +800,7 @@ CalorieWeekOverview _weekOverview({
   bool isPauseDay = false,
   double? previousDayCarryoverKcal,
   bool isPreviousDayClosed = false,
+  WeekBalance? weekBalance,
 }) {
   final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final days = [
@@ -732,6 +832,7 @@ CalorieWeekOverview _weekOverview({
     futureGoalKcal: futureGoalKcal,
     previousDayCarryoverKcal: previousDayCarryoverKcal,
     isPreviousDayClosed: isPreviousDayClosed,
+    weekBalance: weekBalance,
   );
 }
 
