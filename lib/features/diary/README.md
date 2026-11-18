@@ -1,8 +1,8 @@
 # Diary Feature
 
 Diary owns the daily log page, date selection, quick-eat buttons, logged meals,
-the daily budget card, and diary-facing Burn Week and weekly check-in
-composition.
+the daily budget card, the week card, and diary-facing Burn Week and weekly
+check-in composition.
 
 ## Owns
 
@@ -63,6 +63,18 @@ composition.
   each meal's part. `DiaryBudgetCardData` (`presentation/models/`) maps
   `DiaryBalanceCardData` and the day's macros for it;
   `diary_burn_week_card/diary_balance_card.dart` loads it.
+- `presentation/widgets/diary_week_card/diary_week_card.dart` (#911) is the
+  week card between the budget card and the steps card: seven day fields of
+  the goal run that holds the shown day (fewer for a run that a new goal cut
+  short). Each finished day fills like the kcal line against its budget; with
+  the budget card's details open, numbers stand under the finished days.
+  Holding the card opens `diary_week_card_menu.dart` with the Calories
+  `WeekBalanceModeChoice`; a tap does nothing. The card shows nothing in the
+  mode "Aus" or without a run. Calories owns the mode and `WeekBalance`.
+- The budget card offers "<Wochentag> abschließen" on a coming day only in the
+  mode "Mit Übertrag", only for tomorrow, and not when tomorrow starts a new
+  run or is a pause day (`DiaryBudgetCardData.canClosePreviousDay`). Closing
+  counts today as finished for every coming day of the run.
 - `presentation/widgets/diary_pace_notification_listener.dart`
   (`DiaryPaceNotificationListener`) wraps the app in `lib/app.dart`: it
   keeps today's free kcal notices (#937) scheduled through
