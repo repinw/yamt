@@ -39,11 +39,15 @@ class _RecordingCalorieGoalController extends CalorieGoalController {
 /// a normal day.
 final _monday = DateTime(2026, 4, 27);
 
-Future<_RecordingCalorieGoalController> _pumpStrip(WidgetTester tester) async {
+Future<_RecordingCalorieGoalController> _pumpStrip(
+  WidgetTester tester, {
+  int dayCount = calorieGoalRunLengthDays,
+  List<int> trainingWeekdays = const [DateTime.monday],
+}) async {
   final controller = _RecordingCalorieGoalController(
     const CalorieGoalSettings.empty().copyWith(
       dailyKcalGoal: 2200,
-      trainingWeekdays: const [DateTime.monday],
+      trainingWeekdays: trainingWeekdays,
       trainingDayKcalOffset: 150,
       pauseDayKeys: [localDayKey(addLocalDays(_monday, 1))],
     ),
@@ -58,7 +62,7 @@ Future<_RecordingCalorieGoalController> _pumpStrip(WidgetTester tester) async {
         home: Scaffold(
           body: DiaryBudgetWeekStrip(
             weekStart: _monday,
-            dayCount: calorieGoalRunLengthDays,
+            dayCount: dayCount,
             selectedDay: _monday,
             today: _monday,
           ),
@@ -104,5 +108,62 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.calls, isEmpty);
+  });
+
+  group('a run cut short to three days (K51)', () {
+    // Monday and Thursday are training days; Thursday lies after the cut.
+    const trainingWeekdays = [DateTime.monday, DateTime.thursday];
+
+    testWidgets('shows only its three days and counts only their training '
+        'days', (tester) async {
+      await _pumpStrip(tester, dayCount: 3, trainingWeekdays: trainingWeekdays);
+
+      for (var i = 0; i < 3; i++) {
+        expect(find.byKey(DiaryBudgetCardKeys.weekDay(i)), findsOneWidget);
+      }
+      for (var i = 3; i < calorieGoalRunLengthDays; i++) {
+        expect(
+          find.byKey(DiaryBudgetCardKeys.weekDay(i)),
+          findsNothing,
+          reason: 'day $i',
+        );
+      }
+      expect(
+        find.descendant(
+          of: find.byKey(DiaryBudgetCardKeys.weekStrip),
+          matching: find.text('1 training day'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('the full run counts the training day after the cut', (
+      tester,
+    ) async {
+      await _pumpStrip(tester, trainingWeekdays: trainingWeekdays);
+
+      expect(find.text('2 training days'), findsOneWidget);
+    });
+
+    testWidgets('no day after the cut can be tapped', (tester) async {
+      final controller = await _pumpStrip(
+        tester,
+        dayCount: 3,
+        trainingWeekdays: trainingWeekdays,
+      );
+
+      // The room where Thursday to Sunday would stand.
+      final lastDay = tester.getRect(
+        find.byKey(DiaryBudgetCardKeys.weekDay(2)),
+      );
+      final strip = tester.getRect(find.byKey(DiaryBudgetCardKeys.weekStrip));
+      for (var x = lastDay.right + 4; x < strip.right - 4; x += 8) {
+        await tester.tapAt(Offset(x, lastDay.center.dy));
+      }
+      await tester.pumpAndSettle();
+
+      expect(controller.calls, isEmpty);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

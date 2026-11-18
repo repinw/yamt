@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_week_balance.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
+import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
@@ -190,6 +194,81 @@ void main() {
         ),
         400,
       );
+    });
+  });
+
+  group('runWeekDayCount', () {
+    final monday = DateTime(2026, 11, 16);
+    const daily = DiaryDailyBalanceMetrics(
+      bufferAdjustmentKcal: 0,
+      realEatenKcal: 0,
+      eatenKcal: 0,
+      realDayLeftKcal: 2200,
+      dayLeftKcal: 2200,
+      targetKcal: 2200,
+    );
+
+    WeekBalance balanceOf(int dayCount) => WeekBalance(
+      mode: WeekBalanceMode.show,
+      weightGoal: CalorieGoalMode.lose,
+      days: [
+        for (var i = 0; i < dayCount; i++)
+          WeekBalanceDay(
+            date: addLocalDays(monday, i),
+            goalKcal: 2200,
+            eatenKcal: 0,
+            hasEntries: false,
+            isPauseDay: false,
+            carryoverKcal: 0,
+          ),
+      ],
+    );
+
+    int countOf(DiaryBalanceCardData card) =>
+        DiaryBudgetCardData.from(card: card, today: monday).runWeekDayCount;
+
+    DiaryBalanceCardData loaded(WeekBalance? weekBalance) =>
+        DiaryBalanceCardData.loaded(
+          loadedMetrics: DiaryBalanceLoadedMetrics(
+            selectedDay: addLocalDays(monday, 1),
+            daily: daily,
+            state: const DiaryBalanceLoadedState(
+              isPauseDay: false,
+              showGameControls: false,
+              runWeekNumber: 1,
+            ),
+            runWeekStart: monday,
+            weekBalance: weekBalance,
+          ),
+        );
+
+    test('K51: a run cut short to three days has three days', () {
+      expect(countOf(loaded(balanceOf(3))), 3);
+    });
+
+    test('a full run has seven days', () {
+      expect(countOf(loaded(balanceOf(7))), 7);
+    });
+
+    test('is seven without a week balance and on a day that does not '
+        'count', () {
+      expect(countOf(loaded(null)), 7);
+      expect(
+        countOf(
+          DiaryBalanceCardData.practiceDay(
+            practiceDay: DiaryBalanceNotCountingDayData(
+              day: monday,
+              startDate: DateTime(2026, 11, 18),
+              daily: daily,
+            ),
+          ),
+        ),
+        7,
+      );
+    });
+
+    test('the plain constructor keeps seven days', () {
+      expect(_data().runWeekDayCount, 7);
     });
   });
 

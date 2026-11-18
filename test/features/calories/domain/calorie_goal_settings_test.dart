@@ -582,4 +582,80 @@ void main() {
       expect(settings.macroWeightKgForDay(DateTime(2026, 8, 20)), 86);
     });
   });
+
+  group('nextGoalEffectiveDateAfterDay', () {
+    // A goal from Monday 2026-11-16, a check-in on Wednesday, and a new goal
+    // set on Thursday that counts only from Saturday.
+    final settings = const CalorieGoalSettings.empty()
+        .applyGoalChange(
+          changedAt: DateTime(2026, 11, 16, 8),
+          dailyKcalGoal: 2200,
+          calculatorProfile: null,
+          source: CalorieGoalSource.calculator,
+        )
+        .applyGoalChange(
+          changedAt: DateTime(2026, 11, 18, 9),
+          dailyKcalGoal: 2150,
+          calculatorProfile: null,
+          source: CalorieGoalSource.weeklyCheckIn,
+        )
+        .applyGoalChange(
+          changedAt: DateTime(2026, 11, 19, 10),
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          countingStartDate: DateTime(2026, 11, 21),
+          source: CalorieGoalSource.calculator,
+        );
+
+    test('skips a check-in and returns the day the next goal takes '
+        'effect, not the day it counts from', () {
+      expect(
+        settings.nextGoalEffectiveDateAfterDay(DateTime(2026, 11, 16, 20)),
+        DateTime(2026, 11, 19),
+      );
+      expect(
+        settings.nextGoalStartAfterDay(DateTime(2026, 11, 16)),
+        DateTime(2026, 11, 21),
+      );
+    });
+
+    test('a check-in on the day itself is skipped as well', () {
+      expect(
+        settings.nextGoalEffectiveDateAfterDay(DateTime(2026, 11, 18)),
+        DateTime(2026, 11, 19),
+      );
+    });
+
+    test('ignores entries on or before the day', () {
+      expect(
+        settings.nextGoalEffectiveDateAfterDay(DateTime(2026, 11, 19)),
+        isNull,
+      );
+      expect(
+        settings.nextGoalEffectiveDateAfterDay(DateTime(2026, 11, 20)),
+        isNull,
+      );
+    });
+
+    test('a check-in alone ends no goal', () {
+      final checkInOnly = const CalorieGoalSettings.empty()
+          .applyGoalChange(
+            changedAt: DateTime(2026, 11, 16, 8),
+            dailyKcalGoal: 2200,
+            calculatorProfile: null,
+            source: CalorieGoalSource.calculator,
+          )
+          .applyGoalChange(
+            changedAt: DateTime(2026, 11, 23, 9),
+            dailyKcalGoal: 2150,
+            calculatorProfile: null,
+            source: CalorieGoalSource.weeklyCheckIn,
+          );
+
+      expect(
+        checkInOnly.nextGoalEffectiveDateAfterDay(DateTime(2026, 11, 16)),
+        isNull,
+      );
+    });
+  });
 }
