@@ -117,9 +117,12 @@ class DiaryDailyBudgetDetailsData {
   /// Übertrag"), so the sheet explains it.
   final bool carriesOver;
 
-  /// Whether Schutzregel C limited the daily carryover.
+  /// Whether Schutzregel C cut a negative daily carryover. A capped plus, and
+  /// a pause day with no carryover, are not cuts.
   bool get wasSafetyCapActive {
-    if (remainingRunDays <= 0) {
+    if (isPauseDay ||
+        totalCarryoverBeforeTodayKcal >= 0 ||
+        remainingRunDays <= 0) {
       return false;
     }
     final rawDailyKcal = totalCarryoverBeforeTodayKcal / remainingRunDays;
