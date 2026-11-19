@@ -62,7 +62,7 @@ Then: it lists three options, one of them selected:
 | Aus           | Jeder Tag steht für sich.                           |
 | Anzeigen      | Zeigt die Woche. Dein Tagesbudget bleibt gleich.    |
 | Mit Übertrag  | Gleicht die Woche aus, höchstens <limit> kcal pro Tag. (see K35) |
-And: below the options stands "Später ändern: in den Einstellungen."
+And: below the options stands "Später ändern: in den Einstellungen." when the menu was opened by holding the week card; opened from the settings, the line is missing (K4; notes, entry "2026-11-19 Handytest: Einstellungs-Zeile funktioniert", user: "ja, lass weg").
 And: there is no separate switch for "Übertrag" and none for "anzeigen"; a
 carryover without the week card cannot be chosen.
 
@@ -105,6 +105,7 @@ Then: next to "Schritte im Tagebuch" stands one row "Wochenzielbalance" with the
 And: the three options are not shown expanded in the settings.
 When: I tap the row.
 Then: the same menu opens as when I hold the week card (K1, K2, K35): heading "Wochenzielbalance", the three options with their lines, "Aus" selected.
+And: the menu has no line "Später ändern: in den Einstellungen." (notes, entry "2026-11-19 Handytest: Einstellungs-Zeile funktioniert", user: "ja, lass weg").
 When: I pick "Mit Übertrag" there.
 Then: the menu closes and the row's subtitle reads "Mit Übertrag".
 And: the week card is back in the diary, and the menu of the card shows the same mode.
