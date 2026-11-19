@@ -12,6 +12,8 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_calendar_overview_sheet/diary_calendar_overview_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_today_button.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/'
+    'shopping_header_tool.dart';
 
 const double _diaryTopChromeMinHeight = 56;
 const double _diaryTopChromeLabelLineHeight = 40;
@@ -83,12 +85,16 @@ class _DiaryTopBar extends ConsumerWidget {
                   }
                 },
                 leadingActions: const [HomeShellMenuButton()],
+                // On another day the Heute button takes Einkauf's place:
+                // both do not fit beside the date.
                 actions: [
                   if (!isSameCalendarDay(
                     calendarState.selectedDay,
                     calendarState.today,
                   ))
-                    DiaryTodayButton(onPressed: () => controller().showToday()),
+                    DiaryTodayButton(onPressed: () => controller().showToday())
+                  else
+                    const ShoppingHeaderTool(onlyWithOpenEntries: true),
                 ],
               ),
             ),

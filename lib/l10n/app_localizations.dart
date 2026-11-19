@@ -4810,6 +4810,24 @@ abstract class AppLocalizations {
   /// **'In 2 days'**
   String get diaryDayAfterTomorrowTitle;
 
+  /// Small line above the diary date for a day that is not today, yesterday, tomorrow or the day after tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day ago} other{{count} days ago}}'**
+  String diaryDaysAgo(int count);
+
+  /// Small line above the diary date for a day that is not today, yesterday, tomorrow or the day after tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{in 1 day} other{in {count} days}}'**
+  String diaryInDays(int count);
+
+  /// Date in the diary header: the short weekday and the day with month.
+  ///
+  /// In en, this message translates to:
+  /// **'{weekday}, {date}'**
+  String diaryDateLine(String weekday, String date);
+
   /// No description provided for @diaryDayTypeTraining.
   ///
   /// In en, this message translates to:

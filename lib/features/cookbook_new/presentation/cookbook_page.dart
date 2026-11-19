@@ -27,6 +27,8 @@ import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_detail_flow.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensils_button.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/'
+    'shopping_header_tool.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Kochbuch tab: meals still in the pot, Vorlagen combined from the Vorrat,
@@ -114,6 +116,7 @@ class CookbookPage extends ConsumerWidget {
                 onPressed: () => unawaited(_newRecipe(context, ref)),
               ),
               const KitchenUtensilsButton(),
+              const ShoppingHeaderTool(onlyWithOpenEntries: true),
             ],
           ),
           body,

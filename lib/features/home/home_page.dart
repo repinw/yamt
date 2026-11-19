@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/utils/exclusive_runner.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
@@ -262,11 +261,9 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
       // An empty slot: floating snack bars sit above the floating action
-      // button slot, so they clear the bottom navigation and the round
-      // action button.
-      floatingActionButton: const Padding(
-        padding: EdgeInsets.only(bottom: AppSizes.homeShellBottomBarClearance),
-        child: SizedBox(height: AppGraphit.navActionOverhang),
+      // button slot, so they clear the home bar.
+      floatingActionButton: const SizedBox(
+        height: AppGraphit.navBarHeight + AppGraphit.navBarBottomMargin,
       ),
     );
   }

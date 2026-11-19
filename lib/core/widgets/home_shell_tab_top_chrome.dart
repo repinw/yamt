@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_menu_button.dart';
 import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
 import 'package:yamt/core/widgets/home_top_bar.dart';
 
@@ -12,6 +13,7 @@ class HomeShellTabTopChrome extends StatelessWidget {
     this.tools = const <Widget>[],
     this.kicker,
     this.pinned = true,
+    this.showMenu = true,
   });
 
   /// Top bar title.
@@ -25,6 +27,9 @@ class HomeShellTabTopChrome extends StatelessWidget {
 
   /// Whether the header stays at the top while scrolling.
   final bool pinned;
+
+  /// Whether the menu button stands at the start of the bar.
+  final bool showMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +46,7 @@ class HomeShellTabTopChrome extends StatelessWidget {
           hasKicker: kicker != null,
         ),
         tools: tools,
+        leading: showMenu ? const HomeShellMenuButton() : null,
       ),
     );
   }

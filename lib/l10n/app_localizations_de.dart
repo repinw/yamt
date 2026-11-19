@@ -2895,6 +2895,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryDayAfterTomorrowTitle => 'Übermorgen';
 
   @override
+  String diaryDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'vor $count Tagen',
+      one: 'vor 1 Tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryInDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'in $count Tagen',
+      one: 'in 1 Tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryDateLine(String weekday, String date) {
+    return '$weekday, $date';
+  }
+
+  @override
   String get diaryDayTypeTraining => 'Trainingstag';
 
   @override

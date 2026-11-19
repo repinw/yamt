@@ -147,12 +147,6 @@ abstract final class AppOpacities {
   /// Modal barrier opacity for lightweight bottom sheets.
   static const double modalBarrier = 0.38;
 
-  /// Home bottom navigation border opacity.
-  static const double homeBottomNavBorder = 0.5;
-
-  /// Home bottom navigation unselected item opacity.
-  static const double homeBottomNavUnselected = 0.7;
-
   /// Measured weigh-in dots behind the trend line in the weight chart.
   static const double weightChartScaleDot = 0.35;
 
@@ -216,6 +210,12 @@ abstract final class AppFontSizes {
 
   /// Home bottom navigation label size.
   static const double homeBottomNavLabel = labelXSmall;
+
+  /// Date in the diary top bar.
+  static const double diaryDate = 20;
+
+  /// Small line over the date in the diary top bar, such as "Heute".
+  static const double diaryDayName = 13;
 
   /// Compact search field input size.
   static const double compactSearchInput = 15;

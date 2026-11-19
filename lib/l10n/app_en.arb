@@ -1736,6 +1736,36 @@
   "diaryYesterdayTitle": "Yesterday",
   "diaryTomorrowTitle": "Tomorrow",
   "diaryDayAfterTomorrowTitle": "In 2 days",
+  "diaryDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@diaryDaysAgo": {
+    "description": "Small line above the diary date for a day that is not today, yesterday, tomorrow or the day after tomorrow.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryInDays": "{count, plural, =1{in 1 day} other{in {count} days}}",
+  "@diaryInDays": {
+    "description": "Small line above the diary date for a day that is not today, yesterday, tomorrow or the day after tomorrow.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDateLine": "{weekday}, {date}",
+  "@diaryDateLine": {
+    "description": "Date in the diary header: the short weekday and the day with month.",
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "diaryDayTypeTraining": "Training day",
   "diaryDayTypeNormal": "Normal day",
   "diaryDayTypePause": "Pause day",

@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-/// The round action in the middle of the home bar: it opens the actions of
-/// the current tab, or runs the action of a tab that has only one.
+/// The action button beside the tab capsule of the home bar: it opens the
+/// actions of the current tab, or runs the action of a tab that has only one.
 @immutable
 class HomeNavAction {
   /// Creates the action with its [label] under the button.
