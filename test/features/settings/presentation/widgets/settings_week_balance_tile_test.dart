@@ -113,6 +113,8 @@ void main() {
       findsOneWidget,
     );
     expect(_selectedMark(WeekBalanceMode.off), findsOneWidget);
+    // Only the menu of the card says where to change the mode later.
+    expect(find.text('Später ändern: in den Einstellungen.'), findsNothing);
   });
 
   testWidgets('K4: picking "Mit Übertrag" stores it, closes the menu and '
