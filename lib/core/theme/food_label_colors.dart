@@ -19,6 +19,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
     required this.tile,
     required this.onTile,
     required this.low,
+    required this.over,
     required this.track,
     required this.plan,
   });
@@ -44,6 +45,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
     tile: Color(0xFFFFFFFF),
     onTile: Color(0xFF141414),
     low: Color(0xFFC2410C),
+    over: Color(0xFFC85A08),
     track: Color(0xFFD6D6D1),
     plan: Color(0xFF9C6B3C),
   );
@@ -61,6 +63,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
     tile: Color(0xFF2A2B2B),
     onTile: Color(0xFFC7F23A),
     low: Color(0xFFFF7A59),
+    over: Color(0xFFFF9A3C),
     track: Color(0xFF2A2B2B),
     plan: Color(0xFFD3A272),
   );
@@ -98,6 +101,10 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
   /// Stock that is almost used up, such as a "fast leer" row.
   final Color low;
 
+  /// A diary amount that is over its target, such as the kcal of a meal
+  /// that is over its part of the day. Errors keep the error color.
+  final Color over;
+
   /// Empty part of a stock bar.
   final Color track;
 
@@ -119,6 +126,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
     Color? tile,
     Color? onTile,
     Color? low,
+    Color? over,
     Color? track,
     Color? plan,
   }) {
@@ -134,6 +142,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
       tile: tile ?? this.tile,
       onTile: onTile ?? this.onTile,
       low: low ?? this.low,
+      over: over ?? this.over,
       track: track ?? this.track,
       plan: plan ?? this.plan,
     );
@@ -156,6 +165,7 @@ class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
       tile: Color.lerp(tile, other.tile, t)!,
       onTile: Color.lerp(onTile, other.onTile, t)!,
       low: Color.lerp(low, other.low, t)!,
+      over: Color.lerp(over, other.over, t)!,
       track: Color.lerp(track, other.track, t)!,
       plan: Color.lerp(plan, other.plan, t)!,
     );

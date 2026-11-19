@@ -1,10 +1,8 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
@@ -29,9 +27,9 @@ abstract final class DiaryDayNavigatorKeys {
   static const label = ValueKey<String>('diary-day-navigator-label');
 }
 
-/// Centered day with previous/next arrows: the weekday, with yesterday,
-/// today, tomorrow or the day after, in small capitals over the big date,
-/// between leading and trailing actions.
+/// Centered day with previous/next arrows: the date with its abbreviated
+/// weekday, under a small "Today", "Yesterday", "Tomorrow", "Day after
+/// tomorrow" or "3 days ago", between leading and trailing actions.
 class DiaryDayNavigator extends StatefulWidget {
   /// Creates a diary day navigator.
   const new({
@@ -177,7 +175,12 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
     final textTheme = Theme.of(context).textTheme;
     final colors = FoodLabelColors.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final weekday = DateFormat('EEEE', locale).format(widget.selectedDay);
+    final date = AppLocalizations.of(context)!.diaryDateLine(
+      // Stand-alone form: "Do", not the "Do." of the format form.
+      DateFormat('ccc', locale).format(widget.selectedDay),
+      DateFormat.MMMd(locale).format(widget.selectedDay),
+    );
+    final relativeName = _relativeName(context);
 
     return AppInkWell(
       key: DiaryDayNavigatorKeys.label,
@@ -197,26 +200,23 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
                   key: ValueKey<DateTime>(dateOnly(widget.selectedDay)),
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // A relative name sits on its own line above the
-                    // weekday, so a long one stays readable.
-                    for (final line in [?_relativeName(context), weekday])
-                      Text(
-                        line.toUpperCase(),
-                        maxLines: 1,
-                        style: textTheme.labelSmall?.copyWith(
-                          fontFamily: AppFonts.mono,
-                          color: colors.muted,
-                          letterSpacing: AppFoodLabel.brandTracking,
-                        ),
-                      ),
                     Text(
-                      DateFormat('d. MMM', locale).format(widget.selectedDay),
+                      relativeName,
+                      maxLines: 1,
+                      style: textTheme.bodySmall?.copyWith(
+                        fontSize: AppFontSizes.diaryDayName,
+                        color: colors.muted,
+                      ),
+                    ),
+                    Text(
+                      date,
                       maxLines: 1,
                       softWrap: false,
-                      style: textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
+                      style: textTheme.titleLarge?.copyWith(
+                        fontSize: AppFontSizes.diaryDate,
+                        fontWeight: FontWeight.w600,
                         color: colors.ink,
-                        height: 1,
+                        height: 1.2,
                       ),
                     ),
                   ],
@@ -229,9 +229,9 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
     );
   }
 
-  /// The relative name of the day, from yesterday up to the day after
-  /// tomorrow, or null.
-  String? _relativeName(BuildContext context) {
+  /// The relative name of the day: a name from yesterday up to the day after
+  /// tomorrow, else how many calendar days away it is.
+  String _relativeName(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final day = widget.selectedDay;
     final today = widget.today;
@@ -248,7 +248,10 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
     if (isSameCalendarDay(day, nextLocalDay(tomorrow))) {
       return l10n.diaryDayAfterTomorrowTitle;
     }
-    return null;
+    final distance = localDaysBetween(today, day);
+    return distance < 0
+        ? l10n.diaryDaysAgo(-distance)
+        : l10n.diaryInDays(distance);
   }
 
   Widget _buildTransition(Widget child, Animation<double> animation) {

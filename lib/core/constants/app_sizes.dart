@@ -27,9 +27,6 @@ abstract final class AppSizes {
   /// Standard one-physical-line divider height.
   static const double dividerThickness = 1;
 
-  /// Base clearance reserved for the home shell bottom chrome.
-  static const double homeShellBottomBarClearance = 56;
-
   /// Icon size in the home bottom navigation.
   static const double homeBottomNavIcon = 20;
 
@@ -50,9 +47,6 @@ abstract final class AppSizes {
 
   /// Height of the snack bar handle.
   static const double snackBarHandleHeight = 4;
-
-  /// Height of the selected-item indicator in the home bottom navigation.
-  static const double homeBottomNavIndicatorHeight = 3;
 
   /// Max width for settings-style content columns.
   static const double narrowContentMaxWidth = 560;

@@ -1,13 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_selection_controller.dart';
+import 'package:yamt/features/shoppinglist/presentation/widgets/'
+    'shopping_header_tool.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Home-shell top chrome for the inventory tab.
@@ -18,7 +17,7 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
   /// Key of the button that turns the selection into a meal.
   static const confirmSelectionKey = Key('inventory_selection_confirm');
 
-  /// Tools of the current view, placed after Einkauf.
+  /// Tools of the current view, placed before Einkauf.
   final List<Widget> tools;
 
   /// Foods and meals in stock, shown as the kicker above the title.
@@ -32,6 +31,7 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
     return HomeShellTabTopChrome(
       // While selecting, the header holds the selection actions.
       pinned: selectionState.isSelectionMode,
+      showMenu: !selectionState.isSelectionMode,
       // Only catalog foods: confirming waits for a stock food (#728).
       kicker: selectionState.isSelectionMode
           ? selectionState.selectedItemIds.isEmpty
@@ -62,14 +62,7 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
       );
     }
 
-    return [
-      HomeHeaderTool(
-        symbol: const Icon(Icons.shopping_cart_rounded),
-        label: l10n.homeShopping,
-        onPressed: () => context.push(AppRoutes.homeShopping),
-      ),
-      ...tools,
-    ];
+    return [...tools, const ShoppingHeaderTool()];
   }
 
   List<Widget> _buildSelectionActions(

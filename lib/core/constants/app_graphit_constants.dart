@@ -55,11 +55,24 @@ abstract final class AppGraphit {
   /// Share of the stock under which a row turns to the low color.
   static const double lowStockShare = 0.25;
 
-  /// Diameter of the round action button in the middle of the home bar.
-  static const double navActionButton = 56;
+  /// Least height of the floating tab capsule and of the action button beside
+  /// it in the home bar; large text makes the bar taller.
+  static const double navBarHeight = 62;
 
-  /// How far the action button reaches above the home bar.
-  static const double navActionOverhang = 22;
+  /// Gap between the home bar and the bottom edge of the safe area.
+  static const double navBarBottomMargin = 20;
+
+  /// Soft fade of the page into the home bar, above the bar.
+  static const double navBarFade = 40;
+
+  /// Space between the capsule edge and its tabs.
+  static const double navCapsulePadding = 6;
+
+  /// Corner radius of the selected tab in the home bar capsule.
+  static const double navTabRadius = 18;
+
+  /// Width of the action button in the home bar.
+  static const double navActionWidth = 68;
 
   /// Edge length of one square in a line of stock squares, one per food.
   static const double stockSquare = 8;

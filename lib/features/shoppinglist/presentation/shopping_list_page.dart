@@ -46,27 +46,11 @@ class ShoppingListPage extends ConsumerStatefulWidget {
 }
 
 class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
-  late final AppLifecycleListener _lifecycle;
-  late final Timer _scheduleTimer;
   @override
   void initState() {
     super.initState();
-    _lifecycle = AppLifecycleListener(onResume: _processDue);
-    _scheduleTimer = Timer.periodic(
-      const Duration(minutes: 1),
-      (_) => _processDue(),
-    );
+    unawaited(ref.read(shoppingListControllerProvider.notifier).processDue());
   }
-
-  @override
-  void dispose() {
-    _scheduleTimer.cancel();
-    _lifecycle.dispose();
-    super.dispose();
-  }
-
-  void _processDue() =>
-      unawaited(ref.read(shoppingListControllerProvider.notifier).processDue());
 
   @override
   Widget build(BuildContext context) {

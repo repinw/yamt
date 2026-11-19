@@ -6,7 +6,8 @@ const _regularHomeTopBarHeight = 76.0;
 const _compactHomeTopBarHeight = 88.0;
 const double _homeTopBarTextVerticalPadding = AppSpacing.xxl;
 
-/// Largest share of the screen width that the tools may take.
+/// Largest share of the screen width that the leading tool and the tools may
+/// take together.
 const _toolsMaxWidthShare = 0.75;
 
 /// Top app bar used by the home shell pages: the tab title in ink and the
@@ -20,6 +21,7 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.compact = false,
     this.preferredHeight,
     this.kicker,
+    this.leading,
   });
 
   /// The title.
@@ -30,6 +32,9 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Labeled tools at the end of the bar, usually `HomeHeaderTool`s.
   final List<Widget> tools;
+
+  /// Tool at the start of the bar, before the title; usually the menu.
+  final Widget? leading;
 
   /// Whether to use compact spacing for tight layouts.
   final bool compact;
@@ -74,6 +79,9 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final kicker = this.kicker;
+    final toolsBudget = MediaQuery.sizeOf(context).width * _toolsMaxWidthShare;
+    // The budget splits evenly among the tools, the leading tool among them.
+    final toolShare = toolsBudget / (tools.length + (leading == null ? 0 : 1));
     final resolvedHeight =
         preferredHeight ??
         preferredHeightFor(
@@ -91,6 +99,10 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           child: Row(
             children: [
+              if (leading case final leading?) ...[
+                _ScaledToWidth(maxWidth: toolShare, child: leading),
+                SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
+              ],
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -115,17 +127,9 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               if (tools.isNotEmpty) ...[
                 SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-                // Large text scales the tools down instead of pushing the
-                // bar wider than the screen.
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth:
-                        MediaQuery.sizeOf(context).width * _toolsMaxWidthShare,
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(mainAxisSize: MainAxisSize.min, children: tools),
-                  ),
+                _ScaledToWidth(
+                  maxWidth: toolShare * tools.length,
+                  child: Row(mainAxisSize: MainAxisSize.min, children: tools),
                 ),
               ],
             ],
@@ -134,6 +138,21 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
+}
+
+/// Scales [child] down instead of letting large text push the bar wider than
+/// the screen.
+class _ScaledToWidth extends StatelessWidget {
+  const new({required this.maxWidth, required this.child});
+
+  final double maxWidth;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: BoxConstraints(maxWidth: maxWidth),
+    child: FittedBox(fit: BoxFit.scaleDown, child: child),
+  );
 }
 
 TextStyle? _titleStyle(BuildContext context, {required bool compact}) =>

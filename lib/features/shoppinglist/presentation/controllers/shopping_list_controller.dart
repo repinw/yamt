@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_subscription.dart';
@@ -11,6 +12,7 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_schedule.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_planned_meal.dart';
+import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_renewal.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_rewrite_gate.dart';
 
 part 'shopping_list_controller.g.dart';
@@ -22,11 +24,14 @@ class ShoppingListController extends _$ShoppingListController {
   final _queue = SerializedMutationQueue();
   final _addition = const ShoppingListAddition();
   final _rewriteGate = ShoppingListRewriteGate();
+  final _renewal = ShoppingListRenewal();
 
   @override
   Future<List<ShoppingListItem>> build() async {
     final repository = ref.watch(shoppingListRepositoryProvider);
     _rewriteGate.listen(ref, () => unawaited(processDue()));
+    final now = ref.watch(clockProvider);
+    _renewal.start(ref, now: now, onMayBeDue: () => unawaited(processDue()));
     ref.onDispose(() => unawaited(_subscription.cancel()));
     final items = await _subscription.start(
       repository,
@@ -34,7 +39,7 @@ class ShoppingListController extends _$ShoppingListController {
       onError: _onError,
     );
     if (!ref.mounted) return items;
-    final due = renewDueShoppingItems(items, DateTime.now());
+    final due = renewDueShoppingItems(items, now());
     if (due == null && !_rewriteGate.allows(repository)) return items;
     final next = due ?? items;
     try {
@@ -191,7 +196,7 @@ class ShoppingListController extends _$ShoppingListController {
         days: days,
         quantity: quantity,
         firstDue: firstDue,
-        now: DateTime.now(),
+        now: ref.read(clockProvider)(),
       ),
     );
   }
@@ -212,10 +217,11 @@ class ShoppingListController extends _$ShoppingListController {
           ),
   );
 
-  /// Applies overdue schedules on resume and while the list is alive.
+  /// Applies overdue schedules; runs when the app resumes, when the day
+  /// changes, and when the list page opens.
   Future<bool> processDue() => _mutate(
     (items) =>
-        renewDueShoppingItems(items, DateTime.now()) ??
+        renewDueShoppingItems(items, ref.read(clockProvider)()) ??
         (_rewriteGate.allows(ref.read(shoppingListRepositoryProvider))
             ? [...items]
             : null),

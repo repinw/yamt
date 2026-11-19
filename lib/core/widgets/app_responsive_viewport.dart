@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
 
 const _compactViewportWidthBreakpoint = 360.0;
 
@@ -16,10 +15,10 @@ double responsivePageHorizontalPadding(BuildContext context) {
 }
 
 /// Bottom padding that keeps scrollable home-shell content above chrome,
-/// including the round action button that reaches above the bar.
+/// including the floating home bar.
 double homeShellPageBottomPadding(BuildContext context) {
-  return AppSizes.homeShellBottomBarClearance +
-      AppGraphit.navActionOverhang +
+  return AppGraphit.navBarHeight +
+      AppGraphit.navBarBottomMargin +
       AppSpacing.xxxxl +
       MediaQuery.paddingOf(context).bottom;
 }

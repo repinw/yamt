@@ -3,7 +3,6 @@ import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
@@ -13,13 +12,14 @@ import 'package:yamt/core/widgets/home_nav_item.dart';
 
 /// Bottom navigation bar used by the home shell pages.
 ///
-/// The tab's [action] is a round lime button in the middle of the bar that
-/// reaches above its top edge; its word stands under it in the bar.
+/// The tabs sit in a floating capsule. Beside it stands the tab's [action]
+/// as a lime button with a plus and the action's word under it, so the button
+/// keeps its size for every word.
 class HomeBottomNavBar extends StatelessWidget {
   /// The home bottom nav bar.
   const new({required this.entries, required this.action, super.key});
 
-  /// Key of the round action button.
+  /// Key of the action button.
   static const actionKey = ValueKey<String>('home-nav-action');
 
   /// The entries.
@@ -31,56 +31,87 @@ class HomeBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
-    final middle = (entries.length / 2).ceil();
-    final items = [
-      for (final entry in entries)
-        Expanded(
-          child: _HomeBottomNavItemButton(
-            item: entry.item,
-            isSelected: entry.isSelected,
-            onTap: entry.onTap,
-          ),
-        ),
-    ];
-    final bar = DecoratedBox(
+    final capsule = DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.paper,
-        border: Border(
-          top: BorderSide(color: colors.ink, width: AppFoodLabel.outline),
-        ),
+        color: colors.card,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: colors.rule, width: AppFoodLabel.outline),
       ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              ...items.take(middle),
-              Expanded(child: _ActionLabel(label: action.label)),
-              ...items.skip(middle),
-            ],
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppGraphit.navCapsulePadding),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final entry in entries)
+              Expanded(
+                child: _HomeBottomNavItemButton(
+                  item: entry.item,
+                  isSelected: entry.isSelected,
+                  onTap: entry.onTap,
+                ),
+              ),
+          ],
         ),
       ),
     );
-    // The transparent strip above the bar lets taps through to the page;
-    // only the button takes them.
+    // The fade is only to look at: taps in it reach the page.
     return Stack(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: AppGraphit.navActionOverhang),
-          child: bar,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [colors.paper, colors.paper.withValues(alpha: 0)],
+                  stops: const [0.5, 1],
+                ),
+              ),
+            ),
+          ),
         ),
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Center(child: _ActionButton(action: action)),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppGraphit.navBarFade,
+              AppSpacing.lg,
+              AppGraphit.navBarBottomMargin,
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppGraphit.navBarHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.xs,
+                  children: [
+                    Expanded(child: capsule),
+                    _ActionButton(action: action),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
+}
+
+TextStyle? _navLabelStyle(
+  BuildContext context,
+  Color color, {
+  required FontWeight weight,
+}) {
+  return Theme.of(context).textTheme.labelSmall?.copyWith(
+    color: color,
+    fontSize: AppFontSizes.homeBottomNavLabel,
+    fontWeight: weight,
+  );
 }
 
 class _ActionButton extends StatelessWidget {
@@ -95,56 +126,49 @@ class _ActionButton extends StatelessWidget {
       button: true,
       label: action.label,
       excludeSemantics: true,
-      child: SizedBox.square(
-        dimension: AppGraphit.navActionButton,
-        child: FloatingActionButton(
-          key: HomeBottomNavBar.actionKey,
-          heroTag: null,
-          elevation: 0,
-          highlightElevation: 0,
-          shape: const CircleBorder(),
-          backgroundColor: colors.accent,
-          foregroundColor: colors.onAccent,
-          onPressed: () {
-            AppHapticFeedback.mediumImpact();
-            action.onPressed();
-          },
-          child: const Icon(Icons.add_rounded),
+      child: SizedBox(
+        width: AppGraphit.navActionWidth,
+        child: Material(
+          color: colors.accent,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          child: AppInkWell(
+            key: HomeBottomNavBar.actionKey,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            onTap: () {
+              AppHapticFeedback.mediumImpact();
+              action.onPressed();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: AppSpacing.xxs,
+                children: [
+                  Icon(
+                    Icons.add_rounded,
+                    color: colors.onAccent,
+                    size: AppSizes.homeBottomNavIcon,
+                  ),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      action.label,
+                      maxLines: 1,
+                      style: _navLabelStyle(
+                        context,
+                        colors.onAccent,
+                        weight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
-}
-
-class _ActionLabel extends StatelessWidget {
-  const new({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = FoodLabelColors.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          label.toUpperCase(),
-          maxLines: 1,
-          style: _navLabelStyle(context, colors.ink),
-        ),
-      ),
-    );
-  }
-}
-
-TextStyle? _navLabelStyle(BuildContext context, Color color) {
-  return Theme.of(context).textTheme.labelSmall?.copyWith(
-    fontFamily: AppFonts.mono,
-    color: color,
-    fontSize: AppFontSizes.homeBottomNavLabel,
-    letterSpacing: AppFoodLabel.navLabelTracking,
-  );
 }
 
 class _HomeBottomNavItemButton extends StatelessWidget {
@@ -159,54 +183,49 @@ class _HomeBottomNavItemButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
-    final foregroundColor = isSelected ? colors.accentText : colors.muted;
+    final radius = BorderRadius.circular(AppGraphit.navTabRadius);
     return Semantics(
       button: true,
       selected: isSelected,
       label: item.label,
-      child: AppInkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Lime rule on top of the selected tab.
-            AnimatedOpacity(
-              opacity: isSelected ? 1 : 0,
-              duration: AppDurations.homeBottomNavIndicator,
-              child: SizedBox(
-                width: double.infinity,
-                height: AppSizes.homeBottomNavIndicatorHeight,
-                child: ColoredBox(color: colors.accent),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    item.icon,
-                    color: foregroundColor,
-                    size: AppSizes.homeBottomNavIcon,
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        item.label.toUpperCase(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: _navLabelStyle(context, foregroundColor),
+      child: AnimatedContainer(
+        duration: AppDurations.homeBottomNavIndicator,
+        decoration: BoxDecoration(
+          color: isSelected ? colors.track : Colors.transparent,
+          borderRadius: radius,
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: AppInkWell(
+            onTap: onTap,
+            borderRadius: radius,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: AppSpacing.xxs,
+              children: [
+                Icon(
+                  item.icon,
+                  color: isSelected ? colors.accentText : colors.muted,
+                  size: AppSizes.homeBottomNavIcon,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      item.label,
+                      maxLines: 1,
+                      style: _navLabelStyle(
+                        context,
+                        isSelected ? colors.ink : colors.muted,
+                        weight: isSelected ? FontWeight.w600 : FontWeight.w500,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

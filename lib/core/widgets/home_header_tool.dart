@@ -1,8 +1,17 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+
+const _maxBadgeCount = 99;
+
+String? _badgeText(int? count) {
+  if (count == null) {
+    return null;
+  }
+  return count > _maxBadgeCount ? '$_maxBadgeCount+' : '$count';
+}
 
 /// Action of a home tab header: a symbol with a small word under it.
 ///
@@ -15,13 +24,14 @@ class HomeHeaderTool extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.color,
+    this.badgeCount,
     super.key,
   });
 
   /// Icon or emoji above the word.
   final Widget symbol;
 
-  /// Word under the symbol, shown in capitals.
+  /// Word under the symbol.
   final String label;
 
   /// Called on tap. The tool is disabled when this is `null`.
@@ -30,11 +40,18 @@ class HomeHeaderTool extends StatelessWidget {
   /// Color of the symbol and the word; the surface's text color when null.
   final Color? color;
 
+  /// Number in a small lime badge on the symbol, "99+" from 100 on; no badge
+  /// when null.
+  final int? badgeCount;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final labelColors = FoodLabelColors.of(context);
     final content = color ?? colors.onSurface;
+    final word = color ?? colors.onSurfaceVariant;
+    final badgeText = _badgeText(badgeCount);
     final foreground = onPressed == null
         ? content.withValues(alpha: AppOpacities.disabledContent)
         : content;
@@ -45,6 +62,7 @@ class HomeHeaderTool extends StatelessWidget {
       button: true,
       enabled: onPressed != null,
       label: label,
+      value: badgeText,
       onTap: onPressed,
       excludeSemantics: true,
       child: AppInkWell(
@@ -71,18 +89,26 @@ class HomeHeaderTool extends StatelessWidget {
                       fontSize: AppSizes.headerToolSymbol,
                       height: 1,
                     ),
-                    child: symbol,
+                    child: badgeCount == null
+                        ? symbol
+                        : Badge(
+                            backgroundColor: labelColors.accent,
+                            textColor: labelColors.onAccent,
+                            label: Text(badgeText!),
+                            child: symbol,
+                          ),
                   ),
                 ),
                 const SizedBox(height: AppSizes.headerToolGap),
                 Text(
-                  label.toUpperCase(),
+                  label,
                   maxLines: 1,
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontSize: AppFontSizes.labelXSmall,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: AppFoodLabel.navLabelTracking,
-                    color: foreground,
+                    fontWeight: FontWeight.w500,
+                    color: onPressed == null
+                        ? word.withValues(alpha: AppOpacities.disabledContent)
+                        : word,
                   ),
                 ),
               ],

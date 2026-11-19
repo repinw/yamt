@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_entry_group_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_planned_entry_tile.dart';
@@ -88,14 +89,17 @@ class DiaryMealGroup extends StatelessWidget {
             ),
             if (targetKcal case final target?) ...[
               const SizedBox(width: AppSpacing.md),
-              Text(
-                l10n.diaryMealKcalOfTarget(
-                  numberFormat.format(heading.kcal.round()),
-                  numberFormat.format(target.round()),
+              _KcalOfTarget(
+                textKey: DiaryMealsSectionKeys.mealKcalOfTarget(
+                  section.mealType,
                 ),
-                key: DiaryMealsSectionKeys.mealKcalOfTarget(section.mealType),
-                maxLines: 1,
                 style: labelStyle,
+                overStyle: labelStyle?.copyWith(
+                  color: FoodLabelColors.of(context).over,
+                ),
+                eaten: heading.kcal.round(),
+                target: target.round(),
+                format: numberFormat.format,
               ),
             ]
             // A single counted row already shows the same kcal.
@@ -158,6 +162,50 @@ class DiaryMealGroup extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// "eaten / target kcal", with the eaten number in [overStyle] when the meal
+/// is over its target.
+class _KcalOfTarget extends StatelessWidget {
+  const new({
+    required this.textKey,
+    required this.style,
+    required this.overStyle,
+    required this.eaten,
+    required this.target,
+    required this.format,
+  });
+
+  final Key textKey;
+  final TextStyle? style;
+  final TextStyle? overStyle;
+  final int eaten;
+  final int target;
+  final String Function(int) format;
+
+  @override
+  Widget build(BuildContext context) {
+    // The sentence puts the eaten number where the marker stands.
+    const marker = '\u0000';
+    final parts = AppLocalizations.of(context)!
+        .diaryMealKcalOfTarget(marker, format(target))
+        .split(marker);
+    return Text.rich(
+      TextSpan(
+        style: style,
+        children: [
+          TextSpan(text: parts.first),
+          TextSpan(
+            text: format(eaten),
+            style: eaten > target ? overStyle : null,
+          ),
+          TextSpan(text: parts.last),
+        ],
+      ),
+      key: textKey,
+      maxLines: 1,
     );
   }
 }
