@@ -312,8 +312,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - The week balance is a setting ("Wochenzielbalance") with three modes:
   "Aus", "Anzeigen" and "Mit Übertrag". It is saved per account, and every
   account starts with "Anzeigen". Hold the week card to change it in a menu
-  with a line for each mode, or pick it in the settings next to "Schritte im
-  Tagebuch". Switching recomputes the whole running run.
+  with a line for each mode, or tap the row "Wochenzielbalance" in the settings next to "Schritte im
+  Tagebuch", which opens the same menu. Switching recomputes the whole running run.
   - "Aus" and "Anzeigen": every day has only its own goal. The budget
     card, the macro targets, and the sheet "Alle Tage" never count what past
     days were over or under, the card shows nothing about the week, and

@@ -66,10 +66,12 @@ changes.
 - `TrainingDayChips` and `TrainingWeekDepotChart` pick the training days of
   a week and show how the week's calories spread over training and rest days.
   Onboarding and the weekly check-in use them.
-- `WeekBalanceModeChoice` (`presentation/widgets/week_balance_mode_choice.dart`)
-  is the choice of the week balance mode with its limit line. The diary's
-  week card menu and the settings show it; `WeekBalanceModeKeys` in
-  `presentation/widgets/calories_page_keys.dart` names its keys.
+- `showWeekBalanceMenu` (`presentation/widgets/week_balance_menu.dart`) opens
+  the menu sheet of the week balance with `WeekBalanceModeChoice`
+  (`presentation/widgets/week_balance_mode_choice.dart`), the choice of the
+  mode with its limit line. Holding the diary's week card and the settings
+  row open it; `WeekBalanceModeKeys` (`WeekBalanceModeKeys.menu` for the
+  sheet) in `presentation/widgets/calories_page_keys.dart` names its keys.
 - Calorie entry editors, goal dialogs, calculator sheets, the consumed-unit
   labels, and the debug menu section of the Home side menu.
 - `showCalorieEntryEditor` opens the new-entry editor on the root navigator.

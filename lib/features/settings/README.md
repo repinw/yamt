@@ -53,8 +53,8 @@ settings.
   in the diary. Turning it on connects Health when needed. Health owns the
   choice.
 - `presentation/widgets/settings_week_balance_tile.dart` is the row next to
-  the steps switch with the choice "Aus", "Anzeigen" or "Mit Übertrag"
-  (Calories `WeekBalanceModeChoice`). Calories owns the choice.
+  the steps switch. It shows the mode as its subtitle, and a tap opens the
+  Calories menu `showWeekBalanceMenu`. Calories owns the menu and the choice.
 - Reusable settings tile components under `presentation/widgets/settings_tiles/`.
 
 Other features should compose the page or complete settings widgets instead of
@@ -80,7 +80,7 @@ Current providers:
 - `features/auth` for account data, auth actions, and auth error mapping.
 - `features/calories` for the profile page's body data and macro weight
   (settings repository and nutrition target resolver), calorie goal
-  settings surfaces, and the week balance choice (`WeekBalanceModeChoice`).
+  settings surfaces, and the week balance menu (`showWeekBalanceMenu`).
 - `features/diary` for `DiaryBudgetLine`, `DiaryBudgetViewSwitch` and
   `DiaryBudgetDayTypeButtons` in the color editor's preview.
 - `features/health` for Health connection status, actions, domain result
