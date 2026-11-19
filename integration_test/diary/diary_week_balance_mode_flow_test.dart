@@ -158,46 +158,62 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the settings row marks the stored mode and stores a pick', (
-    tester,
-  ) async {
+  testWidgets('the settings row shows the stored mode; a tap opens the '
+      'menu of the week card, a pick stores the mode, closes the menu and '
+      'updates the row', (tester) async {
     final settings = _settingsRepository();
     await _pumpSettings(tester, settings);
     final tile = find.byKey(SettingsPageKeys.weekBalanceTile);
+    final menu = find.byKey(DiaryWeekCardKeys.menu);
 
     for (final mode in WeekBalanceMode.values) {
-      expect(_option(mode, within: tile), findsOneWidget, reason: mode.name);
+      expect(_option(mode), findsNothing, reason: 'no options inline');
     }
     final stored = (await settings.readSettings()).weekBalanceMode;
-    expect(_selected(within: tile), stored);
 
     for (final mode in [WeekBalanceMode.carryover, WeekBalanceMode.off]) {
-      await tester.tap(_option(mode, within: tile));
-      await tester.pumpAndSettle();
+      await tester.tap(tile);
+      await diary.settle(tester);
+      expect(menu, findsOneWidget);
+      if (mode == WeekBalanceMode.carryover) {
+        expect(_selected(within: menu), stored);
+      }
+      await _pickInMenu(tester, mode);
 
+      expect(menu, findsNothing);
       expect((await settings.readSettings()).weekBalanceMode, mode);
-      expect(_selected(within: tile), mode);
+      await tester.tap(tile);
+      await diary.settle(tester);
+      expect(_selected(within: menu), mode);
+      await tester.tapAt(const Offset(10, 10));
+      await diary.settle(tester);
+      expect(menu, findsNothing);
     }
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a failed save in the settings row keeps the mode and shows a '
-      'snack bar', (tester) async {
+  testWidgets('a failed save from the settings row keeps the mode and shows '
+      'a snack bar', (tester) async {
     final settings = _settingsRepository()..saveShouldFail = true;
     await _pumpSettings(tester, settings);
     final tile = find.byKey(SettingsPageKeys.weekBalanceTile);
-    final before = _selected(within: tile);
+    final before = (await settings.readSettings()).weekBalanceMode;
 
-    await tester.tap(_option(WeekBalanceMode.carryover, within: tile));
+    await tester.tap(tile);
+    await diary.settle(tester);
+    expect(find.byKey(DiaryWeekCardKeys.menu), findsOneWidget);
+    final option = _option(
+      WeekBalanceMode.carryover,
+      within: find.byKey(DiaryWeekCardKeys.menu),
+    );
+    await tester.ensureVisible(option);
+    await tester.tap(option);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(AppSnackBarView), findsOneWidget);
-    expect(_selected(within: tile), before);
-    expect(
-      (await settings.readSettings()).weekBalanceMode,
-      isNot(WeekBalanceMode.carryover),
-    );
+    expect((await settings.readSettings()).weekBalanceMode, before);
+    expect(before, isNot(WeekBalanceMode.carryover));
     await tester.pumpAndSettle(const Duration(seconds: 5));
   });
 
