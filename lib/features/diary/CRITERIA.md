@@ -96,13 +96,18 @@ When: I pick "Aus".
 Then: the menu closes and the week card is gone from the diary.
 And: the budget card counts against the plain goal (K6).
 
-### K4 – The mode can also be changed in the settings
-Source: mock (text "Später ändern: in den Einstellungen."); KF list 11.
+### K4 – The mode can also be changed in the settings, through one row
+Source: mock (text "Später ändern: in den Einstellungen."); KF list 11; notes, entry "2026-11-19 Handytest, Einstellungen" (user: "ja, mach eine zeile draus").
+Changed 2026-11-19: before, the three options stood expanded in the settings.
 Given: the mode is "Aus", so the diary shows no week card.
 When: I open the app settings.
-Then: next to "Schritte im Tagebuch" stands the same choice with "Aus", "Anzeigen" and "Mit Übertrag".
-When: I pick "Anzeigen" or "Mit Übertrag" there.
-Then: the week card is back in the diary, and the menu of the card shows the same mode.
+Then: next to "Schritte im Tagebuch" stands one row "Wochenzielbalance" with the chosen mode as its subtitle: "Aus".
+And: the three options are not shown expanded in the settings.
+When: I tap the row.
+Then: the same menu opens as when I hold the week card (K1, K2, K35): heading "Wochenzielbalance", the three options with their lines, "Aus" selected.
+When: I pick "Mit Übertrag" there.
+Then: the menu closes and the row's subtitle reads "Mit Übertrag".
+And: the week card is back in the diary, and the menu of the card shows the same mode.
 
 ### K5 – The mode is stored per account
 Source: issue #911 ("Gespeichert wird pro Konto").
