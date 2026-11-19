@@ -7,12 +7,20 @@ import 'package:yamt/features/calories/presentation/widgets/week_balance_mode_ch
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the menu of the week balance: the choice of the mode and where to
-/// change it later. A pick closes the menu.
-Future<void> showWeekBalanceMenu(BuildContext context) =>
-    showAppDashboardSheet(context, (_) => const _WeekBalanceMenu());
+/// change it later. A pick closes the menu. The settings pass
+/// [showChangeLater] false, because the user is already there.
+Future<void> showWeekBalanceMenu(
+  BuildContext context, {
+  bool showChangeLater = true,
+}) => showAppDashboardSheet(
+  context,
+  (_) => _WeekBalanceMenu(showChangeLater: showChangeLater),
+);
 
 class _WeekBalanceMenu extends StatelessWidget {
-  const new();
+  const new({required this.showChangeLater});
+
+  final bool showChangeLater;
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +45,12 @@ class _WeekBalanceMenu extends StatelessWidget {
             }
           },
         ),
-        Text(
-          l10n.weekBalanceChangeLater,
-          style: Theme.of(context).textTheme.bodySmall
-              ?.copyWith(color: FoodLabelColors.of(context).muted),
-        ),
+        if (showChangeLater)
+          Text(
+            l10n.weekBalanceChangeLater,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: FoodLabelColors.of(context).muted),
+          ),
       ],
     );
   }

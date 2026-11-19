@@ -29,7 +29,8 @@ class SettingsWeekBalanceTile extends ConsumerWidget {
       icon: Icons.calendar_month_outlined,
       title: l10n.weekBalanceTitle,
       subtitle: mode?.label(l10n),
-      onTap: () => unawaited(showWeekBalanceMenu(context)),
+      onTap: () =>
+          unawaited(showWeekBalanceMenu(context, showChangeLater: false)),
     );
   }
 }
