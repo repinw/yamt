@@ -49,12 +49,14 @@ class DiaryWeekDayBar extends StatelessWidget {
       borderRadius: radius,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final width = constraints.maxWidth;
+          // The frame of the shown day lies outside the parts.
+          final inset = isShown ? AppWeekCard.frameWidth : 0.0;
+          final width = constraints.maxWidth - 2 * inset;
           Widget piece(double from, double length, Widget child) => Positioned(
-            left: from * width,
-            top: 0,
-            bottom: 0,
-            width: length * width,
+            left: inset + from,
+            top: inset,
+            bottom: inset,
+            width: length,
             child: child,
           );
           final debt = math.max<double>(0, -day.carryoverKcal);
@@ -70,6 +72,17 @@ class DiaryWeekDayBar extends StatelessWidget {
           final eaten = math.min(day.eatenKcal, day.budgetKcal);
           final over = math.max<double>(0, day.eatenKcal - day.budgetKcal);
           final overColor = balance.overIsMiss ? error : colors.ink;
+          // A small piece stays visible; the eaten part gives way to it.
+          double lengthOf(double kcal) => kcal >= 1
+              ? math.max(AppWeekCard.minPieceWidth, kcal / span * width)
+              : 0;
+          final debtLength = lengthOf(debt);
+          final extraLength = lengthOf(extra);
+          final overLength = lengthOf(over);
+          final eatenLength = math.max<double>(
+            0,
+            math.min(eaten / span * width, width - debtLength - overLength),
+          );
 
           return Stack(
             fit: StackFit.expand,
@@ -100,7 +113,7 @@ class DiaryWeekDayBar extends StatelessWidget {
               if (shows && debt > 0)
                 piece(
                   0,
-                  debt / span,
+                  debtLength,
                   DecoratedBox(
                     key: DiaryWeekCardKeys.debtPiece,
                     decoration: BoxDecoration(color: colors.accentText),
@@ -108,8 +121,8 @@ class DiaryWeekDayBar extends StatelessWidget {
                 ),
               if (shows && extra > 0)
                 piece(
-                  day.goalKcal / span,
-                  extra / span,
+                  math.min(day.goalKcal / span * width, width - extraLength),
+                  extraLength,
                   CustomPaint(
                     key: DiaryWeekCardKeys.extraPiece,
                     painter: DiaryWeekDashedPainter(
@@ -120,8 +133,8 @@ class DiaryWeekDayBar extends StatelessWidget {
                 ),
               if (shows && !isComing)
                 piece(
-                  debt / span,
-                  eaten / span,
+                  debtLength,
+                  eatenLength,
                   DecoratedBox(
                     key: DiaryWeekCardKeys.eatenPart,
                     decoration: BoxDecoration(color: colors.accent),
@@ -129,8 +142,11 @@ class DiaryWeekDayBar extends StatelessWidget {
                 ),
               if (shows && !isComing && over >= 1)
                 piece(
-                  (debt + day.budgetKcal) / span,
-                  over / span,
+                  math.min(
+                    (debt + day.budgetKcal) / span * width,
+                    width - overLength,
+                  ),
+                  overLength,
                   DecoratedBox(
                     key: DiaryWeekCardKeys.overPart,
                     decoration: BoxDecoration(
