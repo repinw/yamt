@@ -5,19 +5,19 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_all_macros_colored_controller.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
+import 'package:yamt/core/widgets/app_dashboard_sheet.dart';
 import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_marker_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_meal_shares_editor.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_pace_notification_switch.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_sheet_frame.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the budget card's menu for a day with [targetKcal].
 Future<void> showDiaryBudgetCardMenu(
   BuildContext context, {
   required double targetKcal,
-}) => showDiaryDashboardSheet(
+}) => showAppDashboardSheet(
   context,
   (_) => DiaryBudgetCardMenu(targetKcal: targetKcal),
 );
@@ -45,7 +45,7 @@ class DiaryBudgetCardMenu extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.md,
       children: [
-        DiaryDashboardSheetHeading(
+        AppDashboardSheetHeading(
           icon: Icons.donut_large_outlined,
           label: l10n.diaryBudgetMenuTitle,
         ),

@@ -9,17 +9,17 @@ import 'package:yamt/core/constants/app_steps_card_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
+import 'package:yamt/core/widgets/app_dashboard_sheet.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/app_switch_list_tile.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_sheet_frame.dart';
 import 'package:yamt/features/health/application/health_steps_controller.dart';
 import 'package:yamt/features/health/application/health_steps_goal_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the steps card's menu.
 Future<void> showDiaryStepsCardMenu(BuildContext context) =>
-    showDiaryDashboardSheet(context, (_) => const DiaryStepsCardMenu());
+    showAppDashboardSheet(context, (_) => const DiaryStepsCardMenu());
 
 /// Content of the steps card's menu: the steps goal per day as a big number
 /// between a minus and a plus, the usual goals to pick with one tap, and the
@@ -109,7 +109,7 @@ class DiaryStepsCardMenu extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.md,
       children: [
-        DiaryDashboardSheetHeading(
+        AppDashboardSheetHeading(
           icon: Icons.directions_walk_rounded,
           label: l10n.diaryStepsMenuTitle,
         ),

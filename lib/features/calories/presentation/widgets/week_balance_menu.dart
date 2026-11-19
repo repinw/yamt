@@ -1,38 +1,38 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/app_dashboard_sheet.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/week_balance_mode_choice.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_sheet_frame.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Opens the week card's menu.
-Future<void> showDiaryWeekCardMenu(BuildContext context) =>
-    showDiaryDashboardSheet(context, (_) => const DiaryWeekCardMenu());
-
-/// Content of the week card's menu: the choice of the mode and where to
+/// Opens the menu of the week balance: the choice of the mode and where to
 /// change it later. A pick closes the menu.
-class DiaryWeekCardMenu extends StatelessWidget {
-  /// Creates the menu.
-  const new({super.key});
+Future<void> showWeekBalanceMenu(BuildContext context) =>
+    showAppDashboardSheet(context, (_) => const _WeekBalanceMenu());
+
+class _WeekBalanceMenu extends StatelessWidget {
+  const new();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
-      key: DiaryWeekCardKeys.menu,
+      key: WeekBalanceModeKeys.menu,
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.md,
       children: [
-        DiaryDashboardSheetHeading(
+        AppDashboardSheetHeading(
           icon: Icons.calendar_month_outlined,
           label: l10n.weekBalanceTitle,
         ),
         WeekBalanceModeChoice(
           onPicked: () {
-            if (context.mounted) {
+            // A second pick while the sheet leaves must not pop the page
+            // below it.
+            if (context.mounted && ModalRoute.of(context)!.isCurrent) {
               Navigator.of(context).pop();
             }
           },

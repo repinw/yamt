@@ -17,11 +17,21 @@ import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// The name of a week balance mode, as the menu and the settings show it.
+extension WeekBalanceModeLabel on WeekBalanceMode {
+  /// The name of this mode in the language of [l10n].
+  String label(AppLocalizations l10n) => switch (this) {
+    WeekBalanceMode.off => l10n.weekBalanceOff,
+    WeekBalanceMode.show => l10n.weekBalanceShow,
+    WeekBalanceMode.carryover => l10n.weekBalanceCarryover,
+  };
+}
+
 /// The three modes of the week balance as radio options, each with its line;
 /// the one of the account is marked, and a tap picks another (#911). The
-/// week card's menu and the settings show it. Keeps the room of the
+/// week balance menu shows it. Keeps the room of the
 /// options while the settings load. [onPicked] runs after a tap saved the mode.
-class WeekBalanceModeChoice extends ConsumerWidget {
+class WeekBalanceModeChoice extends ConsumerStatefulWidget {
   /// Creates the choice.
   const new({this.onPicked, super.key});
 
@@ -29,7 +39,16 @@ class WeekBalanceModeChoice extends ConsumerWidget {
   final VoidCallback? onPicked;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WeekBalanceModeChoice> createState() =>
+      _WeekBalanceModeChoiceState();
+}
+
+class _WeekBalanceModeChoiceState extends ConsumerState<WeekBalanceModeChoice> {
+  // A tap while a save runs would save and report a second pick.
+  var _saving = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return ref
@@ -46,15 +65,11 @@ class WeekBalanceModeChoice extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodySmall
                 ?.copyWith(color: FoodLabelColors.of(context).muted),
           ),
-          data: (stored) => _options(context, ref, stored),
+          data: _options,
         );
   }
 
-  Widget _options(
-    BuildContext context,
-    WidgetRef ref,
-    CalorieGoalSettings stored,
-  ) {
+  Widget _options(CalorieGoalSettings stored) {
     final l10n = AppLocalizations.of(context)!;
     // The limit is the one the rule caps with: the goals that follow the
     // TDEE once they are computed. Until they are, the line shows none.
@@ -69,10 +84,16 @@ class WeekBalanceModeChoice extends ConsumerWidget {
                 .round(),
           );
     final options = <WeekBalanceMode, (String, String?)>{
-      WeekBalanceMode.off: (l10n.weekBalanceOff, l10n.weekBalanceOffHint),
-      WeekBalanceMode.show: (l10n.weekBalanceShow, l10n.weekBalanceShowHint),
+      WeekBalanceMode.off: (
+        WeekBalanceMode.off.label(l10n),
+        l10n.weekBalanceOffHint,
+      ),
+      WeekBalanceMode.show: (
+        WeekBalanceMode.show.label(l10n),
+        l10n.weekBalanceShowHint,
+      ),
       WeekBalanceMode.carryover: (
-        l10n.weekBalanceCarryover,
+        WeekBalanceMode.carryover.label(l10n),
         limit == null ? null : l10n.weekBalanceCarryoverHint(limit),
       ),
     };
@@ -86,24 +107,25 @@ class WeekBalanceModeChoice extends ConsumerWidget {
             label: label,
             hint: hint,
             isSelected: mode == stored.weekBalanceMode,
-            onTap: () => unawaited(_pick(context, ref, mode)),
+            onTap: () => unawaited(_pick(mode)),
           ),
       ],
     );
   }
 
-  Future<void> _pick(
-    BuildContext context,
-    WidgetRef ref,
-    WeekBalanceMode mode,
-  ) async {
+  Future<void> _pick(WeekBalanceMode mode) async {
+    if (_saving) {
+      return;
+    }
+    _saving = true;
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context)!;
     final saved = await ref
         .read(calorieGoalControllerProvider.notifier)
         .setWeekBalanceMode(mode);
+    _saving = false;
     if (saved) {
-      onPicked?.call();
+      widget.onPicked?.call();
       return;
     }
     messenger.showAppSnackBar(

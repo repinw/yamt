@@ -8,7 +8,6 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_keys.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_week_balance_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -88,7 +87,7 @@ void main() {
     await tester.tap(find.byKey(SettingsPageKeys.weekBalanceTile));
     await tester.pumpAndSettle();
 
-    final menu = find.byKey(DiaryWeekCardKeys.menu);
+    final menu = find.byKey(WeekBalanceModeKeys.menu);
     expect(menu, findsOneWidget);
     expect(
       find.descendant(of: menu, matching: find.text('Wochenzielbalance')),
@@ -132,7 +131,7 @@ void main() {
       (await repository.readSettings()).weekBalanceMode,
       WeekBalanceMode.carryover,
     );
-    expect(find.byKey(DiaryWeekCardKeys.menu), findsNothing);
+    expect(find.byKey(WeekBalanceModeKeys.menu), findsNothing);
     expect(
       find.descendant(of: tile, matching: find.text('Mit Übertrag')),
       findsOneWidget,
