@@ -31,6 +31,10 @@ abstract final class AppWeekCard {
   /// Width of the frame of the shown day.
   static const double frameWidth = 2;
 
+  /// Least width of the over part, the debt piece, and the extra piece, so
+  /// that a small one stays visible.
+  static const double minPieceWidth = 4;
+
   /// Width of a dash in a dashed outline.
   static const double dashLength = 3;
 
