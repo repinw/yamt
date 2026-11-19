@@ -160,54 +160,96 @@ void main() {
   });
 
   group('K4', () {
-    for (final mode in [WeekBalanceMode.show, WeekBalanceMode.carryover]) {
-      testWidgets('K4: with "Aus", the settings offer the same choice next to '
-          '"Schritte im Tagebuch"; "${mode.label}" brings the card back', (
-        tester,
-      ) async {
-        final harness = thursdayRun();
-        await harness.pumpDiary(tester);
-        await chooseModeInDiary(tester, WeekBalanceMode.off);
-        expect(find.byKey(WeekCardKeys.card), findsNothing);
+    testWidgets('K4: with "Aus", the settings show one row '
+        '"Wochenzielbalance" with the subtitle "Aus"; a tap opens the menu of '
+        'the card; "Mit Übertrag" closes it and brings the card back', (
+      tester,
+    ) async {
+      final harness = thursdayRun();
+      await harness.pumpDiary(tester);
+      await chooseModeInDiary(tester, WeekBalanceMode.off);
+      expect(find.byKey(WeekCardKeys.card), findsNothing);
 
-        await harness.push(tester, const SettingsPage());
-        final tile = find.byKey(WeekCardKeys.settingsTile);
-        expect(tile, findsOneWidget);
-        await tester.ensureVisible(tile);
-        await settle(tester);
-        final steps = tester.getRect(find.byKey(SettingsPageKeys.stepsTile));
-        final choice = tester.getRect(tile);
-        final gap = choice.top >= steps.bottom
-            ? choice.top - steps.bottom
-            : steps.top - choice.bottom;
+      await harness.push(tester, const SettingsPage());
+      final tile = find.byKey(WeekCardKeys.settingsTile);
+      expect(tile, findsOneWidget);
+      await tester.ensureVisible(tile);
+      await settle(tester);
+      final steps = tester.getRect(find.byKey(SettingsPageKeys.stepsTile));
+      final row = tester.getRect(tile);
+      final gap = row.top >= steps.bottom
+          ? row.top - steps.bottom
+          : steps.top - row.bottom;
+      expect(
+        gap,
+        lessThan(16),
+        reason: 'the row stands next to "Schritte im Tagebuch"',
+      );
+      expect(
+        find.descendant(of: tile, matching: find.text('Wochenzielbalance')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: tile, matching: find.text('Aus')),
+        findsOneWidget,
+        reason: 'the subtitle names the chosen mode',
+      );
+      for (final mode in WeekBalanceMode.values) {
         expect(
-          gap,
-          lessThan(16),
-          reason: 'the choice stands next to "Schritte im Tagebuch"',
+          find.byKey(WeekCardKeys.modeOption(mode)),
+          findsNothing,
+          reason: 'the options are not shown expanded in the settings',
         );
-        if (find
-            .byKey(WeekCardKeys.modeOption(WeekBalanceMode.off))
-            .evaluate()
-            .isEmpty) {
-          await tester.tap(tile);
-          await settle(tester);
-        }
-        for (final option in WeekBalanceMode.values) {
-          expect(
-            textUnder(tester, find.byKey(WeekCardKeys.modeOption(option))),
-            contains(option.label),
-          );
-        }
-        await pickMode(tester, mode);
-        while (find.byType(SettingsPage).evaluate().isNotEmpty) {
-          await harness.pop(tester);
-        }
+      }
 
-        expect(find.byKey(WeekCardKeys.card), findsOneWidget);
-        await openWeekCardMenu(tester);
-        _expectSelected(mode);
-      });
-    }
+      await tester.tap(tile);
+      await settle(tester);
+
+      final menu = find.byKey(WeekCardKeys.menu);
+      expect(menu, findsOneWidget, reason: "the same menu as the card's");
+      expect(
+        find.descendant(of: menu, matching: find.text('Wochenzielbalance')),
+        findsOneWidget,
+      );
+      const lines = {
+        WeekBalanceMode.off: 'Jeder Tag steht für sich.',
+        WeekBalanceMode.show:
+            'Zeigt die Woche. Dein Tagesbudget bleibt gleich.',
+        WeekBalanceMode.carryover:
+            'Gleicht die Woche aus, höchstens 350 kcal pro Tag.',
+      };
+      for (final MapEntry(key: mode, value: line) in lines.entries) {
+        final option = find.descendant(
+          of: menu,
+          matching: find.byKey(WeekCardKeys.modeOption(mode)),
+        );
+        expect(option, findsOneWidget);
+        final text = textUnder(tester, option);
+        expect(text, contains(mode.label));
+        expect(text, contains(line));
+      }
+      _expectSelected(WeekBalanceMode.off);
+
+      await pickMode(tester, WeekBalanceMode.carryover);
+
+      expect(find.byKey(WeekCardKeys.menu), findsNothing);
+      expect(
+        find.descendant(of: tile, matching: find.text('Mit Übertrag')),
+        findsOneWidget,
+        reason: 'the subtitle shows the new mode',
+      );
+      expect(
+        find.descendant(of: tile, matching: find.text('Aus')),
+        findsNothing,
+      );
+
+      while (find.byType(SettingsPage).evaluate().isNotEmpty) {
+        await harness.pop(tester);
+      }
+      expect(find.byKey(WeekCardKeys.card), findsOneWidget);
+      await openWeekCardMenu(tester);
+      _expectSelected(WeekBalanceMode.carryover);
+    });
   });
 
   group('K5', () {

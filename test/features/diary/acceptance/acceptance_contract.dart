@@ -94,7 +94,7 @@ abstract final class WeekCardKeys {
   /// [modeOption] (K2, K4).
   static const modeSelected = ValueKey<String>('week-balance-mode-selected');
 
-  /// The settings row of the mode, next to "Schritte im Tagebuch" (K4).
-  /// Tapping it shows the [modeOption]s, unless they are already inline.
+  /// The settings row "Wochenzielbalance", next to "Schritte im Tagebuch",
+  /// with the chosen mode as its subtitle (K4). Tapping it opens [menu].
   static const settingsTile = ValueKey<String>('settings-week-balance-tile');
 }
