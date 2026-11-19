@@ -57,7 +57,7 @@ check-in composition.
   training and pause toggles that set the day type through
   `DiaryDayTypeUpdater`, the ledger with the link to the budget sheet, the
   run week's day types, closing the day before, and the menu a long press
-  opens (#928, in the sheet frame of `diary_dashboard/`): the pace marker
+  opens (#928, in the sheet frame `showAppDashboardSheet` of core): the pace marker
   switch and the parts of the day (`DiaryMealShares`, `DiaryMealTimes`,
   saved on the device), which also set the meal headings' kcal against
   each meal's part. `DiaryBudgetCardData` (`presentation/models/`) maps
@@ -68,8 +68,8 @@ check-in composition.
   the goal run that holds the shown day (fewer for a run that a new goal cut
   short). Each finished day fills like the kcal line against its budget; with
   the budget card's details open, numbers stand under the finished days.
-  Holding the card opens `diary_week_card_menu.dart` with the Calories
-  `WeekBalanceModeChoice`; a tap does nothing. The card shows nothing in the
+  Holding the card opens the Calories menu `showWeekBalanceMenu`; a tap
+  does nothing. The card shows nothing in the
   mode "Aus" or without a run. Calories owns the mode and `WeekBalance`.
 - The budget card offers "<Wochentag> abschließen" on a coming day only in the
   mode "Mit Übertrag", only for tomorrow, and not when tomorrow starts a new
