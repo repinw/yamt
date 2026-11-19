@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Keys of the diary's week card and its menu, for tests.
+/// Keys of the diary's week card, for tests.
 abstract final class DiaryWeekCardKeys {
   /// The week card between the budget card and the steps card.
   static const card = ValueKey<String>('diary-week-card');
@@ -40,7 +40,4 @@ abstract final class DiaryWeekCardKeys {
 
   /// The dashed piece at the end of a day with more budget.
   static const extraPiece = ValueKey<String>('diary-week-card-extra');
-
-  /// The menu that holding the card opens.
-  static const menu = ValueKey<String>('diary-week-card-menu');
 }

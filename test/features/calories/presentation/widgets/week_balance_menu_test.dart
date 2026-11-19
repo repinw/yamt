@@ -11,11 +11,10 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_menu.dart';
+import 'package:yamt/features/calories/presentation/widgets/week_balance_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../../../../calories/support/fake_calories_repositories.dart';
+import '../../support/fake_calories_repositories.dart';
 
 final DateTime _monday = DateTime(2026, 11, 16);
 
@@ -60,7 +59,7 @@ void main() {
   group('the menu of the week card', () {
     Widget opener() => Builder(
       builder: (context) => TextButton(
-        onPressed: () => unawaited(showDiaryWeekCardMenu(context)),
+        onPressed: () => unawaited(showWeekBalanceMenu(context)),
         child: const Text('open'),
       ),
     );
@@ -73,7 +72,7 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      final menu = find.byKey(DiaryWeekCardKeys.menu);
+      final menu = find.byKey(WeekBalanceModeKeys.menu);
       expect(menu, findsOneWidget);
       expect(
         find.descendant(of: menu, matching: find.text('Wochenzielbalance')),
@@ -108,7 +107,7 @@ void main() {
       await tester.tap(_option(WeekBalanceMode.off));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(DiaryWeekCardKeys.menu), findsNothing);
+      expect(find.byKey(WeekBalanceModeKeys.menu), findsNothing);
       expect(
         (await repository.readSettings()).weekBalanceMode,
         WeekBalanceMode.off,

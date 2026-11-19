@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 /// Opens a dashboard sheet with [builder] as its content.
-Future<void> showDiaryDashboardSheet(
+Future<void> showAppDashboardSheet(
   BuildContext context,
   WidgetBuilder builder,
 ) {
@@ -31,7 +31,7 @@ Future<void> showDiaryDashboardSheet(
 }
 
 /// The heading row of a dashboard sheet: an icon and a name.
-class DiaryDashboardSheetHeading extends StatelessWidget {
+class AppDashboardSheetHeading extends StatelessWidget {
   /// Creates the heading.
   const new({required this.icon, required this.label, super.key});
 

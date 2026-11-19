@@ -78,10 +78,13 @@ abstract final class CalorieEntryEditorKeys {
 
 /// Defines the keys of the week balance mode choice.
 abstract final class WeekBalanceModeKeys {
-  /// The option of [mode], in the week card's menu and in the settings.
+  /// The option of [mode], in the menu of the week balance.
   static ValueKey<String> option(WeekBalanceMode mode) =>
       ValueKey<String>('week-balance-mode-${mode.name}');
 
   /// The mark inside the selected option.
   static const selected = ValueKey<String>('week-balance-mode-selected');
+
+  /// The menu with the choice, opened by the week card and the settings.
+  static const menu = ValueKey<String>('diary-week-card-menu');
 }

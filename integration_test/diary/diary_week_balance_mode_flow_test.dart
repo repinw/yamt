@@ -55,11 +55,11 @@ String _budgetKcal(WidgetTester tester) =>
 Future<void> _openWeekCardMenu(WidgetTester tester) async {
   await longPressOpeningRoute(tester, find.byKey(DiaryWeekCardKeys.card));
   await diary.settle(tester);
-  expect(find.byKey(DiaryWeekCardKeys.menu), findsOneWidget);
+  expect(find.byKey(WeekBalanceModeKeys.menu), findsOneWidget);
 }
 
 Future<void> _pickInMenu(WidgetTester tester, WeekBalanceMode mode) async {
-  final option = _option(mode, within: find.byKey(DiaryWeekCardKeys.menu));
+  final option = _option(mode, within: find.byKey(WeekBalanceModeKeys.menu));
   await tester.ensureVisible(option);
   await tester.tap(option);
   await diary.settle(tester);
@@ -132,10 +132,10 @@ void main() {
     expect(_budgetKcal(tester), '2.200', reason: '"Anzeigen" keeps the goal');
 
     await _openWeekCardMenu(tester);
-    expect(_selected(within: find.byKey(DiaryWeekCardKeys.menu)), isNotNull);
+    expect(_selected(within: find.byKey(WeekBalanceModeKeys.menu)), isNotNull);
     await _pickInMenu(tester, WeekBalanceMode.carryover);
 
-    expect(find.byKey(DiaryWeekCardKeys.menu), findsNothing);
+    expect(find.byKey(WeekBalanceModeKeys.menu), findsNothing);
     expect(
       (await harness.settings.readSettings()).weekBalanceMode,
       WeekBalanceMode.carryover,
@@ -144,12 +144,12 @@ void main() {
 
     await _openWeekCardMenu(tester);
     expect(
-      _selected(within: find.byKey(DiaryWeekCardKeys.menu)),
+      _selected(within: find.byKey(WeekBalanceModeKeys.menu)),
       WeekBalanceMode.carryover,
     );
     await _pickInMenu(tester, WeekBalanceMode.show);
 
-    expect(find.byKey(DiaryWeekCardKeys.menu), findsNothing);
+    expect(find.byKey(WeekBalanceModeKeys.menu), findsNothing);
     expect(
       (await harness.settings.readSettings()).weekBalanceMode,
       WeekBalanceMode.show,
@@ -164,7 +164,7 @@ void main() {
     final settings = _settingsRepository();
     await _pumpSettings(tester, settings);
     final tile = find.byKey(SettingsPageKeys.weekBalanceTile);
-    final menu = find.byKey(DiaryWeekCardKeys.menu);
+    final menu = find.byKey(WeekBalanceModeKeys.menu);
 
     for (final mode in WeekBalanceMode.values) {
       expect(_option(mode), findsNothing, reason: 'no options inline');
@@ -201,10 +201,10 @@ void main() {
 
     await tester.tap(tile);
     await diary.settle(tester);
-    expect(find.byKey(DiaryWeekCardKeys.menu), findsOneWidget);
+    expect(find.byKey(WeekBalanceModeKeys.menu), findsOneWidget);
     final option = _option(
       WeekBalanceMode.carryover,
-      within: find.byKey(DiaryWeekCardKeys.menu),
+      within: find.byKey(WeekBalanceModeKeys.menu),
     );
     await tester.ensureVisible(option);
     await tester.tap(option);

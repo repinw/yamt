@@ -11,10 +11,10 @@ import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/week_balance_mode.dart';
+import 'package:yamt/features/calories/presentation/widgets/week_balance_menu.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_card_menu.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_week_card/diary_week_day_field.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -42,7 +42,7 @@ class DiaryWeekCard extends ConsumerWidget {
     final colors = FoodLabelColors.of(context);
     final today = ref.watch(diaryTodayProvider);
     final showDetails = ref.watch(diaryBalanceDetailsControllerProvider);
-    void openMenu() => unawaited(showDiaryWeekCardMenu(context));
+    void openMenu() => unawaited(showWeekBalanceMenu(context));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
