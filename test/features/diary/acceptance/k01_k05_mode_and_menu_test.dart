@@ -229,6 +229,13 @@ void main() {
         expect(text, contains(line));
       }
       _expectSelected(WeekBalanceMode.off);
+      expect(
+        find.text('Später ändern: in den Einstellungen.'),
+        findsNothing,
+        reason:
+            'opened from the settings, the menu has no hint to change it '
+            'later',
+      );
 
       await pickMode(tester, WeekBalanceMode.carryover);
 
