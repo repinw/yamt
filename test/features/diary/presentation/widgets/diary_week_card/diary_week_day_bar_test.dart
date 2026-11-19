@@ -3,6 +3,7 @@
 // the carryover (K21), the frame (K15) and the colours (K23).
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_week_card_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_week_balance.dart';
@@ -40,13 +41,14 @@ Future<void> _pump(
   CalorieGoalMode weightGoal = CalorieGoalMode.lose,
   WeekBalanceMode mode = WeekBalanceMode.show,
   bool isShown = false,
+  double width = _width,
 }) => tester.pumpWidget(
   MaterialApp(
     home: Scaffold(
       body: Align(
         alignment: Alignment.topLeft,
         child: SizedBox(
-          width: _width,
+          width: width,
           height: 14,
           child: DiaryWeekDayBar(
             key: _barKey,
@@ -273,5 +275,116 @@ void main() {
 
     await _pump(tester, _dayOn(1, eaten: 2200));
     expect(find.byKey(DiaryWeekCardKeys.frame), findsNothing);
+  });
+
+  group('small pieces stay visible in a narrow field', () {
+    // About the width of one of seven fields on a phone.
+    const narrow = 40.0;
+
+    testWidgets('an over part of 113 kcal at a budget of 2.099 is at least '
+        'the least piece width', (tester) async {
+      await _pump(tester, _dayOn(1, goal: 2099, eaten: 2212), width: narrow);
+
+      expect(
+        _widthOf(tester, DiaryWeekCardKeys.overPart),
+        greaterThanOrEqualTo(AppWeekCard.minPieceWidth),
+      );
+    });
+
+    testWidgets('a debt of −19 kcal is at least the least piece width', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        _dayOn(1, eaten: 1900, carryover: -19),
+        mode: WeekBalanceMode.carryover,
+        width: narrow,
+      );
+
+      expect(
+        _widthOf(tester, DiaryWeekCardKeys.debtPiece),
+        greaterThanOrEqualTo(AppWeekCard.minPieceWidth),
+      );
+    });
+
+    testWidgets('an extra of 1 kcal is at least the least piece width', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        _dayOn(1, eaten: 1900, carryover: 1),
+        mode: WeekBalanceMode.carryover,
+        width: narrow,
+      );
+
+      final extra = find.byKey(DiaryWeekCardKeys.extraPiece);
+      expect(extra, findsOneWidget);
+      expect(
+        _widthOf(tester, DiaryWeekCardKeys.extraPiece),
+        greaterThanOrEqualTo(AppWeekCard.minPieceWidth),
+      );
+      expect(
+        tester.getRect(extra).right,
+        lessThanOrEqualTo(tester.getRect(find.byKey(_barKey)).right + 0.01),
+      );
+    });
+
+    testWidgets('eaten, debt and over together fit into the field', (
+      tester,
+    ) async {
+      // Budget 2.181 (2.200 − 19), 2.294 eaten: 113 over.
+      await _pump(
+        tester,
+        _dayOn(1, eaten: 2294, carryover: -19),
+        mode: WeekBalanceMode.carryover,
+        width: narrow,
+      );
+
+      final field = tester.getRect(find.byKey(_barKey));
+      final debt = tester.getRect(find.byKey(DiaryWeekCardKeys.debtPiece));
+      final eaten = tester.getRect(find.byKey(DiaryWeekCardKeys.eatenPart));
+      final over = tester.getRect(find.byKey(DiaryWeekCardKeys.overPart));
+      expect(debt.width, greaterThanOrEqualTo(AppWeekCard.minPieceWidth));
+      expect(over.width, greaterThanOrEqualTo(AppWeekCard.minPieceWidth));
+      expect(
+        debt.width + eaten.width + over.width,
+        lessThanOrEqualTo(field.width + 0.01),
+      );
+      expect(over.right, lessThanOrEqualTo(field.right + 0.01));
+      expect(eaten.right, lessThanOrEqualTo(over.left + 0.01));
+    });
+  });
+
+  testWidgets('K15: the frame does not cover the parts; the framed field is '
+      'as wide as an unframed one', (tester) async {
+    final day = _dayOn(1, eaten: 2294, carryover: -19);
+    await _pump(tester, day, mode: WeekBalanceMode.carryover);
+    final unshownWidth = tester.getSize(find.byKey(_barKey)).width;
+
+    await _pump(tester, day, mode: WeekBalanceMode.carryover, isShown: true);
+
+    expect(find.byKey(DiaryWeekCardKeys.frame), findsOneWidget);
+    final field = tester.getRect(find.byKey(_barKey));
+    expect(field.width, unshownWidth);
+    final inner = field.deflate(AppWeekCard.frameWidth);
+    for (final key in [
+      DiaryWeekCardKeys.overPart,
+      DiaryWeekCardKeys.eatenPart,
+      DiaryWeekCardKeys.debtPiece,
+    ]) {
+      final part = tester.getRect(find.byKey(key));
+      expect(
+        part.left,
+        greaterThanOrEqualTo(inner.left - 0.01),
+        reason: '$key',
+      );
+      expect(part.top, greaterThanOrEqualTo(inner.top - 0.01), reason: '$key');
+      expect(part.right, lessThanOrEqualTo(inner.right + 0.01), reason: '$key');
+      expect(
+        part.bottom,
+        lessThanOrEqualTo(inner.bottom + 0.01),
+        reason: '$key',
+      );
+    }
   });
 }
