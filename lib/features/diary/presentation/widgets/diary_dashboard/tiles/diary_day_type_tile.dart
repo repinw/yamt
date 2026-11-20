@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -123,23 +124,32 @@ class _TypeIcon extends StatelessWidget {
         child: Center(child: emoji),
       );
     }
-    return Row(
-      spacing: AppSpacing.sm,
-      children: [
-        emoji,
-        Expanded(
-          child: Text(
-            diaryDayTypeLabel(type, l10n),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.titleSmall?.copyWith(
-              fontFamily: AppFonts.geist,
-              fontWeight: FontWeight.w600,
-              color: FoodLabelColors.of(context).ink,
+    // The emoji shrinks only when the row is narrower than it, as while a
+    // resized tile slides from 1×1 to 2×1 and its slot is still narrow.
+    return LayoutBuilder(
+      builder: (context, constraints) => Row(
+        spacing: AppSpacing.sm,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: math.max(0, constraints.maxWidth - AppSpacing.sm),
+            ),
+            child: emoji,
+          ),
+          Expanded(
+            child: Text(
+              diaryDayTypeLabel(type, l10n),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.titleSmall?.copyWith(
+                fontFamily: AppFonts.geist,
+                fontWeight: FontWeight.w600,
+                color: FoodLabelColors.of(context).ink,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
