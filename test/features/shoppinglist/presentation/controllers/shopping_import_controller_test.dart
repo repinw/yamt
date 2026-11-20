@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_import_repository.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -61,6 +62,7 @@ Future<_Setup> _setUp(
   final container = ProviderContainer(
     overrides: [
       shoppingListRepositoryProvider.overrideWithValue(list),
+      appUpdateStatusProvider.overrideWith((ref) => const Stream.empty()),
       shoppingShelfChoiceRepositoryProvider.overrideWithValue(shelves),
       appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       shoppingListImportRepositoryProvider.overrideWithValue(
@@ -82,6 +84,7 @@ Future<_Setup> _setUp(
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   test('in both lists, a private entry does not count as listed', () async {
     final setup = await _setUp(
       (_) async => _answer,

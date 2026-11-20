@@ -12,7 +12,7 @@ Future<void> _pumpTool(WidgetTester tester, HomeHeaderTool tool) {
 }
 
 void main() {
-  testWidgets('shows the symbol over the word in capitals', (tester) async {
+  testWidgets('shows the symbol over the word in normal case', (tester) async {
     await _pumpTool(
       tester,
       HomeHeaderTool(
@@ -23,10 +23,10 @@ void main() {
     );
 
     expect(find.byIcon(Icons.history_rounded), findsOneWidget);
-    expect(find.text('VERLAUF'), findsOneWidget);
+    expect(find.text('Verlauf'), findsOneWidget);
     expect(
       tester.getTopLeft(find.byIcon(Icons.history_rounded)).dy,
-      lessThan(tester.getTopLeft(find.text('VERLAUF')).dy),
+      lessThan(tester.getTopLeft(find.text('Verlauf')).dy),
     );
   });
 
@@ -93,5 +93,60 @@ void main() {
     );
     await tester.tap(find.byType(HomeHeaderTool));
     expect(taps, 1);
+  });
+
+  group('badge', () {
+    Future<void> pumpBadge(WidgetTester tester, int? count) {
+      return _pumpTool(
+        tester,
+        HomeHeaderTool(
+          symbol: const Icon(Icons.shopping_cart_rounded),
+          label: 'Einkauf',
+          badgeCount: count,
+          onPressed: () {},
+        ),
+      );
+    }
+
+    for (final (count, shown) in [(1, '1'), (99, '99'), (100, '99+')]) {
+      testWidgets('$count shows "$shown" and announces it', (tester) async {
+        final semantics = tester.ensureSemantics();
+        await pumpBadge(tester, count);
+
+        expect(
+          find.descendant(of: find.byType(Badge), matching: find.text(shown)),
+          findsOneWidget,
+        );
+        expect(
+          tester.getSemantics(find.byType(HomeHeaderTool)),
+          isSemantics(
+            label: 'Einkauf',
+            value: shown,
+            isButton: true,
+            isEnabled: true,
+            hasTapAction: true,
+          ),
+        );
+        semantics.dispose();
+      });
+    }
+
+    testWidgets('null shows no badge and no value', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpBadge(tester, null);
+
+      expect(find.byType(Badge), findsNothing);
+      expect(
+        tester.getSemantics(find.byType(HomeHeaderTool)),
+        isSemantics(
+          label: 'Einkauf',
+          value: '',
+          isButton: true,
+          isEnabled: true,
+          hasTapAction: true,
+        ),
+      );
+      semantics.dispose();
+    });
   });
 }

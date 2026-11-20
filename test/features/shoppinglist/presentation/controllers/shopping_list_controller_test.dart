@@ -90,6 +90,7 @@ Future<ProviderContainer> _createContainer(
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   test('build loads shopping list items from repository', () async {
     final repository = FakeShoppingListRepository(
       initialItems: <ShoppingListItem>[_item('a')],
@@ -177,7 +178,10 @@ void main() {
       onReadAll: () async => throw error,
     );
     final container = ProviderContainer(
-      overrides: [shoppingListRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        shoppingListRepositoryProvider.overrideWithValue(repository),
+        appUpdateStatusProvider.overrideWith((ref) => const Stream.empty()),
+      ],
     );
     addTearDown(container.dispose);
     addTearDown(repository.dispose);
@@ -201,6 +205,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           shoppingListRepositoryProvider.overrideWithValue(repository),
+          appUpdateStatusProvider.overrideWith((ref) => const Stream.empty()),
         ],
       );
       addTearDown(container.dispose);

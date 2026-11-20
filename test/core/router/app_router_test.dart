@@ -844,8 +844,8 @@ void main() {
 
     final router = container.read(appRouterProvider);
     expect(router.state.uri.path, AppRoutes.homeCalories);
-    expect(find.text('TODAY'), findsOneWidget);
-    expect(find.text('STATISTICS'), findsNothing);
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Statistics'), findsNothing);
 
     await tester.tap(_homeNavIcon(Icons.inventory_2_rounded));
     await tester.pump();
@@ -868,12 +868,13 @@ void main() {
     router.go(AppRoutes.homeCalories);
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeCalories);
-    expect(find.text('TODAY'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
 
     await tester.tap(_homeNavIcon(Icons.insights_rounded));
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeProgress);
-    expect(find.byIcon(Icons.menu_rounded).hitTestable(), findsNothing);
+    // Every tab has the menu (home criterion K6).
+    expect(find.byIcon(Icons.menu_rounded).hitTestable(), findsOneWidget);
 
     await tester.tap(_homeNavIcon(Icons.menu_book_rounded));
     await _pumpRouterTransition(tester);

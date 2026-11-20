@@ -517,11 +517,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(DiaryDayNavigator), findsOneWidget);
-    expect(find.text('TODAY'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
     expect(
       find.descendant(
         of: find.byType(HomeShellTabTopChrome),
-        matching: find.text('DIARY'),
+        matching: find.text('Diary'),
       ),
       findsNothing,
     );
@@ -572,7 +572,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text(DateFormat('d. MMM', 'en').format(oldDay)),
+      find.text(
+        [
+          DateFormat('ccc', 'en').format(oldDay),
+          DateFormat.MMMd('en').format(oldDay),
+        ].join(', '),
+      ),
       findsOneWidget,
     );
 
@@ -839,7 +844,7 @@ void main() {
     expect(calendar.read().isSelectedToday, isTrue);
   });
 
-  testWidgets('tabs other than diary have no menu button', (tester) async {
+  testWidgets('every tab has the menu button', (tester) async {
     for (final location in [
       AppRoutes.homeProgress,
       AppRoutes.homeInventory,
@@ -856,7 +861,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byKey(HomeShellMenuButton.buttonKey), findsNothing);
+      expect(find.byKey(HomeShellMenuButton.buttonKey), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
@@ -916,7 +921,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('IMPORT'), findsOneWidget);
+    expect(find.text('Import'), findsOneWidget);
     expect(find.byIcon(Icons.upload_file_rounded), findsOneWidget);
   });
 
@@ -1160,7 +1165,13 @@ void main() {
     await tester.drag(find.text('Row 5'), const Offset(0, -600));
     await tester.pumpAndSettle();
 
-    expect(find.text('Inventory'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(HomeShellTabTopChrome),
+        matching: find.text('Inventory'),
+      ),
+      findsNothing,
+    );
     expect(tester.getTopLeft(find.text('Search row')).dy, 0);
     expect(tester.takeException(), isNull);
   });
@@ -1182,13 +1193,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('ADD'), findsOneWidget);
+    expect(find.text('Add'), findsOneWidget);
 
-    await tester.tap(find.text('DIARY'));
+    await tester.tap(find.text('Diary'));
     await tester.pump();
 
-    expect(find.text('ADD'), findsNothing);
-    expect(find.text('EAT'), findsOneWidget);
+    expect(find.text('Add'), findsNothing);
+    expect(find.text('Eat'), findsOneWidget);
   });
 
   testWidgets(
@@ -1524,23 +1535,23 @@ void main() {
       matching: find.text(label),
     );
 
-    expect(navLabel('DIARY'), findsOneWidget);
-    expect(navLabel('INVENTORY'), findsOneWidget);
-    expect(navLabel('COOKBOOK'), findsOneWidget);
-    expect(navLabel('PROGRESS'), findsOneWidget);
+    expect(navLabel('Diary'), findsOneWidget);
+    expect(navLabel('Inventory'), findsOneWidget);
+    expect(navLabel('Cookbook'), findsOneWidget);
+    expect(navLabel('Progress'), findsOneWidget);
     expect(
-      tester.getCenter(navLabel('DIARY')).dx,
-      lessThan(tester.getCenter(navLabel('INVENTORY')).dx),
+      tester.getCenter(navLabel('Diary')).dx,
+      lessThan(tester.getCenter(navLabel('Inventory')).dx),
     );
     expect(
-      tester.getCenter(navLabel('INVENTORY')).dx,
-      lessThan(tester.getCenter(navLabel('COOKBOOK')).dx),
+      tester.getCenter(navLabel('Inventory')).dx,
+      lessThan(tester.getCenter(navLabel('Cookbook')).dx),
     );
     expect(
-      tester.getCenter(navLabel('COOKBOOK')).dx,
-      lessThan(tester.getCenter(navLabel('PROGRESS')).dx),
+      tester.getCenter(navLabel('Cookbook')).dx,
+      lessThan(tester.getCenter(navLabel('Progress')).dx),
     );
-    expect(find.text('SETTINGS'), findsNothing);
+    expect(find.text('Settings'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

@@ -62,8 +62,9 @@ final Finder _target = find.byKey(
   DiaryMealsSectionKeys.mealKcalOfTarget(MealType.lunch),
 );
 
-String? _targetText(WidgetTester tester) =>
-    _target.evaluate().isEmpty ? null : tester.widget<Text>(_target).data;
+String? _targetText(WidgetTester tester) => _target.evaluate().isEmpty
+    ? null
+    : tester.widget<Text>(_target).textSpan?.toPlainText();
 
 void main() {
   group('with a target', () {

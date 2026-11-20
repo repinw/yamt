@@ -126,7 +126,7 @@ void main() {
     await _pumpProgressTab(tester);
 
     expect(find.byKey(HomeBottomNavBar.actionKey), findsOneWidget);
-    expect(find.text('LOG'), findsOneWidget);
+    expect(find.text('Log'), findsOneWidget);
     expect(
       tester.getSemantics(find.byKey(HomeBottomNavBar.actionKey)),
       isSemantics(label: 'Log', isButton: true),

@@ -46,45 +46,133 @@ void main() {
     );
   }
 
-  testWidgets('shows Heute or Gestern over the weekday over the date', (
+  String dateLine(DateTime day) => [
+    DateFormat('ccc', 'de').format(day),
+    DateFormat.MMMd('de').format(day),
+  ].join(', ');
+
+  testWidgets('shows Heute or Gestern over the date with its weekday', (
     tester,
   ) async {
     await pumpNavigator(tester, selectedDay: today);
-    expect(find.text('HEUTE'), findsOneWidget);
-    expect(find.text('MONTAG'), findsOneWidget);
-    expect(find.text(DateFormat('d. MMM', 'de').format(today)), findsOne);
+    expect(find.text('Heute'), findsOneWidget);
+    expect(find.text('Mo, 27. Apr.'), findsOneWidget);
     expect(find.text('🏋️'), findsOneWidget);
 
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 26));
     await tester.pumpAndSettle();
-    expect(find.text('GESTERN'), findsOneWidget);
-    expect(find.text('SONNTAG'), findsOneWidget);
-
-    final earlier = DateTime(2026, 4, 5);
-    await pumpNavigator(tester, selectedDay: earlier);
-    await tester.pumpAndSettle();
-    expect(
-      find.text(DateFormat('EEEE', 'de').format(earlier).toUpperCase()),
-      findsOneWidget,
-    );
-    expect(find.text(DateFormat('d. MMM', 'de').format(earlier)), findsOne);
+    expect(find.text('Gestern'), findsOneWidget);
+    expect(find.text('So, 26. Apr.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('shows Morgen and Übermorgen, then the weekday', (tester) async {
+  testWidgets('shows Morgen and Übermorgen, then the number of days', (
+    tester,
+  ) async {
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 28));
-    expect(find.text('MORGEN'), findsOneWidget);
-    expect(find.text('DIENSTAG'), findsOneWidget);
+    expect(find.text('Morgen'), findsOneWidget);
+    expect(find.text('Di, 28. Apr.'), findsOneWidget);
 
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 29));
     await tester.pumpAndSettle();
-    expect(find.text('ÜBERMORGEN'), findsOneWidget);
-    expect(find.text('MITTWOCH'), findsOneWidget);
+    expect(find.text('Übermorgen'), findsOneWidget);
+    expect(find.text('Mi, 29. Apr.'), findsOneWidget);
 
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 30));
     await tester.pumpAndSettle();
-    expect(find.text('DONNERSTAG'), findsOneWidget);
+    expect(find.text('in 3 Tagen'), findsOneWidget);
+    expect(find.text('Do, 30. Apr.'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('days beyond the named ones', () {
+    final cases = <(String, DateTime, DateTime, String)>[
+      (
+        'two days back',
+        DateTime(2026, 4, 25),
+        DateTime(2026, 4, 27),
+        'vor 2 Tagen',
+      ),
+      (
+        'three days back',
+        DateTime(2026, 4, 24),
+        DateTime(2026, 4, 27),
+        'vor 3 Tagen',
+      ),
+      (
+        'three days ahead',
+        DateTime(2026, 4, 30),
+        DateTime(2026, 4, 27),
+        'in 3 Tagen',
+      ),
+      // Clock change to summer time on 2026-03-29.
+      (
+        'over the March clock change, ahead',
+        DateTime(2026, 4, 3),
+        DateTime(2026, 3, 20),
+        'in 14 Tagen',
+      ),
+      (
+        'over the March clock change, back',
+        DateTime(2026, 3, 20),
+        DateTime(2026, 4, 3),
+        'vor 14 Tagen',
+      ),
+      (
+        'next to the March clock change',
+        DateTime(2026, 3, 30),
+        DateTime(2026, 3, 27),
+        'in 3 Tagen',
+      ),
+      // Clock change to winter time on 2026-10-25.
+      (
+        'over the October clock change, back',
+        DateTime(2026, 10, 20),
+        DateTime(2026, 10, 30),
+        'vor 10 Tagen',
+      ),
+      (
+        'over the October clock change, ahead',
+        DateTime(2026, 10, 30),
+        DateTime(2026, 10, 20),
+        'in 10 Tagen',
+      ),
+      (
+        'next to the October clock change',
+        DateTime(2026, 10, 23),
+        DateTime(2026, 10, 26),
+        'vor 3 Tagen',
+      ),
+    ];
+
+    for (final (name, day, todayValue, text) in cases) {
+      testWidgets('$name: "$text"', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('de'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: SizedBox(
+                width: 400,
+                child: DiaryDayNavigator(
+                  selectedDay: day,
+                  today: todayValue,
+                  canGoBack: true,
+                  canGoForward: true,
+                  onPrevious: () {},
+                  onNext: () {},
+                  onOpenCalendar: () {},
+                ),
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text(text), findsOneWidget);
+        expect(find.text(dateLine(day)), findsOneWidget);
+      });
+    }
   });
 
   testWidgets('arrows, swipe and label call their callbacks', (tester) async {

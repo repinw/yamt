@@ -195,8 +195,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/kitchen_utensils/application/kitchen_utensil_mutation_service.dart':
         2,
     'lib/features/kitchen_utensils/domain/kitchen_utensil.dart': 1,
-    'lib/features/shoppinglist/presentation/controllers/shopping_list_controller.dart':
-        3,
   },
   'sdk-instance': {
     'lib/features/auth/data/auth_service.dart': 1,

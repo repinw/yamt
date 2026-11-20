@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/household/application/household_members_provider.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -48,6 +49,7 @@ Future<ProviderContainer> _container(
   final container = ProviderContainer(
     overrides: [
       shoppingListRepositoryProvider.overrideWithValue(list),
+      appUpdateStatusProvider.overrideWith((ref) => const Stream.empty()),
       shoppingShelfChoiceRepositoryProvider.overrideWithValue(shelves),
       appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       ...householdMembersOverrides(memberCount: memberCount),
@@ -76,6 +78,7 @@ List<String> _tileNames(ShoppingListView view) => [
 ];
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   test('alone in the household both lists show as one', () async {
     final container = await _container([
       _item('Milch'),

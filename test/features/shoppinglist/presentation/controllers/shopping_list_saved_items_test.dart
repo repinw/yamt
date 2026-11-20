@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -7,13 +8,17 @@ import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_lis
 import '../../support/fake_shopping_list_repository.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late FakeShoppingListRepository repository;
   late ProviderContainer container;
   late ShoppingListController controller;
   setUp(() async {
     repository = FakeShoppingListRepository();
     container = ProviderContainer(
-      overrides: [shoppingListRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        shoppingListRepositoryProvider.overrideWithValue(repository),
+        appUpdateStatusProvider.overrideWith((ref) => const Stream.empty()),
+      ],
     )..listen(shoppingListControllerProvider, (_, _) {});
     controller = container.read(shoppingListControllerProvider.notifier);
     await container.read(shoppingListControllerProvider.future);

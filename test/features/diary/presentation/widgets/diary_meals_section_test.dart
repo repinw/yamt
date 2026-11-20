@@ -1013,7 +1013,7 @@ void main() {
       final finder = find.byKey(DiaryMealsSectionKeys.mealKcalOfTarget(meal));
       return finder.evaluate().isEmpty
           ? null
-          : tester.widget<Text>(finder).data;
+          : tester.widget<Text>(finder).textSpan?.toPlainText();
     }
 
     testWidgets("with the pace marker on, each logged meal's heading shows "

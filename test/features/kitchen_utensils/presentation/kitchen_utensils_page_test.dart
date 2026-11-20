@@ -408,7 +408,7 @@ void main() {
 
     expect(find.text('Cookbook'), findsOneWidget);
 
-    await tester.tap(find.text('POTS'));
+    await tester.tap(find.text('Pots'));
     await tester.pumpAndSettle();
 
     expect(find.text('Kitchen utensils'), findsOneWidget);
