@@ -550,3 +550,109 @@ And: today never turns red for being under, because the day is not over yet.
   fasting day. Separate issue idea, not part of #911.
 - O3: whether the strip "Tagesarten im Run" in the budget card's details stays
   next to the new week card.
+
+## Ruhiger Tagebuch-Kopf (#1002)
+
+Not covered here: the "Budgetkarte" and "Bewegung" parts of issue #1002; the
+budget card waits for #930 (user decision 2026-11-19).
+
+Criteria for the diary page header and the meal header (issue #1002). The
+Menü button, the bottom bar and the Einkauf count are in
+`lib/features/home/CRITERIA.md`.
+
+Mocks: `Idee-Mitte.dc.html` (Idee B, page header only), `Farben.dc.html`
+(Stufe 1, meal header only). Where a mock and issue #1002 disagree, the issue
+wins.
+
+### Seitenkopf
+
+#### R1 – The date reads calmly, without capitals
+Source: issue #1002; mock Idee-Mitte.dc.html; user decision 2026-11-19 ("Do, 19. Nov." wie im Mock); user decision 2026-11-20 (the small line always has text, so the header does not jump between days).
+Today is Thursday, 19 November.
+| Day shown            | Small line   | Date line    |
+| -------------------- | ------------ | ------------ |
+| Wednesday 11 Nov     | vor 8 Tagen  | Mi, 11. Nov. |
+| Tuesday 17 Nov       | vor 2 Tagen  | Di, 17. Nov. |
+| Wednesday 18 Nov     | Gestern      | Mi, 18. Nov. |
+| Thursday 19 Nov      | Heute        | Do, 19. Nov. |
+| Friday 20 Nov        | Morgen       | Fr, 20. Nov. |
+| Saturday 21 Nov      | Übermorgen   | Sa, 21. Nov. |
+| Sunday 22 Nov        | in 3 Tagen   | So, 22. Nov. |
+The small line is never empty. Not: "Vorgestern", "HEUTE", "DONNERSTAG", "Do., 19. Nov." or a date without the weekday.
+
+#### R2 – The arrows go to the previous and the next day
+Source: issue #1002 ("Die Pfeile ... bleiben wie heute"); mock Idee-Mitte.dc.html.
+Given: the diary shows Thursday, 19 November (today).
+When: I tap the left arrow.
+Then: the header reads "Gestern" and "Mi, 18. Nov.".
+When: from today I tap the right arrow.
+Then: the header reads "Morgen" and "Fr, 20. Nov.".
+
+#### R3 – "Menü" stays under the menu icon in the diary
+Source: issue #1002; user decision 2026-11-19 ("weil sonst nicht klar ist, was das soll").
+Given: I open the diary.
+When: I look at the top left.
+Then: the menu icon shows with "Menü" under it, as in every tab (home K6). Mock Idee-Mitte.dc.html shows the icon alone; that does not apply.
+
+#### R4 – On another day the Heute button replaces Einkauf
+Source: user decision 2026-11-20; issue #1002; user decision 2026-11-19 (empty list).
+"Empty" means no item that is not ticked off (home K8).
+| Day shown        | Shopping list has open items      | Shopping list is empty        |
+| ---------------- | --------------------------------- | ----------------------------- |
+| today            | Einkauf top right, no Heute button | neither Einkauf nor Heute button |
+| yesterday        | Heute button top right, no Einkauf | Heute button top right        |
+| tomorrow         | Heute button top right, no Einkauf | Heute button top right        |
+| 8 days ago       | Heute button top right, no Einkauf | Heute button top right        |
+
+### Mahlzeiten
+
+#### R5 – The meal header keeps today's layout
+Source: issue #1002; mock Farben.dc.html (Stufe 1); user decision 2026-11-19 ("das hier").
+Given: a meal time has entries, e.g. "Mittagessen" with 786 kcal eaten and a target of 730 kcal.
+When: I look at its header.
+Then: the name stands on the left, then "786 / 730 kcal", and the copy button stands rightmost.
+
+#### R6 – Only the eaten number turns orange when the meal is over
+Source: issue #1002 ("Orange statt Pink", "Liegt die Mahlzeit drüber"); mock Farben.dc.html (Stufe 1); user decision 2026-11-19.
+Orange means the orange warning colour; its exact tone is left to the phone check. The rule holds on every day type, a Pause day included.
+| Eaten / target | Eaten number                 | "/ target kcal" |
+| -------------- | ---------------------------- | --------------- |
+| 786 / 730      | orange                       | not orange      |
+| 1.068 / 630    | orange                       | not orange      |
+| 730 / 730      | not orange                   | not orange      |
+| 500 / 730      | not orange                   | not orange      |
+| 0 / 730        | not orange                   | not orange      |
+| 786, no target shown | not orange             | —               |
+Nothing in the meal header is pink.
+Phone only: the exact orange tone.
+
+#### R7 – Entries keep their macros and amount
+Source: issue #1002; user decision 2026-11-19.
+Given: an entry with protein, carbs and fat and an amount, e.g. "400 g" or "1/3 Portionen".
+When: it stands under its meal.
+Then: it still shows its macro line and the amount on the right, as today.
+
+#### R8 – Macro numbers under an entry are always in the macro colours
+Source: user decision 2026-11-20 ("farbig. 'makros immer bunt' hat keine auswirkung darauf"); mock Farben.dc.html; issue #1002.
+Given: the setting "Makros immer bunt" is on, and an entry under a meal has protein, carbs and fat.
+When: I look at the macro line under the entry.
+Then: the protein number is in the protein colour (red), the carbs number in the carbs colour (blue) and the fat number in the fat colour (yellow). Only the numbers are coloured: no pills, no backgrounds.
+
+Given: the setting "Makros immer bunt" is off, and the same entry.
+When: I look at the macro line under the entry.
+Then: the line looks exactly the same: all three numbers in their macro colours. The setting has no effect on this line.
+
+#### R9 – Empty meal times stay hidden
+Source: issue #1002; user decision 2026-11-19.
+Given: a day with entries only at "Mittagessen" and "Abendessen".
+When: I look at the diary for that day.
+Then: no header shows for the meal times without entries, e.g. no "Frühstück".
+
+### Schritte
+
+#### R10 – The step card keeps its blinking
+Source: issue #1002; user decision 2026-11-19.
+Given: I open the diary.
+When: the step card and the other widgets show.
+Then: they blink as they do today.
+Phone only: blinking is judged by eye.
