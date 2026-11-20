@@ -59,7 +59,7 @@ void main() {
       final context = tester.element(find.byType(HomeTopBar));
       final title = tester.widget<Text>(find.text('Today'));
       expect(title.style?.color, Theme.of(context).colorScheme.onSurface);
-      expect(find.text('MORE'), findsOneWidget);
+      expect(find.text('More'), findsOneWidget);
     });
 
     testWidgets('keeps a long title constrained to one line', (tester) async {

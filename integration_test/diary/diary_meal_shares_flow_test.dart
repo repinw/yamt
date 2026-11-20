@@ -197,7 +197,9 @@ String? _breakfastTarget(WidgetTester tester) {
   final finder = find.byKey(
     DiaryMealsSectionKeys.mealKcalOfTarget(MealType.breakfast),
   );
-  return finder.evaluate().isEmpty ? null : tester.widget<Text>(finder).data;
+  return finder.evaluate().isEmpty
+      ? null
+      : tester.widget<Text>(finder).textSpan?.toPlainText();
 }
 
 /// The share of the day the pace marker stands at, from its place on the

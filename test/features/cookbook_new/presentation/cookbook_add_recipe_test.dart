@@ -125,6 +125,6 @@ void main() {
     await tester.pumpWidget(_app());
     await tester.pumpAndSettle();
 
-    expect(find.text('POTS'), findsOneWidget);
+    expect(find.text('Pots'), findsOneWidget);
   });
 }

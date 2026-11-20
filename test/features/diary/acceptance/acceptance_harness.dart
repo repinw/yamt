@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
+import 'package:yamt/core/domain/app_update_status.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
@@ -45,6 +47,7 @@ import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/auth_user_data_key_session.dart';
@@ -54,6 +57,7 @@ import '../../../helpers/long_press_test_utils.dart';
 import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
+import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 import 'acceptance_contract.dart';
 
 export 'acceptance_contract.dart';
@@ -357,6 +361,15 @@ class DiaryAcceptanceHarness {
     householdDataOwnerUserIdProvider.overrideWith((ref) => 'user-1'),
     calorieSettingsRepositoryProvider.overrideWithValue(settings),
     calorieLogRepositoryProvider.overrideWithValue(log),
+    // The shopping list waits for the update status before it rewrites.
+    appUpdateStatusProvider.overrideWith(
+      (ref) => Stream.value(const AppUpToDate()),
+    ),
+    // The Einkauf tool in the bar reads the list; an empty fake keeps it off
+    // the real repository.
+    shoppingListRepositoryProvider.overrideWithValue(
+      FakeShoppingListRepository(),
+    ),
     plannedEntryRepositoryProvider.overrideWithValue(
       FakePlannedEntryRepository(),
     ),
