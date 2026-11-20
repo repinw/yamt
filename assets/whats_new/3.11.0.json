@@ -1,20 +1,30 @@
 {
   "de": {
     "new": [
-      "Wochenleiste im Tagebuch: deine Woche auf einen Blick, mit Zahlen unter den Tagen"
+      "Tagebuch als Kacheln: verschieben, Größe ändern, ausblenden",
+      "Neuer Kochmodus und neue Einkaufsliste mit Regalen und privater Liste",
+      "Schritte aus Health im Tagebuch"
     ],
     "improved": [
-      "Der Kalorien-Übertrag ist jetzt optional und standardmäßig aus. „Mit Übertrag“ schaltest du ein, indem du die Wochenleiste hältst, oder in den Einstellungen."
+      "Der Kalorien-Übertrag ist jetzt optional. „Mit Übertrag“ schaltest du ein, indem du die Wochenkarte hältst, oder in den Einstellungen.",
+      "KI-Rezeptidee mit „Unbedingt rein“ und „Bloß nicht“"
     ],
-    "fixed": []
+    "fixed": [
+      "Ein neues Ziel beendet die alte Woche richtig"
+    ]
   },
   "en": {
     "new": [
-      "Week strip in the diary: your week at a glance, with numbers under the days"
+      "Diary as tiles: move, resize, hide",
+      "A new cooking mode and a new shopping list with shelves and a private list",
+      "Steps from Health in the diary"
     ],
     "improved": [
-      "The calorie carryover is now optional and off by default. You turn on \"With carryover\" by holding the week strip, or in the settings."
+      "The calorie carryover is now optional. You turn on \"With carryover\" by holding the week card, or in the settings.",
+      "AI recipe idea with \"Must go in\" and \"No way\""
     ],
-    "fixed": []
+    "fixed": [
+      "A new goal ends the old week correctly"
+    ]
   }
 }
