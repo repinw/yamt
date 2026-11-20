@@ -17,7 +17,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   gets no sign-out there, because it would lose its data.
 - Home shell with bottom tabs for Inventory, Diary, Cookbook, and Settings.
   The tab header and the bottom navigation stay in place while a tab
-  scrolls. In the middle of the bar a round button in the accent color opens
+  scrolls. The bottom bar is a floating capsule with the four tabs and a
+  lime button on the right, the plus and its word. It opens
   the actions of the current tab, with a haptic pulse; its word changes per
   tab ("Hinzufügen", "Essen", "Kochen", "Erfassen").
   The actions open like the side menu, but mirrored: the page slides to the
@@ -133,8 +134,15 @@ and feature description docs. This is product-facing; architecture rules stay in
   by 100 steps a day. Off until the user turns on "Schritte im Tagebuch" in
   the settings; turning it on connects Health when needed.
 - Date selection and calendar strip navigation. Swiping the diary slides to
-  the previous or next day. The top bar shows yesterday, today, tomorrow, the
-  day after tomorrow, or the weekday in small capitals over the date.
+  the previous or next day. The header shows a small line over the date
+  ("Do, 19. Nov."): Heute, Gestern, Morgen, Übermorgen, otherwise "vor N
+  Tagen" or "in N Tagen". Einkauf is the rightmost header tool: in Vorrat it
+  always shows, in the diary (on today) and in Kochbuch only while the
+  shopping lists have open items, with the count ("99+" from 100). On another
+  day of the diary the Heute button takes its place. Header tool words are
+  in normal case. The eaten number of a meal header turns orange when over
+  the target. The macro numbers under each entry always show in the macro
+  colors; "Makros immer bunt" does not change them.
 - The diary opens with today again (#753): after the user comes back from
   another tab, and when the app returns after at least 5 minutes in the
   background or on a new date. A shorter absence, such as a camera photo or a
@@ -168,7 +176,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   of a Vorrat entry too, and every change offers an undo. Prepared meals and
   combined entries list their foods instead of the ruler.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
-  Its actions open from the "Essen" button in the middle of the bar: barcode
+  Its actions open from the "Essen" button of the bar: barcode
   first, then Vorrat, quick entry, AI, and search. On a future day a food
   found by barcode, AI, or search is saved as a plan with undo, and it does
   not go into the Vorrat.
@@ -390,7 +398,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   Days before the first goal are left out, since the calendar cannot open
   them.
 - Weekly check-in prompts and success/hint cards.
-- Side menu from the diary top bar. The page slides to the right as a
+- Side menu from the menu button on the left of every tab header ("Menü"). The page slides to the right as a
   shrunken card and the menu shows behind it: the user, then Profile,
   household (You), kitchen utensils, shopping list (Kitchen),
   settings, appearance, about (App), and "Link account" for guests at the
@@ -537,7 +545,7 @@ and feature description docs. This is product-facing; architecture rules stay in
     TDEE, the change since yesterday and this week, and the next check-in;
   - training days against rest days up to yesterday: days of each,
     and average kcal, protein, carbs, and fat.
-- The round button of the bar ("Erfassen") opens the Fortschritt actions:
+- The button of the bar ("Erfassen") opens the Fortschritt actions:
   - "Wiegen" opens the weight entry for today, filled with the newest single
     weighing (not the chart's last weigh-in). It adds a weighing; saving
     updates the weight trend and the goal right away.

@@ -48,6 +48,10 @@ favorites, and products that come back on a schedule.
   front of the suggestions, once per food, with `plannedFor` set to its first
   meal. `groupShoppingPlanNeeds` (application) groups `ShoppingPlanNeed`
   values by day and meal and drops foods that are already on the list.
+- `ShoppingHeaderTool` (presentation/widgets) is the header tool that opens
+  the shopping list. The diary, inventory, and cookbook_new headers use it.
+  A badge shows the count of open entries on both lists, "99+" from 100.
+  With `onlyWithOpenEntries` it hides while nothing is open.
 - `showShoppingListImport` opens the list import.
 - `ShoppingPlanNeedsFlow.offer` asks whether a plan's missing foods go on
   the list, each one tickable, and adds the ticked ones; cookbook calls it
