@@ -13,10 +13,12 @@ Home owns the tab shell, tab navigation, and shell-level composition.
   signed-in user, the app-wide destinations (Profile,
   household, kitchen utensils, shopping list, settings, appearance, about),
   an account entry at the bottom, and in debug builds the Calories debug
-  actions. Only the Diary top bar opens the menu, through
-  `HomeShellMenuButton` from `core/widgets` on its left side. Actions that
-  belong to one tab do not go into the menu.
-- The action button in the middle of the bottom bar and its action panel
+  actions. Every tab header opens the menu, through `HomeShellMenuButton`
+  from `core/widgets` on its left side ("Menü"). Actions that belong to one
+  tab do not go into the menu.
+- The bottom bar, a floating capsule with the four tabs and a lime action
+  button on its right (the plus and its word).
+- The action button of the bottom bar and its action panel
   (`presentation/widgets/home_action_panel.dart`). It opens like the side
   menu, mirrored, with the tab's actions at the bottom right. Vorrat,
   Diary, Cookbook, and Fortschritt have it; Fortschritt offers the weight

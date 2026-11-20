@@ -116,7 +116,7 @@ check-in composition.
 - `presentation/widgets/diary_quick_eat_actions.dart`
   (`diaryQuickEatActions`) is public UI for `features/home`: the quick-eat
   actions for the selected day. The home shell shows them in its action panel
-  when the "Essen" button in the middle of the bar is tapped. Its quick entry
+  when the "Essen" button of the bar is tapped. Its quick entry
   action opens `presentation/diary_quick_entry_page.dart`, which
   saves a calorie quick entry through the calories entry saver without an
   inventory item.
