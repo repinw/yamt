@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_budget_card_constants.dart';
@@ -5,10 +7,12 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
+import 'package:yamt/core/utils/text_measure.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_fade_in.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_line.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_macro_details.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_macro_style.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -47,24 +51,69 @@ class DiaryBudgetMacroColumn extends StatelessWidget {
         MetricAccentColors.of(context).allMacrosColored &&
         !data.isPauseDay &&
         !data.status.isPast;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppBudgetCard.macroGap,
-      children: [
-        for (final macro in data.macros)
-          _MacroRow(
-            macro: macro,
-            isColored: allColored || macro.kind == lowest,
-            isPauseDay: data.isPauseDay,
-            isPlannedDay: data.isPlannedDay,
-            showDetails: showDetails,
-            showEaten: showEaten,
-            numberFormat: numberFormat,
-          ),
-      ],
+    final l10n = AppLocalizations.of(context)!;
+    final largeText = isLargeText(context);
+    // Measured only at large text, the one case that needs it.
+    double widest(Iterable<String> texts, TextStyle? style) => largeText
+        ? texts
+              .map((text) => measureTextWidth(context, text, style))
+              .fold<double>(0, math.max)
+        : 0;
+
+    // The three rows take the same form: names and grams side by side, or,
+    // at large text where the longest of each does not fit one line, the
+    // grams under the name.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final valueWidth = widest([
+          for (final macro in data.macros)
+            diaryBudgetMacroValue(
+              l10n,
+              macro,
+              showEaten: showEaten,
+              isPauseDay: data.isPauseDay,
+              numberFormat: numberFormat,
+            ),
+        ], _valueStyle(context));
+        final nameWidth = widest([
+          for (final macro in data.macros)
+            diaryBudgetMacroLabel(l10n, macro.kind),
+        ], _nameStyle(context));
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppBudgetCard.macroGap,
+          children: [
+            for (final macro in data.macros)
+              _MacroRow(
+                macro: macro,
+                isColored: allColored || macro.kind == lowest,
+                isPauseDay: data.isPauseDay,
+                isPlannedDay: data.isPlannedDay,
+                showDetails: showDetails,
+                showEaten: showEaten,
+                numberFormat: numberFormat,
+                stacked:
+                    largeText && nameWidth + valueWidth > constraints.maxWidth,
+                valueWidth: valueWidth,
+              ),
+          ],
+        );
+      },
     );
   }
 }
+
+TextStyle? _nameStyle(BuildContext context) =>
+    Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(fontFamily: AppFonts.geist);
+
+TextStyle? _valueStyle(BuildContext context) =>
+    Theme.of(context).textTheme.titleLarge?.copyWith(
+      fontFamily: AppFonts.geist,
+      fontSize: AppBudgetCard.macroValue,
+      fontWeight: FontWeight.w700,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
 
 class _MacroRow extends StatelessWidget {
   const new({
@@ -75,6 +124,8 @@ class _MacroRow extends StatelessWidget {
     required this.showDetails,
     required this.showEaten,
     required this.numberFormat,
+    required this.stacked,
+    required this.valueWidth,
   });
 
   final DiaryBudgetMacro macro;
@@ -85,13 +136,21 @@ class _MacroRow extends StatelessWidget {
   final bool showEaten;
   final NumberFormat numberFormat;
 
+  /// Whether the grams sit under the name.
+  final bool stacked;
+
+  /// Width of the widest of the three values; they share one size.
+  final double valueWidth;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final textTheme = Theme.of(context).textTheme;
     final colors = FoodLabelColors.of(context);
     final macroColor = diaryBudgetMacroColor(context, macro.kind);
     final macroText = diaryBudgetMacroTextColor(context, macroColor);
+    final label = diaryBudgetMacroLabel(l10n, macro.kind);
+    final nameStyle = _nameStyle(context)
+        ?.copyWith(color: isColored ? macroText : colors.muted);
     final left = (macro.target - macro.eaten - macro.planned).round();
     final value = diaryBudgetMacroValue(
       l10n,
@@ -107,41 +166,32 @@ class _MacroRow extends StatelessWidget {
         ? macroText
         : colors.ink;
 
+    final valueStyle = _valueStyle(context)?.copyWith(color: valueColor);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.xxs,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Expanded(
-              child: Text(
-                diaryBudgetMacroLabel(l10n, macro.kind),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.bodyMedium?.copyWith(
-                  fontFamily: AppFonts.geist,
-                  color: isColored ? macroText : colors.muted,
-                ),
-              ),
+        _NameAndValue(
+          stacked: stacked,
+          valueWidth: valueWidth,
+          name: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: nameStyle,
+          ),
+          value: DiaryBudgetCrossFade(
+            value: value,
+            alignment: AlignmentDirectional.topEnd,
+            child: Text(
+              value,
+              key: DiaryBudgetCardKeys.macroValue(macro.kind),
+              style: valueStyle,
+              maxLines: 1,
+              softWrap: false,
             ),
-            DiaryBudgetCrossFade(
-              value: value,
-              alignment: AlignmentDirectional.topEnd,
-              child: Text(
-                value,
-                key: DiaryBudgetCardKeys.macroValue(macro.kind),
-                style: textTheme.titleLarge?.copyWith(
-                  fontFamily: AppFonts.geist,
-                  fontSize: AppBudgetCard.macroValue,
-                  fontWeight: FontWeight.w700,
-                  color: valueColor,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
         DiaryBudgetLine(
           eaten: macro.eaten,
@@ -161,7 +211,7 @@ class _MacroRow extends StatelessWidget {
           DiaryBudgetFadeIn(
             child: DiaryBudgetCrossFade(
               value: (macro.eaten.round(), macro.planned.round()),
-              child: _MacroDetails(
+              child: DiaryBudgetMacroDetails(
                 macro: macro,
                 isPauseDay: isPauseDay,
                 numberFormat: numberFormat,
@@ -173,45 +223,49 @@ class _MacroRow extends StatelessWidget {
   }
 }
 
-/// Eaten of target grams of [macro], and its counted plans; the eaten grams
-/// alone on a pause day.
-class _MacroDetails extends StatelessWidget {
+/// A macro's name with its grams on the right, or, when [stacked], the
+/// grams below the name, shrunk with the other rows to the room they share.
+class _NameAndValue extends StatelessWidget {
   const new({
-    required this.macro,
-    required this.isPauseDay,
-    required this.numberFormat,
+    required this.stacked,
+    required this.valueWidth,
+    required this.name,
+    required this.value,
   });
 
-  final DiaryBudgetMacro macro;
-  final bool isPauseDay;
-  final NumberFormat numberFormat;
+  final bool stacked;
+  final double valueWidth;
+  final Widget name;
+  final Widget value;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = FoodLabelColors.of(context);
-    final style = Theme.of(context).textTheme.bodySmall
-        ?.copyWith(fontFamily: AppFonts.geist, color: colors.muted);
-    String grams(num value) => numberFormat.format(value.round());
-
-    return Text.rich(
-      key: DiaryBudgetCardKeys.macroTotal(macro.kind),
-      TextSpan(
-        text: isPauseDay
-            ? l10n.diaryBudgetMacroEaten(grams(macro.eaten))
-            : l10n.diaryMacroEatenOfTarget(
-                grams(macro.eaten + macro.planned),
-                grams(macro.target),
-              ),
+    if (!stacked) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
-          if (macro.planned.round() > 0)
-            TextSpan(
-              text: '\n${l10n.diaryBudgetMacroPlanned(grams(macro.planned))}',
-              style: style?.copyWith(color: colors.plan),
-            ),
+          Expanded(child: name),
+          value,
         ],
-      ),
-      style: style,
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        name,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerEnd,
+          child: SizedBox(
+            width: valueWidth,
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: value,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

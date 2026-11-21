@@ -31,31 +31,36 @@ class DiaryBudgetToggleRow extends ConsumerWidget {
     final status = ref.watch(diaryDayTypeStatusProvider(day));
     final showEaten = ref.watch(diaryBudgetEatenViewControllerProvider);
 
-    return Row(
-      children: [
-        Expanded(
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: showViewSwitch
-                ? DiaryBudgetViewSwitch(
-                    showEaten: showEaten,
-                    onSelect: (eaten) {
-                      final view = ref.read(
-                        diaryBudgetEatenViewControllerProvider.notifier,
-                      );
-                      eaten ? view.showEaten() : view.showLeft();
-                    },
-                  )
-                : null,
-          ),
-        ),
-        if (status != null)
-          DiaryBudgetDayTypeButtons(
+    final buttons = status == null
+        ? null
+        : DiaryBudgetDayTypeButtons(
             selected: status.type,
             onSelect: (type) => unawaited(
               selectDiaryDayTypeFlow(context, ref, day: day, type: type),
             ),
-          ),
+          );
+    if (!showViewSwitch) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [?buttons],
+      );
+    }
+    // With large text the buttons wrap below the switch instead of
+    // pushing it out of the card.
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        DiaryBudgetViewSwitch(
+          showEaten: showEaten,
+          onSelect: (eaten) {
+            final view = ref.read(
+              diaryBudgetEatenViewControllerProvider.notifier,
+            );
+            eaten ? view.showEaten() : view.showLeft();
+          },
+        ),
+        ?buttons,
       ],
     );
   }

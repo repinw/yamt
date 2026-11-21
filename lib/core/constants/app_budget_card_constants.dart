@@ -123,6 +123,10 @@ abstract final class AppBudgetCard {
   /// Height of one ledger row.
   static const double ledgerRow = 26;
 
+  /// Largest share of a ledger row that a value takes at large text; the
+  /// value shrinks beyond it and the label wraps in the rest.
+  static const double ledgerValueMaxShare = 0.5;
+
   /// Gap between two days in the week strip.
   static const double weekDayGap = 4;
 

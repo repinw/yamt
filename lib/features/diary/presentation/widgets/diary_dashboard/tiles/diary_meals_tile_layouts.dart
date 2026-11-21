@@ -3,23 +3,14 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_budget_card_constants.dart';
 import 'package:yamt/core/constants/app_dashboard_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
 import 'package:yamt/features/diary/presentation/models/diary_meal_kcal.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_line.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_meals_tile_numbers.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_caption.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Icon of [mealType] in the meals tile.
-IconData diaryMealIcon(MealType mealType) => switch (mealType) {
-  MealType.breakfast => Icons.free_breakfast_outlined,
-  MealType.lunch => Icons.lunch_dining_outlined,
-  MealType.dinner => Icons.dinner_dining_outlined,
-  MealType.snack => Icons.cookie_outlined,
-};
 
 /// The inside of the meals tile at [size]: bars or names under the kcal.
 class DiaryMealsTileLayout extends StatelessWidget {
@@ -73,8 +64,14 @@ class _Grid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sharedWidth = diaryMealNumberWidth(context, meals, numberFormat);
     Widget cell(DiaryMealKcal meal) => Expanded(
-      child: _IconNumber(meal: meal, numberFormat: numberFormat),
+      child: DiaryMealIconNumber(
+        meal: meal,
+        sharedWidth: sharedWidth,
+        numberFormat: numberFormat,
+        nameShown: false,
+      ),
     );
     final half = (meals.length / 2).ceil();
     return Column(
@@ -114,26 +111,44 @@ class _Columns extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scale = _dayScale(meals);
-    return Row(
-      spacing: AppSpacing.xs,
-      children: [
-        for (final meal in meals)
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: AppSpacing.xxs,
-              children: [
-                Expanded(
-                  child: _IconNumber(meal: meal, numberFormat: numberFormat),
+    final sharedWidth = diaryMealNumberWidth(context, meals, numberFormat);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showNames =
+            !bars &&
+            diaryMealNamesFit(
+              context,
+              meals,
+              (constraints.maxWidth - (meals.length - 1) * AppSpacing.xs) /
+                  meals.length,
+            );
+        return Row(
+          spacing: AppSpacing.xs,
+          children: [
+            for (final meal in meals)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.xxs,
+                  children: [
+                    Expanded(
+                      child: DiaryMealIconNumber(
+                        meal: meal,
+                        sharedWidth: sharedWidth,
+                        numberFormat: numberFormat,
+                        nameShown: showNames,
+                      ),
+                    ),
+                    if (bars)
+                      _MealBar(meal: meal, scale: scale)
+                    else if (showNames)
+                      DiaryTileCaption(meal.mealType.localizedName(l10n)),
+                  ],
                 ),
-                if (bars)
-                  _MealBar(meal: meal, scale: scale)
-                else
-                  DiaryTileCaption(meal.mealType.localizedName(l10n)),
-              ],
-            ),
-          ),
-      ],
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -165,41 +180,71 @@ class _Rows extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final scale = _dayScale(meals);
-    return Column(
-      spacing: AppSpacing.xxs,
-      children: [
-        for (final meal in meals)
-          Expanded(
-            child: Row(
-              spacing: AppSpacing.xs,
-              children: [
-                Icon(
-                  diaryMealIcon(meal.mealType),
-                  size: AppDashboard.captionIcon,
-                  color: colors.muted,
+    final sharedWidth = diaryMealNumberWidth(context, meals, numberFormat);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The room the flexible parts share, less the icon and the gaps.
+        final shared =
+            constraints.maxWidth -
+            AppDashboard.captionIcon -
+            (withNames ? 1 : 0) * AppSpacing.xs -
+            (bars ? 1 : 0) * AppSpacing.xs -
+            AppSpacing.xs;
+        final flexes =
+            AppDashboard.mealNameFlex +
+            (bars ? AppDashboard.mealBarFlex : 0) +
+            AppDashboard.mealNumberFlex;
+        final showNames =
+            withNames &&
+            diaryMealNamesFit(
+              context,
+              meals,
+              shared * AppDashboard.mealNameFlex / flexes,
+            );
+        return Column(
+          spacing: AppSpacing.xxs,
+          children: [
+            for (final meal in meals)
+              Expanded(
+                child: Row(
+                  spacing: AppSpacing.xs,
+                  children: [
+                    Icon(
+                      diaryMealIcon(meal.mealType),
+                      size: AppDashboard.captionIcon,
+                      color: colors.muted,
+                      // Where the name drops out, the icon says it.
+                      semanticLabel: showNames
+                          ? null
+                          : meal.mealType.localizedName(l10n),
+                    ),
+                    if (showNames)
+                      Expanded(
+                        flex: AppDashboard.mealNameFlex,
+                        child: DiaryTileCaption(
+                          meal.mealType.localizedName(l10n),
+                        ),
+                      ),
+                    if (bars)
+                      Expanded(
+                        flex: AppDashboard.mealBarFlex,
+                        child: _MealBar(meal: meal, scale: scale),
+                      ),
+                    Expanded(
+                      flex: AppDashboard.mealNumberFlex,
+                      child: DiaryMealNumber(
+                        meal: meal,
+                        sharedWidth: sharedWidth,
+                        numberFormat: numberFormat,
+                        alignment: AlignmentDirectional.centerEnd,
+                      ),
+                    ),
+                  ],
                 ),
-                if (withNames)
-                  Expanded(
-                    flex: AppDashboard.mealNameFlex,
-                    child: DiaryTileCaption(meal.mealType.localizedName(l10n)),
-                  ),
-                if (bars)
-                  Expanded(
-                    flex: AppDashboard.mealBarFlex,
-                    child: _MealBar(meal: meal, scale: scale),
-                  ),
-                Expanded(
-                  flex: AppDashboard.mealNumberFlex,
-                  child: _Number(
-                    meal: meal,
-                    numberFormat: numberFormat,
-                    alignment: AlignmentDirectional.centerEnd,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -224,58 +269,4 @@ class _MealBar extends StatelessWidget {
     scaleKcal: scale,
     compact: true,
   );
-}
-
-class _IconNumber extends StatelessWidget {
-  const new({required this.meal, required this.numberFormat});
-
-  final DiaryMealKcal meal;
-
-  final NumberFormat numberFormat;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    spacing: AppDashboard.captionGap,
-    children: [
-      Icon(
-        diaryMealIcon(meal.mealType),
-        size: AppDashboard.captionIcon,
-        color: FoodLabelColors.of(context).muted,
-      ),
-      Expanded(
-        child: _Number(meal: meal, numberFormat: numberFormat),
-      ),
-    ],
-  );
-}
-
-class _Number extends StatelessWidget {
-  const new({
-    required this.meal,
-    required this.numberFormat,
-    this.alignment = AlignmentDirectional.centerStart,
-  });
-
-  final DiaryMealKcal meal;
-
-  final NumberFormat numberFormat;
-
-  final AlignmentGeometry alignment;
-
-  @override
-  Widget build(BuildContext context) {
-    final kcal = meal.total.round();
-    final colors = FoodLabelColors.of(context);
-    return DiaryTileNumber(
-      numberFormat.format(kcal),
-      alignment: alignment,
-      // An empty meal stays quiet; a meal of plans only shows in the plan
-      // color.
-      color: kcal == 0
-          ? colors.muted
-          : meal.eaten.round() == 0
-          ? colors.plan
-          : null,
-    );
-  }
 }
