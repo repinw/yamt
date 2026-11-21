@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Text labels used by [showWeightEntryDialog].
@@ -83,15 +84,25 @@ class _WeightEntryDialogContent extends StatefulWidget {
 }
 
 class _WeightEntryDialogContentState extends State<_WeightEntryDialogContent> {
-  late final TextEditingController _controller;
+  final TextEditingController _controller = TextEditingController();
+  bool _prefilled = false;
   String? _errorText;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(
-      text: widget.initialWeightKg?.toStringAsFixed(1) ?? '',
-    );
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The locale needs the context, so the field is filled here, once.
+    if (_prefilled) {
+      return;
+    }
+    _prefilled = true;
+    final weightKg = widget.initialWeightKg;
+    if (weightKg != null) {
+      _controller.text = NumberFormat.decimalPatternDigits(
+        locale: Localizations.localeOf(context).toLanguageTag(),
+        decimalDigits: 1,
+      ).format(weightKg);
+    }
   }
 
   @override

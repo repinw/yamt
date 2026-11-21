@@ -103,7 +103,7 @@ void main() {
           )
           .controller
           ?.text,
-      '79.4',
+      '79,4',
     );
   });
 
