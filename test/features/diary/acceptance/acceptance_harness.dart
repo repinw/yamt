@@ -108,6 +108,24 @@ class GoalChange {
   final List<int>? trainingWeekdays;
 }
 
+/// A health weight service that keeps the weights saved to it.
+class RecordingHealthWeightService extends FakeHealthWeightService {
+  /// Creates a service without samples.
+  new() : super([]);
+
+  /// The weights saved so far, in kg.
+  final List<double> savedKg = <double>[];
+
+  @override
+  Future<bool> saveWeightSample({
+    required DateTime recordedAt,
+    required double weightKg,
+  }) async {
+    savedKg.add(weightKg);
+    return true;
+  }
+}
+
 /// One account with a goal run, logged days and a fixed clock.
 class DiaryAcceptanceHarness {
   /// Creates the account.
@@ -387,10 +405,8 @@ class DiaryAcceptanceHarness {
         ),
       ),
     ),
-    healthWeightServiceProvider.overrideWithValue(FakeHealthWeightService([])),
-    manualHealthWeightRepositoryProvider.overrideWithValue(
-      FakeManualHealthWeightRepository([]),
-    ),
+    healthWeightServiceProvider.overrideWithValue(healthWeight),
+    manualHealthWeightRepositoryProvider.overrideWithValue(weights),
     // The criteria's examples keep the goal fixed (2.200 on every day); the
     // daily TDEE would move it with what was eaten, so it stays out here.
     goalTdeeOffsetsByDayProvider.overrideWith((ref) async {
@@ -399,13 +415,33 @@ class DiaryAcceptanceHarness {
     }),
   ];
 
-  /// Opens the diary in German on today.
-  Future<void> pumpDiary(WidgetTester tester) async {
-    await pumpApp(tester, const DiaryPage(includeHomeShellChrome: true));
+  /// The health app's weight service; it records what the diary saves there.
+  final RecordingHealthWeightService healthWeight =
+      RecordingHealthWeightService();
+
+  /// The manual weighings of the account; the weight dialog offers the
+  /// newest one.
+  final FakeManualHealthWeightRepository weights =
+      FakeManualHealthWeightRepository([]);
+
+  /// Opens the diary in German (or in [locale]) on today.
+  Future<void> pumpDiary(
+    WidgetTester tester, {
+    Locale locale = const Locale('de'),
+  }) async {
+    await pumpApp(
+      tester,
+      const DiaryPage(includeHomeShellChrome: true),
+      locale: locale,
+    );
   }
 
-  /// Pumps [home] in German with this account.
-  Future<void> pumpApp(WidgetTester tester, Widget home) async {
+  /// Pumps [home] in German (or in [locale]) with this account.
+  Future<void> pumpApp(
+    WidgetTester tester,
+    Widget home, {
+    Locale locale = const Locale('de'),
+  }) async {
     // 560 x 1600 logical pixels: the diary's widest content, tall enough
     // for the budget, week and steps cards. The test font is wider than the
     // app's, and a training day's toggle row overflows a narrower card.
@@ -424,7 +460,7 @@ class DiaryAcceptanceHarness {
         container: container,
         child: MaterialApp(
           navigatorKey: navigatorKey,
-          locale: const Locale('de'),
+          locale: locale,
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: home),

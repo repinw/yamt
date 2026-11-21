@@ -656,3 +656,28 @@ Given: I open the diary.
 When: the step card and the other widgets show.
 Then: they blink as they do today.
 Phone only: blinking is judged by eye.
+
+## Gewicht-Kachel: Wiegen-Dialog (#864)
+
+Bug criteria for the dialog that the diary's weight tile opens to enter a
+weight.
+
+#### W1 – The prefilled weight is written in the app's language
+Source: phone test finding for issue #864, given by the orchestrator for the
+user, user decision 2026-11-21; issue #864 phone test list ("erneut öffnen →
+90,0 vorbelegt", "78,5 → gespeichert").
+The field is prefilled with the weight the dialog offers, with one decimal
+place, in the number format of the app's language.
+| App language | Prefilled weight | Field shows | Saved unchanged as |
+| ------------ | ---------------- | ----------- | ------------------ |
+| German       | 74.9 kg          | 74,9        | 74.9 kg            |
+| German       | 90 kg            | 90,0        | 90 kg              |
+| English      | 74.9 kg          | 74.9        | 74.9 kg            |
+
+Typing either separator keeps working:
+| App language | I type | Saved as |
+| ------------ | ------ | -------- |
+| German       | 78,5   | 78.5 kg  |
+| German       | 78.5   | 78.5 kg  |
+
+Not: "74.9" with a dot in German.
