@@ -9,12 +9,18 @@ import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/home_nav_action.dart';
 import 'package:yamt/core/widgets/home_nav_entry.dart';
 import 'package:yamt/core/widgets/home_nav_item.dart';
+import 'package:yamt/core/widgets/home_nav_label_sizes.dart';
 
 /// Bottom navigation bar used by the home shell pages.
 ///
 /// The tabs sit in a floating capsule. Beside it stands the tab's [action]
 /// as a lime button with a plus and the action's word under it, so the button
 /// keeps its size for every word.
+///
+/// The four tab words share one size: the largest at which every word fits
+/// its tab with [AppGraphit.navWordGap] on each side, never above the scaled
+/// label size. The action word fits its button the same way and is never
+/// larger than the tab words.
 class HomeBottomNavBar extends StatelessWidget {
   /// The home bottom nav bar.
   const new({required this.entries, required this.action, super.key});
@@ -30,6 +36,21 @@ class HomeBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => _build(
+        context,
+        homeNavLabelSizes(
+          context,
+          width:
+              constraints.maxWidth - MediaQuery.paddingOf(context).horizontal,
+          words: [for (final entry in entries) entry.item.label],
+          actionWord: action.label,
+        ),
+      ),
+    );
+  }
+
+  Widget _build(BuildContext context, HomeNavLabelSizes sizes) {
     final colors = FoodLabelColors.of(context);
     final capsule = DecoratedBox(
       decoration: BoxDecoration(
@@ -46,6 +67,7 @@ class HomeBottomNavBar extends StatelessWidget {
               Expanded(
                 child: _HomeBottomNavItemButton(
                   item: entry.item,
+                  sizes: sizes,
                   isSelected: entry.isSelected,
                   onTap: entry.onTap,
                 ),
@@ -90,7 +112,7 @@ class HomeBottomNavBar extends StatelessWidget {
                   spacing: AppSpacing.xs,
                   children: [
                     Expanded(child: capsule),
-                    _ActionButton(action: action),
+                    _ActionButton(action: action, sizes: sizes),
                   ],
                 ),
               ),
@@ -102,22 +124,11 @@ class HomeBottomNavBar extends StatelessWidget {
   }
 }
 
-TextStyle? _navLabelStyle(
-  BuildContext context,
-  Color color, {
-  required FontWeight weight,
-}) {
-  return Theme.of(context).textTheme.labelSmall?.copyWith(
-    color: color,
-    fontSize: AppFontSizes.homeBottomNavLabel,
-    fontWeight: weight,
-  );
-}
-
 class _ActionButton extends StatelessWidget {
-  const new({required this.action});
+  const new({required this.action, required this.sizes});
 
   final HomeNavAction action;
+  final HomeNavLabelSizes sizes;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +150,9 @@ class _ActionButton extends StatelessWidget {
               action.onPressed();
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppGraphit.navWordGap,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: AppSpacing.xxs,
@@ -149,16 +162,14 @@ class _ActionButton extends StatelessWidget {
                     color: colors.onAccent,
                     size: AppSizes.homeBottomNavIcon,
                   ),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      action.label,
-                      maxLines: 1,
-                      style: _navLabelStyle(
-                        context,
-                        colors.onAccent,
-                        weight: FontWeight.w700,
-                      ),
+                  _NavWord(
+                    label: action.label,
+                    height: sizes.height,
+                    style: homeNavLabelStyle(
+                      context,
+                      colors.onAccent,
+                      weight: FontWeight.w700,
+                      fontSize: sizes.action,
                     ),
                   ),
                 ],
@@ -174,10 +185,12 @@ class _ActionButton extends StatelessWidget {
 class _HomeBottomNavItemButton extends StatelessWidget {
   const new({
     required this.item,
+    required this.sizes,
     required this.isSelected,
     required this.onTap,
   });
   final HomeNavItem item;
+  final HomeNavLabelSizes sizes;
   final bool isSelected;
   final VoidCallback onTap;
   @override
@@ -208,24 +221,47 @@ class _HomeBottomNavItemButton extends StatelessWidget {
                   color: isSelected ? colors.accentText : colors.muted,
                   size: AppSizes.homeBottomNavIcon,
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      item.label,
-                      maxLines: 1,
-                      style: _navLabelStyle(
-                        context,
-                        isSelected ? colors.ink : colors.muted,
-                        weight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                      ),
-                    ),
+                _NavWord(
+                  label: item.label,
+                  height: sizes.height,
+                  style: homeNavLabelStyle(
+                    context,
+                    isSelected ? colors.ink : colors.muted,
+                    weight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: sizes.tab,
                   ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A word of the bar at its final size in a line of the reserved [height].
+///
+/// The height is the scaled line height, so it grows with large text like
+/// any text container; the word itself may be smaller to fit its tab.
+class _NavWord extends StatelessWidget {
+  const new({required this.label, required this.height, required this.style});
+
+  final String label;
+  final double height;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: Center(
+        child: Text(
+          label,
+          maxLines: 1,
+          softWrap: false,
+          textScaler: TextScaler.noScaling,
+          style: style,
         ),
       ),
     );

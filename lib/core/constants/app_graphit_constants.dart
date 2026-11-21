@@ -74,6 +74,10 @@ abstract final class AppGraphit {
   /// Width of the action button in the home bar.
   static const double navActionWidth = 68;
 
+  /// Least gap between a word of the home bar and the edge of its tab or of
+  /// the action button.
+  static const double navWordGap = 4;
+
   /// Edge length of one square in a line of stock squares, one per food.
   static const double stockSquare = 8;
 
