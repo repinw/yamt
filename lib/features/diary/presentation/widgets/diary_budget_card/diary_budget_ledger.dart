@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/utils/text_measure.dart';
 import 'package:yamt/features/diary/presentation/models/diary_budget_card_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_budget_details_sheet.dart';
@@ -172,19 +173,37 @@ class _Row extends StatelessWidget {
     );
     final row = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: AppBudgetCard.ledgerRow),
-      child: Row(
-        spacing: AppSpacing.xs,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: style?.copyWith(
-                color: color ?? (isTotal ? colors.ink : colors.muted),
+      // At large text a value may take at most part of the row and then
+      // shrinks; the label wraps in the rest.
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          spacing: AppSpacing.xs,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: style?.copyWith(
+                  color: color ?? (isTotal ? colors.ink : colors.muted),
+                ),
               ),
             ),
-          ),
-          Text(value, style: style?.copyWith(color: color ?? colors.ink)),
-        ],
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isLargeText(context)
+                    ? constraints.maxWidth * AppBudgetCard.ledgerValueMaxShare
+                    : double.infinity,
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerEnd,
+                child: Text(
+                  value,
+                  style: style?.copyWith(color: color ?? colors.ink),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
     if (!isTotal) {

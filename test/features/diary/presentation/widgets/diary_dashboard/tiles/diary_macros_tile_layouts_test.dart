@@ -12,6 +12,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_d
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_macros_tile_layouts.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../../helpers/app_font_test_utils.dart';
+
 final AppLocalizations _l10n = lookupAppLocalizations(const Locale('de'));
 
 /// The grid of a phone 390 px wide, less the page's side padding.
@@ -84,6 +86,9 @@ Future<void> _pumpNumbers(WidgetTester tester, DiaryTileSize size) {
 }
 
 void main() {
+  // The fit checks of the tiles need real glyph widths, not Ahem's.
+  setUpAll(loadAppFonts);
+
   testWidgets('Zahlen shows eaten of target only on two full-width rows', (
     tester,
   ) async {

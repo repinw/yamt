@@ -83,6 +83,7 @@ class _DiaryOverdueTileBody extends ConsumerWidget {
               child: DiaryTileCaption(
                 l10n.diaryDashboardOverdueNone,
                 icon: Icons.check_circle_outline_rounded,
+                wholeOnly: true,
               ),
             );
     }
@@ -123,6 +124,7 @@ class _DiaryOverdueTileBody extends ConsumerWidget {
                       : l10n.diaryDashboardOverdueDays(days.length),
                   icon: Icons.event_busy_outlined,
                   color: colors.low,
+                  wholeOnly: true,
                 ),
                 Expanded(child: number),
               ],

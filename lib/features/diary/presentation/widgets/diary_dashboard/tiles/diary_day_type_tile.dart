@@ -8,6 +8,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/utils/text_measure.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/diary/application/diary_day_type_provider.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
@@ -47,6 +48,9 @@ String _iconLabel(AppLocalizations l10n) => l10n.diaryDashboardModeIcon;
 String _toggleLabel(AppLocalizations l10n) => l10n.diaryDashboardModeToggle;
 
 Widget _build(DiaryTileArgs args) => DiaryDayTypeTile(args: args);
+
+/// Lines the name of the day type may take beside its emoji.
+const _nameLines = 2;
 
 /// Inside of the day type tile.
 class DiaryDayTypeTile extends ConsumerWidget {
@@ -102,7 +106,7 @@ class DiaryDayTypeTile extends ConsumerWidget {
   }
 }
 
-/// Emoji of the day type, with its name when there is room.
+/// Emoji of the day type, with its name when there is room for it whole.
 class _TypeIcon extends StatelessWidget {
   const new({required this.type, required this.showName});
 
@@ -126,30 +130,61 @@ class _TypeIcon extends StatelessWidget {
     }
     // The emoji shrinks only when the row is narrower than it, as while a
     // resized tile slides from 1×1 to 2×1 and its slot is still narrow.
+    final nameStyle = textTheme.titleSmall?.copyWith(
+      fontFamily: AppFonts.geist,
+      fontWeight: FontWeight.w600,
+      color: FoodLabelColors.of(context).ink,
+    );
+    final name = diaryDayTypeLabel(type, l10n);
     return LayoutBuilder(
-      builder: (context, constraints) => Row(
-        spacing: AppSpacing.sm,
-        children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: math.max(0, constraints.maxWidth - AppSpacing.sm),
-            ),
-            child: emoji,
+      builder: (context, constraints) {
+        final emojiWidth = math.min(
+          measureTextWidth(
+            context,
+            diaryDayTypeEmoji(type),
+            textTheme.headlineMedium,
           ),
-          Expanded(
-            child: Text(
-              diaryDayTypeLabel(type, l10n),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: textTheme.titleSmall?.copyWith(
-                fontFamily: AppFonts.geist,
-                fontWeight: FontWeight.w600,
-                color: FoodLabelColors.of(context).ink,
+          math.max(0, constraints.maxWidth - AppSpacing.sm),
+        );
+        // With large text the name goes before it would break inside a word
+        // or be cut at the bottom; the emoji says the type alone.
+        final nameFits =
+            !isLargeText(context) ||
+            textFitsWholeWords(
+              context,
+              name,
+              nameStyle,
+              maxWidth: constraints.maxWidth - emojiWidth - AppSpacing.sm,
+              maxHeight: constraints.maxHeight,
+              maxLines: _nameLines,
+            );
+        if (!nameFits) {
+          return Semantics(
+            label: name,
+            excludeSemantics: true,
+            child: Center(child: emoji),
+          );
+        }
+        return Row(
+          spacing: AppSpacing.sm,
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: math.max(0, constraints.maxWidth - AppSpacing.sm),
+              ),
+              child: emoji,
+            ),
+            Expanded(
+              child: Text(
+                name,
+                maxLines: _nameLines,
+                overflow: TextOverflow.ellipsis,
+                style: nameStyle,
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 }

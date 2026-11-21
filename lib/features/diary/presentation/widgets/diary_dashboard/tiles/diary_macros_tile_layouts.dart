@@ -1,11 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_dashboard_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
 import 'package:yamt/features/diary/presentation/models/diary_macro_tile_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_line.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_macro_text.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_caption.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_number_body.dart';
@@ -51,65 +53,116 @@ class _BarsLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget bar(DiaryMacroTileView macro, String name) => Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSpacing.xxs,
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) => Row(
-            spacing: AppSpacing.xs,
-            children: [
-              // The name keeps its width; the grams shrink into the rest.
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: constraints.maxWidth * AppDashboard.macroNameShare,
-                ),
-                child: _Name(name, color: macro.labelColor),
-              ),
-              Expanded(child: _Value(macro)),
-            ],
-          ),
-        ),
-        DiaryBudgetLine(
-          eaten: macro.eaten,
-          planned: macro.planned,
-          target: macro.target,
-          scaleKcal: macro.scale,
-          compact: true,
-          eatenColor: macro.eatenColor,
-        ),
-      ],
-    );
-
-    if (size.rows == 1) {
-      return Row(
-        spacing: AppSpacing.sm,
-        children: [
-          for (final macro in macros)
-            Expanded(child: bar(macro, _shortName(macro, size))),
-        ],
-      );
-    }
+    final sideBySide = size.rows == 1;
     // Shrinks while the tile grows into its second row, and with very
     // large text.
     return LayoutBuilder(
-      builder: (context, constraints) => FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: AlignmentDirectional.topStart,
-        child: ConstrainedBox(
-          constraints: BoxConstraints.tightFor(width: constraints.maxWidth)
-              .copyWith(minHeight: constraints.maxHeight),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [for (final macro in macros) bar(macro, macro.label)],
+      builder: (context, constraints) {
+        final width = sideBySide
+            ? (constraints.maxWidth - 2 * AppSpacing.sm) / 3
+            : constraints.maxWidth;
+        final names = diaryMacroNames(
+          context,
+          macros,
+          maxWidth: width * AppDashboard.macroNameShare,
+          style: diaryMacroNameStyle(context),
+          // Side by side, only a full row has room for the full names.
+          allowFull: !sideBySide || size.columns == DiaryTileSize.s4x1.columns,
+        );
+        // At large text the names share one width, so the grams share one
+        // room.
+        final nameWidth = diaryMacroNameWidth(context, names);
+        final valueWidth = diaryMacroValueWidth(context, macros);
+        final bars = [
+          for (final (index, macro) in macros.indexed)
+            _Bar(
+              macro: macro,
+              name: names[index],
+              nameMinWidth: nameWidth,
+              nameMaxWidth: width * AppDashboard.macroNameShare,
+              valueWidth: valueWidth,
+            ),
+        ];
+
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.topStart,
+          child: ConstrainedBox(
+            constraints: BoxConstraints.tightFor(width: constraints.maxWidth)
+                .copyWith(minHeight: constraints.maxHeight),
+            child: sideBySide
+                ? Row(
+                    spacing: AppSpacing.sm,
+                    children: [for (final bar in bars) Expanded(child: bar)],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: bars,
+                  ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
+}
+
+/// One macro's name and grams above its line.
+class _Bar extends StatelessWidget {
+  const new({
+    required this.macro,
+    required this.name,
+    required this.nameMinWidth,
+    required this.nameMaxWidth,
+    required this.valueWidth,
+  });
+
+  final DiaryMacroTileView macro;
+  final String name;
+
+  /// Width of the widest name, or 0.
+  final double nameMinWidth;
+
+  /// The name keeps its width; the grams shrink into the rest.
+  final double nameMaxWidth;
+
+  /// The shared size of the grams.
+  final double? valueWidth;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: AppSpacing.xxs,
+    children: [
+      Row(
+        spacing: AppSpacing.xs,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: math.min(nameMinWidth, nameMaxWidth),
+              maxWidth: nameMaxWidth,
+            ),
+            child: DiaryMacroName(
+              name,
+              label: macro.label,
+              color: macro.labelColor,
+            ),
+          ),
+          Expanded(child: DiaryMacroValue(macro, sharedWidth: valueWidth)),
+        ],
+      ),
+      DiaryBudgetLine(
+        eaten: macro.eaten,
+        planned: macro.planned,
+        target: macro.target,
+        scaleKcal: macro.scale,
+        compact: true,
+        eatenColor: macro.eatenColor,
+      ),
+    ],
+  );
 }
 
 /// The macros as three small rings with their letters inside; the values
@@ -125,6 +178,7 @@ class _RingsLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final valueWidth = diaryMacroValueWidth(context, macros);
     Widget ring(DiaryMacroTileView macro) => DiaryTileRing(
       eaten: macro.eaten,
       planned: macro.planned,
@@ -134,7 +188,11 @@ class _RingsLayout extends StatelessWidget {
       stroke: AppDashboard.ringStrokeSmall,
       child: FittedBox(
         fit: BoxFit.scaleDown,
-        child: _Name(macro.letter, color: macro.labelColor),
+        child: DiaryMacroName(
+          macro.letter,
+          label: macro.label,
+          color: macro.labelColor,
+        ),
       ),
     );
 
@@ -151,7 +209,11 @@ class _RingsLayout extends StatelessWidget {
               child: ring(macro),
             ),
             Expanded(
-              child: _Value(macro, alignment: AlignmentDirectional.centerStart),
+              child: DiaryMacroValue(
+                macro,
+                sharedWidth: valueWidth,
+                alignment: AlignmentDirectional.centerStart,
+              ),
             ),
           ],
         ),
@@ -160,7 +222,11 @@ class _RingsLayout extends StatelessWidget {
         spacing: AppSpacing.xxs,
         children: [
           Expanded(child: Center(child: ring(macro))),
-          _Value(macro, alignment: AlignmentDirectional.center),
+          DiaryMacroValue(
+            macro,
+            sharedWidth: valueWidth,
+            alignment: AlignmentDirectional.center,
+          ),
         ],
       ),
     };
@@ -187,87 +253,44 @@ class _NumbersLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     // A third of two cells is too narrow for eaten of target.
     final withTotal = size == DiaryTileSize.s4x2;
-    return Row(
-      spacing: AppSpacing.sm,
-      children: [
-        for (final macro in macros)
-          Expanded(
-            child: DiaryTileNumberBody(
-              number: DiaryTileNumber(
-                macro.value,
-                color: macro.valueColor,
-                alignment: AlignmentDirectional.bottomStart,
-              ),
-              captions: [
-                DiaryTileCaption(
-                  _shortName(macro, size),
-                  color: macro.labelColor,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final names = diaryMacroNames(
+          context,
+          macros,
+          maxWidth: (constraints.maxWidth - 2 * AppSpacing.sm) / 3,
+          style: DiaryTileCaption.styleOf(context),
+          allowFull: size.columns == DiaryTileSize.s4x1.columns,
+        );
+        final valueWidth = DiaryTileNumber.sharedWidthOf(context, [
+          for (final macro in macros) macro.value,
+        ]);
+        return Row(
+          spacing: AppSpacing.sm,
+          children: [
+            for (final (index, macro) in macros.indexed)
+              Expanded(
+                child: DiaryTileNumberBody(
+                  number: DiaryTileNumber(
+                    macro.value,
+                    sharedWidth: valueWidth,
+                    color: macro.valueColor,
+                    alignment: AlignmentDirectional.bottomStart,
+                  ),
+                  captions: [
+                    DiaryTileCaption(
+                      names[index],
+                      color: macro.labelColor,
+                      semanticsLabel: macro.label,
+                    ),
+                    if (withTotal && macro.total != null)
+                      DiaryTileCaption(macro.total!, wholeOnly: true),
+                  ],
                 ),
-                if (withTotal && macro.total != null)
-                  DiaryTileCaption(macro.total!),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// The name that fits a third of a tile of [size]: the letter on two
-/// cells, the full name on four.
-String _shortName(DiaryMacroTileView macro, DiaryTileSize size) =>
-    size.columns < DiaryTileSize.s4x1.columns ? macro.letter : macro.label;
-
-/// Name or letter of a macro in its color.
-class _Name extends StatelessWidget {
-  const new(this.text, {required this.color});
-
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-        fontFamily: AppFonts.geist,
-        fontWeight: FontWeight.w700,
-        color: color,
-      ),
-    );
-  }
-}
-
-/// Grams of a macro, shrunk to fit.
-class _Value extends StatelessWidget {
-  const new(this.macro, {this.alignment = AlignmentDirectional.centerEnd});
-
-  final DiaryMacroTileView macro;
-  final AlignmentGeometry alignment;
-
-  @override
-  Widget build(BuildContext context) {
-    // Keeps the line height in a row: the fitted box alone would take the
-    // height its aspect ratio gives the full row width.
-    return Align(
-      alignment: alignment,
-      heightFactor: 1,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: alignment,
-        child: Text(
-          macro.value,
-          maxLines: 1,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontFamily: AppFonts.geist,
-            fontWeight: FontWeight.w700,
-            color: macro.valueColor,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

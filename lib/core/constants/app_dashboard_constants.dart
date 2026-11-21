@@ -37,6 +37,10 @@ abstract final class AppDashboard {
   /// into the rest.
   static const double macroNameShare = 0.7;
 
+  /// Smallest share of its natural size a macro's grams shrink to beside a
+  /// name or a ring; narrower, they drop out instead of turning unreadable.
+  static const double macroValueMinScale = 0.6;
+
   /// Stroke of a large progress ring in a tile.
   static const double ringStroke = 7;
 

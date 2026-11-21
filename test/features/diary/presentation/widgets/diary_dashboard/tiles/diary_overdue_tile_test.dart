@@ -18,6 +18,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/d
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/tiles/diary_tile_load_error.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../../helpers/app_font_test_utils.dart';
 import '../../../../../calories/support/fake_calories_repositories.dart';
 import '../../../../../calories/support/fake_planned_entry_repository.dart';
 
@@ -100,6 +101,9 @@ Future<void> _pump(
 }
 
 void main() {
+  // The fit checks of the tiles need real glyph widths, not Ahem's.
+  setUpAll(loadAppFonts);
+
   for (final mode in diaryOverdueTileSpec.modes) {
     testWidgets('2×1 in mode $mode names the tile instead of the days', (
       tester,
