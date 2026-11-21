@@ -7,10 +7,12 @@
     ],
     "improved": [
       "Der Kalorien-Übertrag ist jetzt optional. „Mit Übertrag“ schaltest du ein, indem du die Wochenkarte hältst, oder in den Einstellungen.",
-      "KI-Rezeptidee mit „Unbedingt rein“ und „Bloß nicht“"
+      "KI-Rezeptidee mit „Unbedingt rein“ und „Bloß nicht“",
+      "Die Meldung „wieder kcal frei“ kommt zu Beginn jeder Mahlzeit"
     ],
     "fixed": [
-      "Ein neues Ziel beendet die alte Woche richtig"
+      "Ein neues Ziel beendet die alte Woche richtig",
+      "Tagebuch und untere Leiste bleiben bei großer Schrift lesbar"
     ]
   },
   "en": {
@@ -21,10 +23,12 @@
     ],
     "improved": [
       "The calorie carryover is now optional. You turn on \"With carryover\" by holding the week card, or in the settings.",
-      "AI recipe idea with \"Must go in\" and \"No way\""
+      "AI recipe idea with \"Must go in\" and \"No way\"",
+      "The \"kcal free again\" notice comes at the start of each meal"
     ],
     "fixed": [
-      "A new goal ends the old week correctly"
+      "A new goal ends the old week correctly",
+      "The diary and the bottom bar stay readable with large text"
     ]
   }
 }
