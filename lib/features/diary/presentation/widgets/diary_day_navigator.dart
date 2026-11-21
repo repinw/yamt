@@ -1,18 +1,20 @@
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
-import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_day_label_text.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_header_layout.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const double _swipeVelocityThreshold = 300;
 const double _pillHeight = 40;
 const double _arrowButtonSize = 36;
-const double _labelMinWidth = 72;
+
+/// Share of its full size that the day label may shrink to before the header
+/// moves the day to a row of its own.
+const double _labelMinScale = 0.85;
 const Duration _dayChangeDuration = Duration(milliseconds: 220);
 
 /// Keys used by [DiaryDayNavigator].
@@ -42,6 +44,7 @@ class DiaryDayNavigator extends StatefulWidget {
     required this.onOpenCalendar,
     this.leadingActions = const <Widget>[],
     this.actions = const <Widget>[],
+    this.reservedTools = const <Widget>[],
     super.key,
   });
 
@@ -72,12 +75,18 @@ class DiaryDayNavigator extends StatefulWidget {
   /// Header tools aligned to the right edge.
   final List<Widget> actions;
 
+  /// Tools that the sides may show on other days. They are laid out but never
+  /// shown: both sides keep the room of the widest of them, so the header
+  /// does not change its rows from day to day.
+  final List<Widget> reservedTools;
+
   @override
   State<DiaryDayNavigator> createState() => _DiaryDayNavigatorState();
 }
 
 class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
   var _slideDirection = 1.0;
+  var _labelTextWidth = 0.0;
 
   @override
   void didUpdateWidget(covariant DiaryDayNavigator oldWidget) {
@@ -90,45 +99,33 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _labelTextWidth = diaryDayLabelTextWidth(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Both sides get the same width, so the day stays centered.
-    return Row(
-      children: [
-        SizedBox(
-          width: AppSizes.diaryTopBarSide,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: widget.leadingActions,
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onHorizontalDragEnd: _handleSwipe,
-            child: Center(child: _buildPill(context)),
-          ),
-        ),
-        SizedBox(
-          width: AppSizes.diaryTopBarSide,
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: widget.actions,
-              ),
-            ),
-          ),
-        ),
-      ],
+    return DiaryHeaderLayout(
+      // The label needs this width at the least before the day gets its own
+      // row; the same on every day, so the header does not flip while swiping.
+      dayWidth:
+          2 * _arrowButtonSize +
+          2 * AppSpacing.xxs +
+          _labelMinScale * _labelTextWidth,
+      leading: _buildTools(widget.leadingActions),
+      trailing: _buildTools(widget.actions),
+      references: widget.reservedTools,
+      day: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragEnd: _handleSwipe,
+        child: Center(child: _buildPill(context)),
+      ),
     );
+  }
+
+  Widget _buildTools(List<Widget> tools) {
+    return Row(mainAxisSize: MainAxisSize.min, children: tools);
   }
 
   Widget _buildPill(BuildContext context) {
@@ -172,26 +169,21 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
   }
 
   Widget _buildLabel(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colors = FoodLabelColors.of(context);
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final date = AppLocalizations.of(context)!.diaryDateLine(
-      // Stand-alone form: "Do", not the "Do." of the format form.
-      DateFormat('ccc', locale).format(widget.selectedDay),
-      DateFormat.MMMd(locale).format(widget.selectedDay),
-    );
+    final date = diaryDateLineOf(context)(widget.selectedDay);
     final relativeName = _relativeName(context);
 
     return AppInkWell(
       key: DiaryDayNavigatorKeys.label,
       borderRadius: BorderRadius.circular(AppRadius.xs),
       onTap: widget.onOpenCalendar,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: _labelMinWidth),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xxs),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxs),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          // The text sits in a box of the reserved width, so the label scales
+          // the same on every day.
+          child: SizedBox(
+            width: _labelTextWidth,
             child: ClipRect(
               child: AnimatedSwitcher(
                 duration: _dayChangeDuration,
@@ -203,21 +195,14 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
                     Text(
                       relativeName,
                       maxLines: 1,
-                      style: textTheme.bodySmall?.copyWith(
-                        fontSize: AppFontSizes.diaryDayName,
-                        color: colors.muted,
-                      ),
+                      softWrap: false,
+                      style: diaryDayNameStyle(context),
                     ),
                     Text(
                       date,
                       maxLines: 1,
                       softWrap: false,
-                      style: textTheme.titleLarge?.copyWith(
-                        fontSize: AppFontSizes.diaryDate,
-                        fontWeight: FontWeight.w600,
-                        color: colors.ink,
-                        height: 1.2,
-                      ),
+                      style: diaryDateStyle(context),
                     ),
                   ],
                 ),

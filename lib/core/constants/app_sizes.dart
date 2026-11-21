@@ -69,10 +69,6 @@ abstract final class AppSizes {
   /// Height of the drawn barcode icon relative to its width.
   static const double barcodeIconAspect = 0.75;
 
-  /// Width of each side slot of the diary top bar, so the day stays
-  /// centered.
-  static const double diaryTopBarSide = 88;
-
   /// Height for compact search fields and adjacent square controls.
   static const double compactSearchControlHeight = 52;
 
