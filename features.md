@@ -207,6 +207,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   on the device; a change that was not saved says so in a snack bar. A
   tile that a later version adds shows after the tile before it in the
   catalog, or starts hidden when it is not part of the default layout.
+  The default layout, before the user changes anything, shows only the
+  daily budget card; the weight, meals, kcal, macros, TDEE, day type and
+  overdue plans tiles start hidden and come back through "Kacheln
+  anordnen". A layout the user saved keeps its tiles.
   While the "Offene Pläne" tile shows, the overdue plans line below the
   dashboard hides.
 - Daily budget card (#907), set in Geist: the kcal left as a big number

@@ -133,6 +133,7 @@ const diaryWeightTileSpec = DiaryTileSpec(
   ],
   defaultSize: DiaryTileSize.s2x1,
   modes: [DiaryTileModes.number, DiaryTileModes.sparkline],
+  visibleByDefault: false,
 );
 
 /// The daily energy expenditure the app learned.
@@ -164,6 +165,7 @@ const diaryMealsTileSpec = DiaryTileSpec(
   ],
   defaultSize: DiaryTileSize.s4x1,
   modes: [DiaryTileModes.bars, DiaryTileModes.list],
+  visibleByDefault: false,
 );
 
 /// Past days with plans that were never eaten.

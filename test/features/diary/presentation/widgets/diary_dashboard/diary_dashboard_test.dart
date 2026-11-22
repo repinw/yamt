@@ -45,6 +45,8 @@ final List<DiaryDashboardTile> _tiles = [
     ),
 ];
 
+/// The order the tests start from: the budget card, and the weight and meals
+/// tiles that a user added.
 const List<String> _defaultOrder = [
   DiaryTileIds.budget,
   DiaryTileIds.weight,
@@ -97,7 +99,23 @@ Future<(ProviderContainer, AppPreferences, ScrollController)> _pump(
   final container = ProviderScope.containerOf(
     tester.element(find.byType(DiaryDashboard)),
   );
+  // The default layout shows only the budget card (T1); these tests start
+  // from a layout that also shows the weight and meals tiles, unsaved.
+  await _showWeightAndMeals(tester, container);
+  await preferences.remove(_prefsKey);
   return (container, preferences, scroll);
+}
+
+Future<void> _showWeightAndMeals(
+  WidgetTester tester,
+  ProviderContainer container,
+) async {
+  final layout = container.read(
+    diaryDashboardLayoutControllerProvider.notifier,
+  );
+  await layout.show(DiaryTileIds.weight);
+  await layout.show(DiaryTileIds.meals);
+  await tester.pumpAndSettle();
 }
 
 List<String> _order(ProviderContainer container) => [
@@ -134,7 +152,7 @@ Finder _disc(Key button) => find.descendant(
 );
 
 void main() {
-  testWidgets('shows the default tiles without edit chrome', (tester) async {
+  testWidgets('shows the tiles without edit chrome', (tester) async {
     final (container, _, _) = await _pump(tester);
 
     expect(_order(container), _defaultOrder);
@@ -294,6 +312,8 @@ void main() {
     await tester.pumpAndSettle();
     await drag.up();
     await tester.pumpAndSettle();
+    expect(_order(container), [DiaryTileIds.budget]);
+    await _showWeightAndMeals(tester, container);
     expect(_order(container), _defaultOrder);
 
     // The next drag moves a tile.
@@ -398,7 +418,7 @@ void main() {
 
     await tester.tap(find.byKey(DiaryDashboardKeys.reset));
     await tester.pumpAndSettle();
-    expect(_order(container), _defaultOrder);
+    expect(_order(container), [DiaryTileIds.budget]);
     expect(preferences.getStringSync(_prefsKey), isNull);
   });
 

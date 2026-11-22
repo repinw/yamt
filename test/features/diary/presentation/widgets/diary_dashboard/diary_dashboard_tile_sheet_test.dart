@@ -7,6 +7,8 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_dashboard_layout_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_tile_sheet.dart';
@@ -15,7 +17,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../../helpers/memory_app_preferences.dart';
 
-/// Opens the menu of the weight tile on [theme], with the default layout.
+/// Opens the menu of the weight tile on [theme], with the weight tile shown.
 Future<void> _openSheet(WidgetTester tester, ThemeData theme) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -31,6 +33,19 @@ Future<void> _openSheet(WidgetTester tester, ThemeData theme) async {
       ),
     ),
   );
+  // The default layout hides the weight tile (T1); show it first.
+  final container = ProviderScope.containerOf(
+    tester.element(find.byType(Scaffold)),
+  );
+  // Keeps the layout alive between the change and the sheet.
+  final keep = container.listen(
+    diaryDashboardLayoutControllerProvider,
+    (_, _) {},
+  );
+  addTearDown(keep.close);
+  await container
+      .read(diaryDashboardLayoutControllerProvider.notifier)
+      .show(DiaryTileIds.weight);
   unawaited(
     showDiaryDashboardTileSheet(
       tester.element(find.byType(Scaffold)),
@@ -67,7 +82,7 @@ void main() {
       tester,
     ) async {
       await _openSheet(tester, theme);
-      // The default layout shows the first mode.
+      // A shown tile starts in its first mode.
       final [selected, unselected] = diaryWeightTile.modes;
       expect(tester.widget<ChoiceChip>(_chip(selected)).selected, isTrue);
       expect(tester.widget<ChoiceChip>(_chip(unselected)).selected, isFalse);
