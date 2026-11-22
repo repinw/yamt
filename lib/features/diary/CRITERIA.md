@@ -681,3 +681,27 @@ Typing either separator keeps working:
 | German       | 78.5   | 78.5 kg  |
 
 Not: "74.9" with a dot in German.
+
+## Tagebuch-Kacheln: Start-Anordnung (release 3.11.1)
+
+Bug criteria for which tiles the diary dashboard shows before the user ever
+changed its layout.
+
+#### T1 – The default layout shows only the budget card
+Source: user decision "die widgets sollen ausgeblendet bleiben" (before
+2026-11-22); user decision 2026-11-22 "Jetzt schon" (for release 3.11.1);
+orchestrator decision 2026-11-22 "keine Migration, wer sein Layout schon
+geändert hat, behält seine Wahl".
+
+| Layout                                         | Budget card | Weight tile | "Mahlzeiten-Aufteilung" | Other tiles |
+| ---------------------------------------------- | ----------- | ----------- | ----------------------- | ----------- |
+| Never changed by the user (no saved layout)    | shown       | hidden      | hidden                  | hidden      |
+| Saved by the user, with weight and meals tiles | as saved    | shown       | shown                   | as saved    |
+| Saved by the user, without them                | as saved    | hidden      | hidden                  | as saved    |
+
+Given: I never changed the diary's tile layout.
+When: I edit the tiles ("Kacheln anordnen") and add the weight tile or the
+"Mahlzeiten-Aufteilung" tile.
+Then: the added tile shows on the dashboard, as any other hidden tile can.
+
+Not: the update changes a saved layout (no migration).

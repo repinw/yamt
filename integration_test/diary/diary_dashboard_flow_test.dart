@@ -299,16 +299,31 @@ Future<void> _drawEveryTile(
   }
 }
 
+/// A saved layout that shows the weight and meals tiles, which the default
+/// layout hides.
+MemoryAppPreferences _withWeightAndMeals() {
+  var layout = DiaryDashboardLayout.initial(diaryDashboardTileSpecs);
+  for (final spec in diaryDashboardTileSpecs) {
+    if (spec.id == DiaryTileIds.weight || spec.id == DiaryTileIds.meals) {
+      layout = layout.show(spec);
+    }
+  }
+  return MemoryAppPreferences(
+    initialStrings: {_layoutKey: jsonEncode(layout.toJson())},
+  );
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('a long press arranges the tiles, and the layout is saved', (
     tester,
   ) async {
-    final preferences = MemoryAppPreferences();
+    final preferences = _withWeightAndMeals();
+    final before = preferences.getStringSync(_layoutKey);
     final container = await _pumpDiary(tester, preferences);
 
-    // The budget card leads the default tiles.
+    // The budget card leads the tiles.
     expect(find.byKey(DiaryBudgetCardKeys.card), findsOneWidget);
     for (final id in [
       DiaryTileIds.budget,
@@ -342,14 +357,14 @@ void main() {
 
     await _tapVisible(tester, find.byKey(DiaryDashboardKeys.done));
     expect(find.byKey(DiaryDashboardKeys.done), findsNothing);
-    expect(preferences.getStringSync(_layoutKey), isNotNull);
+    expect(preferences.getStringSync(_layoutKey), isNot(before));
     expect(tester.takeException(), isNull);
   });
 
   testWidgets('the menu buttons of edit mode leave the tile content free', (
     tester,
   ) async {
-    await _pumpDiary(tester, MemoryAppPreferences(), entries: [_snack(180)]);
+    await _pumpDiary(tester, _withWeightAndMeals(), entries: [_snack(180)]);
     await tester.longPress(_tile(DiaryTileIds.weight));
     await tester.pumpAndSettle();
 
@@ -387,6 +402,11 @@ void main() {
     tester,
   ) async {
     final container = await _pumpDiary(tester, MemoryAppPreferences());
+
+    // T1: before any change the page shows only the budget card.
+    expect(_shown(container), [DiaryTileIds.budget]);
+    expect(_tile(DiaryTileIds.weight), findsNothing);
+    expect(_tile(DiaryTileIds.meals), findsNothing);
 
     await _drawEveryTile(tester, container);
   });

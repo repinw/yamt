@@ -50,11 +50,7 @@ void main() {
       container.read(diaryDashboardLayoutControllerProvider),
       DiaryDashboardLayout.initial(diaryDashboardTileSpecs),
     );
-    expect(_ids(container), [
-      DiaryTileIds.budget,
-      DiaryTileIds.weight,
-      DiaryTileIds.meals,
-    ]);
+    expect(_ids(container), [DiaryTileIds.budget]);
   });
 
   test('reads the saved layout and sorts in tiles it does not know', () {
@@ -72,10 +68,22 @@ void main() {
       MemoryAppPreferences(initialStrings: {_key: jsonEncode(saved.toJson())}),
     );
 
-    expect(_ids(container), [DiaryTileIds.weight, DiaryTileIds.meals]);
+    expect(_ids(container), [DiaryTileIds.meals]);
     expect(
       container.read(diaryDashboardLayoutControllerProvider).tiles.last,
       saved.tiles.single,
+    );
+    expect(
+      container.read(diaryDashboardLayoutControllerProvider).hidden,
+      containsAll([
+        DiaryTileIds.budget,
+        DiaryTileIds.weight,
+        DiaryTileIds.kcal,
+        DiaryTileIds.macros,
+        DiaryTileIds.tdee,
+        DiaryTileIds.dayType,
+        DiaryTileIds.overdue,
+      ]),
     );
   });
 
@@ -95,6 +103,7 @@ void main() {
     final container = _container(preferences);
     final controller = _controller(container);
 
+    expect(await controller.show(DiaryTileIds.weight), isTrue);
     expect(await controller.hide(DiaryTileIds.weight), isTrue);
     expect(await controller.show(DiaryTileIds.kcal), isTrue);
     expect(
@@ -128,11 +137,15 @@ void main() {
     );
   });
 
-  test('a move and a resize change the layout without saving', () {
+  test('a move and a resize change the layout without saving', () async {
     final preferences = MemoryAppPreferences();
     final container = _container(preferences);
+    final controller = _controller(container);
+    await controller.show(DiaryTileIds.weight);
+    await controller.show(DiaryTileIds.meals);
+    await preferences.remove(_key);
 
-    _controller(container)
+    controller
       ..move(DiaryTileIds.meals, 0)
       ..resize(DiaryTileIds.weight, DiaryTileSize.s1x1);
 
@@ -152,6 +165,8 @@ void main() {
     final container = _container(MemoryAppPreferences(), signedIn: false);
     final controller = _controller(container);
 
+    expect(await controller.show(DiaryTileIds.weight), isFalse);
+    expect(_ids(container), contains(DiaryTileIds.weight));
     expect(await controller.hide(DiaryTileIds.weight), isFalse);
     expect(_ids(container), isNot(contains(DiaryTileIds.weight)));
     expect(await controller.reset(), isFalse);

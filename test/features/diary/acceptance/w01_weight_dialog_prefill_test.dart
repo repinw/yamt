@@ -1,9 +1,12 @@
 // Acceptance tests of criterion W1 (#864): the weight dialog that the diary's
 // weight tile opens prefills the weight in the number format of the app's
 // language and saves what the field shows.
+import 'dart:convert';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
+import 'package:yamt/features/diary/domain/diary_dashboard_layout.dart';
 import 'package:yamt/features/diary/domain/diary_dashboard_tiles.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashboard/diary_dashboard_keys.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -28,6 +31,14 @@ void main() {
         weightKg: weightKg,
         id: 'w-1',
       ),
+    );
+    // The default layout hides the weight tile (T1); this user added it.
+    final layout = DiaryDashboardLayout.initial(diaryDashboardTileSpecs).show(
+      diaryDashboardTileSpecs.firstWhere((s) => s.id == DiaryTileIds.weight),
+    );
+    await harness.preferences.setString(
+      'diary_dashboard_layout_v1:user-1',
+      jsonEncode(layout.toJson()),
     );
     await harness.pumpDiary(tester, locale: locale);
     await tester.tap(find.byKey(DiaryDashboardKeys.tile(DiaryTileIds.weight)));
