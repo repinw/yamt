@@ -98,7 +98,7 @@ void main() {
     await controller.select(DiaryMealTimes.standard.withStart(300));
 
     expect(subscription.read().start, 300);
-    expect(preferences.getStringSync(_key), '300,540,780,1140,1260');
+    expect(preferences.getStringSync(_key), '300,660,960,1200,1260');
   });
 
   test('reset goes back to the standard and forgets the saved times', () async {

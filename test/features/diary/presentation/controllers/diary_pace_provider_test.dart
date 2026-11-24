@@ -79,19 +79,19 @@ void main() {
     final container = containerWith();
     final values = watchPace(container, today);
 
-    // 12:00 is three quarters through lunch's window from 9:00 to 13:00.
-    expect(values, [closeTo(0.5125, 1e-9)]);
+    // Lunch's part began at 11:00: what is due by its end, 60 %.
+    expect(values, [closeTo(0.6, 1e-9)]);
 
     container.dispose();
   });
 
   for (final (time, share) in [
     (DateTime(2026, 4, 27, 5, 30), 0.0),
-    (DateTime(2026, 4, 27, 6), 0.0),
+    (DateTime(2026, 4, 27, 6), 0.25),
     (DateTime(2026, 4, 27, 22), 1.0),
   ]) {
-    testWidgets('is $share at $time, before the day starts or after its '
-        'last meal', (tester) async {
+    testWidgets('is $share at $time, before the day starts, at its start, or '
+        'after its last meal', (tester) async {
       final container = containerWith();
       now = time;
 
@@ -101,28 +101,21 @@ void main() {
     });
   }
 
-  testWidgets('moves on with every minute the clock shows', (tester) async {
+  testWidgets('jumps when the next part of the day starts and not before', (
+    tester,
+  ) async {
     final container = containerWith();
-    now = DateTime(2026, 4, 27, 7, 29, 30);
+    now = DateTime(2026, 4, 27, 10, 59, 30);
     final values = watchPace(container, today);
-    // 7:29 is 89 of the 180 minutes of breakfast's window.
-    final before = closeTo(25 * 89 / 180 / 100, 1e-9);
-    expect(values, [before]);
+    // Breakfast's part: what is due by its end, 25 %.
+    expect(values, [closeTo(0.25, 1e-9)]);
 
     // The next minute starts in 30 seconds.
-    now = DateTime(2026, 4, 27, 7, 30);
+    now = DateTime(2026, 4, 27, 11);
     await tester.pump(const Duration(seconds: 29));
-    expect(values, [before]);
+    expect(values, hasLength(1));
     await tester.pump(const Duration(seconds: 1));
-    expect(values, [before, closeTo(0.125, 1e-9)]);
-
-    // On the full minute it waits a whole one.
-    now = DateTime(2026, 4, 27, 7, 31);
-    await tester.pump(const Duration(seconds: 59));
-    expect(values, hasLength(2));
-    await tester.pump(const Duration(seconds: 1));
-    expect(values, hasLength(3));
-    expect(values.last, closeTo(25 * 91 / 180 / 100, 1e-9));
+    expect(values, [closeTo(0.25, 1e-9), closeTo(0.6, 1e-9)]);
 
     container.dispose();
   });
@@ -159,7 +152,7 @@ void main() {
 
     await marker.show(visible: false);
     await settle(tester);
-    expect(values, [closeTo(0.5125, 1e-9), null]);
+    expect(values, [closeTo(0.6, 1e-9), null]);
 
     // Off, it no longer asks the clock: no timer is left to run.
     await tester.pump(const Duration(minutes: 5));
@@ -167,7 +160,7 @@ void main() {
 
     await marker.show(visible: true);
     await settle(tester);
-    expect(values, [closeTo(0.5125, 1e-9), null, closeTo(0.5125, 1e-9)]);
+    expect(values, [closeTo(0.6, 1e-9), null, closeTo(0.6, 1e-9)]);
 
     container.dispose();
   });

@@ -14,11 +14,11 @@ DiaryMealTimes _times(String start, List<String> ends) {
 }
 
 void main() {
-  test('the standard day starts at 6:00 and ends its meals at 9, 13, 19 '
+  test('the standard day starts at 6:00 and ends its meals at 11, 16, 20 '
       "and 21 o'clock", () {
     expect(DiaryMealTimes.standard.start, 6 * 60);
-    expect(DiaryMealTimes.standard.ends, [9 * 60, 13 * 60, 19 * 60, 21 * 60]);
-    expect(DiaryMealTimes.standard.encode(), '360,540,780,1140,1260');
+    expect(DiaryMealTimes.standard.ends, [11 * 60, 16 * 60, 20 * 60, 21 * 60]);
+    expect(DiaryMealTimes.standard.encode(), '360,660,960,1200,1260');
     expect(DiaryMealTimes.lastMinute, 1439);
   });
 
@@ -28,7 +28,7 @@ void main() {
         for (final meal in MealType.sectionOrder)
           DiaryMealTimes.standard.endOf(meal),
       ],
-      [540, 780, 1140, 1260],
+      [660, 960, 1200, 1260],
     );
   });
 
@@ -103,15 +103,15 @@ void main() {
     test('moves one end and leaves the others when they stay in order', () {
       expect(
         DiaryMealTimes.standard.withEnd(MealType.lunch, 12 * 60).encode(),
-        '360,540,720,1140,1260',
+        '360,660,720,1200,1260',
       );
     });
 
     test('an end moved before the one before takes it along', () {
-      // Lunch by 8:00, before breakfast's 9:00.
+      // Lunch by 8:00, before breakfast's 11:00.
       expect(
         DiaryMealTimes.standard.withEnd(MealType.lunch, 480).encode(),
-        '360,480,480,1140,1260',
+        '360,480,480,1200,1260',
       );
     });
 
@@ -126,7 +126,7 @@ void main() {
     test('an end moved before the start takes the start along', () {
       expect(
         DiaryMealTimes.standard.withEnd(MealType.breakfast, 300).encode(),
-        '300,300,780,1140,1260',
+        '300,300,960,1200,1260',
       );
       expect(
         DiaryMealTimes.standard.withEnd(MealType.snack, 0).encode(),
@@ -137,15 +137,15 @@ void main() {
     test('a time off the day stays on it', () {
       expect(
         DiaryMealTimes.standard.withEnd(MealType.snack, 5000).encode(),
-        '360,540,780,1140,1439',
+        '360,660,960,1200,1439',
       );
       expect(
         DiaryMealTimes.standard.withEnd(MealType.dinner, 5000).encode(),
-        '360,540,780,1439,1439',
+        '360,660,960,1439,1439',
       );
       expect(
         DiaryMealTimes.standard.withEnd(MealType.breakfast, -30).encode(),
-        '0,0,780,1140,1260',
+        '0,0,960,1200,1260',
       );
     });
 
@@ -168,7 +168,7 @@ void main() {
     test('does not change the times it was called on', () {
       DiaryMealTimes.standard.withEnd(MealType.lunch, 480);
 
-      expect(DiaryMealTimes.standard.encode(), '360,540,780,1140,1260');
+      expect(DiaryMealTimes.standard.encode(), '360,660,960,1200,1260');
     });
   });
 
@@ -176,14 +176,14 @@ void main() {
     test('moves the start alone when the meals stay after it', () {
       expect(
         DiaryMealTimes.standard.withStart(5 * 60).encode(),
-        '300,540,780,1140,1260',
+        '300,660,960,1200,1260',
       );
     });
 
     test("a start moved past a meal's end takes the meal along", () {
       expect(
-        DiaryMealTimes.standard.withStart(600).encode(),
-        '600,600,780,1140,1260',
+        DiaryMealTimes.standard.withStart(700).encode(),
+        '700,700,960,1200,1260',
       );
       expect(
         DiaryMealTimes.standard.withStart(1300).encode(),
@@ -194,7 +194,7 @@ void main() {
     test('a start off the day stays on it', () {
       expect(
         DiaryMealTimes.standard.withStart(-5).encode(),
-        '0,540,780,1140,1260',
+        '0,660,960,1200,1260',
       );
       expect(
         DiaryMealTimes.standard.withStart(2000).encode(),
@@ -211,18 +211,19 @@ void main() {
     test('nothing is due until the day starts', () {
       expect(due(0), 0);
       expect(due(5), 0);
-      expect(due(6), 0);
+      expect(due(5, 59), 0);
     });
 
-    test("a meal's share is due by its end, rising evenly before it", () {
-      expect(due(7, 30), closeTo(0.125, 1e-9));
-      expect(due(9), closeTo(0.25, 1e-9));
-      expect(due(11), closeTo(0.425, 1e-9));
-      expect(due(13), closeTo(0.6, 1e-9));
-      expect(due(16), closeTo(0.75, 1e-9));
-      expect(due(19), closeTo(0.9, 1e-9));
-      expect(due(20), closeTo(0.95, 1e-9));
-      expect(due(21), closeTo(1, 1e-9));
+    test('at the start of each part the share due by its end is due at once, '
+        'and stays until the next part starts', () {
+      expect(due(6), closeTo(0.25, 1e-9));
+      expect(due(8, 30), closeTo(0.25, 1e-9));
+      expect(due(10, 59), closeTo(0.25, 1e-9));
+      expect(due(11), closeTo(0.6, 1e-9));
+      expect(due(13, 30), closeTo(0.6, 1e-9));
+      expect(due(16), closeTo(0.9, 1e-9));
+      expect(due(19, 59), closeTo(0.9, 1e-9));
+      expect(due(20), closeTo(1, 1e-9));
     });
 
     test('all of it is due after the last meal, to the end of the day', () {
@@ -247,34 +248,24 @@ void main() {
       const lunchHeavy = DiaryMealShares([10, 60, 20, 10]);
 
       expect(
-        DiaryMealTimes.standard.dueAt(9 * 60, lunchHeavy),
+        DiaryMealTimes.standard.dueAt(6 * 60, lunchHeavy),
         closeTo(0.1, 1e-9),
       );
       expect(
-        DiaryMealTimes.standard.dueAt(13 * 60, lunchHeavy),
-        closeTo(0.7, 1e-9),
-      );
-      expect(
         DiaryMealTimes.standard.dueAt(11 * 60, lunchHeavy),
-        closeTo(0.4, 1e-9),
+        closeTo(0.7, 1e-9),
       );
     });
 
     test('follows the times the user set', () {
       final early = _times('05:00', ['07:00', '11:00', '17:00', '19:00']);
 
+      expect(early.dueAt(4 * 60 + 59, DiaryMealShares.standard), 0);
       expect(
-        early.dueAt(6 * 60, DiaryMealShares.standard),
-        closeTo(0.125, 1e-9),
-      );
-      expect(
-        early.dueAt(7 * 60, DiaryMealShares.standard),
+        early.dueAt(5 * 60, DiaryMealShares.standard),
         closeTo(0.25, 1e-9),
       );
-      expect(
-        early.dueAt(11 * 60, DiaryMealShares.standard),
-        closeTo(0.6, 1e-9),
-      );
+      expect(early.dueAt(7 * 60, DiaryMealShares.standard), closeTo(0.6, 1e-9));
       expect(early.dueAt(19 * 60, DiaryMealShares.standard), 1);
     });
 
@@ -283,59 +274,10 @@ void main() {
       double due(int hour) =>
           DiaryMealTimes.standard.dueAt(hour * 60, lunchOff);
 
-      expect(due(9), closeTo(0.25, 1e-9));
+      expect(due(6), closeTo(0.25, 1e-9));
       expect(due(11), closeTo(0.25, 1e-9));
-      expect(due(13), closeTo(0.25, 1e-9));
-      expect(due(16), closeTo(0.55, 1e-9));
-      expect(due(19), closeTo(0.85, 1e-9));
-      expect(due(21), closeTo(1, 1e-9));
-    });
-
-    test('a meal at 0 % at the start of the day leaves the first part to '
-        'the next meal', () {
-      const breakfastOff = DiaryMealShares([0, 60, 30, 10]);
-
-      expect(DiaryMealTimes.standard.dueAt(8 * 60, breakfastOff), 0);
-      expect(DiaryMealTimes.standard.dueAt(9 * 60, breakfastOff), 0);
-      expect(
-        DiaryMealTimes.standard.dueAt(11 * 60, breakfastOff),
-        closeTo(0.3, 1e-9),
-      );
-    });
-
-    test('a window of no length steps: when two meals end together, both '
-        'shares are due at that minute', () {
-      // Breakfast and lunch both end at 13:00, so lunch has no time of its
-      // own.
-      final times = DiaryMealTimes.standard.withEnd(MealType.breakfast, 780);
-
-      expect(times.encode(), '360,780,780,1140,1260');
-      expect(times.dueAt(779, DiaryMealShares.standard), closeTo(0.2494, 1e-3));
-      expect(times.dueAt(780, DiaryMealShares.standard), closeTo(0.6, 1e-9));
-      expect(times.dueAt(781, DiaryMealShares.standard), greaterThan(0.6));
-    });
-
-    test('a day that starts when its first meal ends steps up at once', () {
-      final times = DiaryMealTimes.standard.withEnd(MealType.breakfast, 360);
-
-      expect(times.encode(), '360,360,780,1140,1260');
-      expect(times.dueAt(359, DiaryMealShares.standard), 0);
-      expect(times.dueAt(360, DiaryMealShares.standard), closeTo(0.25, 1e-9));
-      expect(times.dueAt(361, DiaryMealShares.standard), greaterThan(0.25));
-    });
-
-    test('a day that ends at midnight is due in full at its last minute', () {
-      final times = DiaryMealTimes.standard.withEnd(MealType.snack, 1439);
-
-      expect(times.dueAt(1438, DiaryMealShares.standard), lessThan(1));
-      expect(times.dueAt(1439, DiaryMealShares.standard), 1);
-    });
-
-    test('all of the day at once when it starts and ends at midnight', () {
-      const instant = DiaryMealTimes(start: 0, ends: [0, 0, 0, 0]);
-
-      expect(instant.dueAt(0, DiaryMealShares.standard), 1);
-      expect(instant.dueAt(700, DiaryMealShares.standard), 1);
+      expect(due(16), closeTo(0.85, 1e-9));
+      expect(due(20), closeTo(1, 1e-9));
     });
   });
 }

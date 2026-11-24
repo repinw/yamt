@@ -41,8 +41,6 @@ class _MockUser extends Mock implements User;
 // A Monday, the day the goal starts: today's target stays at 2000 kcal.
 final _today = DateTime(2026, 9, 28);
 
-int _id(MealType meal) => 300000000 + MealType.sectionOrder.indexOf(meal);
-
 /// A meal of [kcal] kcal, eaten at 8:00.
 CalorieEntry _meal(String id, double kcal) => CalorieEntry.create(
   id: id,
@@ -76,7 +74,7 @@ class _Harness {
             initialStrings: {'diary_pace_notification_on_v1': 'set'},
           ),
         ),
-        // 12:00: breakfast and lunch are over, dinner and the snack come.
+        // 12:00: the 6:00 and 11:00 notices are past, 16:00 is pending.
         clockProvider.overrideWithValue(() => DateTime(2026, 9, 28, 12)),
         localNotificationsProvider.overrideWithValue(notifications),
         authStateChangesProvider.overrideWith(
@@ -152,27 +150,29 @@ Future<_Harness> _pump(WidgetTester tester) async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  /// The pending notice planned for [at] today, or null.
+  ({DateTime at, String title, String payload})? at(
+    _Harness harness,
+    int hour,
+  ) => harness.notifications.scheduled.values
+      .where((n) => n.at == DateTime(2026, 9, 28, hour))
+      .firstOrNull;
+
   testWidgets('schedules the notices once today loads, with localized texts', (
     tester,
   ) async {
     final harness = await _pump(tester);
-    final scheduled = harness.notifications.scheduled;
 
-    // 2000 kcal split 25/35/30/10: dinner's 600 kcal are free at 13:00, the
-    // snack's 200 kcal at 19:00.
-    expect(
-      scheduled.keys,
-      unorderedEquals([_id(MealType.dinner), _id(MealType.snack)]),
-    );
-    expect(scheduled[_id(MealType.dinner)]!.at, DateTime(2026, 9, 28, 13));
-    expect(
-      scheduled[_id(MealType.dinner)]!.title,
-      'Fürs Abendessen hast du wieder 600 kcal frei',
-    );
-    expect(scheduled[_id(MealType.snack)]!.at, DateTime(2026, 9, 28, 19));
+    // 12:00, 2000 kcal, nothing eaten: the 11:00 notice is past, the 16:00
+    // one says what is due by the end of dinner's part: 1.800 kcal.
+    expect(at(harness, 11), isNull);
+    expect(at(harness, 16)!.title, 'Hey, du hast wieder 1.800 kcal frei');
+    expect(at(harness, 20), isNull);
   });
 
-  testWidgets('a new entry moves the notices later', (tester) async {
+  testWidgets('a new entry lowers the value of the pending notice', (
+    tester,
+  ) async {
     final harness = await _pump(tester);
 
     await harness.container.read(calorieEntrySaverProvider)(
@@ -182,11 +182,8 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
 
-    final scheduled = harness.notifications.scheduled;
-    // 900 kcal eaten: dinner's notice needs the marker at 1500 kcal, half
-    // way through dinner's 13:00 to 19:00. The snack's stays at 19:00.
-    expect(scheduled[_id(MealType.dinner)]!.at, DateTime(2026, 9, 28, 16));
-    expect(scheduled[_id(MealType.snack)]!.at, DateTime(2026, 9, 28, 19));
+    // 900 kcal eaten: 1.800 due by the end of dinner's part minus 900.
+    expect(at(harness, 16)!.title, 'Hey, du hast wieder 900 kcal frei');
   });
 
   testWidgets('cancels the notices when the user turns them off', (
@@ -205,14 +202,13 @@ void main() {
 
   testWidgets('schedules again when the language changes', (tester) async {
     final harness = await _pump(tester);
-    String title() =>
-        harness.notifications.scheduled[_id(MealType.dinner)]!.title;
-    expect(title(), 'Fürs Abendessen hast du wieder 600 kcal frei');
+    String title() => at(harness, 16)!.title;
+    expect(title(), 'Hey, du hast wieder 1.800 kcal frei');
 
     // The same listener, only the app's language changes.
     await tester.pumpWidget(harness.app(const Locale('en')));
     await tester.pumpAndSettle();
 
-    expect(title(), 'For dinner you have 600 kcal free again');
+    expect(title(), 'Hey, you have 1,800 kcal free again');
   });
 }
