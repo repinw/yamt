@@ -705,3 +705,219 @@ When: I edit the tiles ("Kacheln anordnen") and add the weight tile or the
 Then: the added tile shows on the dashboard, as any other hidden tile can.
 
 Not: the update changes a saved layout (no migration).
+
+## Meldung bei freien kcal (#971, redesign for release 3.11.1)
+
+Criteria for the notification that tells the user how many kcal are free
+again (switch "Meldung bei freien kcal" in the "Tagesbudget" menu, channel
+"Freie kcal"). They replace the trigger of issue #937 (the notice came once
+the pace marker freed a meal's whole share); that trigger is gone and is not
+kept next to these.
+
+Source of every criterion below: **Decisions** = the user's decisions in
+`pace-notice-971-decisions.md` (side-session notes, from the user on
+2026-11-24, in the chat). Each criterion names the point. Point 7 is partly
+the session's own setting ("Abend bis 20" and the shift of the pace marker);
+the user did not object. "Unverändert" and "Bewusst so" are the two closing
+paragraphs of that file. **Nachtrag 10** is point 10 of its section "Nachtrag
+24.11.", a decision of the user of 2026-11-24. **Nachtrag session** are the
+entries under "Selbst entschieden" in that section: decided by the session on
+2026-11-24 as small things, not the user's own words.
+
+Words used below:
+
+- **Part of the day**: Frühstück, Mittagessen, Abendessen, each from its
+  start to its end in the meal times. The snack is a part of the day for the
+  pace marker, but never for this notice.
+- **Due by the end of a part**: the day's budget (K33) times the shares of
+  all meals up to and including that part.
+- **Eaten**: everything eaten today, all meals together.
+
+Example values unless a criterion says otherwise: budget 2.000 kcal, no pause
+day, shares Frühstück 25 %, Mittagessen 35 %, Abendessen 30 %, Snack 10 %,
+standard meal times (P8).
+
+#### P1 – One notice at the start of each part of the day, never for the snack
+Source: Decisions 1, 6, 7; Unverändert ("höchstens eine Meldung je Tageszeit").
+| Part of the day | Notice comes at               | Standard time |
+| --------------- | ----------------------------- | ------------- |
+| Frühstück       | the day start ("Tagesbeginn") | 6:00          |
+| Mittagessen     | the end of Frühstück          | 11:00         |
+| Abendessen      | the end of Mittagessen        | 16:00         |
+| Snack           | no notice                     | —             |
+With own meal times the notices follow them, e.g. Frühstück by 10:00 moves
+the Mittagessen notice to 10:00.
+At most one notice per part of the day per day.
+Not: a notice at the end of Abendessen (20:00), when the snack part starts, or
+at any other time of the day.
+
+#### P2 – The value is what is due by the end of the part minus what is eaten
+Source: Decisions 2, 3, 6; Nachtrag session (rounding).
+Due by the end: Frühstück 500, Mittagessen 1.200, Abendessen 1.800. The
+snack's 200 are never counted.
+| Notice      | Eaten today | Value | Notice comes                               |
+| ----------- | ----------- | ----- | ------------------------------------------ |
+| Frühstück   | 0           | 500   | yes, "500 kcal"                            |
+| Mittagessen | 400         | 800   | yes, "800 kcal"                            |
+| Mittagessen | 0           | 1.200 | yes, "1.200 kcal" (open kcal from earlier add up) |
+| Mittagessen | 700         | 500   | yes, "500 kcal" (eating too much lowers it) |
+| Mittagessen | 1.199       | 1     | yes, "1 kcal"                              |
+| Abendessen  | 1.000       | 800   | yes, "800 kcal"                            |
+| Abendessen  | 1.800       | 0     | no                                         |
+| Abendessen  | 2.100       | −300  | no                                         |
+With mode "Mit Übertrag" the value is worked out from the budget with the
+carryover (K33), e.g. budget 2.100 and nothing eaten: Frühstück "525 kcal".
+A value with a fraction is rounded half up:
+| Budget | Notice      | Eaten today | Exact value | Shown      |
+| ------ | ----------- | ----------- | ----------- | ---------- |
+| 2.150  | Frühstück   | 0           | 537,5       | "538 kcal" |
+| 2.150  | Frühstück   | 0,4         | 537,1       | "537 kcal" |
+| 2.150  | Frühstück   | 537,2       | 0,3         | no notice  |
+The rounded value decides: a value that rounds to 0 or less brings no notice
+(Nachtrag session, "Ergibt gerundet 0 kcal (z. B. 0,3), kommt keine Meldung").
+
+#### P3 – The title names neither a meal nor a breakdown
+Source: Decisions 4, 6.
+Given: the Mittagessen notice comes with a value of 800.
+Then: its title reads "Hey, du hast wieder 800 kcal frei".
+Not: "Fürs Mittagessen", "Für den Snack", any other meal name, "davon … für
+Snacks", or a list of meals.
+Source for English: Nachtrag session.
+In English the title reads "Hey, you have 800 kcal free again".
+
+#### P4 – The macro tip stays, but not while nothing is eaten today
+Source: Decision 5.
+| Eaten today               | Macro with the most left | Text under the title             |
+| ------------------------- | ------------------------ | -------------------------------- |
+| 0 kcal                    | (all equal)              | none                             |
+| 400 kcal, little protein  | Eiweiß                   | "Versuch, mehr Eiweiß zu essen." |
+| 1.000 kcal, little fat    | Fett                     | "Versuch, mehr Fett zu essen."   |
+Not: "Eiweiß" in the Frühstück notice of a morning with nothing eaten.
+
+#### P5 – Tomorrow's day-start notice is planned today
+Source: Decision 9; Unverändert ("geplant wird nur heute (dazu die Morgen-Meldung von morgen)").
+Given: the switch is on, and today the app plans the notices (I open it or
+change the diary), e.g. at 21:30.
+Then: tomorrow's Frühstück notice is planned for tomorrow's day start (6:00),
+even if I do not open the app tomorrow before then.
+And: its value is tomorrow's budget times the Frühstück share, with
+tomorrow's real budget (training day, pause day, carryover of #911).
+And: it has no macro tip.
+| Tomorrow                     | Tomorrow's budget | Notice at 6:00 tomorrow             |
+| ---------------------------- | ----------------- | ----------------------------------- |
+| normal day                   | 2.000             | "Hey, du hast wieder 500 kcal frei" |
+| training day                 | 2.400             | "Hey, du hast wieder 600 kcal frei" |
+| "Mit Übertrag"               | 2.100             | "Hey, du hast wieder 525 kcal frei" |
+| pause day                    | —                 | none                                |
+Planning tomorrow's notice never cancels or changes today's pending notices,
+and planning today's never cancels or changes tomorrow's.
+A later planning today plans tomorrow's notice again with the newest budget,
+e.g. after closing today (K39) changes tomorrow's carryover.
+When tomorrow comes, only one Frühstück notice comes that day (P1), also when
+I open the app before 6:00.
+Phone only: the notice coming at 6:00 on the next day without opening the app.
+
+#### P6 – A notice due before the app opens that day does not come late
+Source: Bewusst so.
+Given: it is 12:30, and I open the app for the first time today.
+Then: no Mittagessen notice comes, not now and not later today.
+And: the Abendessen notice is planned for 16:00 as usual.
+
+#### P7 – A diary change re-plans the pending notice
+Source: Bewusst so; Unverändert ("eine gezeigte Meldung wird nie zurückgezogen").
+Given: it is 13:00; the Abendessen notice is pending for 16:00 with a value of
+800 (1.000 eaten).
+| I change the diary to | Pending notice at 16:00               |
+| --------------------- | ------------------------------------- |
+| 1.300 eaten           | "Hey, du hast wieder 500 kcal frei"   |
+| 800 eaten (delete)    | "Hey, du hast wieder 1.000 kcal frei" |
+| 1.800 eaten           | cancelled, nothing comes at 16:00     |
+| 2.000 eaten           | cancelled, nothing comes at 16:00     |
+| 2.000 eaten, then at 14:00 an entry of 1.000 deleted | planned again: "Hey, du hast wieder 800 kcal frei" |
+Source for the last row: Nachtrag session (a cancelled notice is planned again
+when kcal are free again before its time).
+Given: it is 11:30 and the Mittagessen notice came at 11:00.
+When: I add or delete an entry.
+Then: the notice already shown stays in the notification list; it is not
+withdrawn or changed, and no second Mittagessen notice comes.
+
+#### P8 – New standard meal times, also for the pace marker
+Source: Decision 7.
+The standard meal times are: Tagesbeginn 6:00, Frühstück bis 11:00,
+Mittagessen bis 16:00, Abendessen bis 20:00, Snack bis 21:00.
+The pace marker uses them too (its values: P14).
+Not: Frühstück bis 9:00, Mittagessen bis 13:00, Abendessen bis 19:00.
+
+#### P9 – Own meal times are kept; "Zurücksetzen" brings the new standard
+Source: Decision 7.
+| Meal times before the update   | After the update        |
+| ------------------------------ | ----------------------- |
+| never changed by me            | 6 / 11 / 16 / 20 / 21   |
+| own: 7 / 10 / 14 / 19 / 22     | 7 / 10 / 14 / 19 / 22   |
+Given: I have own meal times.
+When: I tap "Zurücksetzen" in the meal times editor.
+Then: the times are 6 / 11 / 16 / 20 / 21.
+
+#### P10 – Pause days stay quiet
+Source: Unverändert ("Pausentage still"); Decision 9.
+Given: today is a pause day.
+Then: no notice comes today, whatever is eaten.
+Given: tomorrow is a pause day.
+Then: no Frühstück notice is planned for tomorrow (P5).
+
+#### P11 – Turning the switch or the pace marker off cancels every pending notice
+Source: Unverändert (the switch and "eine gezeigte Meldung wird nie zurückgezogen"); Decision 9; Nachtrag session ("nur, solange der Soll-Strich an ist", the switch stays where it is).
+Given: it is 12:00; the Abendessen notice is pending for 16:00 and tomorrow's
+Frühstück notice for 6:00.
+When: I turn "Meldung bei freien kcal" off.
+Then: neither comes. A notice already shown stays.
+Given: the same pending notices.
+When: I turn "Soll-Strich" off and leave "Meldung bei freien kcal" on.
+Then: neither comes, and no notice is planned while the pace marker is off.
+When: I turn "Soll-Strich" on again at 13:00.
+Then: the Abendessen notice is planned for 16:00 again, and tomorrow's
+Frühstück notice for 6:00.
+
+#### P12 – The switch hint describes the new trigger
+Source: Decisions 1, 4; closing paragraph ("diaryBudgetMenuPaceNoticeHint (DE+EN) braucht einen neuen Text"); Nachtrag session (wording).
+Given: I open the "Tagesbudget" menu.
+Then: the hint under "Meldung bei freien kcal" reads "Zu Beginn jeder
+Tageszeit, wenn du kcal frei hast"; in English "At the start of each part of
+the day, when you have kcal free".
+Not: "Einmal pro Tageszeit, wenn der Soll-Strich ihre kcal wieder frei gibt",
+and in English not "Once per part of the day, when the pace marker frees its
+kcal again".
+
+#### P13 – The debug button shows the new title
+Source: closing paragraph ("der Debug-Knopf den neuen Titel"); Unverändert ("Debug-Knopf").
+Given: the debug build, the switch on.
+When: I tap "Test-Meldung in 5 s (Debug)".
+Then: about 5 seconds later a notice comes whose title reads "Hey, du hast
+wieder <number> kcal frei", with no meal name.
+Phone only: the debug build and the real notification.
+
+#### P14 – The pace marker jumps at the start of each part of the day
+Source: Nachtrag 10 (user decision 2026-11-24: "man hat halt budget frei um zu frühstücken, das ergibt doch sinn").
+Before the day start the marker stands at 0. At the start of each part of the
+day it jumps at once to what is due by the end of that part (P2), and stays
+there until the next part starts. It never rises evenly in between.
+With the example values (budget 2.000, standard meal times):
+| Time  | Marker at       |
+| ----- | --------------- |
+| 0:00  | 0               |
+| 5:59  | 0               |
+| 6:00  | 500 (25 %)      |
+| 8:30  | 500             |
+| 10:59 | 500             |
+| 11:00 | 1.200 (60 %)    |
+| 13:30 | 1.200           |
+| 16:00 | 1.800 (90 %)    |
+| 19:59 | 1.800           |
+| 20:00 | 2.000 (100 %)   |
+| 23:59 | 2.000           |
+The jump at 20:00 is the snack part; it brings no notice (P1).
+With own meal times the jumps follow them, e.g. day start 7:00: 0 at 6:30,
+500 at 7:00.
+So the marker and the notice show the same: at 11:00 with 400 eaten, the
+marker stands 800 ahead of the kcal eaten, and the notice says "800 kcal".
+Not: 250 at 8:30 (the old even rise).
