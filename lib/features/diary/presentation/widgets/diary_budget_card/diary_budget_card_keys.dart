@@ -75,8 +75,8 @@ abstract final class DiaryBudgetCardKeys {
   /// The menu's switch for the pace marker on the kcal line.
   static const paceSwitch = ValueKey<String>('diary-budget-menu-pace');
 
-  /// The menu's switch for the notification when the pace marker frees a
-  /// meal's kcal again.
+  /// The menu's switch for the notification at the start of each part of
+  /// the day, when kcal are free.
   static const paceNoticeSwitch = ValueKey<String>(
     'diary-budget-menu-pace-notice',
   );

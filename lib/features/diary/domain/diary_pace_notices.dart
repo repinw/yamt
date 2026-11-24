@@ -25,36 +25,30 @@ typedef DiaryPaceDay = ({
   DiaryPaceMacro? macro,
 });
 
-/// A notification that the pace marker moved a meal's whole part of the
-/// day ahead of the kcal eaten: `freeKcal` are free again for `meal` at
-/// `at`.
+/// A notification that `freeKcal` are free at `at`, the start of the part of
+/// the day of `meal`.
 typedef DiaryPaceNotice = ({MealType meal, DateTime at, int freeKcal});
 
-/// The notices of [pace]'s day, at most one per meal: a meal's notice comes
-/// at the first minute of its time, before it is eaten by, at which the
-/// pace marker lies the meal's part of the day ahead of the kcal eaten.
-/// Meals without a part get none, and none come after the last meal is
-/// eaten by, so the night stays quiet.
+/// The notices of [pace]'s day: one at the start of breakfast, lunch and
+/// dinner, never one for the snack. A notice names what is due by the end of
+/// its part of the day minus everything eaten today, rounded half up. A part
+/// without length or without a share, and a notice that rounds to 0 or less,
+/// get none. The time of day does not filter: the caller decides what is
+/// still to come.
 List<DiaryPaceNotice> diaryPaceNotices(DiaryPaceDay pace) {
   final times = pace.times;
   final edges = [times.start, ...times.ends];
-  final parts = pace.shares.splitKcal(pace.targetKcal);
   final notices = <DiaryPaceNotice>[];
-  var dueBefore = 0;
+  var duePercent = 0;
   for (final (i, meal) in MealType.sectionOrder.indexed) {
+    if (meal == MealType.snack) break;
     final percent = pace.shares.percents[i];
-    final from = edges[i];
-    final to = edges[i + 1];
-    final dueFrom = pace.targetKcal * dueBefore / 100;
-    dueBefore += percent;
-    final dueTo = pace.targetKcal * dueBefore / 100;
-    final need = pace.eatenKcal + parts[i];
-    // At the minute a meal is eaten by, the next meal's time begins.
-    if (parts[i] <= 0 || to <= from || need >= dueTo) continue;
-    final minute = need <= dueFrom
-        ? from
-        : from + ((need - dueFrom) / (dueTo - dueFrom) * (to - from)).ceil();
-    if (minute >= to) continue;
+    duePercent += percent;
+    if (percent <= 0 || edges[i + 1] <= edges[i]) continue;
+    final freeKcal = (pace.targetKcal * duePercent / 100 - pace.eatenKcal)
+        .round();
+    if (freeKcal <= 0) continue;
+    final minute = edges[i];
     notices.add((
       meal: meal,
       at: DateTime(
@@ -64,7 +58,7 @@ List<DiaryPaceNotice> diaryPaceNotices(DiaryPaceDay pace) {
         minute ~/ 60,
         minute % 60,
       ),
-      freeKcal: parts[i],
+      freeKcal: freeKcal,
     ));
   }
   return notices;
