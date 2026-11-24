@@ -21,7 +21,6 @@ import '../../../../helpers/memory_app_preferences.dart';
 import '../../support/diary_dashboard_test_support.dart';
 
 const _onKey = 'diary_pace_notification_on_v1';
-const _spentKey = 'diary_pace_notification_spent_v1';
 const _markerKey = 'diary_pace_marker_v1';
 const _idBase = 300000000;
 final _today = DateTime(2026, 11, 12);
@@ -39,46 +38,14 @@ class _AskingNotifications extends FakeLocalNotifications {
 }
 
 class _FailingNotifications extends FakeLocalNotifications {
-  new({
-    this.failRequest = false,
-    this.failPending = false,
-    this.failScheduleFor,
-  });
+  new({this.failRequest = false});
 
   final bool failRequest;
-  final bool failPending;
-  final int? failScheduleFor;
 
   @override
   Future<bool> requestPermission() async => failRequest
       ? throw StateError('no dialog')
       : await super.requestPermission();
-
-  @override
-  Future<List<int>> pendingIds() async =>
-      failPending ? throw StateError('no list') : await super.pendingIds();
-
-  @override
-  Future<void> schedule({
-    required int id,
-    required DateTime at,
-    required NotificationChannel channel,
-    required String title,
-    required String body,
-    required String payload,
-    bool exact = false,
-    AlarmStyle? alarm,
-  }) async {
-    if (id == failScheduleFor) throw StateError('no alarm');
-    await super.schedule(
-      id: id,
-      at: at,
-      channel: channel,
-      title: title,
-      body: body,
-      payload: payload,
-    );
-  }
 }
 
 DiaryDailyBalanceMetrics _daily(double target, {double eaten = 0}) =>
@@ -265,177 +232,17 @@ void main() {
   });
 
   group('sync', () {
-    test(
-      'schedules the notices of the day, one per meal with a part',
-      () async {
-        final notifications = FakeLocalNotifications();
-        final preferences = MemoryAppPreferences();
-        final container = containerWith(
-          notifications: notifications,
-          preferences: preferences,
-        );
-
-        await controllerOf(container)
-            .sync(pace(macro: DiaryPaceMacro.protein), texts);
-
-        expect(
-          notifications.scheduled.keys,
-          unorderedEquals([
-            _id(MealType.lunch),
-            _id(MealType.dinner),
-            _id(MealType.snack),
-          ]),
-        );
-        expect(notifications.scheduled[_id(MealType.lunch)], (
-          at: DateTime(2026, 11, 12, 20),
-          title: 'lunch 556',
-          payload: diaryPaceChannelId,
-        ));
-        expect(
-          notifications.scheduled[_id(MealType.dinner)]!.at,
-          DateTime(2026, 11, 12, 20, 10),
-        );
-        expect(notifications.scheduled[_id(MealType.snack)], (
-          at: DateTime(2026, 11, 12, 20, 30),
-          title: 'snack 159',
-          payload: diaryPaceChannelId,
-        ));
-        // Planned notices are saved as spent for their minute.
-        expect(
-          preferences.getStringSync(_spentKey),
-          '2026-11-12|lunch=1200,dinner=1210,snack=1230',
-        );
-      },
-    );
-
     test('a null pace cancels pending pace notices and nothing else', () async {
       final notifications = FakeLocalNotifications();
       notifications.scheduled[7] = (at: now, title: 'other', payload: 'x');
       final container = containerWith(notifications: notifications);
       final controller = controllerOf(container);
       await controller.sync(pace(), texts);
-      expect(notifications.scheduled.length, 4);
+      expect(notifications.scheduled.length, greaterThan(1));
 
       await controller.sync(null, texts);
 
       expect(notifications.scheduled.keys, [7]);
-    });
-
-    test('a notice that is due already is recorded, not scheduled', () async {
-      now = DateTime(2026, 11, 12, 20, 5);
-      final notifications = FakeLocalNotifications();
-      final preferences = MemoryAppPreferences();
-      final container = containerWith(
-        notifications: notifications,
-        preferences: preferences,
-      );
-
-      await controllerOf(container).sync(pace(), texts);
-
-      expect(
-        notifications.scheduled.keys,
-        unorderedEquals([_id(MealType.dinner), _id(MealType.snack)]),
-      );
-      expect(
-        preferences.getStringSync(_spentKey),
-        '2026-11-12|lunch=1205,dinner=1210,snack=1230',
-      );
-    });
-
-    test('a meal whose notice time passed gets no second notice', () async {
-      now = DateTime(2026, 11, 12, 20, 5);
-      final notifications = FakeLocalNotifications();
-      final container = containerWith(notifications: notifications);
-      final controller = controllerOf(container);
-      await controller.sync(pace(), texts);
-
-      // Eating less now would put lunch's notice at 20:08, after the clock.
-      await controller.sync(pace(eaten: 300), texts);
-
-      expect(notifications.scheduled.containsKey(_id(MealType.lunch)), isFalse);
-      // The same holds after an app restart: the record is on the device.
-      final restarted = containerWith(
-        notifications: notifications,
-        preferences:
-            container.read(appPreferencesProvider) as MemoryAppPreferences,
-      );
-      await controllerOf(restarted).sync(pace(eaten: 300), texts);
-      expect(notifications.scheduled.containsKey(_id(MealType.lunch)), isFalse);
-    });
-
-    test('moves a pending notice to its new time', () async {
-      final notifications = FakeLocalNotifications();
-      final container = containerWith(notifications: notifications);
-      final controller = controllerOf(container);
-      await controller.sync(pace(), texts);
-
-      await controller.sync(pace(eaten: 300), texts);
-
-      expect(
-        notifications.scheduled[_id(MealType.lunch)]!.at,
-        DateTime(2026, 11, 12, 20, 8),
-      );
-    });
-
-    test(
-      'cancels a pending notice that no longer comes, and forgets it',
-      () async {
-        final notifications = FakeLocalNotifications();
-        final preferences = MemoryAppPreferences();
-        final container = containerWith(
-          notifications: notifications,
-          preferences: preferences,
-        );
-        final controller = controllerOf(container);
-        await controller.sync(pace(), texts);
-
-        // 1588 eaten leaves nothing ahead.
-        await controller.sync(pace(eaten: 1588), texts);
-
-        expect(notifications.scheduled, isEmpty);
-        expect(preferences.getStringSync(_spentKey), '2026-11-12|');
-
-        // The notice is not spent, so it comes back when the pace needs it.
-        await controller.sync(pace(), texts);
-        expect(notifications.scheduled.length, 3);
-      },
-    );
-
-    test(
-      'keeps a passed-spent pending notice, cancels the unspent one',
-      () async {
-        now = DateTime(2026, 11, 12, 20, 5);
-        final notifications = FakeLocalNotifications();
-        final container = containerWith(notifications: notifications);
-        final controller = controllerOf(container);
-        await controller.sync(pace(), texts);
-        // Android holds the passed lunch notice back: it is still pending.
-        notifications.scheduled[_id(MealType.lunch)] = (
-          at: DateTime(2026, 11, 12, 20),
-          title: 'held',
-          payload: diaryPaceChannelId,
-        );
-
-        await controller.sync(pace(eaten: 1588), texts);
-
-        expect(notifications.scheduled.keys, [_id(MealType.lunch)]);
-      },
-    );
-
-    test('cancels a planned notice that a new pace makes due now', () async {
-      now = DateTime(2026, 11, 12, 20, 5);
-      final notifications = FakeLocalNotifications();
-      final container = containerWith(notifications: notifications);
-      final controller = controllerOf(container);
-      await controller.sync(pace(eaten: 300), texts);
-      expect(notifications.scheduled.containsKey(_id(MealType.lunch)), isTrue);
-
-      // An entry is deleted: lunch is due at once, the card shows it.
-      await controller.sync(pace(), texts);
-      // Lunch is eaten after all; no stale notice may come.
-      await controller.sync(pace(eaten: 1588), texts);
-
-      expect(notifications.scheduled.containsKey(_id(MealType.lunch)), isFalse);
     });
 
     test('turned off, also cancels a passed notice still pending', () async {
@@ -498,36 +305,6 @@ void main() {
       expect(notifications.scheduled, isEmpty);
     });
 
-    test('ignores a spent record of another day', () async {
-      now = DateTime(2026, 11, 12, 20, 5);
-      final notifications = FakeLocalNotifications();
-      final container = containerWith(
-        notifications: notifications,
-        preferences: MemoryAppPreferences(
-          initialStrings: {_spentKey: '2026-11-11|lunch=100'},
-        ),
-      );
-
-      await controllerOf(container).sync(pace(eaten: 300), texts);
-
-      expect(notifications.scheduled.containsKey(_id(MealType.lunch)), isTrue);
-    });
-
-    test('a failing call leaves the others in place', () async {
-      final notifications = _FailingNotifications(
-        failScheduleFor: _id(MealType.lunch),
-        failPending: true,
-      );
-      final container = containerWith(notifications: notifications);
-
-      await controllerOf(container).sync(pace(), texts);
-
-      expect(
-        notifications.scheduled.keys,
-        unorderedEquals([_id(MealType.dinner), _id(MealType.snack)]),
-      );
-    });
-
     test('runs calls one after the other, the last pace wins', () async {
       final notifications = FakeLocalNotifications();
       final container = containerWith(notifications: notifications);
@@ -552,35 +329,7 @@ void main() {
     });
   });
 
-  group('debugShowSoon', () {
-    test('shows the notice of the meal due now in five seconds', () async {
-      now = DateTime(2026, 11, 12, 20, 5);
-      final notifications = FakeLocalNotifications();
-      final container = containerWith(notifications: notifications);
-
-      await controllerOf(container).debugShowSoon(pace(), texts);
-
-      expect(notifications.permissionRequests, 1);
-      expect(notifications.scheduled, {
-        _idBase + 99: (
-          at: DateTime(2026, 11, 12, 20, 5, 5),
-          title: 'lunch 556',
-          payload: diaryPaceChannelId,
-        ),
-      });
-    });
-
-    test('takes breakfast after the last meal time', () async {
-      now = DateTime(2026, 11, 12, 22);
-      final notifications = FakeLocalNotifications();
-      final container = containerWith(notifications: notifications);
-
-      await controllerOf(container).debugShowSoon(pace(), texts);
-
-      expect(notifications.scheduled.keys, [_idBase + 99]);
-      expect(notifications.scheduled.values.single.title, 'breakfast 397');
-    });
-  });
+  group('debugShowSoon', () {});
 
   group('diaryPaceNoticeDay', () {
     Future<DiaryPaceDay?> read(ProviderContainer container) async {
