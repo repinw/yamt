@@ -158,7 +158,7 @@ void main() {
       await _pump(tester, savedShares: '0,60,30,10');
 
       expect(_part(tester, MealType.breakfast), 'Off');
-      expect(_timeOf(tester, MealType.breakfast), 'by 9:00 AM');
+      expect(_timeOf(tester, MealType.breakfast), 'by 11:00 AM');
     });
   });
 
@@ -196,7 +196,7 @@ void main() {
             find.byKey(DiaryMealSharesEditor.partKey(MealType.lunch)),
           )
           .getSemanticsData();
-      expect(lunch.label, 'Lunch\n35 % · 700 kcal\nby 1:00 PM');
+      expect(lunch.label, 'Lunch\n35 % · 700 kcal\nby 4:00 PM');
       expect(lunch.hasAction(SemanticsAction.tap), isTrue);
 
       final start = tester
@@ -262,9 +262,9 @@ void main() {
 
       expect(find.text('Day starts'), findsOneWidget);
       expect(_time(tester, DiaryMealSharesEditor.startKey), 'from 6:00 AM');
-      expect(_timeOf(tester, MealType.breakfast), 'by 9:00 AM');
-      expect(_timeOf(tester, MealType.lunch), 'by 1:00 PM');
-      expect(_timeOf(tester, MealType.dinner), 'by 7:00 PM');
+      expect(_timeOf(tester, MealType.breakfast), 'by 11:00 AM');
+      expect(_timeOf(tester, MealType.lunch), 'by 4:00 PM');
+      expect(_timeOf(tester, MealType.dinner), 'by 8:00 PM');
       expect(_timeOf(tester, MealType.snack), 'by 9:00 PM');
       for (final name in ['Breakfast', 'Lunch', 'Dinner', 'Snack']) {
         expect(find.text(name), findsOneWidget, reason: name);
@@ -287,7 +287,7 @@ void main() {
       await _pump(tester, use24HourClock: true);
 
       expect(_time(tester, DiaryMealSharesEditor.startKey), 'from 06:00');
-      expect(_timeOf(tester, MealType.lunch), 'by 13:00');
+      expect(_timeOf(tester, MealType.lunch), 'by 16:00');
       expect(_timeOf(tester, MealType.snack), 'by 21:00');
     });
 
@@ -301,7 +301,7 @@ void main() {
       );
 
       expect(_timeOf(tester, MealType.dinner), 'by 18:45');
-      expect(preferences.getStringSync(_timesKey), '360,540,780,1125,1260');
+      expect(preferences.getStringSync(_timesKey), '360,660,960,1125,1260');
     });
 
     testWidgets('a time button opens the time picker on its time', (
@@ -317,7 +317,7 @@ void main() {
       final picker = tester.widget<TimePickerDialog>(
         find.byType(TimePickerDialog),
       );
-      expect(picker.initialTime, const TimeOfDay(hour: 13, minute: 0));
+      expect(picker.initialTime, const TimeOfDay(hour: 16, minute: 0));
 
       await cancelOpenTimePicker(tester);
 
@@ -342,7 +342,7 @@ void main() {
       await cancelOpenTimePicker(tester);
 
       expect(find.byType(TimePickerDialog), findsNothing);
-      expect(_timeOf(tester, MealType.lunch), 'by 1:00 PM');
+      expect(_timeOf(tester, MealType.lunch), 'by 4:00 PM');
       expect(preferences.getStringSync(_timesKey), isNull);
     });
 
@@ -357,9 +357,9 @@ void main() {
 
       expect(find.byType(TimePickerDialog), findsNothing);
       expect(_timeOf(tester, MealType.lunch), 'by 12:30 PM');
-      expect(_timeOf(tester, MealType.breakfast), 'by 9:00 AM');
+      expect(_timeOf(tester, MealType.breakfast), 'by 11:00 AM');
       expect(_time(tester, DiaryMealSharesEditor.startKey), 'from 6:00 AM');
-      expect(preferences.getStringSync(_timesKey), '360,540,750,1140,1260');
+      expect(preferences.getStringSync(_timesKey), '360,660,750,1200,1260');
     });
 
     testWidgets('a time picked before the one before pushes that along', (
@@ -367,7 +367,7 @@ void main() {
     ) async {
       final preferences = await _pump(tester);
 
-      // Lunch by 8:00 AM, before breakfast's 9:00 AM.
+      // Lunch by 8:00 AM, before breakfast's 11:00 AM.
       await _pick(
         tester,
         DiaryMealSharesEditor.timeKey(MealType.lunch),
@@ -376,8 +376,8 @@ void main() {
 
       expect(_timeOf(tester, MealType.lunch), 'by 8:00 AM');
       expect(_timeOf(tester, MealType.breakfast), 'by 8:00 AM');
-      expect(_timeOf(tester, MealType.dinner), 'by 7:00 PM');
-      expect(preferences.getStringSync(_timesKey), '360,480,480,1140,1260');
+      expect(_timeOf(tester, MealType.dinner), 'by 8:00 PM');
+      expect(preferences.getStringSync(_timesKey), '360,480,480,1200,1260');
     });
 
     testWidgets('a time picked after the one after pushes that along', (
@@ -407,13 +407,13 @@ void main() {
       await _pick(
         tester,
         DiaryMealSharesEditor.startKey,
-        const TimeOfDay(hour: 10, minute: 0),
+        const TimeOfDay(hour: 12, minute: 0),
       );
 
-      expect(_time(tester, DiaryMealSharesEditor.startKey), 'from 10:00 AM');
-      expect(_timeOf(tester, MealType.breakfast), 'by 10:00 AM');
-      expect(_timeOf(tester, MealType.lunch), 'by 1:00 PM');
-      expect(preferences.getStringSync(_timesKey), '600,600,780,1140,1260');
+      expect(_time(tester, DiaryMealSharesEditor.startKey), 'from 12:00 PM');
+      expect(_timeOf(tester, MealType.breakfast), 'by 12:00 PM');
+      expect(_timeOf(tester, MealType.lunch), 'by 4:00 PM');
+      expect(preferences.getStringSync(_timesKey), '720,720,960,1200,1260');
     });
 
     testWidgets('picking midnight and noon works', (tester) async {
@@ -432,7 +432,7 @@ void main() {
 
       expect(_timeOf(tester, MealType.snack), 'by 11:59 PM');
       expect(_timeOf(tester, MealType.lunch), 'by 12:00 PM');
-      expect(preferences.getStringSync(_timesKey), '360,540,720,1140,1439');
+      expect(preferences.getStringSync(_timesKey), '360,660,720,1200,1439');
     });
 
     testWidgets('times and shares are saved apart', (tester) async {
@@ -445,7 +445,7 @@ void main() {
       );
       await _drag(tester, 25, 40);
 
-      expect(preferences.getStringSync(_timesKey), '360,540,780,1080,1260');
+      expect(preferences.getStringSync(_timesKey), '360,660,960,1080,1260');
       expect(preferences.getStringSync(_sharesKey), '40,20,30,10');
       expect(_timeOf(tester, MealType.dinner), 'by 6:00 PM');
       expect(_part(tester, MealType.breakfast), '40 % · 800 kcal');
@@ -473,9 +473,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(_time(tester, DiaryMealSharesEditor.startKey), 'from 6:00 AM');
-      expect(_timeOf(tester, MealType.breakfast), 'by 9:00 AM');
-      expect(_timeOf(tester, MealType.lunch), 'by 1:00 PM');
-      expect(_timeOf(tester, MealType.dinner), 'by 7:00 PM');
+      expect(_timeOf(tester, MealType.breakfast), 'by 11:00 AM');
+      expect(_timeOf(tester, MealType.lunch), 'by 4:00 PM');
+      expect(_timeOf(tester, MealType.dinner), 'by 8:00 PM');
       expect(_timeOf(tester, MealType.snack), 'by 9:00 PM');
       expect(preferences.getStringSync(_timesKey), isNull);
     });
@@ -491,15 +491,15 @@ void main() {
         const TimeOfDay(hour: 8, minute: 0),
       );
       expect(preferences.getStringSync(_sharesKey), '40,20,30,10');
-      expect(preferences.getStringSync(_timesKey), '360,480,480,1140,1260');
+      expect(preferences.getStringSync(_timesKey), '360,480,480,1200,1260');
 
       await tester.tap(find.byKey(DiaryMealSharesEditor.resetKey));
       await tester.pumpAndSettle();
 
       expect(_part(tester, MealType.breakfast), '25 % · 500 kcal');
       expect(_part(tester, MealType.lunch), '35 % · 700 kcal');
-      expect(_timeOf(tester, MealType.lunch), 'by 1:00 PM');
-      expect(_timeOf(tester, MealType.breakfast), 'by 9:00 AM');
+      expect(_timeOf(tester, MealType.lunch), 'by 4:00 PM');
+      expect(_timeOf(tester, MealType.breakfast), 'by 11:00 AM');
       expect(preferences.getStringSync(_sharesKey), isNull);
       expect(preferences.getStringSync(_timesKey), isNull);
     });
