@@ -566,7 +566,7 @@ void main() {
     ) async {
       await _pumpToday(tester, paceMarkerOn: true);
 
-      // At 12:00 the standard day has 51.25 % of 2,000 kcal behind it.
+      // At 12:00 lunch's part runs: 60 % of 2,000 kcal are due by its end.
       expect(marker, findsOneWidget);
       final line = tester.getRect(
         find.descendant(
@@ -576,7 +576,7 @@ void main() {
       );
       expect(
         tester.getCenter(marker).dx - line.left,
-        closeTo(line.width * 0.5125 / AppBudgetCard.lineScale, 1e-3),
+        closeTo(line.width * 0.6 / AppBudgetCard.lineScale, 1e-3),
       );
       expect(tester.takeException(), isNull);
     });

@@ -327,14 +327,15 @@ void main() {
     expect(_time(tester, DiaryMealSharesEditor.startKey), 'ab 06:00');
     expect(
       _time(tester, DiaryMealSharesEditor.timeKey(MealType.lunch)),
-      'bis 13:00',
+      'bis 16:00',
     );
 
-    // The marker is on the kcal line at 12:30: 25 % for breakfast and 35 %
-    // of lunch for the 3.5 of its 4 hours that are over. The meal heading
-    // shows its kcal against its part of the day.
+    // The marker is on the kcal line at 12:30: lunch's part of the day has
+    // begun, so what is due by its end stands there at once, 25 % for
+    // breakfast and 35 % for lunch. The meal heading shows its kcal against
+    // its part of the day.
     expect(_marker, findsOneWidget);
-    expect(_markerShare(tester), closeTo(0.55625, 1e-3));
+    expect(_markerShare(tester), closeTo(0.6, 1e-3));
     expect(_breakfastTarget(tester), '300 / 500 kcal');
 
     // Breakfast's end pushed onto the left edge turns breakfast off: its
@@ -353,13 +354,13 @@ void main() {
       _time(tester, DiaryMealSharesEditor.timeKey(MealType.lunch)),
       'bis 14:00',
     );
-    expect(preferences.getStringSync(_timesKey), '360,540,840,1140,1260');
+    expect(preferences.getStringSync(_timesKey), '360,660,840,1200,1260');
 
     // Back in the diary the marker stands where the new parts and times put
-    // it: lunch's 60 % from 9:00 to 14:00, of which 12:30 is 70 % through.
+    // it: lunch's part runs from 11:00 and holds 60 % now, all due at 12:30.
     await _closeMenu(tester);
     expect(_marker, findsOneWidget);
-    expect(_markerShare(tester), closeTo(0.42, 1e-3));
+    expect(_markerShare(tester), closeTo(0.6, 1e-3));
 
     // Reopened, the menu still has the parts of the day; reset puts back
     // the standard split and times, and the marker with them.
@@ -371,13 +372,13 @@ void main() {
     expect(_time(tester, DiaryMealSharesEditor.startKey), 'ab 06:00');
     expect(
       _time(tester, DiaryMealSharesEditor.timeKey(MealType.lunch)),
-      'bis 13:00',
+      'bis 16:00',
     );
     expect(preferences.getStringSync(_sharesKey), isNull);
     expect(preferences.getStringSync(_timesKey), isNull);
 
     await _closeMenu(tester);
-    expect(_markerShare(tester), closeTo(0.55625, 1e-3));
+    expect(_markerShare(tester), closeTo(0.6, 1e-3));
     expect(_breakfastTarget(tester), '300 / 500 kcal');
 
     // Switched off, the line and the heading are as they were.
