@@ -138,6 +138,22 @@ void main() {
       expect(value.value, isNull);
     });
 
+    test('is an error when the data key failed to load', () async {
+      final container = containerWith(
+        card: _loaded(),
+        session: FailingUserDataKeySession.new,
+      );
+      await expectLater(
+        container.read(userDataKeySessionProvider.future),
+        throwsStateError,
+      );
+
+      final value = read(container);
+
+      expect(value, isA<AsyncError<DiaryPaceDay?>>());
+      expect(value.hasValue, isFalse);
+    });
+
     test('is loading while the data key loads', () {
       final value = read(
         containerWith(card: _loaded(), session: LoadingUserDataKeySession.new),

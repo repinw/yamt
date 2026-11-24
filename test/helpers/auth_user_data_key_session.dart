@@ -41,3 +41,9 @@ class LoadingUserDataKeySession extends UserDataKeySession {
   @override
   Future<UserDataKeyState> build() => Completer<UserDataKeyState>().future;
 }
+
+/// A session whose data key failed to load.
+class FailingUserDataKeySession extends UserDataKeySession {
+  @override
+  Future<UserDataKeyState> build() async => throw StateError('no data key');
+}

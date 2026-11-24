@@ -181,6 +181,19 @@ void main() {
       expect(value.value!.targetKcal, isNull);
     });
 
+    test('is an error when the data key failed to load', () async {
+      final container = containerWith(session: FailingUserDataKeySession.new);
+      await expectLater(
+        container.read(userDataKeySessionProvider.future),
+        throwsStateError,
+      );
+
+      final value = await readTomorrow(container, awaitBudget: false);
+
+      expect(value, isA<AsyncError<DiaryPaceTomorrow>>());
+      expect(value.hasValue, isFalse);
+    });
+
     test('is loading while the data key loads', () {
       final container = containerWith(session: LoadingUserDataKeySession.new);
       final value = container.listen(
