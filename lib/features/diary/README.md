@@ -90,15 +90,21 @@ check-in composition.
   counts today as finished for every coming day of the run.
 - `presentation/widgets/diary_pace_notification_listener.dart`
   (`DiaryPaceNotificationListener`) wraps the app in `lib/app.dart`: it
-  keeps today's free kcal notices (#937) scheduled through
-  `core/device/local_notifications.dart`, at app start, after every diary
-  change, on a language change, and moves today on when the app resumes.
-  `DiaryPaceNotificationController` turns them on (the switch in the budget
-  card menu, `diary_budget_card/diary_pace_notification_switch.dart`) and
-  remembers which meal had its notice today. Channel `diary_pace`; ids
-  `300000000 + meal index` in `MealType.sectionOrder`, `300000099` for the
-  debug build's test notice. `domain/diary_pace_notices.dart` computes the
-  times.
+  keeps the free kcal notices (#971) scheduled through
+  `core/device/local_notifications.dart`: one at the start of breakfast,
+  lunch and dinner for today, and tomorrow's day-start notice, planned with
+  tomorrow's real budget (`diaryPaceTomorrowTarget`, kept while it loads).
+  It plans at app start, after every diary change, and on a language change,
+  and moves today on when the app resumes. `DiaryPaceNotificationController`
+  turns them on (the switch in the budget card menu,
+  `diary_budget_card/diary_pace_notification_switch.dart`) and remembers
+  which meal's notice came today. Channel `diary_pace`; ids
+  `300000000 + meal index` in `MealType.sectionOrder` for today,
+  `300000050` for tomorrow's day start, `300000099` for the debug build's
+  test notice. `domain/diary_pace_notices.dart` computes the times and kcal;
+  `diaryPaceNoticeDay` (`diary_pace_notice_day_provider.dart`) gives the day
+  they use. The pace marker jumps at each part's start to what is due by its
+  end.
 - The diary page shows the Activity missing-weight prompt below the weekly
   check-in, and only on today.
 - `presentation/widgets/diary_day_type_labels.dart` gives the emoji and the
