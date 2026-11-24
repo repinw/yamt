@@ -152,6 +152,21 @@ class DiaryBalanceSource {
   }
 }
 
+/// The kcal budget of [day] as the balance card shows it, with carryover
+/// and training days, from the day's week overview alone; null on a pause
+/// day. Cheaper than the day's whole dashboard, which also reads the
+/// entries and plans, saves a cache and refreshes after every change.
+@riverpod
+Future<double?> diaryDayBudgetKcal(Ref ref, DateTime day) async {
+  final week = await ref.watch(
+    calorieWeekOverviewForWindowProvider(normalizeLocalDay(day)).future,
+  );
+  if (isPracticeDay(week: week, day: week.days.last.date)) {
+    return dayGoalKcal(week);
+  }
+  return week.days.last.isPauseDay ? null : week.todayFlexibleGoalKcal;
+}
+
 /// Actions needed by diary balance presentation widgets.
 @riverpod
 DiaryBalanceActions diaryBalanceActions(Ref ref) {

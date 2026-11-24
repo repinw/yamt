@@ -126,14 +126,7 @@ class PaceHarness {
     DiaryPaceNoticeTexts? texts,
   }) {
     final t = texts ?? germanTexts();
-    if (tomorrowTarget == null) return controller.sync(pace, t);
-    // Dynamic until the builder adds the named parameter, so the other
-    // tests compile and fail on their own expectations.
-    return (controller as dynamic).sync(
-      pace,
-      t,
-      tomorrowTargetKcal: tomorrowTarget,
-    ) as Future<void>;
+    return controller.sync(pace, t, tomorrowTargetKcal: tomorrowTarget);
   }
 
   /// Pending titles planned for exactly [at].

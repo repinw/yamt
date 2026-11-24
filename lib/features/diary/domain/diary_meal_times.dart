@@ -13,11 +13,11 @@ class DiaryMealTimes {
   /// [MealType.sectionOrder], which never run backwards.
   const new({required this.start, required this.ends});
 
-  /// The day starts at 6:00; breakfast by 9:00, lunch by 13:00, dinner by
-  /// 19:00 and the snack by 21:00.
+  /// The day starts at 6:00; breakfast by 11:00, lunch by 16:00, dinner by
+  /// 20:00 and the snack by 21:00.
   static const DiaryMealTimes standard = DiaryMealTimes(
     start: 6 * 60,
-    ends: [9 * 60, 13 * 60, 19 * 60, 21 * 60],
+    ends: [11 * 60, 16 * 60, 20 * 60, 21 * 60],
   );
 
   /// The last minute of a day.
@@ -73,20 +73,18 @@ class DiaryMealTimes {
     return DiaryMealTimes(start: edges.first, ends: edges.sublist(1));
   }
 
-  /// The share of the day's kcal due by [minute] after midnight with
-  /// [shares]: none before the start, each meal's share by its end, and
-  /// rising evenly in between.
+  /// The share of the day's kcal due at [minute] after midnight with
+  /// [shares]: none before the start. A part of the day jumps the share to
+  /// what is due by the part's end the moment it starts, and keeps it until
+  /// the next part starts. A part that ends where it starts never shows: the
+  /// next one starts at once.
   double dueAt(int minute, DiaryMealShares shares) {
-    final edges = [start, ...ends];
+    final starts = [start, ...ends];
     var due = 0;
-    for (var i = 1; i < edges.length; i++) {
-      final part = shares.percents[i - 1];
-      if (minute < edges[i]) {
-        if (minute <= edges[i - 1]) return due / 100;
-        final into = (minute - edges[i - 1]) / (edges[i] - edges[i - 1]);
-        return (due + part * into) / 100;
-      }
-      due += part;
+    var through = 0;
+    for (final (i, percent) in shares.percents.indexed) {
+      through += percent;
+      if (minute >= starts[i]) due = through;
     }
     return due / 100;
   }

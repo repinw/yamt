@@ -14,6 +14,7 @@ import 'package:yamt/features/diary/domain/diary_meal_times.dart';
 import 'package:yamt/features/diary/domain/diary_pace_notices.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_pace_notice_day_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notification_controller.dart';
 
 import '../../../../helpers/fake_local_notifications.dart';
@@ -92,7 +93,7 @@ void main() {
   );
   final texts = (
     channelName: 'Frei',
-    title: (MealType meal, int kcal) => '${meal.jsonValue} $kcal',
+    title: (int kcal) => 'free $kcal',
     body: (DiaryPaceMacro? macro) => macro?.name ?? '',
   );
 

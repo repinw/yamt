@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_switch_list_tile.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_pace_notice_day_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notification_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_budget_card/diary_budget_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_pace_notification_listener.dart';
@@ -22,7 +23,9 @@ class DiaryPaceNotificationSwitch extends ConsumerWidget {
     DiaryPaceNotificationController controller() =>
         ref.read(diaryPaceNotificationControllerProvider.notifier);
     final blocked = ref.watch(diaryPaceNotificationBlockedProvider);
-    final pace = kDebugMode ? ref.watch(diaryPaceNoticeDayProvider) : null;
+    final pace = kDebugMode
+        ? ref.watch(diaryPaceNoticeDayProvider).value
+        : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
