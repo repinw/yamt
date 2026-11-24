@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cryptography/cryptography.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -26,4 +28,16 @@ class AuthUserDataKeySession extends UserDataKeySession {
       recoveryKeyConfirmed: true,
     );
   }
+}
+
+/// A session that finished loading with nobody signed in.
+class SignedOutUserDataKeySession extends UserDataKeySession {
+  @override
+  Future<UserDataKeyState> build() async => const UserDataKeySignedOut();
+}
+
+/// A session whose data key never finishes loading.
+class LoadingUserDataKeySession extends UserDataKeySession {
+  @override
+  Future<UserDataKeyState> build() => Completer<UserDataKeyState>().future;
 }
