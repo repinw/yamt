@@ -11647,7 +11647,7 @@ abstract class AppLocalizations {
   /// **'Off: only the lowest macro shows its color'**
   String get diaryBudgetMenuAllMacrosHint;
 
-  /// Switch in the budget card menu, shown while the pace marker is on: a notification comes once per part of the day when the pace marker lies that meal's whole part ahead of the kcal eaten.
+  /// Switch in the budget card menu, shown while the pace marker is on: a notification comes at the start of each part of the day when kcal are free.
   ///
   /// In en, this message translates to:
   /// **'Notify on free kcal'**
@@ -11656,7 +11656,7 @@ abstract class AppLocalizations {
   /// Hint below the free kcal notification switch in the budget card menu.
   ///
   /// In en, this message translates to:
-  /// **'Once per part of the day, when the pace marker frees its kcal again'**
+  /// **'At the start of each part of the day, when you have kcal free'**
   String get diaryBudgetMenuPaceNoticeHint;
 
   /// Hint below the free kcal notification switch while the system blocks the app's notifications or their channel.
@@ -11809,11 +11809,11 @@ abstract class AppLocalizations {
   /// **'Free kcal'**
   String get diaryPaceNoticeChannelName;
 
-  /// Title of the notification when the pace marker frees a meal's part of the day's kcal again.
+  /// Title of the notification at the start of a part of the day when kcal are free again. kcal is what is due by the end of that part of the day minus what was eaten today.
   ///
   /// In en, this message translates to:
-  /// **'{meal, select, breakfast{For breakfast} lunch{For lunch} dinner{For dinner} other{For your snack}} you have {kcal} kcal free again'**
-  String diaryPaceNoticeTitle(String meal, int kcal);
+  /// **'Hey, you have {kcal} kcal free again'**
+  String diaryPaceNoticeTitle(int kcal);
 
   /// Body of the free kcal notification: the macro with the largest share of its target left.
   ///
