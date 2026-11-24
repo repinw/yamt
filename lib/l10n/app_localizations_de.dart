@@ -7153,7 +7153,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryBudgetMenuPaceNoticeHint =>
-      'Einmal pro Tageszeit, wenn der Soll-Strich ihre kcal wieder frei gibt';
+      'Zu Beginn jeder Tageszeit, wenn du kcal frei hast';
 
   @override
   String get diaryBudgetMenuPaceNoticeBlocked =>
@@ -7262,14 +7262,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryPaceNoticeChannelName => 'Freie kcal';
 
   @override
-  String diaryPaceNoticeTitle(String meal, int kcal) {
-    String _temp0 = intl.Intl.selectLogic(meal, {
-      'breakfast': 'Fürs Frühstück',
-      'lunch': 'Fürs Mittagessen',
-      'dinner': 'Fürs Abendessen',
-      'other': 'Für den Snack',
-    });
-    return '$_temp0 hast du wieder $kcal kcal frei';
+  String diaryPaceNoticeTitle(int kcal) {
+    final intl.NumberFormat kcalNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String kcalString = kcalNumberFormat.format(kcal);
+
+    return 'Hey, du hast wieder $kcalString kcal frei';
   }
 
   @override

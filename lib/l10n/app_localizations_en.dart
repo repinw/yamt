@@ -7060,7 +7060,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryBudgetMenuPaceNoticeHint =>
-      'Once per part of the day, when the pace marker frees its kcal again';
+      'At the start of each part of the day, when you have kcal free';
 
   @override
   String get diaryBudgetMenuPaceNoticeBlocked =>
@@ -7168,14 +7168,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPaceNoticeChannelName => 'Free kcal';
 
   @override
-  String diaryPaceNoticeTitle(String meal, int kcal) {
-    String _temp0 = intl.Intl.selectLogic(meal, {
-      'breakfast': 'For breakfast',
-      'lunch': 'For lunch',
-      'dinner': 'For dinner',
-      'other': 'For your snack',
-    });
-    return '$_temp0 you have $kcal kcal free again';
+  String diaryPaceNoticeTitle(int kcal) {
+    final intl.NumberFormat kcalNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String kcalString = kcalNumberFormat.format(kcal);
+
+    return 'Hey, you have $kcalString kcal free again';
   }
 
   @override
