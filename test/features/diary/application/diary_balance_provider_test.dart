@@ -4,6 +4,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -117,6 +118,49 @@ void main() {
     expect(details, isNotNull);
     expect(details!.previousDays, isEmpty);
   });
+
+  group('diaryDayBudgetKcal', () {
+    final day = DateTime(2026, 11, 13);
+
+    Future<double?> budget(CalorieWeekOverview week) {
+      final container = ProviderContainer(
+        overrides: [
+          calorieWeekOverviewForWindowProvider(day)
+              .overrideWith((ref) async => week),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container.read(diaryDayBudgetKcalProvider(day).future);
+    }
+
+    test('is the goal of an ordinary day', () async {
+      expect(await budget(_weekOverview(selectedDay: day)), 2000);
+    });
+
+    test('is null on a pause day', () async {
+      expect(
+        await budget(_weekOverview(selectedDay: day, lastDayIsPause: true)),
+        isNull,
+      );
+    });
+
+    test('is the goal that starts later on a practice day', () async {
+      final week = _weekOverview(
+        selectedDay: day,
+        goalStartsInFuture: true,
+        nextGoalStartDate: addLocalDays(day, 2),
+        futureGoalKcal: 2150,
+      );
+
+      expect(await budget(week), 2150);
+    });
+
+    test('carries the carryover into the budget', () async {
+      final week = _weekOverview(selectedDay: day, flexibleGoalKcal: 1743);
+
+      expect(await budget(week), 1743);
+    });
+  });
 }
 
 Future<DiaryBalanceCardData> _resolveBalanceData({
@@ -177,6 +221,8 @@ CalorieWeekOverview _weekOverview({
   bool goalStartsInFuture = false,
   DateTime? nextGoalStartDate,
   double? futureGoalKcal,
+  bool lastDayIsPause = false,
+  double? flexibleGoalKcal,
 }) {
   final normalizedSelectedDay = normalizeLocalDay(selectedDay);
   final days = [
@@ -186,6 +232,7 @@ CalorieWeekOverview _weekOverview({
         totalKcal: dayTotals[6 - offset],
         goalKcal: goalKcal,
         entryCount: dayTotals[6 - offset] > 0 ? 1 : 0,
+        isPauseDay: lastDayIsPause && offset == 0,
       ),
   ];
   final totalConsumedKcal = days.fold<double>(
@@ -202,7 +249,7 @@ CalorieWeekOverview _weekOverview({
     balanceStartDate:
         balanceStartDate ?? addLocalDays(normalizedSelectedDay, -6),
     carryoverBeforeTodayKcal: 0,
-    todayFlexibleGoalKcal: goalKcal,
+    todayFlexibleGoalKcal: flexibleGoalKcal ?? goalKcal,
     goalStartsInFuture: goalStartsInFuture,
     nextGoalStartDate: nextGoalStartDate,
     futureGoalKcal: futureGoalKcal,
