@@ -6,23 +6,17 @@ import 'package:yamt/core/device/local_notifications.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/diary/application/diary_balance_provider.dart';
-import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
-import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/domain/diary_meal_shares.dart';
 import 'package:yamt/features/diary/domain/diary_meal_times.dart';
 import 'package:yamt/features/diary/domain/diary_pace_notices.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_pace_notice_day_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notification_controller.dart';
 
 import '../../../../helpers/fake_local_notifications.dart';
 import '../../../../helpers/memory_app_preferences.dart';
-import '../../support/diary_dashboard_test_support.dart';
 
 const _onKey = 'diary_pace_notification_on_v1';
 const _markerKey = 'diary_pace_marker_v1';
+const _spentKey = 'diary_pace_notification_spent_v1';
 const _idBase = 300000000;
 final _today = DateTime(2026, 11, 12);
 
@@ -39,45 +33,48 @@ class _AskingNotifications extends FakeLocalNotifications {
 }
 
 class _FailingNotifications extends FakeLocalNotifications {
-  new({this.failRequest = false});
+  new({
+    this.failRequest = false,
+    this.failScheduleFor,
+    this.failPending = false,
+  });
 
   final bool failRequest;
+  final int? failScheduleFor;
+  final bool failPending;
+
+  @override
+  Future<List<int>> pendingIds() async =>
+      failPending ? throw StateError('no list') : await super.pendingIds();
+
+  @override
+  Future<void> schedule({
+    required int id,
+    required DateTime at,
+    required NotificationChannel channel,
+    required String title,
+    required String body,
+    required String payload,
+    bool exact = false,
+    AlarmStyle? alarm,
+  }) async => id == failScheduleFor
+      ? throw StateError('no schedule')
+      : await super.schedule(
+          id: id,
+          at: at,
+          channel: channel,
+          title: title,
+          body: body,
+          payload: payload,
+          exact: exact,
+          alarm: alarm,
+        );
 
   @override
   Future<bool> requestPermission() async => failRequest
       ? throw StateError('no dialog')
       : await super.requestPermission();
 }
-
-DiaryDailyBalanceMetrics _daily(double target, {double eaten = 0}) =>
-    DiaryDailyBalanceMetrics(
-      bufferAdjustmentKcal: 0,
-      realEatenKcal: eaten,
-      eatenKcal: eaten,
-      realDayLeftKcal: target - eaten,
-      dayLeftKcal: target - eaten,
-      targetKcal: target,
-    );
-
-DiaryBalanceCardData _loaded({bool isPauseDay = false, double eaten = 0}) =>
-    DiaryBalanceCardData.loaded(
-      loadedMetrics: DiaryBalanceLoadedMetrics(
-        selectedDay: _today,
-        daily: _daily(1588, eaten: eaten),
-        state: DiaryBalanceLoadedState(
-          isPauseDay: isPauseDay,
-          showGameControls: false,
-          runWeekNumber: 1,
-        ),
-        runWeekStart: _today,
-      ),
-    );
-
-DiaryBalanceNotCountingDayData _notCounting() => DiaryBalanceNotCountingDayData(
-  day: _today,
-  startDate: DateTime(2026, 11, 14),
-  daily: _daily(1588, eaten: 100),
-);
 
 void main() {
   // The allowed check listens for the app returning to the foreground.
@@ -110,7 +107,6 @@ void main() {
   ProviderContainer containerWith({
     MemoryAppPreferences? preferences,
     FakeLocalNotifications? notifications,
-    DiaryBalanceCardData? card,
     bool markerOn = true,
     bool noticesOn = true,
   }) {
@@ -126,17 +122,6 @@ void main() {
         clockProvider.overrideWithValue(() => now),
         localNotificationsProvider.overrideWithValue(
           notifications ?? FakeLocalNotifications(),
-        ),
-        diaryBalanceCardProvider(_today).overrideWith((ref) => card),
-        diaryDayDashboardControllerProvider(_today).overrideWith(
-          () => FakeDiaryDayDashboardController(
-            const DiaryDayDashboardState(
-              data: null,
-              isFromCache: false,
-              isRefreshing: false,
-              error: null,
-            ),
-          ),
         ),
       ],
     );
@@ -306,6 +291,38 @@ void main() {
       expect(notifications.scheduled, isEmpty);
     });
 
+    test('ignores a spent record of another day', () async {
+      now = DateTime(2026, 11, 12, 20, 5);
+      final notifications = FakeLocalNotifications();
+      final container = containerWith(
+        notifications: notifications,
+        preferences: MemoryAppPreferences(
+          initialInts: {_markerKey: 1},
+          initialStrings: {_onKey: 'set', _spentKey: '2026-11-11|dinner=100'},
+        ),
+      );
+
+      await controllerOf(container).sync(pace(eaten: 300), texts);
+
+      expect(notifications.scheduled.containsKey(_id(MealType.dinner)), isTrue);
+    });
+
+    test('a failing call leaves the others in place', () async {
+      now = DateTime(2026, 11, 12, 18, 30);
+      final notifications = _FailingNotifications(
+        failScheduleFor: _id(MealType.lunch),
+        failPending: true,
+      );
+      final container = containerWith(notifications: notifications);
+
+      await controllerOf(container).sync(pace(), texts);
+
+      expect(
+        notifications.scheduled.keys,
+        unorderedEquals([_id(MealType.breakfast), _id(MealType.dinner)]),
+      );
+    });
+
     test('runs calls one after the other, the last pace wins', () async {
       final notifications = FakeLocalNotifications();
       final container = containerWith(notifications: notifications);
@@ -328,116 +345,6 @@ void main() {
 
       expect(notifications.scheduled, isEmpty);
     });
-  });
-
-  group('debugShowSoon', () {});
-
-  group('diaryPaceNoticeDay', () {
-    Future<DiaryPaceDay?> read(ProviderContainer container) async {
-      final subscription = container.listen(
-        diaryPaceNoticeDayProvider,
-        (_, _) {},
-      );
-      addTearDown(subscription.close);
-      return subscription.read();
-    }
-
-    test('is null while the notices are off', () async {
-      final container = containerWith(card: _loaded(), noticesOn: false);
-
-      expect(await read(container), isNull);
-    });
-
-    test('is null while the pace marker is off', () async {
-      final container = containerWith(
-        card: _loaded(),
-        markerOn: false,
-        preferences: MemoryAppPreferences(initialStrings: {_onKey: 'set'}),
-      );
-
-      expect(await read(container), isNull);
-    });
-
-    test('is null while today has not loaded', () async {
-      final container = containerWith(
-        preferences: MemoryAppPreferences(
-          initialInts: {_markerKey: 1},
-          initialStrings: {_onKey: 'set'},
-        ),
-      );
-
-      expect(await read(container), isNull);
-    });
-
-    test('is null on a pause day', () async {
-      final container = containerWith(
-        card: _loaded(isPauseDay: true),
-        preferences: MemoryAppPreferences(
-          initialInts: {_markerKey: 1},
-          initialStrings: {_onKey: 'set'},
-        ),
-      );
-
-      expect(await read(container), isNull);
-    });
-
-    test("has the day's target, eaten kcal, times and shares", () async {
-      final container = containerWith(
-        card: _loaded(eaten: 250),
-        preferences: MemoryAppPreferences(
-          initialInts: {_markerKey: 1},
-          initialStrings: {
-            _onKey: 'set',
-            'diary_meal_shares_v1': '30,30,30,10',
-          },
-        ),
-      );
-
-      final day = await read(container);
-
-      expect(day!.day, _today);
-      expect(day.targetKcal, 1588);
-      expect(day.eatenKcal, 250);
-      expect(day.times, DiaryMealTimes.standard);
-      expect(day.shares, const DiaryMealShares([30, 30, 30, 10]));
-      // The dashboard has no nutrition data yet.
-      expect(day.macro, isNull);
-    });
-
-    test('falls back to the daily numbers of a practice day', () async {
-      final container = containerWith(
-        card: DiaryBalanceCardData.practiceDay(practiceDay: _notCounting()),
-        preferences: MemoryAppPreferences(
-          initialInts: {_markerKey: 1},
-          initialStrings: {_onKey: 'set'},
-        ),
-      );
-
-      final day = await read(container);
-
-      expect(day!.targetKcal, 1588);
-      expect(day.eatenKcal, 100);
-    });
-
-    test(
-      'falls back to the daily numbers before a scheduled restart',
-      () async {
-        final container = containerWith(
-          card: DiaryBalanceCardData.scheduledRestart(
-            scheduledRestart: _notCounting(),
-          ),
-          preferences: MemoryAppPreferences(
-            initialInts: {_markerKey: 1},
-            initialStrings: {_onKey: 'set'},
-          ),
-        );
-
-        final day = await read(container);
-
-        expect(day!.targetKcal, 1588);
-        expect(day.eatenKcal, 100);
-      },
-    );
   });
 
   group('diaryPaceNotificationBlocked', () {

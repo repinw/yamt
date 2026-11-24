@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/device/local_notifications.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
@@ -20,7 +23,10 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_pace_notice_day_provider.dart';
+import 'package:yamt/features/diary/domain/diary_meal_shares.dart';
+import 'package:yamt/features/diary/domain/diary_meal_times.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_meal_shares_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_meal_times_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notification_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_pace_notification_listener.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -41,6 +47,8 @@ class _MockUser extends Mock implements User;
 
 // A Monday, the day the goal starts: today's target stays at 2000 kcal.
 final _today = DateTime(2026, 9, 28);
+final _tomorrow = DateTime(2026, 9, 29);
+const _tomorrowKey = 'diary_pace_notification_tomorrow_v1';
 
 /// A meal of [kcal] kcal, eaten at 8:00.
 CalorieEntry _meal(String id, double kcal) => CalorieEntry.create(
@@ -59,10 +67,52 @@ CalorieEntry _meal(String id, double kcal) => CalorieEntry.create(
   updatedAt: _today,
 );
 
+/// A log repository whose read of the week that ends on [gatedWindowEnd]
+/// waits for [gate]: what tomorrow's budget needs.
+class _GatedLogRepository extends FakeCalorieLogRepository {
+  new({required this.gatedWindowEnd, required this.gate});
+
+  final DateTime gatedWindowEnd;
+  final Future<void> gate;
+
+  @override
+  Future<List<CalorieEntry>> readEntriesInRange({
+    required DateTime startInclusive,
+    required DateTime endExclusive,
+  }) async {
+    if (isSameLocalDay(endExclusive, nextLocalDay(gatedWindowEnd))) {
+      await gate;
+    }
+    return await super.readEntriesInRange(
+      startInclusive: startInclusive,
+      endExclusive: endExclusive,
+    );
+  }
+}
+
 /// The listener over the diary's fake repositories, with the notices and
-/// the pace marker on.
+/// the pace marker on. `pauseDays` are days of the goal that are pause days;
+/// `tomorrowGate` holds back tomorrow's budget until it completes.
 class _Harness {
-  new({AsyncValue<double?>? tomorrow}) {
+  new({
+    List<DateTime> pauseDays = const [],
+    Future<void>? tomorrowGate,
+    Map<String, String> strings = const {},
+  }) : settings = FakeCalorieSettingsRepository(
+         initialSettings: CalorieGoalSettings.single(
+           dailyKcalGoal: 2000,
+           calculatorProfile: const CalorieCalculatorProfile.defaults()
+               .copyWith(trainingWeekdays: const []),
+           effectiveDate: _today,
+           pauseDayKeys: [for (final day in pauseDays) localDayKey(day)],
+         ),
+       ),
+       log = tomorrowGate == null
+           ? FakeCalorieLogRepository()
+           : _GatedLogRepository(
+               gatedWindowEnd: nextLocalDay(_today),
+               gate: tomorrowGate,
+             ) {
     final user = _MockUser();
     when(() => user.uid).thenReturn('user-1');
     final auth = _MockFirebaseAuth();
@@ -72,7 +122,10 @@ class _Harness {
         appPreferencesProvider.overrideWithValue(
           MemoryAppPreferences(
             initialInts: {'diary_pace_marker_v1': 1},
-            initialStrings: {'diary_pace_notification_on_v1': 'set'},
+            initialStrings: {
+              'diary_pace_notification_on_v1': 'set',
+              ...strings,
+            },
           ),
         ),
         // 12:00: the 6:00 and 11:00 notices are past, 16:00 is pending.
@@ -83,8 +136,6 @@ class _Harness {
         ),
         userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
         firebaseAuthProvider.overrideWithValue(auth),
-        if (tomorrow != null)
-          diaryPaceTomorrowTargetProvider.overrideWithValue(tomorrow),
         calorieSettingsRepositoryProvider.overrideWithValue(settings),
         calorieLogRepositoryProvider.overrideWithValue(log),
         calorieProductCacheRepositoryProvider.overrideWithValue(
@@ -113,16 +164,8 @@ class _Harness {
   }
 
   final notifications = FakeLocalNotifications();
-  final settings = FakeCalorieSettingsRepository(
-    initialSettings: CalorieGoalSettings.single(
-      dailyKcalGoal: 2000,
-      calculatorProfile: const CalorieCalculatorProfile.defaults().copyWith(
-        trainingWeekdays: const [],
-      ),
-      effectiveDate: _today,
-    ),
-  );
-  final log = FakeCalorieLogRepository();
+  final FakeCalorieSettingsRepository settings;
+  final FakeCalorieLogRepository log;
   late final ProviderContainer container;
 
   Widget app(Locale locale) => UncontrolledProviderScope(
@@ -144,10 +187,16 @@ class _Harness {
 
 Future<_Harness> _pump(
   WidgetTester tester, {
-  AsyncValue<double?>? tomorrow,
+  List<DateTime> pauseDays = const [],
+  Future<void>? tomorrowGate,
+  Map<String, String> strings = const {},
   void Function(FakeLocalNotifications notifications)? seed,
 }) async {
-  final harness = _Harness(tomorrow: tomorrow);
+  final harness = _Harness(
+    pauseDays: pauseDays,
+    tomorrowGate: tomorrowGate,
+    strings: strings,
+  );
   addTearDown(harness.dispose);
   seed?.call(harness.notifications);
   await tester.pumpWidget(harness.app(const Locale('de')));
@@ -237,27 +286,51 @@ void main() {
       expect(notice.title, 'Hey, du hast wieder 500 kcal frei');
     });
 
-    testWidgets('passes the target of tomorrow on to the notice', (
+    testWidgets('plans nothing for tomorrow while it is a pause day', (
       tester,
     ) async {
-      final harness = await _pump(tester, tomorrow: const AsyncData(1200));
+      final harness = await _pump(tester, pauseDays: [_tomorrow]);
 
-      expect(
-        harness.notifications.scheduled[tomorrowId]!.title,
-        'Hey, du hast wieder 300 kcal frei',
-      );
+      expect(harness.notifications.scheduled.containsKey(tomorrowId), isFalse);
+      expect(at(harness, 16), isNotNull);
     });
 
-    testWidgets('keeps a pending notice while tomorrow loads', (tester) async {
+    testWidgets('keeps a pending notice while tomorrow loads, and plans it '
+        'once it is known', (tester) async {
+      final gate = Completer<void>();
       final harness = await _pump(
         tester,
-        tomorrow: const AsyncLoading(),
+        tomorrowGate: gate.future,
+        strings: {_tomorrowKey: localDayKey(_tomorrow)},
         seed: (n) => n.scheduled[tomorrowId] = pending(),
       );
 
       expect(harness.notifications.scheduled[tomorrowId]!.title, 'pending');
       // Today's notices are planned all the same.
       expect(at(harness, 16), isNotNull);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(
+        harness.notifications.scheduled[tomorrowId]!.title,
+        'Hey, du hast wieder 500 kcal frei',
+      );
+    });
+
+    testWidgets('cancels a pending notice that was not planned for tomorrow '
+        'while tomorrow loads', (tester) async {
+      final gate = Completer<void>();
+      addTearDown(() {
+        if (!gate.isCompleted) gate.complete();
+      });
+      final harness = await _pump(
+        tester,
+        tomorrowGate: gate.future,
+        seed: (n) => n.scheduled[tomorrowId] = pending(),
+      );
+
+      expect(harness.notifications.scheduled.containsKey(tomorrowId), isFalse);
     });
 
     testWidgets('cancels a pending notice when tomorrow is a pause day', (
@@ -265,11 +338,78 @@ void main() {
     ) async {
       final harness = await _pump(
         tester,
-        tomorrow: const AsyncData(null),
+        pauseDays: [_tomorrow],
+        strings: {_tomorrowKey: localDayKey(_tomorrow)},
         seed: (n) => n.scheduled[tomorrowId] = pending(),
       );
 
       expect(harness.notifications.scheduled.containsKey(tomorrowId), isFalse);
+    });
+
+    testWidgets('plans tomorrow again when the shares change', (tester) async {
+      final harness = await _pump(tester);
+
+      await harness.container
+          .read(diaryMealSharesControllerProvider.notifier)
+          .select(const DiaryMealShares([30, 30, 30, 10]));
+      await tester.pumpAndSettle();
+
+      // 2000 kcal, 30 % due by the end of breakfast.
+      expect(
+        harness.notifications.scheduled[tomorrowId]!.title,
+        'Hey, du hast wieder 600 kcal frei',
+      );
+    });
+
+    group('while today is a pause day', () {
+      testWidgets('plans tomorrow, and today gets no notice', (tester) async {
+        final harness = await _pump(tester, pauseDays: [_today]);
+
+        expect(at(harness, 16), isNull);
+        expect(
+          harness.notifications.scheduled[tomorrowId]!.title,
+          'Hey, du hast wieder 500 kcal frei',
+        );
+      });
+
+      testWidgets('plans tomorrow again when the shares change', (
+        tester,
+      ) async {
+        final harness = await _pump(tester, pauseDays: [_today]);
+
+        await harness.container
+            .read(diaryMealSharesControllerProvider.notifier)
+            .select(const DiaryMealShares([30, 30, 30, 10]));
+        await tester.pumpAndSettle();
+
+        expect(
+          harness.notifications.scheduled[tomorrowId]!.title,
+          'Hey, du hast wieder 600 kcal frei',
+        );
+      });
+
+      testWidgets('plans tomorrow again when the meal times change', (
+        tester,
+      ) async {
+        final harness = await _pump(tester, pauseDays: [_today]);
+        expect(harness.notifications.scheduled[tomorrowId]!.at, tomorrowAt);
+
+        // Breakfast starts at 7:00 instead of 6:00.
+        await harness.container
+            .read(diaryMealTimesControllerProvider.notifier)
+            .select(
+              const DiaryMealTimes(
+                start: 7 * 60,
+                ends: [10 * 60, 14 * 60, 19 * 60, 22 * 60],
+              ),
+            );
+        await tester.pumpAndSettle();
+
+        expect(
+          harness.notifications.scheduled[tomorrowId]!.at,
+          DateTime(2026, 9, 29, 7),
+        );
+      });
     });
   });
 }

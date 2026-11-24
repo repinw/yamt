@@ -1,17 +1,18 @@
 // Technical tests of the free kcal notice (#971): tomorrow's target provider,
-// sync while tomorrow loads, and the debug notice.
+// sync while tomorrow or today loads, and the debug notice.
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/device/local_notifications.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
-import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
-import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/domain/diary_meal_shares.dart';
 import 'package:yamt/features/diary/domain/diary_meal_times.dart';
 import 'package:yamt/features/diary/domain/diary_pace_notices.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_meal_shares_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notice_day_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notification_controller.dart';
 
@@ -20,33 +21,14 @@ import '../../../../helpers/memory_app_preferences.dart';
 
 const _onKey = 'diary_pace_notification_on_v1';
 const _markerKey = 'diary_pace_marker_v1';
-const _tomorrowId = 300000050;
-const _debugId = 300000099;
+const _tomorrowKey = 'diary_pace_notification_tomorrow_v1';
+const _idBase = 300000000;
+const int _tomorrowId = _idBase + 50;
+const int _debugId = _idBase + 99;
 final _today = DateTime(2026, 11, 12);
 final _tomorrow = DateTime(2026, 11, 13);
 
-DiaryDailyBalanceMetrics _daily(double target) => DiaryDailyBalanceMetrics(
-  bufferAdjustmentKcal: 0,
-  realEatenKcal: 0,
-  eatenKcal: 0,
-  realDayLeftKcal: target,
-  dayLeftKcal: target,
-  targetKcal: target,
-);
-
-DiaryBalanceCardData _loaded(double target, {bool isPauseDay = false}) =>
-    DiaryBalanceCardData.loaded(
-      loadedMetrics: DiaryBalanceLoadedMetrics(
-        selectedDay: _tomorrow,
-        daily: _daily(target),
-        state: DiaryBalanceLoadedState(
-          isPauseDay: isPauseDay,
-          showGameControls: false,
-          runWeekNumber: 1,
-        ),
-        runWeekStart: _tomorrow,
-      ),
-    );
+int _id(MealType meal) => _idBase + MealType.sectionOrder.indexOf(meal);
 
 class _RecordingNotifications extends FakeLocalNotifications {
   final bodies = <int, String>{};
@@ -79,7 +61,10 @@ class _RecordingNotifications extends FakeLocalNotifications {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final now = DateTime(2026, 11, 12, 12);
+  // What the clock shows; a test moves it on.
+  late DateTime now;
+  setUp(() => now = DateTime(2026, 11, 12, 12));
+
   final texts = (
     channelName: 'Frei',
     title: (int kcal) => 'free $kcal',
@@ -90,8 +75,9 @@ void main() {
     double target = 2000,
     double eaten = 0,
     DiaryPaceMacro? macro,
+    DateTime? day,
   }) => (
-    day: _today,
+    day: day ?? _today,
     targetKcal: target,
     eatenKcal: eaten,
     times: DiaryMealTimes.standard,
@@ -99,25 +85,30 @@ void main() {
     macro: macro,
   );
 
+  /// [budget] stands for what the week overview says about tomorrow: a
+  /// value, null for a pause day, or no value while it loads.
   ProviderContainer containerWith({
     FakeLocalNotifications? notifications,
-    DiaryBalanceCardData? tomorrowCard,
+    MemoryAppPreferences? preferences,
+    Future<double?>? budget,
     bool markerOn = true,
     bool noticesOn = true,
   }) {
     final container = ProviderContainer(
       overrides: [
         appPreferencesProvider.overrideWithValue(
-          MemoryAppPreferences(
-            initialInts: {if (markerOn) _markerKey: 1},
-            initialStrings: {if (noticesOn) _onKey: 'set'},
-          ),
+          preferences ??
+              MemoryAppPreferences(
+                initialInts: {if (markerOn) _markerKey: 1},
+                initialStrings: {if (noticesOn) _onKey: 'set'},
+              ),
         ),
         clockProvider.overrideWithValue(() => now),
         localNotificationsProvider.overrideWithValue(
           notifications ?? FakeLocalNotifications(),
         ),
-        diaryBalanceCardProvider(_tomorrow).overrideWith((ref) => tomorrowCard),
+        diaryDayBudgetKcalProvider(_tomorrow)
+            .overrideWith((ref) => budget ?? Completer<double?>().future),
       ],
     );
     addTearDown(container.dispose);
@@ -126,54 +117,120 @@ void main() {
     return container;
   }
 
-  AsyncValue<double?> readTomorrow(ProviderContainer container) {
+  DiaryPaceNotificationController controllerOf(ProviderContainer container) =>
+      container.read(diaryPaceNotificationControllerProvider.notifier);
+
+  /// Reads tomorrow's value once the budget future has settled.
+  Future<AsyncValue<DiaryPaceTomorrow>> readTomorrow(
+    ProviderContainer container,
+  ) async {
     final subscription = container.listen(
       diaryPaceTomorrowTargetProvider,
       (_, _) {},
     );
     addTearDown(subscription.close);
+    try {
+      await container.read(diaryDayBudgetKcalProvider(_tomorrow).future);
+    } on Object {
+      // A failed budget stays loading, which the test asserts.
+    }
     return subscription.read();
   }
 
   group('diaryPaceTomorrowTarget', () {
-    test("is loading while tomorrow's balance card is null", () {
-      final value = readTomorrow(containerWith());
+    test("is loading while tomorrow's budget loads", () {
+      final container = containerWith();
+      final value = container.listen(
+        diaryPaceTomorrowTargetProvider,
+        (_, _) {},
+      );
+      addTearDown(value.close);
 
-      expect(value, isA<AsyncLoading<double?>>());
-      expect(value.value, isNull);
+      expect(value.read(), isA<AsyncLoading<DiaryPaceTomorrow>>());
+      expect(value.read().hasValue, isFalse);
     });
 
-    test("is tomorrow's target of the budget card, carryover included", () {
-      // A target that differs from a plain daily goal: the carryover moved it.
-      final value = readTomorrow(containerWith(tomorrowCard: _loaded(1743)));
-
-      expect(value, isA<AsyncData<double?>>());
-      expect(value.value, 1743);
-    });
-
-    test('is data without a value on a pause day, not loading', () {
-      final value = readTomorrow(
-        containerWith(tomorrowCard: _loaded(1743, isPauseDay: true)),
+    test('is loading when the budget failed to load', () async {
+      final value = await readTomorrow(
+        containerWith(budget: Future<double?>.error(StateError('offline'))),
       );
 
-      expect(value, isA<AsyncData<double?>>());
-      expect(value.value, isNull);
+      expect(value, isA<AsyncLoading<DiaryPaceTomorrow>>());
+      expect(value.hasValue, isFalse);
     });
 
-    test('is data without a value while the notices are off, even while '
-        'tomorrow loads', () {
-      final value = readTomorrow(containerWith(noticesOn: false));
+    test("has tomorrow's budget, carryover included", () async {
+      // A target that differs from a plain daily goal: the carryover moved it.
+      final value = await readTomorrow(
+        containerWith(budget: Future<double?>.value(1743)),
+      );
 
-      expect(value, isA<AsyncData<double?>>());
-      expect(value.value, isNull);
+      expect(value, isA<AsyncData<DiaryPaceTomorrow>>());
+      expect(value.value!.day, _tomorrow);
+      expect(value.value!.targetKcal, 1743);
+      expect(value.value!.times, DiaryMealTimes.standard);
+      expect(value.value!.shares, DiaryMealShares.standard);
     });
 
-    test('is data without a value while the pace marker is off, even while '
-        'tomorrow loads', () {
-      final value = readTomorrow(containerWith(markerOn: false));
+    test('is data without a target on a pause day, not loading', () async {
+      final value = await readTomorrow(
+        containerWith(budget: Future<double?>.value()),
+      );
 
-      expect(value, isA<AsyncData<double?>>());
-      expect(value.value, isNull);
+      expect(value, isA<AsyncData<DiaryPaceTomorrow>>());
+      expect(value.value!.targetKcal, isNull);
+    });
+
+    test('is data without a target while the notices are off, even while '
+        'tomorrow loads', () {
+      final container = containerWith(noticesOn: false);
+      final value = container.listen(
+        diaryPaceTomorrowTargetProvider,
+        (_, _) {},
+      );
+      addTearDown(value.close);
+
+      expect(value.read(), isA<AsyncData<DiaryPaceTomorrow>>());
+      expect(value.read().value!.targetKcal, isNull);
+    });
+
+    test('is data without a target while the pace marker is off, even while '
+        'tomorrow loads', () {
+      final container = containerWith(markerOn: false);
+      final value = container.listen(
+        diaryPaceTomorrowTargetProvider,
+        (_, _) {},
+      );
+      addTearDown(value.close);
+
+      expect(value.read(), isA<AsyncData<DiaryPaceTomorrow>>());
+      expect(value.read().value!.targetKcal, isNull);
+    });
+
+    test('hands out a new value when the meal shares change, also on a pause '
+        'day', () async {
+      final container = containerWith(budget: Future<double?>.value());
+      final values = <DiaryPaceTomorrow>[];
+      final subscription = container.listen(diaryPaceTomorrowTargetProvider, (
+        _,
+        next,
+      ) {
+        if (next.hasValue) values.add(next.value!);
+      });
+      addTearDown(subscription.close);
+      await container.read(diaryDayBudgetKcalProvider(_tomorrow).future);
+      await Future<void>.delayed(Duration.zero);
+      values.clear();
+
+      await container
+          .read(diaryMealSharesControllerProvider.notifier)
+          .select(const DiaryMealShares([30, 30, 30, 10]));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(values.map((v) => v.shares), [
+        const DiaryMealShares([30, 30, 30, 10]),
+      ]);
+      expect(values.single.targetKcal, isNull);
     });
   });
 
@@ -289,6 +346,272 @@ void main() {
           .sync(pace(), texts);
 
       expect(notifications.scheduled.containsKey(_tomorrowId), isFalse);
+    });
+  });
+
+  group('sync across midnight', () {
+    // The clock after midnight; the notice planned yesterday for today is
+    // still pending.
+    final afterMidnight = DateTime(2026, 11, 13, 0, 30);
+
+    Future<
+      ({FakeLocalNotifications notifications, ProviderContainer container})
+    >
+    plannedYesterday() async {
+      final notifications = FakeLocalNotifications();
+      final container = containerWith(notifications: notifications);
+      await controllerOf(container)
+          .sync(pace(), texts, tomorrowTargetKcal: 2000);
+      expect(
+        notifications.scheduled[_tomorrowId]!.at,
+        DateTime(2026, 11, 13, 6),
+      );
+      now = afterMidnight;
+      return (notifications: notifications, container: container);
+    }
+
+    List<int> idsAt(FakeLocalNotifications notifications, DateTime at) => [
+      for (final e in notifications.scheduled.entries)
+        if (e.value.at == at) e.key,
+    ];
+
+    test('the day-start notice of the new day stays once, while the budget '
+        'of the day after loads', () async {
+      final (:notifications, :container) = await plannedYesterday();
+
+      await controllerOf(container)
+          .sync(pace(day: _tomorrow), texts, tomorrowLoading: true);
+
+      // Only +0 stays pending at 6:00: the notice of yesterday for this day
+      // is gone, so the 6:00 notice does not come twice.
+      expect(idsAt(notifications, DateTime(2026, 11, 13, 6)), [
+        _id(MealType.breakfast),
+      ]);
+      expect(notifications.scheduled.containsKey(_tomorrowId), isFalse);
+    });
+
+    test('a day that is not tomorrow plans nothing', () async {
+      final notifications = FakeLocalNotifications();
+      final container = containerWith(notifications: notifications);
+
+      await controllerOf(container).sync(
+        pace(),
+        texts,
+        tomorrowTargetKcal: 2000,
+        tomorrowDay: DateTime(2026, 11, 14),
+      );
+      await controllerOf(container)
+          .sync(pace(), texts, tomorrowTargetKcal: 2000, tomorrowDay: _today);
+
+      expect(notifications.scheduled.containsKey(_tomorrowId), isFalse);
+    });
+
+    test('a day that is tomorrow plans its day start', () async {
+      final notifications = FakeLocalNotifications();
+      final container = containerWith(notifications: notifications);
+
+      await controllerOf(
+        container,
+      ).sync(pace(), texts, tomorrowTargetKcal: 2000, tomorrowDay: _tomorrow);
+
+      expect(
+        notifications.scheduled[_tomorrowId]!.at,
+        DateTime(2026, 11, 13, 6),
+      );
+    });
+
+    test(
+      'a day that is not tomorrow keeps a pending notice for tomorrow',
+      () async {
+        final notifications = FakeLocalNotifications();
+        final container = containerWith(notifications: notifications);
+        final controller = controllerOf(container);
+        await controller.sync(pace(), texts, tomorrowTargetKcal: 2000);
+
+        await controller.sync(
+          pace(),
+          texts,
+          tomorrowTargetKcal: 1500,
+          tomorrowDay: DateTime(2026, 11, 14),
+        );
+
+        expect(notifications.scheduled[_tomorrowId]!.title, 'free 500');
+      },
+    );
+
+    test('loading keeps a pending notice only when it is planned for '
+        'tomorrow', () async {
+      final notifications = FakeLocalNotifications();
+      final preferences = MemoryAppPreferences(
+        initialInts: {_markerKey: 1},
+        initialStrings: {_onKey: 'set', _tomorrowKey: '2026-11-11'},
+      );
+      final container = containerWith(
+        notifications: notifications,
+        preferences: preferences,
+      );
+      notifications.scheduled[_tomorrowId] = (
+        at: DateTime(2026, 11, 12, 6),
+        title: 'stale',
+        payload: diaryPaceChannelId,
+      );
+
+      await controllerOf(container).sync(pace(), texts, tomorrowLoading: true);
+
+      expect(notifications.scheduled.containsKey(_tomorrowId), isFalse);
+      expect(preferences.getStringSync(_tomorrowKey), isNull);
+    });
+
+    test(
+      'loading keeps a pending notice that the stored day names tomorrow',
+      () async {
+        final notifications = FakeLocalNotifications();
+        final preferences = MemoryAppPreferences(
+          initialInts: {_markerKey: 1},
+          initialStrings: {_onKey: 'set', _tomorrowKey: '2026-11-13'},
+        );
+        final container = containerWith(
+          notifications: notifications,
+          preferences: preferences,
+        );
+        notifications.scheduled[_tomorrowId] = (
+          at: DateTime(2026, 11, 13, 6),
+          title: 'pending',
+          payload: diaryPaceChannelId,
+        );
+
+        await controllerOf(container)
+            .sync(pace(), texts, tomorrowLoading: true);
+
+        expect(notifications.scheduled[_tomorrowId]!.title, 'pending');
+      },
+    );
+  });
+
+  group('sync while today loads', () {
+    // 0:30 on the day the +50 notice is for.
+    final earlyToday = DateTime(2026, 11, 13, 0, 30);
+    final tomorrowAt = DateTime(2026, 11, 13, 6);
+
+    /// Today's notices are planned for the day [earlyToday] is on, and a
+    /// +50 notice planned yesterday for today is pending.
+    Future<
+      ({FakeLocalNotifications notifications, ProviderContainer container})
+    >
+    held({bool noticesOn = true}) async {
+      now = earlyToday;
+      final notifications = FakeLocalNotifications();
+      final preferences = MemoryAppPreferences(
+        initialInts: {_markerKey: 1},
+        initialStrings: {if (noticesOn) _onKey: 'set'},
+      );
+      final container = containerWith(
+        notifications: notifications,
+        preferences: preferences,
+      );
+      await controllerOf(container).sync(pace(day: _tomorrow), texts);
+      notifications.scheduled[_tomorrowId] = (
+        at: tomorrowAt,
+        title: 'held',
+        payload: diaryPaceChannelId,
+      );
+      await preferences.setString(_tomorrowKey, '2026-11-13');
+      return (notifications: notifications, container: container);
+    }
+
+    Set<int> todays(FakeLocalNotifications notifications) => {
+      for (final meal in MealType.sectionOrder)
+        if (notifications.scheduled.containsKey(_id(meal))) _id(meal),
+    };
+
+    test(
+      'keeps the +50 notice for today and the pending notices of today',
+      () async {
+        final (:notifications, :container) = await held();
+        final before = todays(notifications);
+        expect(before, isNotEmpty);
+
+        await controllerOf(container).sync(
+          null,
+          texts,
+          tomorrowTargetKcal: 1500,
+          tomorrowDay: DateTime(2026, 11, 14),
+          todayLoading: true,
+        );
+
+        expect(notifications.scheduled[_tomorrowId]!.title, 'held');
+        expect(todays(notifications), before);
+      },
+    );
+
+    test('keeps the pending notices of today and plans tomorrow anew when '
+        'the +50 notice is for tomorrow', () async {
+      final notifications = FakeLocalNotifications();
+      final container = containerWith(notifications: notifications);
+      final controller = controllerOf(container);
+      await controller.sync(pace(), texts, tomorrowTargetKcal: 2000);
+      final before = todays(notifications);
+      expect(before, isNotEmpty);
+
+      await controller.sync(
+        null,
+        texts,
+        tomorrowTargetKcal: 1200,
+        todayLoading: true,
+      );
+
+      expect(todays(notifications), before);
+      expect(notifications.scheduled[_tomorrowId]!.title, 'free 300');
+    });
+
+    test('cancels them all when the notices are off', () async {
+      final (:notifications, :container) = await held();
+      await controllerOf(container).setEnabled(enabled: false);
+
+      await controllerOf(container).sync(null, texts, todayLoading: true);
+
+      expect(notifications.scheduled, isEmpty);
+    });
+
+    test(
+      'cancels the +50 notice and plans +0 once the pace is known',
+      () async {
+        final (:notifications, :container) = await held();
+        notifications.scheduled.remove(_id(MealType.breakfast));
+
+        await controllerOf(container).sync(pace(day: _tomorrow), texts);
+
+        expect(notifications.scheduled.containsKey(_tomorrowId), isFalse);
+        expect(
+          notifications.scheduled[_id(MealType.breakfast)]!.at,
+          tomorrowAt,
+        );
+      },
+    );
+
+    test('cancels the +50 notice for today on a pause day, and plans the '
+        'one for the day after', () async {
+      final (:notifications, :container) = await held();
+
+      await controllerOf(container).sync(
+        null,
+        texts,
+        tomorrowTargetKcal: 1500,
+        tomorrowDay: DateTime(2026, 11, 14),
+      );
+
+      expect(todays(notifications), isEmpty);
+      final notice = notifications.scheduled[_tomorrowId]!;
+      expect(notice.at, DateTime(2026, 11, 14, 6));
+      expect(notice.title, 'free 375');
+    });
+
+    test('cancels the +50 notice for today on a pause day', () async {
+      final (:notifications, :container) = await held();
+
+      await controllerOf(container).sync(null, texts);
+
+      expect(notifications.scheduled, isEmpty);
     });
   });
 
