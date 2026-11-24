@@ -280,4 +280,59 @@ void main() {
       expect(due(20), closeTo(1, 1e-9));
     });
   });
+
+  group('dueAt edge cases', () {
+    test('parts of no length: all is due the minute they start', () {
+      const times = DiaryMealTimes(start: 360, ends: [360, 360, 360, 360]);
+
+      expect(times.dueAt(359, DiaryMealShares.standard), 0);
+      expect(times.dueAt(360, DiaryMealShares.standard), 1);
+      expect(
+        times.dueAt(DiaryMealTimes.lastMinute, DiaryMealShares.standard),
+        1,
+      );
+    });
+
+    test('a day that starts in the evening is due nothing before it', () {
+      final evening = _times('20:00', ['20:30', '21:00', '22:00', '23:00']);
+      const shares = DiaryMealShares.standard;
+
+      expect(evening.dueAt(0, shares), 0);
+      expect(evening.dueAt(19 * 60 + 59, shares), 0);
+      expect(evening.dueAt(20 * 60, shares), closeTo(0.25, 1e-9));
+      expect(evening.dueAt(20 * 60 + 30, shares), closeTo(0.6, 1e-9));
+      expect(evening.dueAt(21 * 60, shares), closeTo(0.9, 1e-9));
+      expect(evening.dueAt(22 * 60, shares), closeTo(1, 1e-9));
+      expect(
+        evening.dueAt(DiaryMealTimes.lastMinute, shares),
+        closeTo(1, 1e-9),
+      );
+    });
+
+    test(
+      'stays at 100 % from the start of the snack to the end of the day',
+      () {
+        const shares = DiaryMealShares.standard;
+        final snackStart = DiaryMealTimes.standard.endOf(MealType.dinner);
+
+        expect(
+          DiaryMealTimes.standard.dueAt(snackStart - 1, shares),
+          closeTo(0.9, 1e-9),
+        );
+        for (final minute in [
+          snackStart,
+          snackStart + 1,
+          DiaryMealTimes.standard.endOf(MealType.snack),
+          DiaryMealTimes.standard.endOf(MealType.snack) + 1,
+          DiaryMealTimes.lastMinute,
+        ]) {
+          expect(
+            DiaryMealTimes.standard.dueAt(minute, shares),
+            closeTo(1, 1e-9),
+            reason: 'at $minute',
+          );
+        }
+      },
+    );
+  });
 }
