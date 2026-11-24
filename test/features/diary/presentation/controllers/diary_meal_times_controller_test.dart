@@ -75,7 +75,7 @@ void main() {
         .select(times);
 
     expect(states, [DiaryMealTimes.standard, times]);
-    expect(preferences.getStringSync(_key), '360,480,480,1140,1260');
+    expect(preferences.getStringSync(_key), '360,480,480,1200,1260');
     expect(
       containerWith(preferences).read(diaryMealTimesControllerProvider),
       times,
