@@ -98,6 +98,7 @@ class _Harness {
     List<DateTime> pauseDays = const [],
     Future<void>? tomorrowGate,
     Map<String, String> strings = const {},
+    UserDataKeySession Function() session = AuthUserDataKeySession.new,
   }) : settings = FakeCalorieSettingsRepository(
          initialSettings: CalorieGoalSettings.single(
            dailyKcalGoal: 2000,
@@ -134,7 +135,7 @@ class _Harness {
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(user),
         ),
-        userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
+        userDataKeySessionProvider.overrideWith(session),
         firebaseAuthProvider.overrideWithValue(auth),
         calorieSettingsRepositoryProvider.overrideWithValue(settings),
         calorieLogRepositoryProvider.overrideWithValue(log),
@@ -190,9 +191,11 @@ Future<_Harness> _pump(
   List<DateTime> pauseDays = const [],
   Future<void>? tomorrowGate,
   Map<String, String> strings = const {},
+  UserDataKeySession Function() session = AuthUserDataKeySession.new,
   void Function(FakeLocalNotifications notifications)? seed,
 }) async {
   final harness = _Harness(
+    session: session,
     pauseDays: pauseDays,
     tomorrowGate: tomorrowGate,
     strings: strings,
@@ -316,6 +319,35 @@ void main() {
         harness.notifications.scheduled[tomorrowId]!.title,
         'Hey, du hast wieder 500 kcal frei',
       );
+    });
+
+    testWidgets('holds every pending notice when the data key failed to '
+        'load', (tester) async {
+      final todayAt = [
+        for (final h in [11, 16, 20]) DateTime(2026, 9, 28, h),
+      ];
+      final harness = await _pump(
+        tester,
+        session: FailingUserDataKeySession.new,
+        strings: {_tomorrowKey: localDayKey(_tomorrow)},
+        seed: (n) {
+          n.scheduled[tomorrowId] = pending();
+          for (var i = 0; i < 3; i++) {
+            n.scheduled[300000000 + i] = (
+              at: todayAt[i],
+              title: 'held $i',
+              payload: diaryPaceChannelId,
+            );
+          }
+        },
+      );
+
+      expect(
+        harness.notifications.scheduled.keys,
+        unorderedEquals([tomorrowId, 300000000, 300000001, 300000002]),
+      );
+      expect(harness.notifications.scheduled[300000001]!.title, 'held 1');
+      expect(harness.notifications.scheduled[tomorrowId]!.title, 'pending');
     });
 
     testWidgets('holds a pending notice when tomorrow failed to load', (
