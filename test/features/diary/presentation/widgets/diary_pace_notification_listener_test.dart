@@ -318,6 +318,24 @@ void main() {
       );
     });
 
+    testWidgets('holds a pending notice when tomorrow failed to load', (
+      tester,
+    ) async {
+      final gate = Completer<void>();
+      final harness = await _pump(
+        tester,
+        tomorrowGate: gate.future,
+        strings: {_tomorrowKey: localDayKey(_tomorrow)},
+        seed: (n) => n.scheduled[tomorrowId] = pending(),
+      );
+
+      gate.completeError(StateError('offline'));
+      await tester.pumpAndSettle();
+
+      expect(harness.notifications.scheduled[tomorrowId]!.title, 'pending');
+      expect(at(harness, 16), isNotNull);
+    });
+
     testWidgets('cancels a pending notice that was not planned for tomorrow '
         'while tomorrow loads', (tester) async {
       final gate = Completer<void>();

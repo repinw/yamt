@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/device/local_notifications.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
@@ -13,6 +14,7 @@ import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notice_day_provider.dart';
 
+import '../../../../helpers/auth_user_data_key_session.dart';
 import '../../../../helpers/fake_local_notifications.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../support/diary_dashboard_test_support.dart';
@@ -59,6 +61,7 @@ void main() {
     bool markerOn = true,
     bool noticesOn = true,
     Map<String, String> strings = const {},
+    UserDataKeySession Function()? session,
   }) {
     final container = ProviderContainer(
       overrides: [
@@ -68,6 +71,10 @@ void main() {
             initialStrings: {if (noticesOn) _onKey: 'set', ...strings},
           ),
         ),
+        if (session == null)
+          userDataCipherProvider.overrideWithValue(testUserDataCipher)
+        else
+          userDataKeySessionProvider.overrideWith(session),
         clockProvider.overrideWithValue(() => DateTime(2026, 11, 12, 12)),
         localNotificationsProvider.overrideWithValue(FakeLocalNotifications()),
         diaryBalanceCardProvider(_today).overrideWith((ref) => card),
@@ -116,6 +123,27 @@ void main() {
 
       expect(value, isA<AsyncData<DiaryPaceDay?>>());
       expect(value.value, isNull);
+    });
+
+    test('has no day when nobody is signed in', () async {
+      final container = containerWith(
+        card: _loaded(),
+        session: SignedOutUserDataKeySession.new,
+      );
+      await container.read(userDataKeySessionProvider.future);
+
+      final value = read(container);
+
+      expect(value, isA<AsyncData<DiaryPaceDay?>>());
+      expect(value.value, isNull);
+    });
+
+    test('is loading while the data key loads', () {
+      final value = read(
+        containerWith(card: _loaded(), session: LoadingUserDataKeySession.new),
+      );
+
+      expect(value, isA<AsyncLoading<DiaryPaceDay?>>());
     });
 
     test('is loading while the balance card of today is null', () {

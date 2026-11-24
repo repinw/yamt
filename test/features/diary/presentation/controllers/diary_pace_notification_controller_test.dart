@@ -280,15 +280,17 @@ void main() {
       expect(notifications.scheduled.length, 2);
     });
 
-    test('a pace of another day schedules nothing and cancels', () async {
+    test('a pace of another day holds the pending notices', () async {
       final notifications = FakeLocalNotifications();
       final container = containerWith(notifications: notifications);
       final controller = controllerOf(container);
       await controller.sync(pace(), texts);
+      final before = Map.of(notifications.scheduled);
+      expect(before, isNotEmpty);
 
       await controller.sync(pace(day: DateTime(2026, 11, 11)), texts);
 
-      expect(notifications.scheduled, isEmpty);
+      expect(notifications.scheduled, before);
     });
 
     test('ignores a spent record of another day', () async {

@@ -8,14 +8,17 @@ import 'package:yamt/core/device/local_notifications.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/domain/diary_meal_shares.dart';
 import 'package:yamt/features/diary/domain/diary_meal_times.dart';
 import 'package:yamt/features/diary/domain/diary_pace_notices.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_meal_shares_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_pace_marker_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notice_day_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_pace_notification_controller.dart';
 
+import '../../../../helpers/auth_user_data_key_session.dart';
 import '../../../../helpers/fake_local_notifications.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 
@@ -93,9 +96,14 @@ void main() {
     Future<double?>? budget,
     bool markerOn = true,
     bool noticesOn = true,
+    UserDataKeySession Function()? session,
   }) {
     final container = ProviderContainer(
       overrides: [
+        if (session == null)
+          userDataCipherProvider.overrideWithValue(testUserDataCipher)
+        else
+          userDataKeySessionProvider.overrideWith(session),
         appPreferencesProvider.overrideWithValue(
           preferences ??
               MemoryAppPreferences(
@@ -122,15 +130,18 @@ void main() {
 
   /// Reads tomorrow's value once the budget future has settled.
   Future<AsyncValue<DiaryPaceTomorrow>> readTomorrow(
-    ProviderContainer container,
-  ) async {
+    ProviderContainer container, {
+    bool awaitBudget = true,
+  }) async {
     final subscription = container.listen(
       diaryPaceTomorrowTargetProvider,
       (_, _) {},
     );
     addTearDown(subscription.close);
     try {
-      await container.read(diaryDayBudgetKcalProvider(_tomorrow).future);
+      if (awaitBudget) {
+        await container.read(diaryDayBudgetKcalProvider(_tomorrow).future);
+      }
     } on Object {
       // A failed budget stays loading, which the test asserts.
     }
@@ -150,13 +161,35 @@ void main() {
       expect(value.read().hasValue, isFalse);
     });
 
-    test('is loading when the budget failed to load', () async {
+    test('is an error when the budget failed to load', () async {
       final value = await readTomorrow(
         containerWith(budget: Future<double?>.error(StateError('offline'))),
       );
 
-      expect(value, isA<AsyncLoading<DiaryPaceTomorrow>>());
+      expect(value, isA<AsyncError<DiaryPaceTomorrow>>());
       expect(value.hasValue, isFalse);
+      expect(value.error, isA<StateError>());
+    });
+
+    test('is data without a target when nobody is signed in', () async {
+      final container = containerWith(session: SignedOutUserDataKeySession.new);
+      await container.read(userDataKeySessionProvider.future);
+
+      final value = await readTomorrow(container, awaitBudget: false);
+
+      expect(value, isA<AsyncData<DiaryPaceTomorrow>>());
+      expect(value.value!.targetKcal, isNull);
+    });
+
+    test('is loading while the data key loads', () {
+      final container = containerWith(session: LoadingUserDataKeySession.new);
+      final value = container.listen(
+        diaryPaceTomorrowTargetProvider,
+        (_, _) {},
+      );
+      addTearDown(value.close);
+
+      expect(value.read(), isA<AsyncLoading<DiaryPaceTomorrow>>());
     });
 
     test("has tomorrow's budget, carryover included", () async {
@@ -610,6 +643,66 @@ void main() {
       final (:notifications, :container) = await held();
 
       await controllerOf(container).sync(null, texts);
+
+      expect(notifications.scheduled, isEmpty);
+    });
+  });
+
+  group('sync with a pace of another day', () {
+    final yesterday = DateTime(2026, 11, 11);
+
+    Future<
+      ({FakeLocalNotifications notifications, ProviderContainer container})
+    >
+    planned({bool noticesOn = true}) async {
+      final notifications = FakeLocalNotifications();
+      final container = containerWith(
+        notifications: notifications,
+        noticesOn: noticesOn,
+      );
+      await controllerOf(container)
+          .sync(pace(), texts, tomorrowTargetKcal: 2000);
+      return (notifications: notifications, container: container);
+    }
+
+    test('keeps the +50 notice and the pending notices of today', () async {
+      final (:notifications, :container) = await planned();
+      final before = Map.of(notifications.scheduled);
+      expect(before.containsKey(_tomorrowId), isTrue);
+      expect(before.length, greaterThan(1));
+
+      await controllerOf(container)
+          .sync(pace(day: yesterday), texts, tomorrowTargetKcal: 2000);
+
+      expect(notifications.scheduled, before);
+    });
+
+    test('cancels them all while the notices are off', () async {
+      final (:notifications, :container) = await planned();
+      await controllerOf(container).setEnabled(enabled: false);
+
+      await controllerOf(container).sync(pace(day: yesterday), texts);
+
+      expect(notifications.scheduled, isEmpty);
+    });
+
+    test('cancels them all while the pace marker is off', () async {
+      final notifications = FakeLocalNotifications();
+      final preferences = MemoryAppPreferences(
+        initialInts: {_markerKey: 1},
+        initialStrings: {_onKey: 'set'},
+      );
+      final container = containerWith(
+        notifications: notifications,
+        preferences: preferences,
+      );
+      await controllerOf(container)
+          .sync(pace(), texts, tomorrowTargetKcal: 2000);
+      await container
+          .read(diaryPaceMarkerControllerProvider.notifier)
+          .show(visible: false);
+
+      await controllerOf(container).sync(pace(day: yesterday), texts);
 
       expect(notifications.scheduled, isEmpty);
     });
