@@ -11,3 +11,5 @@ Das Logo ist die Handskizze des Users vom 25.11.2026, als Vektor nachgezeichnet.
 - `tools/`: die Skripte (brauchen `magick`, `potrace`, `rsvg-convert`, `python3`). `python3 tools/export_final.py varianten final` baut die Exporte neu.
 
 Eingebaut ist seit dem 25.11.2026 die feine Fassung (App-Icon und Startbild, Android und iOS). Der User fand sie auf dem Handy sehr unauffällig, lässt sie aber vorerst so. `varianten/auffaelliger/` hält die geprüften kräftigeren Fassungen (Strich 8 bis 10 Foto-Pixel über `tools/icon_wort.py`, dann Farben getauscht) mit Vergleichsbildern. Befund: Bekommt das Y eine eigene Farbe, liest man den Rest als das Wort „AMT“; also nur einfarbig.
+
+Seit dem 25.11.2026 abends hat das Icon einen schmalen limettenfarbenen Rahmen (3 dp, `#B6F23A`), vom User gewählt. Neu bauen: `python3 tools/export_final.py varianten final yamt-icon-wort-wie-gezeichnet-r31.svg 3`. Ohne die letzten zwei Angaben entsteht die Fassung ohne Rahmen.

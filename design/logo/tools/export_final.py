@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
-"""Abgenommenes Logo: alle Exporte bauen. Aufruf: export_final.py <r6-ordner> <ziel-ordner>"""
+"""Abgenommenes Logo: alle Exporte bauen. Aufruf: export_final.py <r6-ordner> <ziel-ordner> [icon-datei] [rahmen-dp]
+
+Mit rahmen-dp > 0 liegt das Karopapier als Squircle auf limettenfarbenem Grund; die Icon-Datei braucht dann einen kleineren Radius (31 bei 3 dp)."""
 import os, re, subprocess, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import r6lib as L
 src, out = sys.argv[1], sys.argv[2]
-s = open(f'{src}/yamt-icon-wort-wie-gezeichnet.svg').read()
+icon = sys.argv[3] if len(sys.argv) > 3 else 'yamt-icon-wort-wie-gezeichnet.svg'
+FRAME = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
+LIME = '#B6F23A'
+s = open(f'{src}/{icon}').read()
 bg = re.search(r'(<rect width="108" height="108" fill="#E4E9F0"/><g stroke="#A7B2C1".*?</g>)', s).group(1)
 fg = re.search(r'(<g transform="translate.*?</g>)', s).group(1)
+if FRAME:
+    bg = (f'<rect width="108" height="108" fill="{LIME}"/><clipPath id="i"><path d="{L.squircle(54, 54, 36 - FRAME)}"/></clipPath>'
+          f'<g clip-path="url(#i)">{bg}</g>')
 def svg(body, vb='0 0 108 108'):
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}"><defs><clipPath id="c"><rect width="108" height="108"/></clipPath></defs><g clip-path="url(#c)">{body}</g></svg>\n'
 dark = lambda t: t.replace('#E4E9F0', '#1B1D22').replace('#A7B2C1', '#3A404C').replace('#15161A', '#F4F6F9')
