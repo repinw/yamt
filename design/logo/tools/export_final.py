@@ -59,4 +59,15 @@ png('yamt-icon-quadrat-dunkel.svg', 1024, f'{out}/ios/extra/Icon-App-1024-dunkel
 png('yamt-icon-quadrat-getoent.svg', 1024, f'{out}/ios/extra/Icon-App-1024-getoent.png', '#000000')
 for w, n in ((32, 'favicon-32.png'), (180, 'apple-touch-icon.png'), (192, 'icon-192.png'), (512, 'icon-512.png')):
     png('yamt-icon-quadrat.svg', w, f'{out}/web/{n}', '#E4E9F0')
+# Startbild: Wortmarke 220x157 dp, dunkle Tinte und eine helle Kopie für den Nachtmodus
+wm = open(f'{src}/yamt-wortmarke.svg').read()
+open(f'{out}/svg/yamt-wortmarke-hell.svg', 'w').write(wm.replace('#15161A', '#F4F6F9'))
+def launch(name, k, dst):
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    subprocess.run(['rsvg-convert', '-w', str(int(220 * k)), '-h', str(int(157 * k)), f'{out}/svg/{name}', '-o', dst], check=True)
+for dens, k in (('mdpi', 1), ('hdpi', 1.5), ('xhdpi', 2), ('xxhdpi', 3), ('xxxhdpi', 4)):
+    launch('yamt-wortmarke.svg', k, f'{out}/android/drawable-{dens}/launch_logo.png')
+    launch('yamt-wortmarke-hell.svg', k, f'{out}/android/drawable-night-{dens}/launch_logo.png')
+for k, n in ((1, 'LaunchImage.png'), (2, 'LaunchImage@2x.png'), (3, 'LaunchImage@3x.png')):
+    launch('yamt-wortmarke.svg', k, f'{out}/ios/LaunchImage.imageset/{n}')
 print('fertig')
